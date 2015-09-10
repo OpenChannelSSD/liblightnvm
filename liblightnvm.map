@@ -1,0 +1,7 @@
+LIBLIGHTNVM_0.1 {
+	global:
+		nvm_get_info;
+		nvm_get_devices;
+		nvm_create_target;
+		nvm_remove_target;
+};
