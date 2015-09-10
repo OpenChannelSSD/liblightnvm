@@ -13,12 +13,29 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
  */
-#include <liblightnvm.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <string.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <liblightnvm.h>
 
-int nvm_create_target(void)
+#include "ioctl.h"
+
+int nvm_create_target(struct nvm_ioctl_create *u)
 {
-	return -EINVAL;
+	char dev[FILENAME_MAX] = NVM_CTRL_FILE;
+	int ret, fd;
+
+	fd = open(dev, O_WRONLY);
+	if (fd < 0)
+		return fd;
+
+	memset(u, 0, sizeof(*u));
+
+	ret = ioctl(fd, NVM_DEV_CREATE, u);
+	if (ret)
+		return ret;
+
+	close(fd);
+	return 0;
 }

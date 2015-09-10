@@ -18,8 +18,7 @@ all_targets += liblightnvm.a $(libname)
 all: $(all_targets)
 
 # liblightnvm provided functions
-liblightnvm_srcs := get_info.c get_devices.c
-liblightnvm_srcs += create_target.c remove_target.c
+liblightnvm_srcs := mgmt.c
 
 liblightnvm_objs := $(patsubst %.c,%.ol,$(liblightnvm_srcs))
 liblightnvm_sobjs := $(patsubst %.c,%.os,$(liblightnvm_srcs))

@@ -13,12 +13,30 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
  */
-#include <liblightnvm.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <errno.h>
 
-int nvm_get_devices(void)
+#include <string.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <liblightnvm.h>
+
+#include "ioctl.h"
+
+int nvm_get_devices(struct nvm_ioctl_get_devices *u)
 {
-	return -EINVAL;
+	char dev[FILENAME_MAX] = NVM_CTRL_FILE;
+	int ret, fd;
+
+	fd = open(dev, O_WRONLY);
+	if (fd < 0)
+		return fd;
+
+	memset(u, 0, sizeof(struct nvm_ioctl_get_devices));
+
+	ret = ioctl(fd, NVM_GET_DEVICES, u);
+	if (ret)
+		return ret;
+
+	close(fd);
+	return 0;
 }

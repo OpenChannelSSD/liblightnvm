@@ -21,7 +21,7 @@
 
 #include "ioctl.h"
 
-int nvm_remove_target(struct nvm_ioctl_remove *u)
+static int nvm_execute_ioctl(int opcode, void *u)
 {
 	char dev[FILENAME_MAX] = NVM_CTRL_FILE;
 	int ret, fd;
@@ -30,12 +30,30 @@ int nvm_remove_target(struct nvm_ioctl_remove *u)
 	if (fd < 0)
 		return fd;
 
-	memset(u, 0, sizeof(*u));
-
-	ret = ioctl(fd, NVM_DEV_REMOVE, u);
+	ret = ioctl(fd, opcode, u);
 	if (ret)
 		return ret;
 
 	close(fd);
 	return 0;
+}
+
+int nvm_get_info(struct nvm_ioctl_info *u)
+{
+	return nvm_execute_ioctl(NVM_INFO, u);
+}
+
+int nvm_get_devices(struct nvm_ioctl_get_devices *u)
+{
+	return nvm_execute_ioctl(NVM_GET_DEVICES, u);
+}
+
+int nvm_create_target(struct nvm_ioctl_create *u)
+{
+	return nvm_execute_ioctl(NVM_DEV_CREATE, u);
+}
+
+int nvm_remove_target(struct nvm_ioctl_remove *u)
+{
+	return nvm_execute_ioctl(NVM_DEV_REMOVE, u);
 }
