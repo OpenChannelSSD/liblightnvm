@@ -28,6 +28,14 @@ extern "C" {
 
 #include <sys/types.h>
 
+#include "ioctl.h"
+
+/* mgmt.c */
+int nvm_get_info(struct nvm_ioctl_info *);
+int nvm_get_devices(struct nvm_ioctl_get_devices *);
+int nvm_create_target(struct nvm_ioctl_create *);
+int nvm_remove_target(struct nvm_ioctl_remove *);
+
 #ifdef __cplusplus
 }
 #endif
