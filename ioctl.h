@@ -85,7 +85,7 @@ struct nvm_ioctl_create_conf {
 };
 
 struct nvm_ioctl_create {
-	char dev[DISK_NAME_LEN];			/* open-channel SSD device */
+	char dev[DISK_NAME_LEN];		/* open-channel SSD device */
 	char tgttype[NVM_TTYPE_NAME_MAX];	/* target type name */
 	char tgtname[DISK_NAME_LEN];		/* dev to expose target as */
 
@@ -100,6 +100,15 @@ struct nvm_ioctl_remove {
 	__u32 flags;
 };
 
+struct nvm_ioctl_vblock {
+	__u64 id;
+	__u64 bppa;
+	__u32 vlun_id;
+	__u32 owner_id;
+	__u32 nppas;
+	__u16 ppa_bitmap;
+	__u16 flags;
+};
 
 /* The ioctl type, 'L', 0x20 - 0x2F documented in ioctl-number.txt */
 enum {
@@ -110,6 +119,16 @@ enum {
 	/* device level cmds */
 	NVM_DEV_CREATE_CMD,
 	NVM_DEV_REMOVE_CMD,
+	NVM_DEV_PAGE_SIZE_CMD,
+	NVM_DEV_MAX_SEC_SIZE_CMD,
+	NVM_DEV_NBLOCKS_LUN_CMD,
+	NVM_DEV_NPAGES_BLOCK_CMD,
+	NVM_DEV_NFREE_BLOCKS_CMD,
+
+	/* provisioning cmds */
+	NVM_PR_GET_BLOCK_CMD,
+	NVM_PR_PUT_BLOCK_CMD,
+	NVM_PR_GET_BLOCK_META_CMD,
 };
 
 #define NVM_IOCTL 'L' /* 0x4c */
@@ -122,6 +141,22 @@ enum {
 						struct nvm_ioctl_create)
 #define NVM_DEV_REMOVE		_IOW(NVM_IOCTL, NVM_DEV_REMOVE_CMD, \
 						struct nvm_ioctl_remove)
+#define NVM_DEV_PAGE_SIZE	_IOR(NVM_IOCTL, NVM_DEV_PAGE_SIZE_CMD, \
+						__u32)
+#define NVM_DEV_MAX_SEC		_IOR(NVM_IOCTL, NVM_DEV_MAX_SEC_SIZE_CMD, \
+						__u32)
+#define NVM_DEV_NPAGES_BLOCK	_IOWR(NVM_IOCTL, NVM_DEV_NPAGES_BLOCK_CMD, \
+						__u32)
+#define NVM_DEV_NFREE_BLOCKS	_IOWR(NVM_IOCTL, NVM_DEV_NFREE_BLOCKS_CMD, \
+						__u32)
+#define NVM_DEV_NBLOCKS_LUN	_IOR(NVM_IOCTL, NVM_DEV_NBLOCKS_LUN_CMD, \
+						__u32)
+#define NVM_PR_GET_BLOCK	_IOWR(NVM_IOCTL, NVM_PR_GET_BLOCK_CMD, \
+						struct nvm_ioctl_vblock)
+#define NVM_PR_PUT_BLOCK	_IOWR(NVM_IOCTL, NVM_PR_PUT_BLOCK_CMD, \
+						struct nvm_ioctl_vblock)
+#define NVM_PR_GET_BLOCK_META	_IOWR(NVM_IOCTL, NVM_PR_GET_BLOCK_META_CMD, \
+						struct nvm_ioctl_vblock)
 
 #define NVM_VERSION_MAJOR	1
 #define NVM_VERSION_MINOR	0
