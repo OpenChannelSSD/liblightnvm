@@ -21,23 +21,6 @@
 
 #include "ioctl.h"
 
-static int nvm_execute_ioctl(int opcode, void *u)
-{
-	char dev[FILENAME_MAX] = NVM_CTRL_FILE;
-	int ret, fd;
-
-	fd = open(dev, O_WRONLY);
-	if (fd < 0)
-		return fd;
-
-	ret = ioctl(fd, opcode, u);
-	if (ret)
-		return ret;
-
-	close(fd);
-	return 0;
-}
-
 int nvm_get_info(struct nvm_ioctl_info *u)
 {
 	return nvm_execute_ioctl(NVM_INFO, u);
