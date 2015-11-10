@@ -8,3 +8,6 @@
 
 /src/liblightnvm.a
 /src/liblightnvm.so*
+
+/tests/dflash_test
+/tests/lib_test

@@ -14,11 +14,12 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 
- * Written by Matias Bjorling <m@bjorling.me>
+ * Written by:
+ *	- Javier Gonzalez <javier@cnexlabs.com>
+ *	- Matias Bjorling <m@bjorling.me>
  *
  * liblightnvm Linux Open-Channel I/O interface
  */
-
 #ifndef __LIBLIGHTNVM_H
 #define __LIBLIGHTNVM_H
 
@@ -26,15 +27,33 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
 #include <sys/types.h>
-
-#include "ioctl.h"
+#include <linux/lightnvm.h>
 
 /* mgmt.c */
 int nvm_get_info(struct nvm_ioctl_info *);
 int nvm_get_devices(struct nvm_ioctl_get_devices *);
 int nvm_create_target(struct nvm_ioctl_create *);
 int nvm_remove_target(struct nvm_ioctl_remove *);
+
+/* core */
+int nvm_get_nstreams();
+int nvm_get_stream_prop(uint32_t stream_id);
+
+/* dflash.c */
+int nvm_init();
+void nvm_fini();
+uint64_t nvm_create(const char *tgt, uint32_t stream_id, int flags);
+void nvm_delete(uint64_t file_id, int flags);
+int nvm_open(uint64_t file_id, int flags);
+void nvm_close(int fd, int flags);
+int nvm_append(int fd, const void *buf, size_t count);
+int nvm_sync(int fd);
+int nvm_read(int fd, void *buf, size_t count, off_t offset, int flags);
+
+/* unittests */
+int nvm_test_lib();
 
 #ifdef __cplusplus
 }
