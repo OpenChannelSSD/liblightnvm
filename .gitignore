@@ -6,6 +6,8 @@
 *.o
 *.o[ls]
 
+cscope.out
+
 /src/liblightnvm.a
 /src/liblightnvm.so*
 

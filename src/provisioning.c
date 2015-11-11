@@ -22,22 +22,22 @@
 #include "provisioning.h"
 #include "../util/debug.h"
 
-int get_block(int tgt, uint32_t vlun_id, struct vblock *vblock)
+int get_block(int tgt, uint32_t stream_id, struct vblock *vblock)
 {
 	int ret = 0;
 
-	vblock->vlun_id = vlun_id;
+	vblock->stream_id = stream_id;
 	vblock->flags = 0x0;
 	vblock->owner_id = 101;
 
 	ret = ioctl(tgt, NVM_PR_GET_BLOCK, vblock);
 	if (ret) {
-		LNVM_DEBUG("Could not get block from lun %d\n", vlun_id);
+		LNVM_DEBUG("Could not get block from lun %d\n", stream_id);
 		goto out;
 	}
 
 	LNVM_DEBUG("Get block from lun %d. Block id:%lu bppa:%lu\n",
-			vblock->vlun_id,
+			vblock->stream_id,
 			vblock->id,
 			vblock->bppa);
 out:
@@ -58,7 +58,7 @@ int get_block_meta(int tgt, uint64_t vblock_id, struct vblock *vblock)
 
 	LNVM_DEBUG("Get block medatada for block %lu. Lun: %d, bppa:%lu\n",
 			vblock->id,
-			vblock->vlun_id,
+			vblock->stream_id,
 			vblock->bppa);
 out:
 	return ret;
@@ -70,13 +70,13 @@ int put_block(int tgt, struct vblock *vblock)
 
 	ret = ioctl(tgt, NVM_PR_PUT_BLOCK, vblock);
 	if (ret) {
-		LNVM_DEBUG("Could not put block %lu to lun %d\n",
-			vblock->id,
-			vblock->vlun_id);
+		LNVM_DEBUG("Could not put block %lu (bppa:%lu) to lun %d (err:%d)\n",
+			vblock->id, vblock->bppa, vblock->stream_id, ret);
 		goto out;
 	}
 
-	LNVM_DEBUG("Put block %lu to lun %d\n", vblock->id, vblock->vlun_id);
+	LNVM_DEBUG("Put block %lu (bbpa:%lu) to lun %d\n",
+			vblock->id, vblock->bppa, vblock->stream_id);
 out:
 	return ret;
 }

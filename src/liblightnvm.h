@@ -38,19 +38,21 @@ int nvm_create_target(struct nvm_ioctl_create *);
 int nvm_remove_target(struct nvm_ioctl_remove *);
 
 /* core */
+int nvm_init();
+void nvm_fini();
 int nvm_get_nstreams();
 int nvm_get_stream_prop(uint32_t stream_id);
 
 /* dflash.c */
-int nvm_init();
-void nvm_fini();
-uint64_t nvm_create(const char *tgt, uint32_t stream_id, int flags);
-void nvm_delete(uint64_t file_id, int flags);
-int nvm_open(uint64_t file_id, int flags);
-void nvm_close(int fd, int flags);
-int nvm_append(int fd, const void *buf, size_t count);
-int nvm_sync(int fd);
-int nvm_read(int fd, void *buf, size_t count, off_t offset, int flags);
+int nvm_open_target(const char *tgt, int flags);
+void nvm_close_target(int tgt_id);
+int nvm_file_create(int tgt_id, uint32_t stream_id, int flags);
+void nvm_file_delete(uint64_t file_id, int flags);
+int nvm_file_open(uint64_t file_id, int flags);
+void nvm_file_close(int fd, int flags);
+size_t nvm_file_append(int fd, const void *buf, size_t count);
+int nvm_file_sync(int fd);
+size_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags);
 
 /* unittests */
 int nvm_test_lib();

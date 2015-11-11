@@ -68,16 +68,57 @@ static void remove_tgt(CuTest *ct)
 
 static void create_file(CuTest *ct)
 {
-	int fd;
+	int tgt_id, fd;
+	int i;
 
+	for (i = 0; i < 20; i++) {
 	create_tgt(ct);
-	file_id = nvm_create("test1", 0, 0);
+	tgt_id = nvm_open_target("test1", 0);
+	CuAssertTrue(ct, tgt_id > 0);
+
+	file_id = nvm_file_create(tgt_id, 0, 0);
 	CuAssertTrue(ct, file_id > 0);
-	fd = nvm_open(file_id, 0);
+
+	fd = nvm_file_open(file_id, 0);
 	CuAssertTrue(ct, fd > 0);
-	nvm_close(fd, 0);
-	nvm_delete(file_id, 0);
+
+	nvm_file_close(fd, 0);
+	nvm_file_delete(file_id, 0);
+	nvm_close_target(tgt_id);
+
+	/* sleep(1); */
 	remove_tgt(ct);
+	}
+}
+
+static void append_file(CuTest *ct)
+{
+	size_t written;
+	char test[100] = "Hello World";
+	int tgt_id, fd;
+	int i;
+
+	/* for (i = 0; i < 20; i++) { */
+	create_tgt(ct);
+	tgt_id = nvm_open_target("test1", 0);
+	CuAssertTrue(ct, tgt_id > 0);
+
+	file_id = nvm_file_create(tgt_id, 0, 0);
+	CuAssertTrue(ct, file_id > 0);
+
+	fd = nvm_file_open(file_id, 0);
+	CuAssertTrue(ct, fd > 0);
+
+	written = nvm_file_append(fd, test, 11);
+	CuAssertIntEquals(ct, 11, written);
+
+	nvm_file_close(fd, 0);
+	nvm_file_delete(file_id, 0);
+	nvm_close_target(tgt_id);
+
+	sleep(1);
+	remove_tgt(ct);
+	/* } */
 }
 
 static void fini_lib(CuTest *ct)
@@ -93,6 +134,7 @@ CuSuite *dflash_GetSuite()
 	SUITE_ADD_TEST(per_test_suite, create_tgt);
 	SUITE_ADD_TEST(per_test_suite, remove_tgt);
 	SUITE_ADD_TEST(per_test_suite, create_file);
+	SUITE_ADD_TEST(per_test_suite, append_file);
 	SUITE_ADD_TEST(per_test_suite, fini_lib);
 }
 

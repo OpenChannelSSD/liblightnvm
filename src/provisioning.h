@@ -26,7 +26,7 @@
 struct vblock {
 	uint64_t id;
 	uint64_t bppa;
-	uint32_t vlun_id;
+	uint32_t stream_id;
 	uint32_t owner_id;
 	uint32_t nppas;
 	uint16_t ppa_bitmap;
@@ -34,8 +34,8 @@ struct vblock {
 };
 
 /* provisioning */
-int get_block(int tgt, uint32_t vlun_id, struct vblock *vblock);
-// int get_block(int tgt, uint32_t vlun_id, void *meta, uint16_t meta_size,
+int get_block(int tgt, uint32_t stream_id, struct vblock *vblock);
+// int get_block(int tgt, uint32_t stream_id, void *meta, uint16_t meta_size,
 							// struct vblock *vblock);
 int get_block_meta(int tgt, uint64_t vblock_id, struct vblock *vblock);
 int put_block(int tgt, struct vblock *vblock);

@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
  *
  */
-#ifndef __DFLASH_H
-#define __DFLASH_H
+#ifndef __FLASH_FILE_H
+#define __FLASH_FILE_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,6 +40,9 @@
 #define MAX_BLOCKS 5
 #define PAGE_SIZE 4096
 
+#define FORCE_SYNC 0
+#define OPTIONAL_SYNC 1
+
 struct atomic_guid {
 	uint64_t guid;
 	pthread_spinlock_t lock;
@@ -47,22 +50,22 @@ struct atomic_guid {
 
 struct w_buffer {
 	size_t cursize;		/* Current buf lenght. Follows mem */
-	size_t curflush;	/* Bytes in buf that have been flushed */
+	size_t cursync;		/* Bytes in buf that have been synced to media */
 	size_t buf_limit;	/* Limit for the allocated memory region */
 	void *buf;		/* Buffer to cache writes */
 	char *mem;		/* Points to the place in buf where writes can be
 				 * appended to. It defines the part of the
 				 * buffer containing valid data */
-	char *flush;		/* Points to the place in buf until which data
-				 * has been flushed to the media */
+	char *sync;		/* Points to the place in buf until which data
+				 * has been synced to the media */
 };
 
 /* TODO: Allocate dynamic number of blocks */
-/* TODO: Store the lnvm target the file belongs to */
 struct dflash_file {
 	uint64_t gid;				/* internal global identifier */
 	uint32_t tgt;				/* fd of LightNVM target */
 	uint32_t stream_id;			/* stream associated with file */
+	struct vblock *current_vblock;		/* current block in use */
 	struct vblock vblocks[MAX_BLOCKS];	/* vblocks forming the file */
 	uint8_t nvblocks;			/* number of vblocks */
 	struct w_buffer w_buffer;		/* write buffer */
@@ -88,4 +91,15 @@ static inline void atomic_assign_inc_id(struct atomic_guid *cnt, uint64_t *id)
 	pthread_spin_unlock(&cnt->lock);
 }
 
-#endif
+static inline size_t calculate_ppa_off(size_t cursync)
+{
+	size_t disaligned_data = cursync % PAGE_SIZE;
+	size_t aligned_data = cursync / PAGE_SIZE;
+	uint8_t rest = (disaligned_data == 0) ? 0 : 1;
+	return (aligned_data + rest);
+}
+
+uint16_t flash_write(int fd, struct vblock *vblock, const char *buf,
+			size_t ppa_off, uint16_t npages);
+
+#endif /* __FLASH_FILE_H */

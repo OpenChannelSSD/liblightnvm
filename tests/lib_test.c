@@ -97,14 +97,92 @@ static void remove_tgt(CuTest *ct)
 	CuAssertTrue(ct, ret == 0);
 }
 
+static void create_remove_tgt(CuTest *ct, struct nvm_ioctl_create *c,
+				struct nvm_ioctl_remove *r)
+{
+	int i, retries = 10;
+	int ret;
+
+	for (i = 0; i < retries; i++) {
+		ret = nvm_create_target(c);
+		CuAssertTrue(ct, ret == 0);
+
+		ret = nvm_remove_target(r);
+		CuAssertTrue(ct, ret == 0);
+	}
+}
+
+static void create_remove_all_tgts(CuTest *ct)
+{
+	struct nvm_ioctl_create c;
+	struct nvm_ioctl_remove r;
+
+	printf("Testing device: nvme, target: rrpc\n");
+	sprintf(c.dev, "nvme0n1");
+	sprintf(c.tgttype, "rrpc");
+	sprintf(c.tgtname, "test");
+	c.flags = 0;
+	c.conf.type = 0;
+	c.conf.s.lun_begin = 0;
+	c.conf.s.lun_end = 0;
+
+	sprintf(r.tgtname, "test");
+	r.flags = 0;
+
+	create_remove_tgt(ct, &c, &r);
+
+	printf("Testing device: dflash, target: dflash\n");
+	sprintf(c.dev, "nvme0n1");
+	sprintf(c.tgttype, "dflash");
+	sprintf(c.tgtname, "test");
+	c.flags = 0;
+	c.conf.type = 0;
+	c.conf.s.lun_begin = 0;
+	c.conf.s.lun_end = 0;
+
+	sprintf(r.tgtname, "test");
+	r.flags = 0;
+
+	create_remove_tgt(ct, &c, &r);
+
+	printf("Testing device: nulln0, target: rrpc\n");
+	sprintf(c.dev, "nulln0");
+	sprintf(c.tgttype, "rrpc");
+	sprintf(c.tgtname, "test");
+	c.flags = 0;
+	c.conf.type = 0;
+	c.conf.s.lun_begin = 0;
+	c.conf.s.lun_end = 0;
+
+	sprintf(r.tgtname, "test");
+	r.flags = 0;
+
+	create_remove_tgt(ct, &c, &r);
+
+	printf("Testing device: dflash, target: dflash\n");
+	sprintf(c.dev, "nulln0");
+	sprintf(c.tgttype, "dflash");
+	sprintf(c.tgtname, "test");
+	c.flags = 0;
+	c.conf.type = 0;
+	c.conf.s.lun_begin = 0;
+	c.conf.s.lun_end = 0;
+
+	sprintf(r.tgtname, "test");
+	r.flags = 0;
+
+	create_remove_tgt(ct, &c, &r);
+}
+
 CuSuite* cli_GetSuite()
 {
 	per_test_suite = CuSuiteNew();
 
-	SUITE_ADD_TEST(per_test_suite, list_info);
-	SUITE_ADD_TEST(per_test_suite, get_devices);
-	SUITE_ADD_TEST(per_test_suite, create_tgt);
-	SUITE_ADD_TEST(per_test_suite, remove_tgt);
+	/* SUITE_ADD_TEST(per_test_suite, list_info); */
+	/* SUITE_ADD_TEST(per_test_suite, get_devices); */
+	/* SUITE_ADD_TEST(per_test_suite, create_tgt); */
+	/* SUITE_ADD_TEST(per_test_suite, remove_tgt); */
+	SUITE_ADD_TEST(per_test_suite, create_remove_all_tgts);
 
 	return per_test_suite;
 }

@@ -20,6 +20,10 @@ test:
 	ln -sf tests/lib_test .
 	ln -sf tests/dflash_test .
 
+tags:
+	ctags * -R
+	cscope -b `find . -name '*.c'` `find . -name '*.h'`
+
 clean:
 	@$(MAKE) -C src clean
 	@$(MAKE) -C tests clean
