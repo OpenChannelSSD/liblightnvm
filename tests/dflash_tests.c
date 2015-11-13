@@ -90,7 +90,12 @@ static void create_file(CuTest *ct)
 	remove_tgt(ct);
 }
 
-static void append_file(CuTest *ct)
+/*
+ * Append and read back from file.
+ *	- payload < PAGE_SIZE
+ *	- open - append - close - open - read - close
+ */
+static void file_ar1(CuTest *ct)
 {
 	size_t written, read;
 	char test[100] = "Hello World\n";
@@ -142,7 +147,7 @@ CuSuite *dflash_GetSuite()
 	/* SUITE_ADD_TEST(per_test_suite, create_tgt); */
 	/* SUITE_ADD_TEST(per_test_suite, remove_tgt); */
 	/* SUITE_ADD_TEST(per_test_suite, create_file); */
-	SUITE_ADD_TEST(per_test_suite, append_file);
+	SUITE_ADD_TEST(per_test_suite, file_ar1);
 	SUITE_ADD_TEST(per_test_suite, fini_lib);
 }
 

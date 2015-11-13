@@ -76,7 +76,6 @@ static void file_free(struct dflash_file *f)
 
 /* XXX: All block functions assume that block allocation is thread safe */
 /* TODO: Allocate blocks dynamically */
-
 static int switch_block(struct dflash_file **f)
 {
 	size_t buf_size;
@@ -91,7 +90,8 @@ static int switch_block(struct dflash_file **f)
 		free((*f)->w_buffer.buf);
 		ret = posix_memalign(&(*f)->w_buffer.buf, PAGE_SIZE, buf_size);
 		if (ret) {
-			LNVM_DEBUG("Cannot allocate memory (%lu bytes - align. %d )\n",
+			LNVM_DEBUG("Cannot allocate memoryi "
+					" (%lu bytes - align. %d)\n",
 				buf_size, PAGE_SIZE);
 			return ret;
 		}
@@ -122,7 +122,8 @@ static int preallocate_block(struct dflash_file *f)
 		goto out;
 	}
 
-	LNVM_DEBUG("Block preallocated (pos:%d). File: %lu, id: %lu, bppa: %lu\n",
+	LNVM_DEBUG("Block preallocated (pos:%d). File: %lu, id: %lu, "
+			" bppa: %lu\n",
 			f->nvblocks,
 			f->gid,
 			f->vblocks[f->nvblocks].id,
@@ -334,7 +335,8 @@ size_t nvm_file_append(int fd, const void *buf, size_t count)
 	f = fd_entry->dfile;
 	cache = f->w_buffer.mem;
 
-	LNVM_DEBUG("Append %lu bytes to file %lu (p:%p, fd:%d). Csize:%lu, Csync:%lu, BL:%lu\n",
+	LNVM_DEBUG("Append %lu bytes to file %lu (p:%p, fd:%d). Csize:%lu, "
+			"Csync:%lu, BL:%lu\n",
 				count,
 				f->gid, f,
 				fd,
@@ -414,7 +416,6 @@ size_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
 	ppa_off = ppa_count % nppas;
 	page_off = offset % PAGE_SIZE;
 
-	/* pages_to_read = (nppas - ppa_off) + ((page_off > 0) ? 1 : 0) ; */
 	current_r_vblock = &f->vblocks[block_off];
 
 	/* TODO: Optional - Flag for aligned memory */
@@ -434,8 +435,8 @@ size_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
 
 		assert(left_bytes <= left_pages * PAGE_SIZE);
 
-		read_pages = flash_read(f->tgt, current_r_vblock, reader, ppa_off,
-						pages_to_read);
+		read_pages = flash_read(f->tgt, current_r_vblock, reader,
+						ppa_off, pages_to_read);
 		if (read_pages != pages_to_read)
 			return -1;
 

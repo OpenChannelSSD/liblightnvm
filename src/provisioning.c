@@ -70,8 +70,8 @@ int put_block(int tgt, struct vblock *vblock)
 
 	ret = ioctl(tgt, NVM_PR_PUT_BLOCK, vblock);
 	if (ret) {
-		LNVM_DEBUG("Could not put block %lu (bppa:%lu) to lun %d (err:%d)\n",
-			vblock->id, vblock->bppa, vblock->stream_id, ret);
+		LNVM_DEBUG("Could not put block %lu (bppa:%lu) to lun %d\n",
+				vblock->id, vblock->bppa, vblock->stream_id);
 		goto out;
 	}
 
