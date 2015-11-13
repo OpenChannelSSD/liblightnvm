@@ -20,16 +20,19 @@
  */
 
 #include <unistd.h>
+#include <errno.h>
+
 #include "flash_file.h"
 #include "assert.h"
 
-uint16_t flash_write(int fd, struct vblock *vblock, const char *buf,
-			size_t ppa_off, uint16_t npages)
+uint16_t flash_write(int tgt, struct vblock *vblock, const char *buf,
+			size_t ppa_off, size_t count)
 {
 	size_t bppa = vblock->bppa;
 	size_t nppas = vblock->nppas;
 	size_t current_ppa = bppa + ppa_off;
-	size_t left = npages;
+	size_t left = count;
+	size_t bytes_per_write;
 	ssize_t written;
 	uint8_t max_pages_write = 1; /* Get from NVM_DEV_MAX_SEC */
 	uint8_t pages_per_write;

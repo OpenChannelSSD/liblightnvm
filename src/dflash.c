@@ -41,10 +41,10 @@ static struct atomic_guid fd_guid = {
 static struct dflash_file *dfilet = NULL;
 static struct dflash_fdentry *fdt = NULL;
 
-static void file_init(struct dflash_file *f, uint32_t stream_id, int fd)
+static void file_init(struct dflash_file *f, uint32_t stream_id, int tgt)
 {
 	atomic_assign_inc_id(&dflash_guid, &f->gid);
-	f->tgt = fd;
+	f->tgt = tgt;
 	f->stream_id = stream_id;
 	f->nvblocks = 0;
 	f->bytes = 0;
@@ -323,7 +323,7 @@ size_t nvm_file_append(int fd, const void *buf, size_t count)
 	struct dflash_file *f;
 	size_t offset = 0;
 	size_t appended;
-	char *mem;
+	char *cache;
 	int ret;
 
 	HASH_FIND_INT(fdt, &fd, fd_entry);
@@ -332,9 +332,9 @@ size_t nvm_file_append(int fd, const void *buf, size_t count)
 		return -EINVAL;
 	}
 	f = fd_entry->dfile;
-	mem = f->w_buffer.mem;
+	cache = f->w_buffer.mem;
 
-	LNVM_DEBUG("Append %lu bytes to file %lu (p:%p, fd: %d). Csize:%lu, Csync:%lu, BL:%lu\n",
+	LNVM_DEBUG("Append %lu bytes to file %lu (p:%p, fd:%d). Csize:%lu, Csync:%lu, BL:%lu\n",
 				count,
 				f->gid, f,
 				fd,
@@ -347,8 +347,8 @@ size_t nvm_file_append(int fd, const void *buf, size_t count)
 		ret = preallocate_block(f);
 		if (ret)
 			return ret;
-		memcpy(mem, buf, fits_buf);
-		mem += fits_buf;
+		memcpy(cache, buf, fits_buf);
+		cache += fits_buf;
 		f->w_buffer.cursize += fits_buf;
 		if (file_sync(fd, f, FORCE_SYNC)) {
 			LNVM_DEBUG("Cannot force sync for file %lu\n", f->gid);
@@ -358,8 +358,8 @@ size_t nvm_file_append(int fd, const void *buf, size_t count)
 		offset = fits_buf;
 	}
 	appended = count - offset;
-	memcpy(mem, buf + offset, appended);
-	mem += appended;
+	memcpy(cache, buf + offset, appended);
+	cache += appended;
 	f->w_buffer.cursize += appended;
 
 	return appended;
