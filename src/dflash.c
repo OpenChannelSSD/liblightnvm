@@ -49,6 +49,15 @@ static void file_init(struct dflash_file *f, uint32_t stream_id, int tgt)
 	f->nvblocks = 0;
 	f->bytes = 0;
 
+	f->w_buffer.buf = NULL;
+	f->w_buffer.mem = NULL;
+	f->w_buffer.sync = NULL;
+	f->w_buffer.buf_limit = 0;
+	f->w_buffer.cursize = 0;
+	f->w_buffer.cursync = 0;
+
+	f->current_w_vblock = NULL;
+
 	/* TODO: Access times */
 }
 
