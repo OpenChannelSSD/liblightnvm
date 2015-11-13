@@ -45,10 +45,10 @@ int nvm_get_stream_prop(uint32_t stream_id);
 
 /* dflash.c */
 int nvm_target_open(const char *tgt, int flags);
-void nvm_target_close(int tgt_id);
-int nvm_file_create(int tgt_id, uint32_t stream_id, int flags);
-void nvm_file_delete(uint64_t file_id, int flags);
-int nvm_file_open(uint64_t file_id, int flags);
+void nvm_target_close(int tgt);
+int nvm_file_create(int tgt, uint32_t stream_id, int flags);
+void nvm_file_delete(uint64_t fid, int flags);
+int nvm_file_open(uint64_t fid, int flags);
 void nvm_file_close(int fd, int flags);
 size_t nvm_file_append(int fd, const void *buf, size_t count);
 int nvm_file_sync(int fd);

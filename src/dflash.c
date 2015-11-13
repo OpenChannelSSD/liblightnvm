@@ -253,13 +253,13 @@ int nvm_target_open(const char *tgt, int flags)
 	return tgt_id;
 }
 
-void nvm_target_close(int tgt_id)
+void nvm_target_close(int tgt)
 {
-	close(tgt_id);
-	target_clean(tgt_id);
+	close(tgt);
+	target_clean(tgt);
 }
 
-int nvm_file_create(int tgt_id, uint32_t stream_id, int flags)
+int nvm_file_create(int tgt, uint32_t stream_id, int flags)
 {
 	struct dflash_file *f;
 
@@ -267,22 +267,22 @@ int nvm_file_create(int tgt_id, uint32_t stream_id, int flags)
 	if (!f)
 		return -ENOMEM;
 
-	file_init(f, stream_id, tgt_id);
+	file_init(f, stream_id, tgt);
 	HASH_ADD_INT(dfilet, gid, f);
 	LNVM_DEBUG("Created dflash file (p:%p, id:%lu). Target: %d\n",
-			f, f->gid, tgt_id);
+			f, f->gid, tgt);
 
 	return f->gid;
 }
 
-void nvm_file_delete(uint64_t file_id, int flags)
+void nvm_file_delete(uint64_t fid, int flags)
 {
 	struct dflash_file *f;
 
-	LNVM_DEBUG("Deleting file with id %lu\n", file_id);
+	LNVM_DEBUG("Deleting file with id %lu\n", fid);
 
-	HASH_FIND_INT(dfilet, &file_id, f);
-	clean_file_fd(file_id);
+	HASH_FIND_INT(dfilet, &fid, f);
+	clean_file_fd(fid);
 	HASH_DEL(dfilet, f);
 	file_free(f);
 	file_put_blocks(f);
@@ -292,15 +292,15 @@ void nvm_file_delete(uint64_t file_id, int flags)
  * TODO: Assign different file descriptors to same dflash file. For now access
  * dflash files by file id
  */
-int nvm_file_open(uint64_t file_id, int flags)
+int nvm_file_open(uint64_t fid, int flags)
 {
 	struct dflash_file *f;
 	struct dflash_fdentry *fd_entry;
 	int ret = 0;
 
-	HASH_FIND_INT(dfilet, &file_id, f);
+	HASH_FIND_INT(dfilet, &fid, f);
 	if (!f) {
-		LNVM_DEBUG("File with id %lu does not exist\n", file_id);
+		LNVM_DEBUG("File with id %lu does not exist\n", fid);
 		return -EINVAL;
 	}
 
@@ -320,7 +320,7 @@ int nvm_file_open(uint64_t file_id, int flags)
 	fd_entry->dfile = f;
 	HASH_ADD_INT(fdt, fd, fd_entry);
 
-	LNVM_DEBUG("Opened fd %lu for file %lu\n", fd_entry->fd, file_id);
+	LNVM_DEBUG("Opened fd %lu for file %lu\n", fd_entry->fd, fid);
 	return fd_entry->fd;
 
 error:
