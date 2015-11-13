@@ -62,14 +62,17 @@ static void file_buf_free(struct w_buffer *buf)
 	}
 }
 
-static void file_free(struct dflash_file *f)
+static void file_put_blocks(struct dflash_file *f)
 {
 	int i;
 
 	for(i = 0; i < f->nvblocks; i++) {
 		put_block(f->tgt, &f->vblocks[i]);
 	}
+}
 
+static void file_free(struct dflash_file *f)
+{
 	file_buf_free(&f->w_buffer);
 	free(f);
 }
@@ -194,6 +197,43 @@ static int file_sync(int fd, struct dflash_file *f, uint8_t flags)
 	return 0;
 }
 
+static void clean_fd(struct dflash_fdentry *fd_entry)
+{
+	HASH_DEL(fdt, fd_entry);
+	LNVM_DEBUG("Closed fd %lu for file %lu\n",
+			fd_entry->fd, fd_entry->dfile->gid);
+	/* FIXME: For now, free write buffer here. In the future we might want
+	 * to maintain this buffer as a page cache for reads
+	 */
+	file_buf_free(&fd_entry->dfile->w_buffer);
+	free(fd_entry);
+}
+
+static void clean_file_fd(uint64_t gid) {
+	struct dflash_fdentry *fd_entry, *tmp;
+
+	HASH_ITER(hh, fdt, fd_entry, tmp) {
+		if (fd_entry->dfile->gid == gid) {
+			clean_fd(fd_entry);
+		}
+	}
+}
+
+static void target_clean(int tgt)
+{
+	struct dflash_file *f, *tmp;
+
+	/* Assume only one target and that all files belong to that target*/
+	HASH_ITER(hh, dfilet, f, tmp) {
+		clean_file_fd(f->gid);
+		HASH_DEL(dfilet, f);
+		file_free(f);
+	}
+
+	assert(HASH_COUNT(fdt) == 0);
+	assert(HASH_COUNT(dfilet) == 0);
+}
+
 /*
  * liblightnvm flash API
  */
@@ -241,8 +281,10 @@ void nvm_file_delete(uint64_t file_id, int flags)
 	LNVM_DEBUG("Deleting file with id %lu\n", file_id);
 
 	HASH_FIND_INT(dfilet, &file_id, f);
+	clean_file_fd(file_id);
 	HASH_DEL(dfilet, f);
 	file_free(f);
+	file_put_blocks(f);
 }
 
 /*
@@ -300,14 +342,7 @@ void nvm_file_close(int fd, int flags)
 		LNVM_DEBUG("Cannot force sync for file %lu\n", f->gid);
 	}
 
-	HASH_DEL(fdt, fd_entry);
-	LNVM_DEBUG("Closed fd %lu for file %lu\n",
-			fd_entry->fd, fd_entry->dfile->gid);
-	/* FIXME: For now, free write buffer here. In the future we might want
-	 * to maintain this buffer as a page cache for reads
-	 */
-	file_buf_free(&fd_entry->dfile->w_buffer);
-	free(fd_entry);
+	clean_fd(fd_entry);
 }
 
 /* TODO: Implement a pool of available bloks to support double buffering */
