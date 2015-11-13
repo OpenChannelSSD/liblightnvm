@@ -40,35 +40,76 @@ uint16_t flash_write(int tgt, struct vblock *vblock, const char *buf,
 
 	/* TODO: Metadata */
 
-	assert(npages <= nppas - ppa_off);
-
-	LNVM_DEBUG("Syncing fd:%d\n", fd);
+	LNVM_DEBUG("Writing %lu pages to block %lu. ppa_off: %lu, nppas:%lu\n",
+					count, vblock->id, ppa_off, nppas);
+	assert(count <= nppas - ppa_off);
 
 	/* For now we use pwrite. We will have different IO backends */
 	while (left > 0) {
 		pages_per_write = (left > max_pages_write) ?
 						max_pages_write : left;
+		bytes_per_write = pages_per_write * PAGE_SIZE;
 
-		written = pwrite(fd, writer, pages_per_write * PAGE_SIZE,
+		written = pwrite(tgt, writer, bytes_per_write,
 					current_ppa * PAGE_SIZE);
-		if (written != pages_per_write * PAGE_SIZE) {
-			LNVM_DEBUG("Error writing %d pages to block %lu (fd:%d)\n",
-					pages_per_write,
-					vblock->id,
-					fd);
+		if (written != bytes_per_write) {
+			LNVM_DEBUG("Error writing %d pages (%lu bytes) "
+					"to ppa: %lu, block %lu (tgt:%d)\n",
+					pages_per_write, bytes_per_write,
+					current_ppa, vblock->id,
+					tgt);
 			/* TODO: Retry with another page, and another block */
 			return 0;
 		}
 
-		writer += pages_per_write;
+		writer += bytes_per_write;
 		current_ppa += pages_per_write;
 		left -= pages_per_write;
 	}
 
-	LNVM_DEBUG("Written %d pages to block %lu (fd:%d)",
-					pages_per_write,
-					vblock->id,
-					fd);
+	LNVM_DEBUG("Written %lu pages to block %lu (tgt:%d)",
+					count, vblock->id, tgt);
 
-	return npages;
+	return count;
+}
+
+int flash_read(int tgt, struct vblock *vblock, void *buf, size_t ppa_off,
+								size_t count)
+{
+	size_t bppa = vblock->bppa;
+	size_t nppas = vblock->nppas;
+	size_t current_ppa = bppa + ppa_off;
+	size_t left = count;
+	size_t bytes_per_read;
+	ssize_t read;
+	uint8_t max_pages_read = 1; /* Get from NVM_DEV_MAX_SEC */
+	uint8_t pages_per_read;
+	char *reader = (char*)buf;
+
+	assert(count <= nppas - ppa_off);
+
+	/* For now we use pread. We will have different IO backends */
+	while (left > 0) {
+		pages_per_read = (left > max_pages_read) ?
+						max_pages_read : left;
+		bytes_per_read = pages_per_read * PAGE_SIZE;
+
+retry:
+		read = pread(tgt, reader, bytes_per_read,
+					current_ppa * PAGE_SIZE);
+		if (read != bytes_per_read) {
+			if (errno == EINTR)
+				goto retry;
+			return -1;
+		}
+
+		reader += bytes_per_read;
+		current_ppa += pages_per_read;
+		left -= pages_per_read;
+	}
+
+	LNVM_DEBUG("Read %lu pages from block %lu (tgt:%d)",
+					count, vblock->id, tgt);
+
+	return count;
 }

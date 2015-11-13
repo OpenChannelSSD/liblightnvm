@@ -370,9 +370,93 @@ int nvm_file_sync(int fd)
 	return 0;
 }
 
+/*
+ * Flag for aligned buffer
+ */
 size_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
 {
-	return 0;
+	struct dflash_fdentry *fd_entry;
+	struct dflash_file *f;
+	struct vblock *current_r_vblock;
+	size_t block_off, ppa_off, page_off;
+	size_t ppa_count;
+	size_t nppas;
+	size_t left_bytes = count;
+	size_t left_pages = count / PAGE_SIZE +
+					(((count % PAGE_SIZE) > 0) ? 1 : 0);
+	size_t valid_bytes;
+	uint16_t read_pages;
+	/* char *cache; // Used when trying write cache for reads*/
+	void *read_buf;
+	char *reader;
+	char *writer = buf;
+	int ret;
+
+	HASH_FIND_INT(fdt, &fd, fd_entry);
+	if (!fd_entry) {
+		LNVM_DEBUG("File descriptor %d does not exist\n", fd);
+		return -EINVAL;
+	}
+	f = fd_entry->dfile;
+	/* cache = f->w_buffer.mem; */
+
+	LNVM_DEBUG("Read %lu bytes from file %lu (p:%p, fd:%d). Off:%lu\n",
+			count,
+			f->gid, f,
+			fd,
+			offset);
+
+	/* Assume all pages forming a flash file come from same stream */
+	nppas = get_npages_block(f->tgt, f->stream_id);
+	ppa_count = offset / PAGE_SIZE;
+
+	block_off = ppa_count/ nppas;
+	ppa_off = ppa_count % nppas;
+	page_off = offset % PAGE_SIZE;
+
+	/* pages_to_read = (nppas - ppa_off) + ((page_off > 0) ? 1 : 0) ; */
+	current_r_vblock = &f->vblocks[block_off];
+
+	/* TODO: Optional - Flag for aligned memory */
+	ret = posix_memalign(&read_buf, PAGE_SIZE, left_pages * PAGE_SIZE);
+	if (ret) {
+		LNVM_DEBUG("Cannot allocate memory (%lu bytes - align. %d )\n",
+				left_pages * PAGE_SIZE, PAGE_SIZE);
+		return ret;
+	}
+	reader = read_buf;
+
+	while (left_bytes) {
+		size_t pages_to_read = (nppas > left_pages) ? left_pages : nppas;
+		size_t bytes_to_read = pages_to_read * PAGE_SIZE;
+		valid_bytes = (left_bytes > bytes_to_read) ?
+						bytes_to_read : left_bytes;
+
+		assert(left_bytes <= left_pages * PAGE_SIZE);
+
+		read_pages = flash_read(f->tgt, current_r_vblock, reader, ppa_off,
+						pages_to_read);
+		if (read_pages != pages_to_read)
+			return -1;
+
+		/* TODO: Optional - Flag for aligned memory */
+		memcpy(writer, reader + page_off, valid_bytes);
+		writer += valid_bytes;
+
+		reader += read_pages;
+
+		block_off++;
+		ppa_off = 0;
+		page_off = 0;
+		current_r_vblock = &f->vblocks[block_off];
+
+		left_pages -= read_pages;
+		left_bytes -= valid_bytes;
+	}
+
+	/* TODO: Optional - Flag for aligned memory */
+	free(read_buf);
+	return count;
 }
 
 int nvm_init()

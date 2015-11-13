@@ -101,5 +101,7 @@ static inline size_t calculate_ppa_off(size_t cursync)
 
 uint16_t flash_write(int tgt, struct vblock *vblock, const char *buf,
 					size_t ppa_off, size_t count);
+int flash_read(int tgt, struct vblock *vblock, void *buf, size_t ppa_off,
+					size_t count);
 
 #endif /* __FLASH_FILE_H */
