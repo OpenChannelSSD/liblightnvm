@@ -261,14 +261,11 @@ int nvm_file_open(uint64_t file_id, int flags)
 		return -EINVAL;
 	}
 
-	/*
-	 * TODO: Allocate only for writes & check if there is space on the
-	 * current block (if any)
-	 */
-	/* Allocate flash block */
-	ret = allocate_block(f);
-	if (ret)
-		goto error;
+	if (!f->current_w_vblock) {
+		ret = allocate_block(f);
+		if (ret)
+			goto error;
+	}
 
 	fd_entry = malloc(sizeof(struct dflash_fdentry));
 	if (!fd_entry) {
