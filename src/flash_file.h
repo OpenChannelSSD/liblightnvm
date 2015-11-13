@@ -40,8 +40,8 @@
 #define MAX_BLOCKS 5
 #define PAGE_SIZE 4096
 
-#define FORCE_SYNC 0
-#define OPTIONAL_SYNC 1
+#define FORCE_SYNC 1
+#define OPTIONAL_SYNC 2
 
 struct atomic_guid {
 	uint64_t guid;

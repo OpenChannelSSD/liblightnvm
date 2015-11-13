@@ -79,29 +79,33 @@ static void file_free(struct dflash_file *f)
 
 static int switch_block(struct dflash_file **f)
 {
-	size_t w_buf_size;
+	size_t buf_size;
 	int ret;
 
 	(*f)->w_buffer.cursize = 0;
-	(*f)->w_buffer.cursync =0;
+	(*f)->w_buffer.cursync = 0;
 
 	/* Write buffer for small writes */
-	w_buf_size = get_npages_block((*f)->tgt, (*f)->stream_id) * PAGE_SIZE;
-	ret = posix_memalign(&(*f)->w_buffer.buf, PAGE_SIZE, w_buf_size);
-	if (ret) {
-		LNVM_DEBUG("Cannot allocate memory (%lu bytes - align. %d )\n",
-				w_buf_size, PAGE_SIZE);
-		return ret;
+	buf_size = get_npages_block((*f)->tgt, (*f)->stream_id) * PAGE_SIZE;
+	if (buf_size != (*f)->w_buffer.buf_limit) {
+		free((*f)->w_buffer.buf);
+		ret = posix_memalign(&(*f)->w_buffer.buf, PAGE_SIZE, buf_size);
+		if (ret) {
+			LNVM_DEBUG("Cannot allocate memory (%lu bytes - align. %d )\n",
+				buf_size, PAGE_SIZE);
+			return ret;
+		}
+		(*f)->w_buffer.buf_limit = buf_size;
+		(*f)->w_buffer.mem = (*f)->w_buffer.buf;
+		(*f)->w_buffer.sync = (*f)->w_buffer.buf;
 	}
-	(*f)->w_buffer.buf_limit = w_buf_size;
-	(*f)->w_buffer.mem = (*f)->w_buffer.buf;
-	(*f)->w_buffer.sync = (*f)->w_buffer.buf;
 
-	(*f)->current_vblock = &(*f)->vblocks[(*f)->nvblocks];
+	(*f)->current_w_vblock = &(*f)->vblocks[(*f)->nvblocks - 1];
 
-	LNVM_DEBUG("Block switched. File: %lu, id: %lu\n",
+	LNVM_DEBUG("Block switched. File: %lu, id: %lu. Total blocks: %d\n",
 			(*f)->gid,
-			(*f)->current_vblock->id);
+			(*f)->current_w_vblock->id,
+			(*f)->nvblocks);
 
 	return 0;
 }
@@ -118,13 +122,13 @@ static int preallocate_block(struct dflash_file *f)
 		goto out;
 	}
 
-	f->nvblocks++;
-
-	LNVM_DEBUG("Block preallocated. File: %lu, id: %lu, bppa: %lu\n",
+	LNVM_DEBUG("Block preallocated (pos:%d). File: %lu, id: %lu, bppa: %lu\n",
+			f->nvblocks,
 			f->gid,
 			f->vblocks[f->nvblocks].id,
 			f->vblocks[f->nvblocks].bppa);
 
+	f->nvblocks++;
 out:
 	return ret;
 }
@@ -151,11 +155,11 @@ static int file_sync(int fd, struct dflash_file *f, uint8_t flags)
 	uint16_t synced_pages;
 	uint16_t npages = sync_len / PAGE_SIZE;
 
-	if (((flags && OPTIONAL_SYNC) && (sync_len < PAGE_SIZE)) ||
+	if (((flags & OPTIONAL_SYNC) && (sync_len < PAGE_SIZE)) ||
 		(sync_len == 0))
 		return 0;
 
-	if (flags && FORCE_SYNC) {
+	if (flags & FORCE_SYNC) {
 		if (f->w_buffer.cursync + sync_len == f->w_buffer.buf_limit) {
 			/* TODO: Metadata */
 		}
@@ -240,8 +244,10 @@ void nvm_file_delete(uint64_t file_id, int flags)
 	file_free(f);
 }
 
-/* TODO: Assign different file descriptors to same dflash file. For now access
- * dflash files by file id */
+/*
+ * TODO: Assign different file descriptors to same dflash file. For now access
+ * dflash files by file id
+ */
 int nvm_file_open(uint64_t file_id, int flags)
 {
 	struct dflash_file *f;
@@ -254,6 +260,10 @@ int nvm_file_open(uint64_t file_id, int flags)
 		return -EINVAL;
 	}
 
+	/*
+	 * TODO: Allocate only for writes & check if there is space on the
+	 * current block (if any)
+	 */
 	/* Allocate flash block */
 	ret = allocate_block(f);
 	if (ret)
