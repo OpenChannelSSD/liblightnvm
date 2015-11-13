@@ -56,13 +56,13 @@ static void create_tgt(CuTest *ct)
 
 static void remove_tgt(CuTest *ct)
 {
-	struct nvm_ioctl_remove c;
+	struct nvm_ioctl_remove r;
 	int ret;
 
-	sprintf(c.tgtname, "test1");
-	c.flags = 0;
+	sprintf(r.tgtname, "test1");
+	r.flags = 0;
 
-	ret = nvm_remove_target(&c);
+	ret = nvm_remove_target(&r);
 
 	CuAssertIntEquals(ct, 0, ret);
 }
@@ -73,7 +73,7 @@ static void create_file(CuTest *ct)
 	int i;
 
 	create_tgt(ct);
-	tgt_id = nvm_open_target("test1", 0);
+	tgt_id = nvm_target_open("test1", 0);
 	CuAssertTrue(ct, tgt_id > 0);
 
 	file_id = nvm_file_create(tgt_id, 0, 0);
@@ -84,7 +84,7 @@ static void create_file(CuTest *ct)
 
 	nvm_file_close(fd, 0);
 	nvm_file_delete(file_id, 0);
-	nvm_close_target(tgt_id);
+	nvm_target_close(tgt_id);
 
 	sleep(1); /* XXX: Temp fix due to kernel bug */
 	remove_tgt(ct);
@@ -104,7 +104,7 @@ static void file_ar1(CuTest *ct)
 	int i;
 
 	create_tgt(ct);
-	tgt_id = nvm_open_target("test1", 0);
+	tgt_id = nvm_target_open("test1", 0);
 	CuAssertTrue(ct, tgt_id > 0);
 
 	file_id = nvm_file_create(tgt_id, 0, 0);
@@ -128,7 +128,7 @@ static void file_ar1(CuTest *ct)
 
 	nvm_file_close(fd, 0);
 	nvm_file_delete(file_id, 0);
-	nvm_close_target(tgt_id);
+	nvm_target_close(tgt_id);
 
 	sleep(1); /* XXX: Temp fix due to kernel bug */
 	remove_tgt(ct);
