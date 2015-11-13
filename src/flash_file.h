@@ -99,7 +99,7 @@ static inline size_t calculate_ppa_off(size_t cursync)
 	return (aligned_data + rest);
 }
 
-uint16_t flash_write(int fd, struct vblock *vblock, const char *buf,
-			size_t ppa_off, uint16_t npages);
+uint16_t flash_write(int tgt, struct vblock *vblock, const char *buf,
+					size_t ppa_off, size_t count);
 
 #endif /* __FLASH_FILE_H */

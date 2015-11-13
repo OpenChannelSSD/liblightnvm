@@ -169,7 +169,7 @@ static int file_sync(int fd, struct dflash_file *f, uint8_t flags)
 	}
 
 	/* write data to media */
-	synced_pages = flash_write(fd, f->current_vblock, f->w_buffer.sync,
+	synced_pages = flash_write(f->tgt, f->current_w_vblock, f->w_buffer.sync,
 					ppa_off, npages);
 	if (synced_pages != npages) {
 		LNVM_DEBUG("Error syncing data\n");
@@ -181,6 +181,9 @@ static int file_sync(int fd, struct dflash_file *f, uint8_t flags)
 	f->bytes += synced_bytes;
 	f->w_buffer.cursync += synced_bytes;
 	f->w_buffer.sync += synced_bytes;
+
+	LNVM_DEBUG("Synced bytes: %lu (%d pages)\n",
+			synced_bytes, synced_pages);
 
 	/* TODO: Access times */
 	return 0;
