@@ -19,10 +19,11 @@
  *
  */
 
-#include "stdio.h"
-#include "stdlib.h"
-
+#include <stdio.h>
+#include <stdlib.h>
 #include <liblightnvm.h>
+#include <unistd.h>
+
 #include "CuTest/CuTest.h"
 #include "../src/ioctl.h"
 
@@ -71,7 +72,6 @@ static void create_file(CuTest *ct)
 	int tgt_id, fd;
 	int i;
 
-	for (i = 0; i < 20; i++) {
 	create_tgt(ct);
 	tgt_id = nvm_open_target("test1", 0);
 	CuAssertTrue(ct, tgt_id > 0);
@@ -86,19 +86,18 @@ static void create_file(CuTest *ct)
 	nvm_file_delete(file_id, 0);
 	nvm_close_target(tgt_id);
 
-	/* sleep(1); */
+	sleep(1); /* XXX: Temp fix due to kernel bug */
 	remove_tgt(ct);
-	}
 }
 
 static void append_file(CuTest *ct)
 {
-	size_t written;
-	char test[100] = "Hello World";
+	size_t written, read;
+	char test[100] = "Hello World\n";
+	char test2[100];
 	int tgt_id, fd;
 	int i;
 
-	/* for (i = 0; i < 20; i++) { */
 	create_tgt(ct);
 	tgt_id = nvm_open_target("test1", 0);
 	CuAssertTrue(ct, tgt_id > 0);
@@ -109,16 +108,25 @@ static void append_file(CuTest *ct)
 	fd = nvm_file_open(file_id, 0);
 	CuAssertTrue(ct, fd > 0);
 
-	written = nvm_file_append(fd, test, 11);
-	CuAssertIntEquals(ct, 11, written);
+	written = nvm_file_append(fd, test, 12);
+	CuAssertIntEquals(ct, 12, written);
+
+	nvm_file_close(fd, 0);
+
+	fd = nvm_file_open(file_id, 0);
+	CuAssertTrue(ct, fd > 0);
+
+	read = nvm_file_read(fd, test2, written, 0, 0);
+	CuAssertIntEquals(ct, written, read);
+
+	CuAssertByteArrayEquals(ct, test, test2, 12, 12);
 
 	nvm_file_close(fd, 0);
 	nvm_file_delete(file_id, 0);
 	nvm_close_target(tgt_id);
 
-	sleep(1);
+	sleep(1); /* XXX: Temp fix due to kernel bug */
 	remove_tgt(ct);
-	/* } */
 }
 
 static void fini_lib(CuTest *ct)
@@ -131,9 +139,9 @@ CuSuite *dflash_GetSuite()
 	per_test_suite = CuSuiteNew();
 
 	SUITE_ADD_TEST(per_test_suite, init_lib);
-	SUITE_ADD_TEST(per_test_suite, create_tgt);
-	SUITE_ADD_TEST(per_test_suite, remove_tgt);
-	SUITE_ADD_TEST(per_test_suite, create_file);
+	/* SUITE_ADD_TEST(per_test_suite, create_tgt); */
+	/* SUITE_ADD_TEST(per_test_suite, remove_tgt); */
+	/* SUITE_ADD_TEST(per_test_suite, create_file); */
 	SUITE_ADD_TEST(per_test_suite, append_file);
 	SUITE_ADD_TEST(per_test_suite, fini_lib);
 }
