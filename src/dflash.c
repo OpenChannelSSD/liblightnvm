@@ -238,7 +238,7 @@ static void target_clean(int tgt)
  * liblightnvm flash API
  */
 
-int nvm_open_target(const char *tgt, int flags)
+int nvm_target_open(const char *tgt, int flags)
 {
 	char tgt_loc[NVM_TGT_NAME_MAX] = "/dev/";
 	int tgt_id;
@@ -253,9 +253,10 @@ int nvm_open_target(const char *tgt, int flags)
 	return tgt_id;
 }
 
-void nvm_close_target(int tgt_id)
+void nvm_target_close(int tgt_id)
 {
 	close(tgt_id);
+	target_clean(tgt_id);
 }
 
 int nvm_file_create(int tgt_id, uint32_t stream_id, int flags)

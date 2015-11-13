@@ -44,8 +44,8 @@ int nvm_get_nstreams();
 int nvm_get_stream_prop(uint32_t stream_id);
 
 /* dflash.c */
-int nvm_open_target(const char *tgt, int flags);
-void nvm_close_target(int tgt_id);
+int nvm_target_open(const char *tgt, int flags);
+void nvm_target_close(int tgt_id);
 int nvm_file_create(int tgt_id, uint32_t stream_id, int flags);
 void nvm_file_delete(uint64_t file_id, int flags);
 int nvm_file_open(uint64_t file_id, int flags);
