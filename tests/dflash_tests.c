@@ -86,7 +86,6 @@ static void create_file(CuTest *ct)
 	nvm_file_delete(file_id, 0);
 	nvm_target_close(tgt_id);
 
-	sleep(1); /* XXX: Temp fix due to kernel bug */
 	remove_tgt(ct);
 }
 
@@ -109,7 +108,6 @@ static void file_close_ungrac(CuTest *ct)
 	nvm_file_delete(file_id, 0);
 	nvm_target_close(tgt_id);
 
-	sleep(1); /* XXX: Temp fix due to kernel bug */
 	remove_tgt(ct);
 
 	/* Not close fd; not delete file -> Blocks are not returned to MM */
@@ -125,7 +123,6 @@ static void file_close_ungrac(CuTest *ct)
 
 	nvm_target_close(tgt_id);
 
-	sleep(1); /* XXX: Temp fix due to kernel bug */
 	remove_tgt(ct);
 }
 
@@ -169,7 +166,6 @@ static void file_ar1(CuTest *ct)
 	nvm_file_delete(file_id, 0);
 	nvm_target_close(tgt_id);
 
-	sleep(1); /* XXX: Temp fix due to kernel bug */
 	remove_tgt(ct);
 }
 
@@ -183,11 +179,11 @@ CuSuite *dflash_GetSuite()
 	per_test_suite = CuSuiteNew();
 
 	SUITE_ADD_TEST(per_test_suite, init_lib);
-	/* SUITE_ADD_TEST(per_test_suite, create_tgt); */
-	/* SUITE_ADD_TEST(per_test_suite, remove_tgt); */
-	/* SUITE_ADD_TEST(per_test_suite, create_file); */
+	SUITE_ADD_TEST(per_test_suite, create_tgt);
+	SUITE_ADD_TEST(per_test_suite, remove_tgt);
+	SUITE_ADD_TEST(per_test_suite, create_file);
 	SUITE_ADD_TEST(per_test_suite, file_close_ungrac);
-	/* SUITE_ADD_TEST(per_test_suite, file_ar1); */
+	SUITE_ADD_TEST(per_test_suite, file_ar1);
 	SUITE_ADD_TEST(per_test_suite, fini_lib);
 }
 
