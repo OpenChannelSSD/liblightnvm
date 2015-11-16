@@ -293,8 +293,8 @@ void nvm_file_delete(uint64_t fid, int flags)
 	HASH_FIND_INT(dfilet, &fid, f);
 	clean_file_fd(fid);
 	HASH_DEL(dfilet, f);
-	file_free(f);
 	file_put_blocks(f);
+	file_free(f);
 }
 
 /*
