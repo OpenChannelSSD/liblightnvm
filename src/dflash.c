@@ -444,6 +444,7 @@ size_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
 		((((count) % PAGE_SIZE) > 0) ? 1 : 0) +
 		(((offset / PAGE_SIZE) != (count + offset) / PAGE_SIZE) ? 1 : 0);
 	size_t valid_bytes;
+	size_t pages_to_read, bytes_to_read;
 	uint16_t read_pages;
 	/* char *cache; // Used when trying write cache for reads*/
 	void *read_buf;
@@ -475,8 +476,8 @@ size_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
 
 	current_r_vblock = &f->vblocks[block_off];
 
-	/* TODO: Optional - Flag for aligned memory */
-	ret = posix_memalign(&read_buf, PAGE_SIZE, left_pages * PAGE_SIZE);
+	pages_to_read = (nppas > left_pages) ? left_pages : nppas;
+	ret = posix_memalign(&read_buf, PAGE_SIZE, pages_to_read * PAGE_SIZE);
 	if (ret) {
 		LNVM_DEBUG("Cannot allocate memory (%lu bytes - align. %d )\n",
 				left_pages * PAGE_SIZE, PAGE_SIZE);
@@ -485,10 +486,17 @@ size_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
 	reader = read_buf;
 
 	while (left_bytes) {
-		size_t pages_to_read = (nppas > left_pages) ? left_pages : nppas;
-		size_t bytes_to_read = pages_to_read * PAGE_SIZE;
+		bytes_to_read = pages_to_read * PAGE_SIZE;
 		valid_bytes = (left_bytes > bytes_to_read) ?
 						bytes_to_read : left_bytes;
+
+		if (UNLIKELY(pages_to_read + ppa_off > nppas)) {
+			while (pages_to_read + ppa_off > nppas)
+				pages_to_read--;
+
+			valid_bytes = (nppas * PAGE_SIZE) -
+					(ppa_off * PAGE_SIZE) - page_off;
+		}
 
 		assert(left_bytes <= left_pages * PAGE_SIZE);
 
@@ -501,7 +509,7 @@ size_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
 		memcpy(writer, reader + page_off, valid_bytes);
 		writer += valid_bytes;
 
-		reader += read_pages;
+		reader = read_buf;
 
 		block_off++;
 		ppa_off = 0;
@@ -510,6 +518,8 @@ size_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
 
 		left_pages -= read_pages;
 		left_bytes -= valid_bytes;
+
+		pages_to_read = (nppas > left_pages) ? left_pages : nppas;
 	}
 
 	/* TODO: Optional - Flag for aligned memory */
