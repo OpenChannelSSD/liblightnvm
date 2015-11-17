@@ -17,8 +17,8 @@ dflash_test: $(OBJ)
 lib_test: $(LIBOBJ)
 	gcc -o $@ $^ $(CFLAGS) -llightnvm -lpthread
 
+check: dflash_test lib_test
+	sh runtests.sh
+
 clean:
 	rm -f *.o dflash_test lib_test
-
-check:
-	dflash_test lib_test

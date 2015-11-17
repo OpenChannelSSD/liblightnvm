@@ -3,9 +3,6 @@
 
 #include <stdio.h>
 
-/* TODO: Add to Makefile */
-#define LNVM_DEBUG_ENABLED
-
 #define LNVM_ASSERT(c, x, ...) if(!(c)){printf("%s:%s - %d %s" x "\n", \
 		__FILE__, __FUNCTION__, __LINE__, strerror(errno), \
 		##__VA_ARGS__); fflush(stdout); exit(EXIT_FAILURE); }

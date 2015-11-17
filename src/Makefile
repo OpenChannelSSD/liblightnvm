@@ -9,6 +9,8 @@ L_CFLAGS=$(CFLAGS)
 LINK_FLAGS=
 LINK_FLAGS+=$(LDFLAGS)
 
+DEBUG_FLAGS=-DLNVM_DEBUG_ENABLED
+
 soname=liblightnvm.so.1
 minor=0
 micro=0
@@ -50,6 +52,9 @@ install: $(all_targets)
 
 install_local:
 	install -D -m 644 ioctl.h $(includedir)/linux/lightnvm.h
+
+debug: install
+debug: SO_CFLAGS += $(DEBUG_FLAGS)
 
 $(liblightnvm_objs): liblightnvm.h
 

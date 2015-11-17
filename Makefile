@@ -15,10 +15,14 @@ install:
 install_local:
 	@$(MAKE) -C src install_local prefix=$(prefix) includedir=$(includedir) libdir=$(libdir)
 
-test:
+debug:
+	@$(MAKE) -C src debug prefix=$(prefix) includedir=$(includedir) libdir=$(libdir)
 	@$(MAKE) -C tests
 	ln -sf tests/lib_test .
 	ln -sf tests/dflash_test .
+
+tests_check:
+	@$(MAKE) -C tests check
 
 tags:
 	ctags * -R
@@ -28,3 +32,5 @@ clean:
 	@$(MAKE) -C src clean
 	@$(MAKE) -C tests clean
 	rm -rf lib_test dflash_test
+
+check: clean install tests_check
