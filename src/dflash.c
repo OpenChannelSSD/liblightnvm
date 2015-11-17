@@ -28,6 +28,7 @@
 #include <assert.h>
 #include <liblightnvm.h>
 
+#include "likely.h"
 #include "flash_file.h"
 
 static struct atomic_guid dflash_guid = {
