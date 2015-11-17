@@ -94,24 +94,26 @@ static int switch_block(struct dflash_file **f)
 	size_t buf_size;
 	int ret;
 
-	(*f)->w_buffer.cursize = 0;
-	(*f)->w_buffer.cursync = 0;
-
 	/* Write buffer for small writes */
 	buf_size = get_npages_block((*f)->tgt, (*f)->stream_id) * PAGE_SIZE;
 	if (buf_size != (*f)->w_buffer.buf_limit) {
+		LNVM_DEBUG("Allocating new write buffer of size %lu\n",
+								buf_size);
 		free((*f)->w_buffer.buf);
 		ret = posix_memalign(&(*f)->w_buffer.buf, PAGE_SIZE, buf_size);
 		if (ret) {
-			LNVM_DEBUG("Cannot allocate memoryi "
+			LNVM_DEBUG("Cannot allocate memory "
 					" (%lu bytes - align. %d)\n",
 				buf_size, PAGE_SIZE);
 			return ret;
 		}
 		(*f)->w_buffer.buf_limit = buf_size;
-		(*f)->w_buffer.mem = (*f)->w_buffer.buf;
-		(*f)->w_buffer.sync = (*f)->w_buffer.buf;
 	}
+
+	(*f)->w_buffer.mem = (*f)->w_buffer.buf;
+	(*f)->w_buffer.sync = (*f)->w_buffer.buf;
+	(*f)->w_buffer.cursize = 0;
+	(*f)->w_buffer.cursync = 0;
 
 	(*f)->current_w_vblock = &(*f)->vblocks[(*f)->nvblocks - 1];
 
@@ -366,7 +368,7 @@ size_t nvm_file_append(int fd, const void *buf, size_t count)
 	struct dflash_fdentry *fd_entry;
 	struct dflash_file *f;
 	size_t offset = 0;
-	size_t appended;
+	size_t left = count;
 	char *cache;
 	int ret;
 
@@ -387,7 +389,13 @@ size_t nvm_file_append(int fd, const void *buf, size_t count)
 				f->w_buffer.cursync,
 				f->w_buffer.buf_limit);
 
-	if (f->w_buffer.cursize + count > f->w_buffer.buf_limit) {
+	while (f->w_buffer.cursize + left > f->w_buffer.buf_limit) {
+		LNVM_DEBUG("Block overflow. Csize:%lu, Csync:%lu, BL:%lu "
+				"left:%lu\n",
+				f->w_buffer.cursize,
+				f->w_buffer.cursync,
+				f->w_buffer.buf_limit,
+				left);
 		size_t fits_buf = f->w_buffer.buf_limit - f->w_buffer.cursize;
 		ret = preallocate_block(f);
 		if (ret)
@@ -400,14 +408,18 @@ size_t nvm_file_append(int fd, const void *buf, size_t count)
 			return -ENOSPC;
 		}
 		switch_block(&f);
-		offset = fits_buf;
-	}
-	appended = count - offset;
-	memcpy(cache, buf + offset, appended);
-	cache += appended;
-	f->w_buffer.cursize += appended;
+		cache = f->w_buffer.mem; /* Update cache pointer */
 
-	return appended;
+		left -= fits_buf;
+		offset += fits_buf;
+	}
+
+	cache = f->w_buffer.mem; /* Update cache pointer */
+	memcpy(cache, buf + offset, left);
+	cache += left;
+	f->w_buffer.cursize += left;
+
+	return count;
 }
 
 int nvm_file_sync(int fd)
