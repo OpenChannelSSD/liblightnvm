@@ -426,8 +426,10 @@ size_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
 	size_t ppa_count;
 	size_t nppas;
 	size_t left_bytes = count;
+	/* TODO: Improve this calculations */
 	size_t left_pages = count / PAGE_SIZE +
-					(((count % PAGE_SIZE) > 0) ? 1 : 0);
+		((((count) % PAGE_SIZE) > 0) ? 1 : 0) +
+		(((offset / PAGE_SIZE) != (count + offset) / PAGE_SIZE) ? 1 : 0);
 	size_t valid_bytes;
 	uint16_t read_pages;
 	/* char *cache; // Used when trying write cache for reads*/
