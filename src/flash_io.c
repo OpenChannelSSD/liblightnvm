@@ -88,12 +88,18 @@ int flash_read(int tgt, struct vblock *vblock, void *buf, size_t ppa_off,
 
 	assert(count <= nppas - ppa_off);
 
+	LNVM_DEBUG("Read %lu pages from block %lu (tgt:%d)",
+					count, vblock->id, tgt);
+
 	/* For now we use pread. We will have different IO backends */
 	while (left > 0) {
 		pages_per_read = (left > max_pages_read) ?
 						max_pages_read : left;
 		bytes_per_read = pages_per_read * PAGE_SIZE;
 
+		/* LNVM_DEBUG("Read %lu bytes (%d pages) - blk:%lu, ppa:%lu\n", */
+				/* bytes_per_read, pages_per_read, vblock->id, */
+				/* current_ppa); */
 retry:
 		read = pread(tgt, reader, bytes_per_read,
 					current_ppa * PAGE_SIZE);
@@ -107,9 +113,6 @@ retry:
 		current_ppa += pages_per_read;
 		left -= pages_per_read;
 	}
-
-	LNVM_DEBUG("Read %lu pages from block %lu (tgt:%d)",
-					count, vblock->id, tgt);
 
 	return count;
 }

@@ -446,8 +446,8 @@ size_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
 	f = fd_entry->dfile;
 	/* cache = f->w_buffer.mem; */
 
-	LNVM_DEBUG("Read %lu bytes from file %lu (p:%p, fd:%d). Off:%lu\n",
-			count,
+	LNVM_DEBUG("Read %lu bytes (pgs:%lu) from file %lu (p:%p, fd:%d). Off:%lu\n",
+			count, left_pages,
 			f->gid, f,
 			fd,
 			offset);
