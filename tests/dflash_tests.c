@@ -126,16 +126,6 @@ static void file_close_ungrac(CuTest *ct)
 	remove_tgt(ct);
 }
 
-static void init_data_test(char *buf, int len)
-{
-	int i;
-	char payload = 'a';
-
-	for (i = 0; i < len; i++) {
-		buf[i] = (payload + i) % 28;
-	}
-}
-
 /*
  * Append and read back from file.
  *	- Append: payload < PAGE_SIZE
@@ -179,21 +169,25 @@ static void file_ar1(CuTest *ct)
 	remove_tgt(ct);
 }
 
-/*
- * Append and read back from file.
- *	- Append: PAGE_SIZE < payload < BLOCK_SIZE
- *	- Read: All, 1000 byte chunks, 1 byte chunks
- *	- open - append - close - open - read - close
- */
-static void file_ar2(CuTest *ct)
+static void init_data_test(char *buf, int len)
+{
+	int i;
+	char payload = 'a';
+
+	for (i = 0; i < len; i++) {
+		buf[i] = (payload + i) % 28;
+	}
+}
+
+#define FILE_AR_ALL 1
+#define FILE_AR_1K_BYTES 2
+#define FILE_AR_1_BYTE 4
+static void file_ar_generic(CuTest *ct, char *src, char *dst, size_t len,
+								int flags)
 {
 	size_t written, read;
-	char test[5000];
-	char test2[5000];
 	int tgt_id, fd;
-	int i;
-
-	init_data_test(test, 5000);
+	size_t i;
 
 	create_tgt(ct);
 	tgt_id = nvm_target_open("test1", 0);
@@ -205,45 +199,97 @@ static void file_ar2(CuTest *ct)
 	fd = nvm_file_open(file_id, 0);
 	CuAssertTrue(ct, fd > 0);
 
-	written = nvm_file_append(fd, test, 5000);
-	CuAssertIntEquals(ct, 5000, written);
+	written = nvm_file_append(fd, src, len);
+	CuAssertIntEquals(ct, len, written);
 
 	nvm_file_close(fd, 0);
 
 	fd = nvm_file_open(file_id, 0);
 	CuAssertTrue(ct, fd > 0);
 
-	read = nvm_file_read(fd, test2, written, 0, 0);
+	read = nvm_file_read(fd, dst, written, 0, 0);
 	CuAssertIntEquals(ct, written, read);
 
-	CuAssertByteArrayEquals(ct, test, test2, 5000, 5000);
+	CuAssertByteArrayEquals(ct, src, dst, len, len);
 
-	/* read in chunks */
-	memset(test2, 0, 5000);
+	if (flags & FILE_AR_1K_BYTES) {
+		/* read in 1000 byte chunks */
+		memset(dst, 0, len);
 
-	for (i = 0; i < 5000; i++) {
-		read = nvm_file_read(fd, test2 + i, 1, i, 0);
-		CuAssertIntEquals(ct, 1, read);
+		for (i = 0; i < len / 1000; i++) {
+			int offset = i * 1000;
+			read = nvm_file_read(fd, dst + offset, 1000, offset, 0);
+			CuAssertIntEquals(ct, 1000, read);
+		}
+
+		CuAssertByteArrayEquals(ct, src, dst, len, len);
 	}
 
-	CuAssertByteArrayEquals(ct, test, test2, 5000, 5000);
+	if (flags & FILE_AR_1_BYTE) {
+		/* read in 1 byte chunks */
+		memset(dst, 0, len);
 
-	/* read in chunks */
-	memset(test2, 0, 5000);
+		for (i = 0; i < len; i++) {
+			read = nvm_file_read(fd, dst+ i, 1, i, 0);
+			CuAssertIntEquals(ct, 1, read);
+		}
 
-	for (i = 0; i < 5; i++) {
-		int offset = i * 1000;
-		read = nvm_file_read(fd, test2 + offset, 1000, offset, 0);
-		CuAssertIntEquals(ct, 1000, read);
+		CuAssertByteArrayEquals(ct, src, dst, len, len);
 	}
-
-	CuAssertByteArrayEquals(ct, test, test2, 5000, 5000);
 
 	nvm_file_close(fd, 0);
 	nvm_file_delete(file_id, 0);
 	nvm_target_close(tgt_id);
 
 	remove_tgt(ct);
+}
+
+/*
+ * Append and read back from file.
+ *	- Append: PAGE_SIZE < payload < BLOCK_SIZE
+ *	- Read: All, 1000 byte chunks, 1 byte chunks
+ *	- open - append - close - open - read - close
+ */
+static void file_ar2(CuTest *ct)
+{
+	char test[5000];
+	char test2[5000];
+	int flags = FILE_AR_ALL | FILE_AR_1K_BYTES | FILE_AR_1_BYTE;
+
+	init_data_test(test, 5000);
+	file_ar_generic(ct, test, test2, 5000, flags);
+}
+
+/*
+ * Append and read back from file.
+ *	- Append: payload is multiple pages in same block
+ *	- Read: All, 1000 byte chunks, 1 byte chunks
+ *	- open - append - close - open - read - close
+ */
+static void file_ar3(CuTest *ct)
+{
+	char test[50000];
+	char test2[50000];
+	int flags = FILE_AR_ALL | FILE_AR_1K_BYTES | FILE_AR_1_BYTE;
+
+	init_data_test(test, 50000);
+	file_ar_generic(ct, test, test2, 50000, flags);
+}
+
+/*
+ * Append and read back from file.
+ *	- Append: payload > BLOCK_SIZE
+ *	- Read: All, 1000 byte chunks, 1 byte chunks
+ *	- open - append - close - open - read - close
+ */
+static void file_ar4(CuTest *ct)
+{
+	char test[500 * 4096];
+	char test2[500 * 4096];
+	int flags = FILE_AR_ALL | FILE_AR_1K_BYTES;
+
+	init_data_test(test, 500 * 4096);
+	file_ar_generic(ct, test, test2, 500 * 4096, flags);
 }
 
 static void fini_lib(CuTest *ct)
@@ -262,6 +308,8 @@ CuSuite *dflash_GetSuite()
 	SUITE_ADD_TEST(per_test_suite, file_close_ungrac);
 	SUITE_ADD_TEST(per_test_suite, file_ar1);
 	SUITE_ADD_TEST(per_test_suite, file_ar2);
+	SUITE_ADD_TEST(per_test_suite, file_ar3);
+	SUITE_ADD_TEST(per_test_suite, file_ar4);
 	SUITE_ADD_TEST(per_test_suite, fini_lib);
 }
 
