@@ -100,6 +100,20 @@ struct nvm_ioctl_remove {
 	__u32 flags;
 };
 
+struct nvm_ioctl_beams {
+	__u32 nr_beams;
+};
+
+struct nvm_ioctl_vblock_prop {
+	// TODO
+};
+
+struct nvm_ioctl_dev_prop {
+	char dev[DISK_NAME_LEN];
+	__u32 page_size;
+	__u32 max_io_size;
+};
+
 struct nvm_ioctl_vblock {
 	__u64 id;
 	__u64 bppa;
@@ -117,18 +131,21 @@ enum {
 	NVM_GET_DEVICES_CMD,
 
 	/* device level cmds */
-	NVM_DEV_CREATE_CMD,
-	NVM_DEV_REMOVE_CMD,
-	NVM_DEV_PAGE_SIZE_CMD,
-	NVM_DEV_MAX_SEC_SIZE_CMD,
-	NVM_DEV_NBLOCKS_LUN_CMD,
-	NVM_DEV_NPAGES_BLOCK_CMD,
-	NVM_DEV_NFREE_BLOCKS_CMD,
+	NVM_DEV_CREATE_TGT_CMD,
+	NVM_DEV_REMOVE_TGT_CMD,
+	NVM_DEV_GET_PROP_CMD,
+
+	/* target level cmds */
+	NVM_TGT_GET_BEAMS_CMD, //todo
+
+	/* beam level cmds */
+	NVM_BEAM_GET_BLK_PROP_CMD, /* TODO: Describe beam to application (QoS) */
 
 	/* provisioning cmds */
 	NVM_PR_GET_BLOCK_CMD,
+	NVM_PR_GET_BLOCK_INFO_CMD,
+	NVM_PR_GET_BLOCK_META_CMD, /* TODO: Depends on mmedia manager recovery */
 	NVM_PR_PUT_BLOCK_CMD,
-	NVM_PR_GET_BLOCK_META_CMD,
 };
 
 #define NVM_IOCTL 'L' /* 0x4c */
@@ -137,25 +154,21 @@ enum {
 						struct nvm_ioctl_info)
 #define NVM_GET_DEVICES		_IOR(NVM_IOCTL, NVM_GET_DEVICES_CMD, \
 						struct nvm_ioctl_get_devices)
-#define NVM_DEV_CREATE		_IOW(NVM_IOCTL, NVM_DEV_CREATE_CMD, \
+#define NVM_DEV_CREATE_TGT	_IOW(NVM_IOCTL, NVM_DEV_CREATE_TGT_CMD, \
 						struct nvm_ioctl_create)
-#define NVM_DEV_REMOVE		_IOW(NVM_IOCTL, NVM_DEV_REMOVE_CMD, \
+#define NVM_DEV_REMOVE_TGT	_IOW(NVM_IOCTL, NVM_DEV_REMOVE_TGT_CMD, \
 						struct nvm_ioctl_remove)
-#define NVM_DEV_PAGE_SIZE	_IOR(NVM_IOCTL, NVM_DEV_PAGE_SIZE_CMD, \
-						__u32)
-#define NVM_DEV_MAX_SEC		_IOR(NVM_IOCTL, NVM_DEV_MAX_SEC_SIZE_CMD, \
-						__u32)
-#define NVM_DEV_NPAGES_BLOCK	_IOWR(NVM_IOCTL, NVM_DEV_NPAGES_BLOCK_CMD, \
-						__u32)
-#define NVM_DEV_NFREE_BLOCKS	_IOWR(NVM_IOCTL, NVM_DEV_NFREE_BLOCKS_CMD, \
-						__u32)
-#define NVM_DEV_NBLOCKS_LUN	_IOR(NVM_IOCTL, NVM_DEV_NBLOCKS_LUN_CMD, \
-						__u32)
+#define NVM_DEV_GET_PROP	_IOR(NVM_IOCTL, NVM_DEV_GET_PROP_CMD, \
+						struct nvm_ioctl_beams)
+#define NVM_TGT_GET_BEAMS	_IOR(NVM_IOCTL, NVM_TGT_GET_BEAMS_CMD, \
+						struct nvm_ioctl_beams)
+#define NVM_BEAM_GET_BLK_PROP	_IOR(NVM_IOCTL, NVM_BEAM_GET_BLK_PROP_CMD, \
+						struct nvm_ioctl_vblock_prop)
 #define NVM_PR_GET_BLOCK	_IOWR(NVM_IOCTL, NVM_PR_GET_BLOCK_CMD, \
 						struct nvm_ioctl_vblock)
-#define NVM_PR_PUT_BLOCK	_IOWR(NVM_IOCTL, NVM_PR_PUT_BLOCK_CMD, \
+#define NVM_PR_GET_BLOCK_INFO	_IOWR(NVM_IOCTL, NVM_PR_GET_BLOCK_INFO_CMD, \
 						struct nvm_ioctl_vblock)
-#define NVM_PR_GET_BLOCK_META	_IOWR(NVM_IOCTL, NVM_PR_GET_BLOCK_META_CMD, \
+#define NVM_PR_PUT_BLOCK	_IOWR(NVM_IOCTL, NVM_PR_PUT_BLOCK_CMD, \
 						struct nvm_ioctl_vblock)
 
 #define NVM_VERSION_MAJOR	1
