@@ -33,15 +33,18 @@ struct vblock {
 	uint16_t flags;
 };
 
+static inline int get_npages_block(struct vblock *vblock)
+{
+	return vblock->nppas;
+}
+
+
 /* provisioning */
 int get_block(int tgt, uint32_t stream_id, struct vblock *vblock);
 // int get_block(int tgt, uint32_t stream_id, void *meta, uint16_t meta_size,
 							// struct vblock *vblock);
 int get_block_meta(int tgt, uint64_t vblock_id, struct vblock *vblock);
 int put_block(int tgt, struct vblock *vblock);
-
-/* helper functions */
-size_t get_npages_block(int tgt, uint32_t stream_id);
 
 #endif
 

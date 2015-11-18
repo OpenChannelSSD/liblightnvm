@@ -95,7 +95,8 @@ static int switch_block(struct dflash_file **f)
 	int ret;
 
 	/* Write buffer for small writes */
-	buf_size = get_npages_block((*f)->tgt, (*f)->stream_id) * PAGE_SIZE;
+	buf_size = get_npages_block(&(*f)->vblocks[(*f)->nvblocks] - 1) *
+								PAGE_SIZE;
 	if (buf_size != (*f)->w_buffer.buf_limit) {
 		LNVM_DEBUG("Allocating new write buffer of size %lu\n",
 								buf_size);
@@ -466,10 +467,10 @@ size_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
 			fd,
 			offset);
 
-	/* Assume all pages forming a flash file come from same stream */
-	nppas = get_npages_block(f->tgt, f->stream_id);
-	ppa_count = offset / PAGE_SIZE;
+	/* Assume that all blocks forming the file have same size */
+	nppas = get_npages_block(&f->vblocks[0]);
 
+	ppa_count = offset / PAGE_SIZE;
 	block_off = ppa_count/ nppas;
 	ppa_off = ppa_count % nppas;
 	page_off = offset % PAGE_SIZE;

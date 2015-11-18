@@ -81,24 +81,3 @@ out:
 	return ret;
 }
 
-/* TODO: Calculate it based on the stream the file is attached to. This should
- * be done on init, when creating a target, and should live in memory */
-size_t get_npages_block(int tgt, uint32_t stream_id)
-{
-	int ret = 0;
-	uint32_t npages = stream_id; /* TODO: Share a structure */
-
-	ret = ioctl(tgt, NVM_DEV_NPAGES_BLOCK, &npages);
-	if (ret) {
-		LNVM_DEBUG("Could not get number of pages/block in stream %d\n",
-				stream_id);
-		goto out;
-	}
-
-	LNVM_DEBUG("Num. pages for blocks in stream %d: %d\n",
-			stream_id, npages);
-	ret = npages;
-out:
-	return ret;
-}
-
