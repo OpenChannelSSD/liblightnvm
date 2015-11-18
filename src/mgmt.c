@@ -57,3 +57,8 @@ int nvm_remove_target(struct nvm_ioctl_remove *u)
 {
 	return nvm_execute_ioctl(NVM_DEV_REMOVE_TGT, u);
 }
+
+int nvm_get_dev_properties(struct nvm_ioctl_dev_prop *u)
+{
+	return nvm_execute_ioctl(NVM_DEV_GET_PROP, u);
+}
