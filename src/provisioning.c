@@ -50,7 +50,7 @@ int get_block_meta(int tgt, uint64_t vblock_id, struct vblock *vblock)
 
 	vblock->id = vblock_id;
 
-	ret = ioctl(tgt, NVM_PR_GET_BLOCK_META, vblock);
+	ret = ioctl(tgt, NVM_PR_GET_BLOCK_INFO, vblock);
 	if (ret) {
 		LNVM_DEBUG("Could not get metadata for block %lu\n", vblock_id);
 		goto out;

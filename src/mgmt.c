@@ -50,10 +50,10 @@ int nvm_get_devices(struct nvm_ioctl_get_devices *u)
 
 int nvm_create_target(struct nvm_ioctl_create *u)
 {
-	return nvm_execute_ioctl(NVM_DEV_CREATE, u);
+	return nvm_execute_ioctl(NVM_DEV_CREATE_TGT, u);
 }
 
 int nvm_remove_target(struct nvm_ioctl_remove *u)
 {
-	return nvm_execute_ioctl(NVM_DEV_REMOVE, u);
+	return nvm_execute_ioctl(NVM_DEV_REMOVE_TGT, u);
 }
