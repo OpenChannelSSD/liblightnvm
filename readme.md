@@ -63,12 +63,14 @@ A storage backend for RocksDB using liblightnvm will follow soon [5]
 To know more about Open-Channel SSDs and the software ecosystem around
 them please see [6].
 
-[1] https://github.com/OpenChannelSSD/linux/tree/liblnvm
-[2] http://openchannelssd.readthedocs.org/en/latest/gettingstarted/#configure-qemu
-[3] https://github.com/OpenChannelSSD/qemu-nvme
-[4] https://github.com/OpenChannelSSD/lightnvm-hw
-[5] https://github.com/OpenChannelSSD/rocksdb
-[6] http://openchannelssd.readthedocs.org/en/latest/
+[1] https://github.com/OpenChannelSSD/linux/tree/liblnvm <br />
+[2]
+http://openchannelssd.readthedocs.org/en/latest/gettingstarted/#configure-qemu
+<br />
+[3] https://github.com/OpenChannelSSD/qemu-nvme <br />
+[4] https://github.com/OpenChannelSSD/lightnvm-hw <br />
+[5] https://github.com/OpenChannelSSD/rocksdb <br />
+[6] http://openchannelssd.readthedocs.org/en/latest/ <br />
 
 ## Contact and Contributions
 
