@@ -36,10 +36,17 @@
 
 #define NVM_CTRL_FILE "/dev/lightnvm/control"
 
-struct nvm_ioctl_info_tgt {
+struct nvm_ioctl_target {
+	char dev[DISK_NAME_LEN];		/* open-channel SSD device */
+	char tgttype[NVM_TTYPE_NAME_MAX];	/* target type name */
+	char tgtname[DISK_NAME_LEN];		/* dev to expose target as */
+};
+
+struct nvm_ioctl_tgt_info {
 	__u32 version[3];
 	__u32 reserved;
-	char tgtname[NVM_TTYPE_NAME_MAX];
+
+	struct nvm_ioctl_target target;
 };
 
 struct nvm_ioctl_info {
@@ -47,7 +54,7 @@ struct nvm_ioctl_info {
 	__u16 tgtsize;		/* number of targets */
 	__u16 reserved16;	/* pad to 4K page */
 	__u32 reserved[12];
-	struct nvm_ioctl_info_tgt tgts[NVM_TTYPE_MAX];
+	struct nvm_ioctl_tgt_info tgts[NVM_TTYPE_MAX];
 };
 
 enum {
@@ -84,17 +91,15 @@ struct nvm_ioctl_create_conf {
 	};
 };
 
-struct nvm_ioctl_create {
-	char dev[DISK_NAME_LEN];		/* open-channel SSD device */
-	char tgttype[NVM_TTYPE_NAME_MAX];	/* target type name */
-	char tgtname[DISK_NAME_LEN];		/* dev to expose target as */
+struct nvm_ioctl_tgt_create {
+	struct nvm_ioctl_target target;
 
 	__u32 flags;
 
 	struct nvm_ioctl_create_conf conf;
 };
 
-struct nvm_ioctl_remove {
+struct nvm_ioctl_tgt_remove {
 	char tgtname[DISK_NAME_LEN];
 
 	__u32 flags;
@@ -137,6 +142,7 @@ enum {
 
 	/* target level cmds */
 	NVM_TGT_GET_BEAMS_CMD, //todo
+	NVM_TGT_GET_DEV_CMD, //todo
 
 	/* beam level cmds */
 	NVM_BEAM_GET_BLK_PROP_CMD, /* TODO: Describe beam to application (QoS) */
@@ -155,13 +161,15 @@ enum {
 #define NVM_GET_DEVICES		_IOR(NVM_IOCTL, NVM_GET_DEVICES_CMD, \
 						struct nvm_ioctl_get_devices)
 #define NVM_DEV_CREATE_TGT	_IOW(NVM_IOCTL, NVM_DEV_CREATE_TGT_CMD, \
-						struct nvm_ioctl_create)
+						struct nvm_ioctl_tgt_create)
 #define NVM_DEV_REMOVE_TGT	_IOW(NVM_IOCTL, NVM_DEV_REMOVE_TGT_CMD, \
-						struct nvm_ioctl_remove)
+						struct nvm_ioctl_tgt_remove)
 #define NVM_DEV_GET_PROP	_IOR(NVM_IOCTL, NVM_DEV_GET_PROP_CMD, \
-						struct nvm_ioctl_beams)
+						struct nvm_ioctl_dev_prop)
 #define NVM_TGT_GET_BEAMS	_IOR(NVM_IOCTL, NVM_TGT_GET_BEAMS_CMD, \
 						struct nvm_ioctl_beams)
+#define NVM_TGT_GET_DEV		_IOW(NVM_IOCTL, NVM_TGT_GET_DEV_CMD, \
+						struct nvm_ioctl_tgt_info)
 #define NVM_BEAM_GET_BLK_PROP	_IOR(NVM_IOCTL, NVM_BEAM_GET_BLK_PROP_CMD, \
 						struct nvm_ioctl_vblock_prop)
 #define NVM_PR_GET_BLOCK	_IOWR(NVM_IOCTL, NVM_PR_GET_BLOCK_CMD, \
