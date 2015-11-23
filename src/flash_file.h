@@ -43,9 +43,10 @@
 #define FORCE_SYNC 1
 #define OPTIONAL_SYNC 2
 
-struct atomic_guid {
-	uint64_t guid;
-	pthread_spinlock_t lock;
+struct lnvm_target {
+	struct nvm_ioctl_target target;
+
+	UT_hash_handle hh;			/* hash handle for uthash */
 };
 
 struct w_buffer {
@@ -81,6 +82,11 @@ struct dflash_fdentry {
 	uint64_t fd;			/* File descriptor */
 	struct dflash_file *dfile;	/* DFlash file associate with the fd */
 	UT_hash_handle hh;		/* hash handle for uthash */
+};
+
+struct atomic_guid {
+	uint64_t guid;
+	pthread_spinlock_t lock;
 };
 
 static inline void atomic_assign_inc_id(struct atomic_guid *cnt, uint64_t *id)
