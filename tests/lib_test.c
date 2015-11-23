@@ -35,11 +35,11 @@ static void list_info(CuTest *ct)
 			c.version[0], c.version[1], c.version[2], c.tgtsize);
 
 	for (i = 0; i < c.tgtsize; i++) {
-		struct nvm_ioctl_info_tgt *tgt = &c.tgts[i];
+		struct nvm_ioctl_tgt_info *tgt = &c.tgts[i];
 
 		printf("  Type: %s (%u, %u, %u)\n",
-				tgt->tgtname, tgt->version[0], tgt->version[1],
-				tgt->version[2]);
+				tgt->target.tgtname, tgt->version[0],
+				tgt->version[1], tgt->version[2]);
 	}
 }
 
@@ -58,9 +58,9 @@ static void get_devices(CuTest *ct)
 	printf(" nr_devices: %u\n", devs.nr_devices);
 
 	for (i = 0; i < devs.nr_devices && i < 31; i++) {
-		struct nvm_ioctl_device_info *info = &devs.info[i];
+		struct nvm_ioctl_dev_info *info = &devs.info[i];
 
-		printf("  %s: %s (%u, %u, %u)\n", info->devname, info->bmname,
+		printf("  %s: %s (%u, %u, %u)\n", info->dev, info->bmname,
 				info->bmversion[0], info->bmversion[1],
 				info->bmversion[2]);
 	}
@@ -68,12 +68,12 @@ static void get_devices(CuTest *ct)
 
 static void create_tgt(CuTest *ct)
 {
-	struct nvm_ioctl_create c;
+	struct nvm_ioctl_tgt_create c;
 	int ret;
 
-	sprintf(c.dev, "nulln0");
-	sprintf(c.tgttype, "rrpc");
-	sprintf(c.tgtname, "test");
+	sprintf(c.target.dev, "nulln0");
+	sprintf(c.target.tgttype, "rrpc");
+	sprintf(c.target.tgtname, "test");
 	c.flags = 0;
 	c.conf.type = 0;
 	c.conf.s.lun_begin = 0;
@@ -86,7 +86,7 @@ static void create_tgt(CuTest *ct)
 
 static void remove_tgt(CuTest *ct)
 {
-	struct nvm_ioctl_remove c;
+	struct nvm_ioctl_tgt_remove c;
 	int ret;
 
 	sprintf(c.tgtname, "test");
@@ -97,8 +97,8 @@ static void remove_tgt(CuTest *ct)
 	CuAssertTrue(ct, ret == 0);
 }
 
-static void create_remove_tgt(CuTest *ct, struct nvm_ioctl_create *c,
-				struct nvm_ioctl_remove *r)
+static void create_remove_tgt(CuTest *ct, struct nvm_ioctl_tgt_create *c,
+				struct nvm_ioctl_tgt_remove *r)
 {
 	int i, retries = 10;
 	int ret;
@@ -114,13 +114,13 @@ static void create_remove_tgt(CuTest *ct, struct nvm_ioctl_create *c,
 
 static void create_remove_all_tgts(CuTest *ct)
 {
-	struct nvm_ioctl_create c;
-	struct nvm_ioctl_remove r;
+	struct nvm_ioctl_tgt_create c;
+	struct nvm_ioctl_tgt_remove r;
 
 	printf("Testing device: nvme, target: rrpc\n");
-	sprintf(c.dev, "nvme0n1");
-	sprintf(c.tgttype, "rrpc");
-	sprintf(c.tgtname, "test");
+	sprintf(c.target.dev, "nvme0n1");
+	sprintf(c.target.tgttype, "rrpc");
+	sprintf(c.target.tgtname, "test");
 	c.flags = 0;
 	c.conf.type = 0;
 	c.conf.s.lun_begin = 0;
@@ -132,9 +132,9 @@ static void create_remove_all_tgts(CuTest *ct)
 	create_remove_tgt(ct, &c, &r);
 
 	printf("Testing device: dflash, target: dflash\n");
-	sprintf(c.dev, "nvme0n1");
-	sprintf(c.tgttype, "dflash");
-	sprintf(c.tgtname, "test");
+	sprintf(c.target.dev, "nvme0n1");
+	sprintf(c.target.tgttype, "dflash");
+	sprintf(c.target.tgtname, "test");
 	c.flags = 0;
 	c.conf.type = 0;
 	c.conf.s.lun_begin = 0;
@@ -146,9 +146,9 @@ static void create_remove_all_tgts(CuTest *ct)
 	create_remove_tgt(ct, &c, &r);
 
 	printf("Testing device: nulln0, target: rrpc\n");
-	sprintf(c.dev, "nulln0");
-	sprintf(c.tgttype, "rrpc");
-	sprintf(c.tgtname, "test");
+	sprintf(c.target.dev, "nulln0");
+	sprintf(c.target.tgttype, "rrpc");
+	sprintf(c.target.tgtname, "test");
 	c.flags = 0;
 	c.conf.type = 0;
 	c.conf.s.lun_begin = 0;
@@ -160,9 +160,9 @@ static void create_remove_all_tgts(CuTest *ct)
 	create_remove_tgt(ct, &c, &r);
 
 	printf("Testing device: dflash, target: dflash\n");
-	sprintf(c.dev, "nulln0");
-	sprintf(c.tgttype, "dflash");
-	sprintf(c.tgtname, "test");
+	sprintf(c.target.dev, "nulln0");
+	sprintf(c.target.tgttype, "dflash");
+	sprintf(c.target.tgtname, "test");
 	c.flags = 0;
 	c.conf.type = 0;
 	c.conf.s.lun_begin = 0;

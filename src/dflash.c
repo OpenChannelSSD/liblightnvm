@@ -282,12 +282,12 @@ static inline int get_dev_info(char *dev, struct lnvm_device *device)
 	struct nvm_ioctl_dev_info dev_info;
 	int ret = 0;
 
-	strncpy(dev_info.devname, dev, DISK_NAME_LEN);
+	strncpy(dev_info.dev, dev, DISK_NAME_LEN);
 	ret = nvm_get_device_info(&dev_info);
 	if (ret)
 		goto out;
 
-	strncpy(device->dev, dev_info.devname, DISK_NAME_LEN);
+	strncpy(device->dev, dev_info.dev, DISK_NAME_LEN);
 	device->page_size = dev_info.prop.page_size;
 	device->max_io_size = dev_info.prop.max_io_size;
 

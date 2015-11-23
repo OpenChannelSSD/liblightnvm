@@ -39,12 +39,12 @@ static void init_lib(CuTest *ct)
 
 static void create_tgt(CuTest *ct)
 {
-	struct nvm_ioctl_create c;
+	struct nvm_ioctl_tgt_create c;
 	int ret;
 
-	sprintf(c.dev, "nvme0n1");
-	sprintf(c.tgttype, "dflash");
-	sprintf(c.tgtname, "test1");
+	sprintf(c.target.dev, "nvme0n1");
+	sprintf(c.target.tgttype, "dflash");
+	sprintf(c.target.tgtname, "test1");
 	c.flags = 0;
 	c.conf.type = 0;
 	c.conf.s.lun_begin = 0;
@@ -57,7 +57,7 @@ static void create_tgt(CuTest *ct)
 
 static void remove_tgt(CuTest *ct)
 {
-	struct nvm_ioctl_remove r;
+	struct nvm_ioctl_tgt_remove r;
 	int ret;
 
 	sprintf(r.tgtname, "test1");
