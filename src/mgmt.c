@@ -48,17 +48,22 @@ int nvm_get_devices(struct nvm_ioctl_get_devices *u)
 	return nvm_execute_ioctl(NVM_GET_DEVICES, u);
 }
 
-int nvm_create_target(struct nvm_ioctl_create *u)
+int nvm_create_target(struct nvm_ioctl_tgt_create *u)
 {
 	return nvm_execute_ioctl(NVM_DEV_CREATE_TGT, u);
 }
 
-int nvm_remove_target(struct nvm_ioctl_remove *u)
+int nvm_remove_target(struct nvm_ioctl_tgt_remove *u)
 {
 	return nvm_execute_ioctl(NVM_DEV_REMOVE_TGT, u);
 }
 
-int nvm_get_dev_properties(struct nvm_ioctl_dev_prop *u)
+int nvm_get_device_info(struct nvm_ioctl_dev_info *u)
 {
-	return nvm_execute_ioctl(NVM_DEV_GET_PROP, u);
+	return nvm_execute_ioctl(NVM_DEV_GET_INFO, u);
+}
+
+int nvm_get_target_info(struct nvm_ioctl_tgt_info *u)
+{
+	return nvm_execute_ioctl(NVM_DEV_GET_INFO, u);
 }

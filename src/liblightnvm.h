@@ -34,8 +34,10 @@ extern "C" {
 /* mgmt.c */
 int nvm_get_info(struct nvm_ioctl_info *);
 int nvm_get_devices(struct nvm_ioctl_get_devices *);
-int nvm_create_target(struct nvm_ioctl_create *);
-int nvm_remove_target(struct nvm_ioctl_remove *);
+int nvm_create_target(struct nvm_ioctl_tgt_create *);
+int nvm_remove_target(struct nvm_ioctl_tgt_remove *);
+int nvm_get_device_info(struct nvm_ioctl_dev_info *);
+int nvm_get_target_info(struct nvm_ioctl_tgt_info *);
 
 /* core */
 int nvm_init();
