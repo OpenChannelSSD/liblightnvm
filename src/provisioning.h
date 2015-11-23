@@ -23,6 +23,9 @@
 
 #include <stdint.h>
 
+#include "ioctl.h"
+#include "../util/uthash.h"
+
 struct vblock {
 	uint64_t id;
 	uint64_t bppa;
@@ -37,7 +40,6 @@ static inline int get_npages_block(struct vblock *vblock)
 {
 	return vblock->nppas;
 }
-
 
 /* provisioning */
 int get_block(int tgt, uint32_t stream_id, struct vblock *vblock);
