@@ -52,9 +52,9 @@ that superuser privileges are required to install the library. Also, superuser
 privileges are required to execute the library sanity checks. This is because
 LightNVM target creation requires it.
 
-- $ sudo make install_local - Copy the necessary headers
-- $ sudo make install - Install liblightnvm
-- # sudo make check - Execute sanity checks
+- *$ sudo make install_local* - Copy the necessary headers
+- *$ sudo make install* - Install liblightnvm
+- *$ sudo make check* - Execute sanity checks
 
 Refer to tests/ to find example code.
 
