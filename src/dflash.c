@@ -39,6 +39,9 @@ static struct atomic_guid fd_guid = {
 	.guid = 0,
 };
 
+static struct lnvm_device *devt = NULL;
+static struct lnvm_target *tgtt = NULL;
+static struct lnvm_target_map *tgtmt = NULL;
 static struct dflash_file *dfilet = NULL;
 static struct dflash_fdentry *fdt = NULL;
 
@@ -247,23 +250,139 @@ static void target_clean(int tgt)
 	assert(HASH_COUNT(dfilet) == 0);
 }
 
+static inline int get_tgt_info(char *tgt, char *dev,
+						struct lnvm_target *target)
+{
+	struct nvm_ioctl_tgt_info tgt_info;
+	int ret = 0;
+
+	strncpy(tgt_info.target.dev, tgt, DISK_NAME_LEN);
+	ret = nvm_get_target_info(&tgt_info);
+	if (ret)
+		goto out;
+
+	target->version[0] = tgt_info.version[0];
+	target->version[1] = tgt_info.version[1];
+	target->version[2] = tgt_info.version[2];
+	target->reserved = tgt_info.reserved;
+	strncpy(target->tgtname, tgt_info.target.dev, DISK_NAME_LEN);
+	strncpy(target->tgttype, tgt_info.target.tgttype, NVM_TTYPE_NAME_MAX);
+	strncpy(dev, tgt_info.target.dev, DISK_NAME_LEN);
+
+	LNVM_DEBUG("Target cached: %s(t:%s, d:%s)\t(%u,%u,%u)\n",
+			target->tgtname, target->tgttype, dev,
+			target->version[0], target->version[1],
+			target->version[2]);
+out:
+	return ret;
+}
+
+static inline int get_dev_info(char *dev, struct lnvm_device *device)
+{
+	struct nvm_ioctl_dev_info dev_info;
+	int ret = 0;
+
+	strncpy(dev_info.devname, dev, DISK_NAME_LEN);
+	ret = nvm_get_device_info(&dev_info);
+	if (ret)
+		goto out;
+
+	strncpy(device->dev, dev_info.devname, DISK_NAME_LEN);
+	device->page_size = dev_info.prop.page_size;
+	device->max_io_size = dev_info.prop.max_io_size;
+
+	LNVM_DEBUG("Device cached: %s(page_size:%u, max_io_size:%u)\n",
+			device->dev, device->page_size, device->max_io_size);
+out:
+	return ret;
+}
+
 /*
  * liblightnvm flash API
  */
 
+/*TODO: Add which application opens tgt? */
 int nvm_target_open(const char *tgt, int flags)
 {
+	struct lnvm_device *dev_entry;
+	struct lnvm_target *tgt_entry;
+	struct lnvm_target_map *tgtm_entry;
 	char tgt_loc[NVM_TGT_NAME_MAX] = "/dev/";
+	char tgt_eol[DISK_NAME_LEN];
+	char dev[DISK_NAME_LEN];
 	int tgt_id;
+	uint8_t new_dev = 0, new_tgt = 0;
+	int ret = 0;
+
+	strncpy(tgt_eol, tgt, DISK_NAME_LEN);
+	tgt_eol[DISK_NAME_LEN - 1] = '\0';
+
+	HASH_FIND_STR(tgtt, tgt_eol, tgt_entry);
+	if (!tgt_entry) {
+		tgt_entry = malloc(sizeof(struct lnvm_target));
+		if (!tgt_entry)
+			return -ENOMEM;
+
+		ret = get_tgt_info(tgt_eol, dev, tgt_entry);
+		if (ret) {
+			LNVM_DEBUG("Could not get target information\n");
+			free(tgt_entry);
+			return ret;
+		}
+
+		dev[DISK_NAME_LEN - 1] = '\0';
+		HASH_FIND_STR(devt, dev, dev_entry);
+		if (!dev_entry) {
+
+			dev_entry = malloc(sizeof(struct lnvm_device));
+			if (!dev_entry) {
+				free(tgt_entry);
+				return -ENOMEM;
+			}
+
+			ret = get_dev_info(dev, dev_entry);
+			if (ret) {
+				LNVM_DEBUG("Could not get decive information\n");
+				free(dev_entry);
+				free(tgt_entry);
+				return ret;
+			}
+
+			HASH_ADD_STR(devt, dev, dev_entry);
+			new_dev = 1;
+		}
+
+		tgt_entry->dev = dev_entry;
+		HASH_ADD_STR(tgtt, tgtname, tgt_entry);
+		new_tgt = 1;
+	}
 
 	strcat(tgt_loc, tgt);
 	tgt_id = open(tgt_loc, O_RDWR | O_DIRECT);
 	if (tgt_id < 0) {
 		LNVM_DEBUG("Failed to open LightNVM target %s (%d)\n",
 				tgt_loc, tgt_id);
+		goto error;
 	}
 
+	tgtm_entry = malloc(sizeof(struct lnvm_target_map));
+	if (!tgtm_entry) {
+		ret = -ENOMEM;
+		goto error;
+	}
+
+	tgtm_entry->tgt = tgt_entry;
+	HASH_ADD_INT(tgtmt, tgt_id, tgtm_entry);
+
 	return tgt_id;
+
+error:
+	if (new_dev)
+		free(dev_entry);
+	if (new_tgt)
+		free(tgt_entry);
+
+	return ret;
 }
 
 void nvm_target_close(int tgt)

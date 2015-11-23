@@ -43,9 +43,25 @@
 #define FORCE_SYNC 1
 #define OPTIONAL_SYNC 2
 
-struct lnvm_target {
-	struct nvm_ioctl_target target;
+struct lnvm_device {
+	char dev[DISK_NAME_LEN];		/* open-channel SSD device */
+	uint32_t page_size;
+	uint32_t max_io_size;
+	UT_hash_handle hh;			/* hash handle for uthash */
+};
 
+struct lnvm_target {
+	uint32_t version[3];
+	uint32_t reserved;
+	char tgtname[DISK_NAME_LEN];		/* dev to expose target as */
+	char tgttype[NVM_TTYPE_NAME_MAX];	/* target type name */
+	struct lnvm_device *dev;
+	UT_hash_handle hh;			/* hash handle for uthash */
+};
+
+struct lnvm_target_map {
+	struct lnvm_target *tgt;
+	int tgt_id;
 	UT_hash_handle hh;			/* hash handle for uthash */
 };
 
