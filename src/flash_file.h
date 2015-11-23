@@ -35,7 +35,7 @@
  *	- Dynamic block list
  */
 
-#define NVM_TGT_NAME_MAX NVM_TTYPE_MAX + 5	/* 5 = strlen(/dev/) */
+#define NVM_TGT_NAME_MAX DISK_NAME_LEN + 5	/* 5 = strlen(/dev/) */
 
 #define MAX_BLOCKS 5
 #define PAGE_SIZE 4096
