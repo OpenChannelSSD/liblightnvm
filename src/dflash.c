@@ -185,7 +185,12 @@ static int file_sync(int fd, struct dflash_file *f, uint8_t flags)
 		}
 
 		if (disaligned_data > 0) {
-			/* TODO: Add padding */
+			/* Add padding to current page */
+			uint16_t padding = PAGE_SIZE - disaligned_data;
+			memset(f->w_buffer.mem, '\0', padding);
+			f->w_buffer.cursize += padding;
+			f->w_buffer.mem += padding;
+
 			npages++;
 		}
 	} else {
@@ -546,7 +551,6 @@ size_t nvm_file_append(int fd, const void *buf, size_t count)
 	struct dflash_file *f;
 	size_t offset = 0;
 	size_t left = count;
-	char *cache;
 	int ret;
 
 	HASH_FIND_INT(fdt, &fd, fd_entry);
@@ -555,7 +559,6 @@ size_t nvm_file_append(int fd, const void *buf, size_t count)
 		return -EINVAL;
 	}
 	f = fd_entry->dfile;
-	cache = f->w_buffer.mem;
 
 	LNVM_DEBUG("Append %lu bytes to file %lu (p:%p, fd:%d). Csize:%lu, "
 			"Csync:%lu, BL:%lu\n",
@@ -577,23 +580,21 @@ size_t nvm_file_append(int fd, const void *buf, size_t count)
 		ret = preallocate_block(f);
 		if (ret)
 			return ret;
-		memcpy(cache, buf, fits_buf);
-		cache += fits_buf;
+		memcpy(f->w_buffer.mem, buf, fits_buf);
+		f->w_buffer.mem += fits_buf;
 		f->w_buffer.cursize += fits_buf;
 		if (file_sync(fd, f, FORCE_SYNC)) {
 			LNVM_DEBUG("Cannot force sync for file %lu\n", f->gid);
 			return -ENOSPC;
 		}
 		switch_block(&f);
-		cache = f->w_buffer.mem; /* Update cache pointer */
 
 		left -= fits_buf;
 		offset += fits_buf;
 	}
 
-	cache = f->w_buffer.mem; /* Update cache pointer */
-	memcpy(cache, buf + offset, left);
-	cache += left;
+	memcpy(f->w_buffer.mem, buf + offset, left);
+	f->w_buffer.mem += left;
 	f->w_buffer.cursize += left;
 
 	return count;
