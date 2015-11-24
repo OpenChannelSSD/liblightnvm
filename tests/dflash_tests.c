@@ -169,9 +169,9 @@ static void file_ar1(CuTest *ct)
 	remove_tgt(ct);
 }
 
-static void init_data_test(char *buf, int len)
+static void init_data_test(char *buf, size_t len)
 {
-	int i;
+	size_t i;
 	char payload = 'a';
 
 	for (i = 0; i < len; i++) {
@@ -284,12 +284,13 @@ static void file_ar3(CuTest *ct)
  */
 static void file_ar4(CuTest *ct)
 {
-	char test[500 * 4096];
-	char test2[500 * 4096];
+	size_t test_size = 2000000;
+	char test[test_size];
+	char test2[test_size];
 	int flags = FILE_AR_ALL | FILE_AR_1K_BYTES;
 
-	init_data_test(test, 500 * 4096);
-	file_ar_generic(ct, test, test2, 500 * 4096, flags);
+	init_data_test(test, test_size);
+	file_ar_generic(ct, test, test2, test_size, flags);
 }
 
 static void fini_lib(CuTest *ct)
