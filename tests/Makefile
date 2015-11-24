@@ -22,3 +22,4 @@ check: append_test lib_test
 
 clean:
 	rm -f *.o append_test lib_test
+	rm -rf CuTest/*.o
