@@ -45,11 +45,11 @@ static struct lnvm_target_map *tgtmt = NULL;
 static struct flash_file *dfilet = NULL;
 static struct flash_fdentry *fdt = NULL;
 
-static void file_init(struct flash_file *f, uint32_t stream_id, int tgt)
+static void file_init(struct flash_file *f, uint32_t beam_id, int tgt)
 {
 	atomic_assign_inc(&flash_file_guid, &f->gid);
 	f->tgt = tgt;
-	f->stream_id = stream_id;
+	f->beam_id = beam_id;
 	f->nvblocks = 0;
 	f->bytes = 0;
 
@@ -134,7 +134,7 @@ static int preallocate_block(struct flash_file *f)
 	struct vblock *vblock = &f->vblocks[f->nvblocks];
 	int ret = 0;
 
-	ret = get_block(f->tgt, f->stream_id, vblock);
+	ret = get_block(f->tgt, f->beam_id, vblock);
 	if (ret) {
 		LNVM_DEBUG("Could not allocate a new block for file %lu\n",
 				f->gid);
@@ -453,7 +453,7 @@ void nvm_target_close(int tgt)
 	target_ins_clean(tgt);
 }
 
-int nvm_file_create(int tgt, uint32_t stream_id, int flags)
+int nvm_file_create(int tgt, uint32_t beam_id, int flags)
 {
 	struct flash_file *f;
 
@@ -461,7 +461,7 @@ int nvm_file_create(int tgt, uint32_t stream_id, int flags)
 	if (!f)
 		return -ENOMEM;
 
-	file_init(f, stream_id, tgt);
+	file_init(f, beam_id, tgt);
 	HASH_ADD_INT(dfilet, gid, f);
 	LNVM_DEBUG("Created flash file (p:%p, id:%lu). Target: %d\n",
 			f, f->gid, tgt);

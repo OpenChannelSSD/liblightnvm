@@ -117,7 +117,7 @@ struct nvm_ioctl_beams {
 	__u32 nr_beams;
 };
 
-struct nvm_ioctl_vblock_prop {
+struct nvm_ioctl_beam_info {
 	// TODO
 };
 
@@ -147,7 +147,7 @@ enum {
 	NVM_TGT_GET_INFO_CMD, //todo
 
 	/* beam level cmds */
-	NVM_BEAM_GET_BLK_PROP_CMD, /* TODO: Describe beam to application (QoS) */
+	NVM_BEAM_GET_INFO_CMD, /* TODO: Describe beam to application (QoS) */
 
 	/* provisioning cmds */
 	NVM_PR_GET_BLOCK_CMD,
@@ -172,8 +172,8 @@ enum {
 						struct nvm_ioctl_beams)
 #define NVM_TGT_GET_INFO	_IOW(NVM_IOCTL, NVM_TGT_GET_INFO_CMD, \
 						struct nvm_ioctl_tgt_info)
-#define NVM_BEAM_GET_BLK_PROP	_IOR(NVM_IOCTL, NVM_BEAM_GET_BLK_PROP_CMD, \
-						struct nvm_ioctl_vblock_prop)
+#define NVM_BEAM_GET_INFO	_IOR(NVM_IOCTL, NVM_BEAM_GET_INFO_CMD, \
+						struct nvm_ioctl_beam_info)
 #define NVM_PR_GET_BLOCK	_IOWR(NVM_IOCTL, NVM_PR_GET_BLOCK_CMD, \
 						struct nvm_ioctl_vblock)
 #define NVM_PR_GET_BLOCK_INFO	_IOWR(NVM_IOCTL, NVM_PR_GET_BLOCK_INFO_CMD, \

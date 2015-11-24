@@ -42,13 +42,13 @@ int nvm_get_target_info(struct nvm_ioctl_tgt_info *);
 /* core library */
 int nvm_init();
 void nvm_fini();
-int nvm_get_nstreams();
-int nvm_get_stream_prop(uint32_t stream_id);
+int nvm_get_nbeams();
+int nvm_get_beam_prop(uint32_t beam_id);
 
 /* flash_append.c */
 int nvm_target_open(const char *tgt, int flags);
 void nvm_target_close(int tgt);
-int nvm_file_create(int tgt, uint32_t stream_id, int flags);
+int nvm_file_create(int tgt, uint32_t beam_id, int flags);
 void nvm_file_delete(uint64_t fid, int flags);
 int nvm_file_open(uint64_t fid, int flags);
 void nvm_file_close(int fd, int flags);

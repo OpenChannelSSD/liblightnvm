@@ -88,7 +88,7 @@ struct w_buffer {
 struct flash_file {
 	uint64_t gid;				/* internal global identifier */
 	uint32_t tgt;				/* fd of LightNVM target */
-	uint32_t stream_id;			/* stream associated with file */
+	uint32_t beam_id;			/* beam associated with file */
 	struct vblock *current_w_vblock;	/* current block in use */
 	struct vblock vblocks[MAX_BLOCKS];	/* vblocks forming the file */
 	uint8_t nvblocks;			/* number of vblocks */
