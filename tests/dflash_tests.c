@@ -42,9 +42,9 @@ static void create_tgt(CuTest *ct)
 	struct nvm_ioctl_tgt_create c;
 	int ret;
 
-	sprintf(c.target.dev, "nvme0n1");
-	sprintf(c.target.tgttype, "dflash");
-	sprintf(c.target.tgtname, "test1");
+	strncpy(c.target.dev, "nvme0n1", DISK_NAME_LEN);
+	strncpy(c.target.tgttype, "dflash", NVM_TTYPE_NAME_MAX);
+	strncpy(c.target.tgtname, "test1", DISK_NAME_LEN);
 	c.flags = 0;
 	c.conf.type = 0;
 	c.conf.s.lun_begin = 0;
@@ -60,7 +60,7 @@ static void remove_tgt(CuTest *ct)
 	struct nvm_ioctl_tgt_remove r;
 	int ret;
 
-	sprintf(r.tgtname, "test1");
+	strncpy(r.tgtname, "test1", DISK_NAME_LEN);
 	r.flags = 0;
 
 	ret = nvm_remove_target(&r);

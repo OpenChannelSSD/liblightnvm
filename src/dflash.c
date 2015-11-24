@@ -283,6 +283,14 @@ static inline int get_tgt_info(char *tgt, char *dev,
 	struct nvm_ioctl_tgt_info tgt_info;
 	int ret = 0;
 
+	/* Initialize ioctl values */
+	tgt_info.version[0] = 0;
+	tgt_info.version[1] = 0;
+	tgt_info.version[2] = 0;
+	tgt_info.reserved = 0;
+	memset(tgt_info.target.dev, 0, DISK_NAME_LEN);
+	memset(tgt_info.target.tgttype, 0, NVM_TTYPE_MAX);
+
 	strncpy(tgt_info.target.tgtname, tgt, DISK_NAME_LEN);
 	ret = nvm_get_target_info(&tgt_info);
 	if (ret)
@@ -292,7 +300,7 @@ static inline int get_tgt_info(char *tgt, char *dev,
 	target->version[1] = tgt_info.version[1];
 	target->version[2] = tgt_info.version[2];
 	target->reserved = tgt_info.reserved;
-	strncpy(target->tgtname, tgt_info.target.dev, DISK_NAME_LEN);
+	strncpy(target->tgtname, tgt_info.target.tgtname, DISK_NAME_LEN);
 	strncpy(target->tgttype, tgt_info.target.tgttype, NVM_TTYPE_NAME_MAX);
 	strncpy(dev, tgt_info.target.dev, DISK_NAME_LEN);
 
@@ -308,6 +316,18 @@ static inline int get_dev_info(char *dev, struct lnvm_device *device)
 {
 	struct nvm_ioctl_dev_info dev_info;
 	int ret = 0;
+	uint8_t i;
+
+	/* Initialize ioctl values */
+	memset(dev_info.bmname, 0, NVM_TTYPE_MAX);
+	for (i = 0; i < 3; i++)
+		dev_info.bmversion[i] = 0;
+	for (i = 0; i < 8; i++)
+		dev_info.reserved[i] = 0;
+	dev_info.prop.page_size = 0;
+	dev_info.prop.max_io_size = 0;
+
+	dev_info.flags = 0;
 
 	strncpy(dev_info.dev, dev, DISK_NAME_LEN);
 	ret = nvm_get_device_info(&dev_info);
@@ -341,7 +361,7 @@ int nvm_target_open(const char *tgt, int flags)
 	uint8_t new_dev = 0, new_tgt = 0;
 	int ret = 0;
 
-	strncpy(tgt_eol, tgt, DISK_NAME_LEN);
+	strcpy(tgt_eol, tgt);
 	tgt_eol[DISK_NAME_LEN - 1] = '\0';
 
 	HASH_FIND_STR(tgtt, tgt_eol, tgt_entry);

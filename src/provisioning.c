@@ -26,9 +26,15 @@ int get_block(int tgt, uint32_t stream_id, struct vblock *vblock)
 {
 	int ret = 0;
 
+	/* Initialize ioctl values */
+	vblock->id = 0;
+	vblock->bppa = 0;
+	vblock->nppas = 0;
+	vblock->ppa_bitmap = 0;
+
 	vblock->stream_id = stream_id;
-	vblock->flags = 0x0;
 	vblock->owner_id = 101;
+	vblock->flags = 0x0;
 
 	ret = ioctl(tgt, NVM_PR_GET_BLOCK, vblock);
 	if (ret) {
@@ -47,6 +53,14 @@ out:
 int get_block_meta(int tgt, uint64_t vblock_id, struct vblock *vblock)
 {
 	int ret = 0;
+
+	/* Initialize ioctl values */
+	vblock->bppa = 0;
+	vblock->nppas = 0;
+	vblock->ppa_bitmap = 0;
+	vblock->stream_id = 0;
+	vblock->owner_id = 0;
+	vblock->flags = 0x0;
 
 	vblock->id = vblock_id;
 
