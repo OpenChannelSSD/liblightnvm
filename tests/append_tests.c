@@ -1,6 +1,4 @@
 /*
- * dflash - user-space append-only file system for flash memories
- *
  * Copyright (C) 2015 Javier Gonzalez <javier@cnexlabs.com>
  *
  * This library is free software; you can redistribute it and/or
@@ -298,7 +296,7 @@ static void fini_lib(CuTest *ct)
 	nvm_fini();
 }
 
-CuSuite *dflash_GetSuite()
+CuSuite *append_GetSuite()
 {
 	per_test_suite = CuSuiteNew();
 
@@ -319,7 +317,7 @@ void run_all_test(void)
 	CuString *output = CuStringNew();
 	CuSuite *suite = CuSuiteNew();
 
-	CuSuiteAddSuite(suite, (CuSuite*) dflash_GetSuite());
+	CuSuiteAddSuite(suite, (CuSuite*) append_GetSuite());
 
 	CuSuiteRun(suite);
 	CuSuiteSummary(suite, output);

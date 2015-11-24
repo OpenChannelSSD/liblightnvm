@@ -39,13 +39,13 @@ int nvm_remove_target(struct nvm_ioctl_tgt_remove *);
 int nvm_get_device_info(struct nvm_ioctl_dev_info *);
 int nvm_get_target_info(struct nvm_ioctl_tgt_info *);
 
-/* core */
+/* core library */
 int nvm_init();
 void nvm_fini();
 int nvm_get_nstreams();
 int nvm_get_stream_prop(uint32_t stream_id);
 
-/* dflash.c */
+/* flash_append.c */
 int nvm_target_open(const char *tgt, int flags);
 void nvm_target_close(int tgt);
 int nvm_file_create(int tgt, uint32_t stream_id, int flags);

@@ -2,6 +2,6 @@
 
 echo "Checks starting - " `date`
 
-sudo ./dflash_test
+sudo ./append_test
 
 echo "Checks completed - " `date`

@@ -1,5 +1,5 @@
 /*
- * dflash - user-space append-only file system for flash memories
+ * flash_append - user-space append-only file system for flash memories
  *
  * Copyright (C) 2015 Javier Gonzalez <javier@cnexlabs.com>
  *
@@ -31,7 +31,7 @@
 #include "likely.h"
 #include "flash_file.h"
 
-static struct atomic_cnt dflash_guid = {
+static struct atomic_cnt flash_file_guid = {
 	.cnt = 0,
 };
 
@@ -42,12 +42,12 @@ static struct atomic_cnt fd_guid = {
 static struct lnvm_device *devt = NULL;
 static struct lnvm_target *tgtt = NULL;
 static struct lnvm_target_map *tgtmt = NULL;
-static struct dflash_file *dfilet = NULL;
-static struct dflash_fdentry *fdt = NULL;
+static struct flash_file *dfilet = NULL;
+static struct flash_fdentry *fdt = NULL;
 
-static void file_init(struct dflash_file *f, uint32_t stream_id, int tgt)
+static void file_init(struct flash_file *f, uint32_t stream_id, int tgt)
 {
-	atomic_assign_inc(&dflash_guid, &f->gid);
+	atomic_assign_inc(&flash_file_guid, &f->gid);
 	f->tgt = tgt;
 	f->stream_id = stream_id;
 	f->nvblocks = 0;
@@ -75,7 +75,7 @@ static void file_buf_free(struct w_buffer *buf)
 	}
 }
 
-static void file_put_blocks(struct dflash_file *f)
+static void file_put_blocks(struct flash_file *f)
 {
 	int i;
 
@@ -84,7 +84,7 @@ static void file_put_blocks(struct dflash_file *f)
 	}
 }
 
-static void file_free(struct dflash_file *f)
+static void file_free(struct flash_file *f)
 {
 	file_buf_free(&f->w_buffer);
 	free(f);
@@ -92,7 +92,7 @@ static void file_free(struct dflash_file *f)
 
 /* XXX: All block functions assume that block allocation is thread safe */
 /* TODO: Allocate blocks dynamically */
-static int switch_block(struct dflash_file **f)
+static int switch_block(struct flash_file **f)
 {
 	size_t buf_size;
 	int ret;
@@ -129,7 +129,7 @@ static int switch_block(struct dflash_file **f)
 	return 0;
 }
 
-static int preallocate_block(struct dflash_file *f)
+static int preallocate_block(struct flash_file *f)
 {
 	struct vblock *vblock = &f->vblocks[f->nvblocks];
 	int ret = 0;
@@ -153,7 +153,7 @@ out:
 	return ret;
 }
 
-static int allocate_block(struct dflash_file *f)
+static int allocate_block(struct flash_file *f)
 {
 	int ret;
 
@@ -166,7 +166,7 @@ out:
 	return ret;
 }
 
-static int file_sync(int fd, struct dflash_file *f, uint8_t flags)
+static int file_sync(int fd, struct flash_file *f, uint8_t flags)
 {
 	size_t sync_len = f->w_buffer.cursize - f->w_buffer.cursync;
 	size_t ppa_off = calculate_ppa_off(f->w_buffer.cursync);
@@ -218,7 +218,7 @@ static int file_sync(int fd, struct dflash_file *f, uint8_t flags)
 	return 0;
 }
 
-static void clean_fd(struct dflash_fdentry *fd_entry)
+static void clean_fd(struct flash_fdentry *fd_entry)
 {
 	HASH_DEL(fdt, fd_entry);
 	LNVM_DEBUG("Closed fd %lu for file %lu\n",
@@ -231,7 +231,7 @@ static void clean_fd(struct dflash_fdentry *fd_entry)
 }
 
 static void clean_file_fd(uint64_t gid) {
-	struct dflash_fdentry *fd_entry, *tmp;
+	struct flash_fdentry *fd_entry, *tmp;
 
 	HASH_ITER(hh, fdt, fd_entry, tmp) {
 		if (fd_entry->dfile->gid == gid) {
@@ -258,7 +258,7 @@ static void target_clean(struct lnvm_target *tgt)
 
 static void target_ins_clean(int tgt)
 {
-	struct dflash_file *f, *f_tmp;
+	struct flash_file *f, *f_tmp;
 	struct lnvm_target *t;
 	struct lnvm_target_map *tm;
 
@@ -455,15 +455,15 @@ void nvm_target_close(int tgt)
 
 int nvm_file_create(int tgt, uint32_t stream_id, int flags)
 {
-	struct dflash_file *f;
+	struct flash_file *f;
 
-	f = malloc(sizeof(struct dflash_file));
+	f = malloc(sizeof(struct flash_file));
 	if (!f)
 		return -ENOMEM;
 
 	file_init(f, stream_id, tgt);
 	HASH_ADD_INT(dfilet, gid, f);
-	LNVM_DEBUG("Created dflash file (p:%p, id:%lu). Target: %d\n",
+	LNVM_DEBUG("Created flash file (p:%p, id:%lu). Target: %d\n",
 			f, f->gid, tgt);
 
 	return f->gid;
@@ -471,7 +471,7 @@ int nvm_file_create(int tgt, uint32_t stream_id, int flags)
 
 void nvm_file_delete(uint64_t fid, int flags)
 {
-	struct dflash_file *f;
+	struct flash_file *f;
 
 	LNVM_DEBUG("Deleting file with id %lu\n", fid);
 
@@ -483,13 +483,13 @@ void nvm_file_delete(uint64_t fid, int flags)
 }
 
 /*
- * TODO: Assign different file descriptors to same dflash file. For now access
- * dflash files by file id
+ * TODO: Assign different file descriptors to same flash file. For now access
+ * flash files by file id
  */
 int nvm_file_open(uint64_t fid, int flags)
 {
-	struct dflash_file *f;
-	struct dflash_fdentry *fd_entry;
+	struct flash_file *f;
+	struct flash_fdentry *fd_entry;
 	int ret = 0;
 
 	HASH_FIND_INT(dfilet, &fid, f);
@@ -504,7 +504,7 @@ int nvm_file_open(uint64_t fid, int flags)
 			goto error;
 	}
 
-	fd_entry = malloc(sizeof(struct dflash_fdentry));
+	fd_entry = malloc(sizeof(struct flash_fdentry));
 	if (!fd_entry) {
 		ret = -ENOMEM;
 		goto error;
@@ -524,8 +524,8 @@ error:
 
 void nvm_file_close(int fd, int flags)
 {
-	struct dflash_fdentry *fd_entry;
-	struct dflash_file *f;
+	struct flash_fdentry *fd_entry;
+	struct flash_file *f;
 
 	HASH_FIND_INT(fdt, &fd, fd_entry);
 	if (!fd_entry) {
@@ -547,8 +547,8 @@ void nvm_file_close(int fd, int flags)
  */
 size_t nvm_file_append(int fd, const void *buf, size_t count)
 {
-	struct dflash_fdentry *fd_entry;
-	struct dflash_file *f;
+	struct flash_fdentry *fd_entry;
+	struct flash_file *f;
 	size_t offset = 0;
 	size_t left = count;
 	int ret;
@@ -610,8 +610,8 @@ int nvm_file_sync(int fd)
  */
 size_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
 {
-	struct dflash_fdentry *fd_entry;
-	struct dflash_file *f;
+	struct flash_fdentry *fd_entry;
+	struct flash_file *f;
 	struct vblock *current_r_vblock;
 	size_t block_off, ppa_off, page_off;
 	size_t ppa_count;
@@ -708,12 +708,16 @@ size_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
 int nvm_init()
 {
 	pthread_spin_init(&fd_guid.lock, PTHREAD_PROCESS_SHARED);
-	pthread_spin_init(&dflash_guid.lock, PTHREAD_PROCESS_SHARED);
+	pthread_spin_init(&flash_file_guid.lock, PTHREAD_PROCESS_SHARED);
+
+	/* TODO: Recover state */
 	return 0;
 }
 
 void nvm_fini()
 {
 	pthread_spin_destroy(&fd_guid.lock);
-	pthread_spin_destroy(&dflash_guid.lock);
+	pthread_spin_destroy(&flash_file_guid.lock);
+
+	/* TODO: save state */
 }

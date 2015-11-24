@@ -144,7 +144,7 @@ static void create_remove_all_tgts(CuTest *ct)
 	r.flags = 0;
 
 	create_remove_tgt(ct, &c, &r);
-
+#if 0
 	printf("Testing device: nulln0, target: rrpc\n");
 	sprintf(c.target.dev, "nulln0");
 	sprintf(c.target.tgttype, "rrpc");
@@ -172,6 +172,7 @@ static void create_remove_all_tgts(CuTest *ct)
 	r.flags = 0;
 
 	create_remove_tgt(ct, &c, &r);
+#endif
 }
 
 CuSuite* cli_GetSuite()

@@ -19,7 +19,7 @@ debug:
 	@$(MAKE) -C src debug prefix=$(prefix) includedir=$(includedir) libdir=$(libdir)
 	@$(MAKE) -C tests
 	ln -sf tests/lib_test .
-	ln -sf tests/dflash_test .
+	ln -sf tests/append_test .
 
 tests_check:
 	@$(MAKE) -C tests check
@@ -31,6 +31,6 @@ tags:
 clean:
 	@$(MAKE) -C src clean
 	@$(MAKE) -C tests clean
-	rm -rf lib_test dflash_test
+	rm -rf lib_test append_test
 
 check: clean install tests_check

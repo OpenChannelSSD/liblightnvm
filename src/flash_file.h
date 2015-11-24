@@ -1,5 +1,5 @@
 /*
- * dflash - user-space append-only file system for flash memories
+ * flash_file - File abstraction for flash memories
  *
  * Copyright (C) 2015 Javier Gonzalez <javier@cnexlabs.com>
  *
@@ -85,7 +85,7 @@ struct w_buffer {
 };
 
 /* TODO: Allocate dynamic number of blocks */
-struct dflash_file {
+struct flash_file {
 	uint64_t gid;				/* internal global identifier */
 	uint32_t tgt;				/* fd of LightNVM target */
 	uint32_t stream_id;			/* stream associated with file */
@@ -100,10 +100,10 @@ struct dflash_file {
 	UT_hash_handle hh;			/* hash handle for uthash */
 };
 
-struct dflash_fdentry {
+struct flash_fdentry {
 	// uint32_t max_fds;		#<{(| Max number of fds |)}>#
 	uint64_t fd;			/* File descriptor */
-	struct dflash_file *dfile;	/* DFlash file associate with the fd */
+	struct flash_file *dfile;	/* Flash file associate with the fd */
 	UT_hash_handle hh;		/* hash handle for uthash */
 };
 

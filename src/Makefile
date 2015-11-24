@@ -20,7 +20,7 @@ all_targets += liblightnvm.a $(libname)
 all: $(all_targets)
 
 # liblightnvm provided functions
-liblightnvm_srcs := mgmt.c provisioning.c flash_io.c dflash.c
+liblightnvm_srcs := mgmt.c provisioning.c flash_io.c flash_append.c
 
 liblightnvm_objs := $(patsubst %.c,%.ol,$(liblightnvm_srcs))
 liblightnvm_sobjs := $(patsubst %.c,%.os,$(liblightnvm_srcs))
