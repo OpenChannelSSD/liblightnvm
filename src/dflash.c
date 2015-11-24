@@ -31,12 +31,12 @@
 #include "likely.h"
 #include "flash_file.h"
 
-static struct atomic_guid dflash_guid = {
-	.guid = 0,
+static struct atomic_cnt dflash_guid = {
+	.cnt = 0,
 };
 
-static struct atomic_guid fd_guid = {
-	.guid = 0,
+static struct atomic_cnt fd_guid = {
+	.cnt = 0,
 };
 
 static struct lnvm_device *devt = NULL;
@@ -47,7 +47,7 @@ static struct dflash_fdentry *fdt = NULL;
 
 static void file_init(struct dflash_file *f, uint32_t stream_id, int tgt)
 {
-	atomic_assign_inc_id(&dflash_guid, &f->gid);
+	atomic_assign_inc(&dflash_guid, &f->gid);
 	f->tgt = tgt;
 	f->stream_id = stream_id;
 	f->nvblocks = 0;
@@ -347,12 +347,21 @@ int nvm_target_open(const char *tgt, int flags)
 				return ret;
 			}
 
+			strncpy(dev_entry->dev, dev, DISK_NAME_LEN);
 			HASH_ADD_STR(devt, dev, dev_entry);
+
+			atomic_init(&dev_entry->ref_cnt);
+			atomic_set(&dev_entry->ref_cnt, 0);
 			new_dev = 1;
 		}
 
 		tgt_entry->dev = dev_entry;
+		strncpy(tgt_entry->tgtname, tgt_eol, DISK_NAME_LEN);
 		HASH_ADD_STR(tgtt, tgtname, tgt_entry);
+		atomic_inc(&dev_entry->ref_cnt);
+
+		atomic_init(&tgt_entry->ref_cnt);
+		atomic_set(&tgt_entry->ref_cnt, 0);
 		new_tgt = 1;
 	}
 
@@ -370,8 +379,10 @@ int nvm_target_open(const char *tgt, int flags)
 		goto error;
 	}
 
+	tgtm_entry->tgt_id = tgt_id;
 	tgtm_entry->tgt = tgt_entry;
 	HASH_ADD_INT(tgtmt, tgt_id, tgtm_entry);
+	atomic_inc(&tgt_entry->ref_cnt);
 
 	return tgt_id;
 
@@ -447,7 +458,7 @@ int nvm_file_open(uint64_t fid, int flags)
 		goto error;
 	}
 
-	atomic_assign_inc_id(&fd_guid, &fd_entry->fd);
+	atomic_assign_inc(&fd_guid, &fd_entry->fd);
 	fd_entry->dfile = f;
 	HASH_ADD_INT(fdt, fd, fd_entry);
 

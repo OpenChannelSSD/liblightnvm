@@ -43,11 +43,17 @@
 #define FORCE_SYNC 1
 #define OPTIONAL_SYNC 2
 
+typedef struct atomic_cnt {
+	uint64_t cnt;
+	pthread_spinlock_t lock;
+} atomic_cnt;
+
 struct lnvm_device {
-	char dev[DISK_NAME_LEN];		/* open-channel SSD device */
-	uint32_t page_size;
-	uint32_t max_io_size;
-	UT_hash_handle hh;			/* hash handle for uthash */
+	char dev[DISK_NAME_LEN];	/* open-channel SSD device */
+	uint32_t page_size;		/* Device page size */
+	uint32_t max_io_size;		/* Supported ppas in a single IO*/
+	atomic_cnt ref_cnt;		/* Reference counter */
+	UT_hash_handle hh;		/* hash handle for uthash */
 };
 
 struct lnvm_target {
@@ -55,7 +61,8 @@ struct lnvm_target {
 	uint32_t reserved;
 	char tgtname[DISK_NAME_LEN];		/* dev to expose target as */
 	char tgttype[NVM_TTYPE_NAME_MAX];	/* target type name */
-	struct lnvm_device *dev;
+	struct lnvm_device *dev;		/* Device associated */
+	atomic_cnt ref_cnt;			/* Reference counter */
 	UT_hash_handle hh;			/* hash handle for uthash */
 };
 
@@ -100,17 +107,44 @@ struct dflash_fdentry {
 	UT_hash_handle hh;		/* hash handle for uthash */
 };
 
-struct atomic_guid {
-	uint64_t guid;
-	pthread_spinlock_t lock;
-};
+static inline void atomic_init(struct atomic_cnt *cnt)
+{
 
-static inline void atomic_assign_inc_id(struct atomic_guid *cnt, uint64_t *id)
+	pthread_spin_init(&cnt->lock, PTHREAD_PROCESS_SHARED);
+}
+
+static inline void atomic_set(struct atomic_cnt *cnt, uint64_t value)
 {
 	pthread_spin_lock(&cnt->lock);
-	cnt->guid++;
-	*id = cnt->guid;
+	cnt->cnt = value;
 	pthread_spin_unlock(&cnt->lock);
+}
+
+static inline void atomic_assign_inc(struct atomic_cnt *cnt, uint64_t *dst)
+{
+	pthread_spin_lock(&cnt->lock);
+	cnt->cnt++;
+	*dst = cnt->cnt;
+	pthread_spin_unlock(&cnt->lock);
+}
+
+static inline void atomic_inc(struct atomic_cnt *cnt)
+{
+	pthread_spin_lock(&cnt->lock);
+	cnt->cnt++;
+	pthread_spin_unlock(&cnt->lock);
+}
+
+static inline int atomic_dec_and_test(struct atomic_cnt *cnt)
+{
+	int ret;
+
+	pthread_spin_lock(&cnt->lock);
+	cnt->cnt--;
+	ret = (cnt->cnt == 0) ? 1 : 0;
+	pthread_spin_unlock(&cnt->lock);
+
+	return ret;
 }
 
 static inline size_t calculate_ppa_off(size_t cursync)
