@@ -65,5 +65,5 @@ int nvm_get_device_info(struct nvm_ioctl_dev_info *u)
 
 int nvm_get_target_info(struct nvm_ioctl_tgt_info *u)
 {
-	return nvm_execute_ioctl(NVM_DEV_GET_INFO, u);
+	return nvm_execute_ioctl(NVM_TGT_GET_INFO, u);
 }

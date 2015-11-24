@@ -256,7 +256,7 @@ static inline int get_tgt_info(char *tgt, char *dev,
 	struct nvm_ioctl_tgt_info tgt_info;
 	int ret = 0;
 
-	strncpy(tgt_info.target.dev, tgt, DISK_NAME_LEN);
+	strncpy(tgt_info.target.tgtname, tgt, DISK_NAME_LEN);
 	ret = nvm_get_target_info(&tgt_info);
 	if (ret)
 		goto out;
