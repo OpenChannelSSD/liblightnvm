@@ -235,15 +235,42 @@ static void clean_file_fd(uint64_t gid) {
 	}
 }
 
-static void target_clean(int tgt)
+static void device_clean(struct lnvm_device *dev)
 {
-	struct dflash_file *f, *tmp;
+	HASH_DEL(devt, dev);
+	free(dev);
+}
+
+static void target_clean(struct lnvm_target *tgt)
+{
+	struct lnvm_device *dev = tgt->dev;
+
+	HASH_DEL(tgtt, tgt);
+	if (atomic_dec_and_test(&dev->ref_cnt))
+		device_clean(dev);
+	free(tgt);
+}
+
+static void target_ins_clean(int tgt)
+{
+	struct dflash_file *f, *f_tmp;
+	struct lnvm_target *t;
+	struct lnvm_target_map *tm;
 
 	/* Assume only one target and that all files belong to that target*/
-	HASH_ITER(hh, dfilet, f, tmp) {
+	HASH_ITER(hh, dfilet, f, f_tmp) {
 		clean_file_fd(f->gid);
 		HASH_DEL(dfilet, f);
 		file_free(f);
+	}
+
+	HASH_FIND_INT(tgtmt, &tgt, tm);
+	if (tm) {
+		t = tm->tgt;
+		if (atomic_dec_and_test(&t->ref_cnt))
+			target_clean(t);
+		HASH_DEL(tgtmt, tm);
+		free(tm);
 	}
 
 	assert(HASH_COUNT(fdt) == 0);
@@ -398,7 +425,7 @@ error:
 void nvm_target_close(int tgt)
 {
 	close(tgt);
-	target_clean(tgt);
+	target_ins_clean(tgt);
 }
 
 int nvm_file_create(int tgt, uint32_t stream_id, int flags)
