@@ -333,7 +333,6 @@ int nvm_target_open(const char *tgt, int flags)
 		dev[DISK_NAME_LEN - 1] = '\0';
 		HASH_FIND_STR(devt, dev, dev_entry);
 		if (!dev_entry) {
-
 			dev_entry = malloc(sizeof(struct lnvm_device));
 			if (!dev_entry) {
 				free(tgt_entry);
@@ -342,7 +341,7 @@ int nvm_target_open(const char *tgt, int flags)
 
 			ret = get_dev_info(dev, dev_entry);
 			if (ret) {
-				LNVM_DEBUG("Could not get decive information\n");
+				LNVM_DEBUG("Could not get device information\n");
 				free(dev_entry);
 				free(tgt_entry);
 				return ret;

@@ -159,7 +159,7 @@ static void create_remove_all_tgts(CuTest *ct)
 
 	create_remove_tgt(ct, &c, &r);
 
-	printf("Testing device: dflash, target: dflash\n");
+	printf("Testing device: null0, target: dflash\n");
 	sprintf(c.target.dev, "nulln0");
 	sprintf(c.target.tgttype, "dflash");
 	sprintf(c.target.tgtname, "test");
