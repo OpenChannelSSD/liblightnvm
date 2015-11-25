@@ -45,7 +45,7 @@ static struct lnvm_target_map *tgtmt = NULL;
 static struct flash_file *dfilet = NULL;
 static struct flash_fdentry *fdt = NULL;
 
-static void file_init(struct flash_file *f, uint32_t beam_id, int tgt)
+static void file_init(struct flash_file *f, int beam_id, int tgt)
 {
 	atomic_assign_inc(&flash_file_guid, &f->gid);
 	f->tgt = tgt;
@@ -166,14 +166,14 @@ out:
 	return ret;
 }
 
-static int file_sync(int fd, struct flash_file *f, uint8_t flags)
+static int file_sync(int fd, struct flash_file *f, int flags)
 {
 	size_t sync_len = f->w_buffer.cursize - f->w_buffer.cursync;
 	size_t ppa_off = calculate_ppa_off(f->w_buffer.cursync);
 	size_t disaligned_data = sync_len % PAGE_SIZE;
 	size_t synced_bytes;
-	uint16_t synced_pages;
-	uint16_t npages = sync_len / PAGE_SIZE;
+	int synced_pages;
+	int npages = sync_len / PAGE_SIZE;
 
 	if (((flags & OPTIONAL_SYNC) && (sync_len < PAGE_SIZE)) ||
 		(sync_len == 0))
@@ -186,7 +186,7 @@ static int file_sync(int fd, struct flash_file *f, uint8_t flags)
 
 		if (disaligned_data > 0) {
 			/* Add padding to current page */
-			uint16_t padding = PAGE_SIZE - disaligned_data;
+			int padding = PAGE_SIZE - disaligned_data;
 			memset(f->w_buffer.mem, '\0', padding);
 			f->w_buffer.cursize += padding;
 			f->w_buffer.mem += padding;
@@ -230,7 +230,7 @@ static void clean_fd(struct flash_fdentry *fd_entry)
 	free(fd_entry);
 }
 
-static void clean_file_fd(uint64_t gid) {
+static void clean_file_fd(int gid) {
 	struct flash_fdentry *fd_entry, *tmp;
 
 	HASH_ITER(hh, fdt, fd_entry, tmp) {
@@ -321,7 +321,7 @@ static inline int get_dev_info(char *dev, struct lnvm_device *device)
 {
 	struct nvm_ioctl_dev_info dev_info;
 	int ret = 0;
-	uint8_t i;
+	int i;
 
 	/* Initialize ioctl values */
 	memset(dev_info.bmname, 0, NVM_TTYPE_MAX);
@@ -363,7 +363,7 @@ int nvm_target_open(const char *tgt, int flags)
 	char tgt_eol[DISK_NAME_LEN];
 	char dev[DISK_NAME_LEN];
 	int tgt_id;
-	uint8_t new_dev = 0, new_tgt = 0;
+	int new_dev = 0, new_tgt = 0;
 	int ret = 0;
 
 	strcpy(tgt_eol, tgt);
@@ -453,7 +453,7 @@ void nvm_target_close(int tgt)
 	target_ins_clean(tgt);
 }
 
-int nvm_file_create(int tgt, uint32_t beam_id, int flags)
+int nvm_file_create(int tgt, int beam_id, int flags)
 {
 	struct flash_file *f;
 
@@ -469,7 +469,7 @@ int nvm_file_create(int tgt, uint32_t beam_id, int flags)
 	return f->gid;
 }
 
-void nvm_file_delete(uint64_t fid, int flags)
+void nvm_file_delete(int fid, int flags)
 {
 	struct flash_file *f;
 
@@ -486,7 +486,7 @@ void nvm_file_delete(uint64_t fid, int flags)
  * TODO: Assign different file descriptors to same flash file. For now access
  * flash files by file id
  */
-int nvm_file_open(uint64_t fid, int flags)
+int nvm_file_open(int fid, int flags)
 {
 	struct flash_file *f;
 	struct flash_fdentry *fd_entry;
@@ -545,7 +545,7 @@ void nvm_file_close(int fd, int flags)
  * TODO: Flush pages in a different thread as write buffer gets filled up,
  * instead of flushing the whole block at a time
  */
-size_t nvm_file_append(int fd, const void *buf, size_t count)
+ssize_t nvm_file_append(int fd, const void *buf, size_t count)
 {
 	struct flash_fdentry *fd_entry;
 	struct flash_file *f;
@@ -600,7 +600,7 @@ size_t nvm_file_append(int fd, const void *buf, size_t count)
 	return count;
 }
 
-int nvm_file_sync(int fd)
+int nvm_file_sync(int fd, int flags)
 {
 	return 0;
 }
@@ -608,7 +608,7 @@ int nvm_file_sync(int fd)
 /*
  * Flag for aligned buffer
  */
-size_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
+ssize_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
 {
 	struct flash_fdentry *fd_entry;
 	struct flash_file *f;
@@ -623,7 +623,7 @@ size_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
 		(((offset / PAGE_SIZE) != (count + offset) / PAGE_SIZE) ? 1 : 0);
 	size_t valid_bytes;
 	size_t pages_to_read, bytes_to_read;
-	uint16_t read_pages;
+	int read_pages;
 	/* char *cache; // Used when trying write cache for reads*/
 	void *read_buf;
 	char *reader;

@@ -43,18 +43,18 @@ int nvm_get_target_info(struct nvm_ioctl_tgt_info *);
 int nvm_init();
 void nvm_fini();
 int nvm_get_nbeams();
-int nvm_get_beam_prop(uint32_t beam_id);
+int nvm_get_beam_prop(int beam_id);
 
 /* flash_append.c */
 int nvm_target_open(const char *tgt, int flags);
 void nvm_target_close(int tgt);
-int nvm_file_create(int tgt, uint32_t beam_id, int flags);
-void nvm_file_delete(uint64_t fid, int flags);
-int nvm_file_open(uint64_t fid, int flags);
+int nvm_file_create(int tgt, int beam_id, int flags);
+void nvm_file_delete(int fid, int flags);
+int nvm_file_open(int fid, int flags);
 void nvm_file_close(int fd, int flags);
-size_t nvm_file_append(int fd, const void *buf, size_t count);
-int nvm_file_sync(int fd);
-size_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags);
+ssize_t nvm_file_append(int fd, const void *buf, size_t count);
+ssize_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags);
+int nvm_file_sync(int fd, int flags);
 
 /* unittests */
 int nvm_test_lib();

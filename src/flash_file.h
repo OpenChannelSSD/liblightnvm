@@ -44,7 +44,7 @@
 #define OPTIONAL_SYNC 2
 
 typedef struct atomic_cnt {
-	uint64_t cnt;
+	int cnt;
 	pthread_spinlock_t lock;
 } atomic_cnt;
 
@@ -86,12 +86,12 @@ struct w_buffer {
 
 /* TODO: Allocate dynamic number of blocks */
 struct flash_file {
-	uint64_t gid;				/* internal global identifier */
-	uint32_t tgt;				/* fd of LightNVM target */
-	uint32_t beam_id;			/* beam associated with file */
+	int gid;				/* internal global identifier */
+	int tgt;				/* fd of LightNVM target */
+	int beam_id;				/* beam associated with file */
 	struct vblock *current_w_vblock;	/* current block in use */
 	struct vblock vblocks[MAX_BLOCKS];	/* vblocks forming the file */
-	uint8_t nvblocks;			/* number of vblocks */
+	int nvblocks;				/* number of vblocks */
 	struct w_buffer w_buffer;		/* write buffer */
 	unsigned long bytes;			/* valid bytes */
 	struct timespec atime;			/* last access time */
@@ -102,7 +102,7 @@ struct flash_file {
 
 struct flash_fdentry {
 	// uint32_t max_fds;		#<{(| Max number of fds |)}>#
-	uint64_t fd;			/* File descriptor */
+	int fd;				/* File descriptor */
 	struct flash_file *dfile;	/* Flash file associate with the fd */
 	UT_hash_handle hh;		/* hash handle for uthash */
 };
@@ -113,14 +113,14 @@ static inline void atomic_init(struct atomic_cnt *cnt)
 	pthread_spin_init(&cnt->lock, PTHREAD_PROCESS_SHARED);
 }
 
-static inline void atomic_set(struct atomic_cnt *cnt, uint64_t value)
+static inline void atomic_set(struct atomic_cnt *cnt, int value)
 {
 	pthread_spin_lock(&cnt->lock);
 	cnt->cnt = value;
 	pthread_spin_unlock(&cnt->lock);
 }
 
-static inline void atomic_assign_inc(struct atomic_cnt *cnt, uint64_t *dst)
+static inline void atomic_assign_inc(struct atomic_cnt *cnt, int *dst)
 {
 	pthread_spin_lock(&cnt->lock);
 	cnt->cnt++;
@@ -151,11 +151,11 @@ static inline size_t calculate_ppa_off(size_t cursync)
 {
 	size_t disaligned_data = cursync % PAGE_SIZE;
 	size_t aligned_data = cursync / PAGE_SIZE;
-	uint8_t rest = (disaligned_data == 0) ? 0 : 1;
+	int rest = (disaligned_data == 0) ? 0 : 1;
 	return (aligned_data + rest);
 }
 
-uint16_t flash_write(int tgt, struct vblock *vblock, const char *buf,
+int flash_write(int tgt, struct vblock *vblock, const char *buf,
 					size_t ppa_off, size_t count);
 int flash_read(int tgt, struct vblock *vblock, void *buf, size_t ppa_off,
 					size_t count);

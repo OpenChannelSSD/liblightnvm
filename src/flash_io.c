@@ -25,7 +25,7 @@
 #include "flash_file.h"
 #include "assert.h"
 
-uint16_t flash_write(int tgt, struct vblock *vblock, const char *buf,
+int flash_write(int tgt, struct vblock *vblock, const char *buf,
 			size_t ppa_off, size_t count)
 {
 	size_t bppa = vblock->bppa;
@@ -34,8 +34,8 @@ uint16_t flash_write(int tgt, struct vblock *vblock, const char *buf,
 	size_t left = count;
 	size_t bytes_per_write;
 	ssize_t written;
-	uint8_t max_pages_write = 1; /* Get from NVM_DEV_MAX_SEC */
-	uint8_t pages_per_write;
+	int max_pages_write = 1; /* Get from NVM_DEV_MAX_SEC */
+	int pages_per_write;
 	char *writer = (char*)buf;
 
 	/* TODO: Metadata */
@@ -82,8 +82,8 @@ int flash_read(int tgt, struct vblock *vblock, void *buf, size_t ppa_off,
 	size_t left = count;
 	size_t bytes_per_read;
 	ssize_t read;
-	uint8_t max_pages_read = 1; /* Get from NVM_DEV_MAX_SEC */
-	uint8_t pages_per_read;
+	int max_pages_read = 1; /* Get from NVM_DEV_MAX_SEC */
+	int pages_per_read;
 	char *reader = (char*)buf;
 
 	assert(count <= nppas - ppa_off);

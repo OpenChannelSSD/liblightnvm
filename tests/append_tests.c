@@ -27,7 +27,7 @@
 #include "../src/ioctl.h"
 
 static CuSuite *per_test_suite = NULL;
-uint64_t file_id;
+int file_id;
 
 static void init_lib(CuTest *ct)
 {
