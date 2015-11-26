@@ -1,4 +1,9 @@
 /*
+ * mgmt - management interface for Linux Open-Channel SSD (LightNVM)
+ *
+ * Copyright (C) 2015 Javier Gonzalez <javier@cnexlabs.com>
+ * Copyright (C) 2015 Matias Bjørling <matias@cnexlabs.com>
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either

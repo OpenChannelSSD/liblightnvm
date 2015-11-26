@@ -1,5 +1,5 @@
 /*
- * provision - LightNVM get/put block API
+ * provisioning - LightNVM get/put block API
  *
  * Copyright (C) 2015 Javier Gonzalez <javier@cnexlabs.com>
  *

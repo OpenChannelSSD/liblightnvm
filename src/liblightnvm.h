@@ -1,5 +1,9 @@
 /* /usr/include/liblightnvm.h
  *
+ * liblightnvm - Linux Open-Channel I/O interface
+ *
+ * Copyright (C) 2015 Javier Gonzalez <javier@cnexlabs.com>
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -13,12 +17,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
-
- * Written by:
- *	- Javier Gonzalez <javier@cnexlabs.com>
- *	- Matias Bjorling <m@bjorling.me>
- *
- * liblightnvm Linux Open-Channel I/O interface
  */
 #ifndef __LIBLIGHTNVM_H
 #define __LIBLIGHTNVM_H

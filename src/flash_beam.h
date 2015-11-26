@@ -1,5 +1,5 @@
 /*
- * flash beam - I/O abtraction for flash memories.
+ * flash_beam - I/O abstraction for flash memories.
  *
  * Copyright (C) 2015 Javier Gonzalez <javier@cnexlabs.com>
  *
