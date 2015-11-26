@@ -28,7 +28,7 @@
 #include <assert.h>
 #include <liblightnvm.h>
 
-#include "likely.h"
+#include "../util/likely.h"
 #include "flash_beam.h"
 
 static struct atomic_cnt beam_guid = {
