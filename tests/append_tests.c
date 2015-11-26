@@ -27,7 +27,6 @@
 #include "../src/ioctl.h"
 
 static CuSuite *per_test_suite = NULL;
-int file_id;
 
 static void init_lib(CuTest *ct)
 {
@@ -66,58 +65,46 @@ static void remove_tgt(CuTest *ct)
 	CuAssertIntEquals(ct, 0, ret);
 }
 
-static void create_file(CuTest *ct)
+static void create_beam(CuTest *ct)
 {
-	int tgt_id, fd;
+	int tgt_id, beam_id;
 	int i;
 
 	create_tgt(ct);
 	tgt_id = nvm_target_open("test1", 0);
 	CuAssertTrue(ct, tgt_id > 0);
 
-	file_id = nvm_file_create(tgt_id, 0, 0);
-	CuAssertTrue(ct, file_id > 0);
+	beam_id = nvm_beam_create(tgt_id, 0, 0);
+	CuAssertTrue(ct, beam_id > 0);
 
-	fd = nvm_file_open(file_id, 0);
-	CuAssertTrue(ct, fd > 0);
-
-	nvm_file_close(fd, 0);
-	nvm_file_delete(file_id, 0);
+	nvm_beam_destroy(beam_id, 0);
 	nvm_target_close(tgt_id);
 
 	remove_tgt(ct);
 }
 
-static void file_close_ungrac(CuTest *ct)
+static void beam_close_ungrac(CuTest *ct)
 {
-	int tgt_id, fd;
+	int tgt_id, beam_id;
 
-	/* Not close fd; delete file -> Blocks are returned to MM */
 	create_tgt(ct);
 	tgt_id = nvm_target_open("test1", 0);
 	CuAssertTrue(ct, tgt_id > 0);
 
-	file_id = nvm_file_create(tgt_id, 0, 0);
-	CuAssertTrue(ct, file_id > 0);
+	beam_id = nvm_beam_create(tgt_id, 0, 0);
+	CuAssertTrue(ct, beam_id > 0);
 
-	fd = nvm_file_open(file_id, 0);
-	CuAssertTrue(ct, fd > 0);
-
-	nvm_file_delete(file_id, 0);
+	nvm_beam_destroy(beam_id, 0);
 	nvm_target_close(tgt_id);
 
 	remove_tgt(ct);
 
-	/* Not close fd; not delete file -> Blocks are not returned to MM */
 	create_tgt(ct);
 	tgt_id = nvm_target_open("test1", 0);
 	CuAssertTrue(ct, tgt_id > 0);
 
-	file_id = nvm_file_create(tgt_id, 0, 0);
-	CuAssertTrue(ct, file_id > 0);
-
-	fd = nvm_file_open(file_id, 0);
-	CuAssertTrue(ct, fd > 0);
+	beam_id = nvm_beam_create(tgt_id, 0, 0);
+	CuAssertTrue(ct, beam_id > 0);
 
 	nvm_target_close(tgt_id);
 
@@ -125,43 +112,38 @@ static void file_close_ungrac(CuTest *ct)
 }
 
 /*
- * Append and read back from file.
+ * Append and read back from beam.
  *	- Append: payload < PAGE_SIZE
  *	- Read: All
  *	- open - append - close - open - read - close
  */
-static void file_ar1(CuTest *ct)
+static void beam_ar1(CuTest *ct)
 {
 	size_t written, read;
 	char test[100] = "Hello World\n";
 	char test2[100];
-	int tgt_id, fd;
+	int tgt_id, beam_id;
+	int ret;
 
 	create_tgt(ct);
 	tgt_id = nvm_target_open("test1", 0);
 	CuAssertTrue(ct, tgt_id > 0);
 
-	file_id = nvm_file_create(tgt_id, 0, 0);
-	CuAssertTrue(ct, file_id > 0);
+	beam_id = nvm_beam_create(tgt_id, 0, 0);
+	CuAssertTrue(ct, beam_id > 0);
 
-	fd = nvm_file_open(file_id, 0);
-	CuAssertTrue(ct, fd > 0);
-
-	written = nvm_file_append(fd, test, 12);
+	written = nvm_beam_append(beam_id, test, 12);
 	CuAssertIntEquals(ct, 12, written);
 
-	nvm_file_close(fd, 0);
+	ret = nvm_beam_sync(beam_id, 0);
+	CuAssertIntEquals(ct, 0, ret);
 
-	fd = nvm_file_open(file_id, 0);
-	CuAssertTrue(ct, fd > 0);
-
-	read = nvm_file_read(fd, test2, written, 0, 0);
+	read = nvm_beam_read(beam_id, test2, written, 0, 0);
 	CuAssertIntEquals(ct, written, read);
 
 	CuAssertByteArrayEquals(ct, test, test2, 12, 12);
 
-	nvm_file_close(fd, 0);
-	nvm_file_delete(file_id, 0);
+	nvm_beam_destroy(beam_id, 0);
 	nvm_target_close(tgt_id);
 
 	remove_tgt(ct);
@@ -177,118 +159,113 @@ static void init_data_test(char *buf, size_t len)
 	}
 }
 
-#define FILE_AR_ALL 1
-#define FILE_AR_1K_BYTES 2
-#define FILE_AR_1_BYTE 4
-static void file_ar_generic(CuTest *ct, char *src, char *dst, size_t len,
+#define TEST_AR_ALL 1
+#define TEST_AR_1K_BYTES 2
+#define TEST_AR_1_BYTE 4
+static void beam_ar_generic(CuTest *ct, char *src, char *dst, size_t len,
 								int flags)
 {
 	size_t written, read;
-	int tgt_id, fd;
+	int tgt_id, beam_id;
+	int ret;
 	size_t i;
 
 	create_tgt(ct);
 	tgt_id = nvm_target_open("test1", 0);
 	CuAssertTrue(ct, tgt_id > 0);
 
-	file_id = nvm_file_create(tgt_id, 0, 0);
-	CuAssertTrue(ct, file_id > 0);
+	beam_id = nvm_beam_create(tgt_id, 0, 0);
+	CuAssertTrue(ct, beam_id > 0);
 
-	fd = nvm_file_open(file_id, 0);
-	CuAssertTrue(ct, fd > 0);
-
-	written = nvm_file_append(fd, src, len);
+	written = nvm_beam_append(beam_id, src, len);
 	CuAssertIntEquals(ct, len, written);
 
-	nvm_file_close(fd, 0);
+	ret = nvm_beam_sync(beam_id, 0);
+	CuAssertIntEquals(ct, 0, ret);
 
-	fd = nvm_file_open(file_id, 0);
-	CuAssertTrue(ct, fd > 0);
-
-	read = nvm_file_read(fd, dst, written, 0, 0);
+	read = nvm_beam_read(beam_id, dst, written, 0, 0);
 	CuAssertIntEquals(ct, written, read);
 
 	CuAssertByteArrayEquals(ct, src, dst, len, len);
 
-	if (flags & FILE_AR_1K_BYTES) {
+	if (flags & TEST_AR_1K_BYTES) {
 		/* read in 1000 byte chunks */
 		memset(dst, 0, len);
 
 		for (i = 0; i < len / 1000; i++) {
 			int offset = i * 1000;
-			read = nvm_file_read(fd, dst + offset, 1000, offset, 0);
+			read = nvm_beam_read(beam_id, dst + offset, 1000, offset, 0);
 			CuAssertIntEquals(ct, 1000, read);
 		}
 
 		CuAssertByteArrayEquals(ct, src, dst, len, len);
 	}
 
-	if (flags & FILE_AR_1_BYTE) {
+	if (flags & TEST_AR_1_BYTE) {
 		/* read in 1 byte chunks */
 		memset(dst, 0, len);
 
 		for (i = 0; i < len; i++) {
-			read = nvm_file_read(fd, dst+ i, 1, i, 0);
+			read = nvm_beam_read(beam_id, dst+ i, 1, i, 0);
 			CuAssertIntEquals(ct, 1, read);
 		}
 
 		CuAssertByteArrayEquals(ct, src, dst, len, len);
 	}
 
-	nvm_file_close(fd, 0);
-	nvm_file_delete(file_id, 0);
+	nvm_beam_destroy(beam_id, 0);
 	nvm_target_close(tgt_id);
 
 	remove_tgt(ct);
 }
 
 /*
- * Append and read back from file.
+ * Append and read back from beam.
  *	- Append: PAGE_SIZE < payload < BLOCK_SIZE
  *	- Read: All, 1000 byte chunks, 1 byte chunks
  *	- open - append - close - open - read - close
  */
-static void file_ar2(CuTest *ct)
+static void beam_ar2(CuTest *ct)
 {
 	char test[5000];
 	char test2[5000];
-	int flags = FILE_AR_ALL | FILE_AR_1K_BYTES | FILE_AR_1_BYTE;
+	int flags = TEST_AR_ALL | TEST_AR_1K_BYTES | TEST_AR_1_BYTE;
 
 	init_data_test(test, 5000);
-	file_ar_generic(ct, test, test2, 5000, flags);
+	beam_ar_generic(ct, test, test2, 5000, flags);
 }
 
 /*
- * Append and read back from file.
+ * Append and read back from beam.
  *	- Append: payload is multiple pages in same block
  *	- Read: All, 1000 byte chunks, 1 byte chunks
  *	- open - append - close - open - read - close
  */
-static void file_ar3(CuTest *ct)
+static void beam_ar3(CuTest *ct)
 {
 	char test[50000];
 	char test2[50000];
-	int flags = FILE_AR_ALL | FILE_AR_1K_BYTES | FILE_AR_1_BYTE;
+	int flags = TEST_AR_ALL | TEST_AR_1K_BYTES | TEST_AR_1_BYTE;
 
 	init_data_test(test, 50000);
-	file_ar_generic(ct, test, test2, 50000, flags);
+	beam_ar_generic(ct, test, test2, 50000, flags);
 }
 
 /*
- * Append and read back from file.
+ * Append and read back from beam.
  *	- Append: payload > BLOCK_SIZE
  *	- Read: All, 1000 byte chunks, 1 byte chunks
  *	- open - append - close - open - read - close
  */
-static void file_ar4(CuTest *ct)
+static void beam_ar4(CuTest *ct)
 {
 	size_t test_size = 2000000;
 	char test[test_size];
 	char test2[test_size];
-	int flags = FILE_AR_ALL | FILE_AR_1K_BYTES;
+	int flags = TEST_AR_ALL | TEST_AR_1K_BYTES;
 
 	init_data_test(test, test_size);
-	file_ar_generic(ct, test, test2, test_size, flags);
+	beam_ar_generic(ct, test, test2, test_size, flags);
 }
 
 static void exit_lib(CuTest *ct)
@@ -303,12 +280,12 @@ CuSuite *append_GetSuite()
 	SUITE_ADD_TEST(per_test_suite, init_lib);
 	SUITE_ADD_TEST(per_test_suite, create_tgt);
 	SUITE_ADD_TEST(per_test_suite, remove_tgt);
-	SUITE_ADD_TEST(per_test_suite, create_file);
-	SUITE_ADD_TEST(per_test_suite, file_close_ungrac);
-	SUITE_ADD_TEST(per_test_suite, file_ar1);
-	SUITE_ADD_TEST(per_test_suite, file_ar2);
-	SUITE_ADD_TEST(per_test_suite, file_ar3);
-	SUITE_ADD_TEST(per_test_suite, file_ar4);
+	SUITE_ADD_TEST(per_test_suite, create_beam);
+	SUITE_ADD_TEST(per_test_suite, beam_close_ungrac);
+	SUITE_ADD_TEST(per_test_suite, beam_ar1);
+	SUITE_ADD_TEST(per_test_suite, beam_ar2);
+	SUITE_ADD_TEST(per_test_suite, beam_ar3);
+	SUITE_ADD_TEST(per_test_suite, beam_ar4);
 	SUITE_ADD_TEST(per_test_suite, exit_lib);
 }
 
