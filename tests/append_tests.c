@@ -291,9 +291,9 @@ static void file_ar4(CuTest *ct)
 	file_ar_generic(ct, test, test2, test_size, flags);
 }
 
-static void fini_lib(CuTest *ct)
+static void exit_lib(CuTest *ct)
 {
-	nvm_fini();
+	nvm_exit();
 }
 
 CuSuite *append_GetSuite()
@@ -309,7 +309,7 @@ CuSuite *append_GetSuite()
 	SUITE_ADD_TEST(per_test_suite, file_ar2);
 	SUITE_ADD_TEST(per_test_suite, file_ar3);
 	SUITE_ADD_TEST(per_test_suite, file_ar4);
-	SUITE_ADD_TEST(per_test_suite, fini_lib);
+	SUITE_ADD_TEST(per_test_suite, exit_lib);
 }
 
 void run_all_test(void)

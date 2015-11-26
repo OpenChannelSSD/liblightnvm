@@ -31,7 +31,7 @@ extern "C" {
 #include <sys/types.h>
 #include <linux/lightnvm.h>
 
-/* mgmt.c */
+/* Management - mgmt.c */
 int nvm_get_info(struct nvm_ioctl_info *);
 int nvm_get_devices(struct nvm_ioctl_get_devices *);
 int nvm_create_target(struct nvm_ioctl_tgt_create *);
@@ -39,25 +39,20 @@ int nvm_remove_target(struct nvm_ioctl_tgt_remove *);
 int nvm_get_device_info(struct nvm_ioctl_dev_info *);
 int nvm_get_target_info(struct nvm_ioctl_tgt_info *);
 
-/* core library */
-int nvm_init();
-void nvm_fini();
-int nvm_get_nbeams();
-int nvm_get_beam_prop(int beam_id);
+// int nvm_get_lun_info(int lun);
+// int nvm_get_nluns();
 
-/* flash_append.c */
+/* Append store functionality - flash_append.c */
 int nvm_target_open(const char *tgt, int flags);
 void nvm_target_close(int tgt);
-int nvm_file_create(int tgt, int beam_id, int flags);
-void nvm_file_delete(int fid, int flags);
-int nvm_file_open(int fid, int flags);
-void nvm_file_close(int fd, int flags);
-ssize_t nvm_file_append(int fd, const void *buf, size_t count);
-ssize_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags);
-int nvm_file_sync(int fd, int flags);
+int nvm_beam_create(int tgt, int lun, int flags);
+void nvm_beam_destroy(int beam, int flags);
+ssize_t nvm_beam_append(int beam, const void *buf, size_t count);
+ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags);
+int nvm_beam_sync(int beam, int flags);
 
-/* unittests */
-int nvm_test_lib();
+int nvm_init();
+void nvm_exit();
 
 #ifdef __cplusplus
 }

@@ -22,7 +22,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include "flash_file.h"
+#include "flash_beam.h"
 #include "assert.h"
 
 int flash_write(int tgt, struct vblock *vblock, const char *buf,

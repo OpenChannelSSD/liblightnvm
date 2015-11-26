@@ -1,5 +1,5 @@
 /*
- * flash_file - File abstraction for flash memories
+ * flash beam - File abstraction for flash memories
  *
  * Copyright (C) 2015 Javier Gonzalez <javier@cnexlabs.com>
  *
@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
  *
  */
-#ifndef __FLASH_FILE_H
-#define __FLASH_FILE_H
+#ifndef __FLASH_BEAM_H
+#define __FLASH_BEAM_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,31 +85,20 @@ struct w_buffer {
 };
 
 /* TODO: Allocate dynamic number of blocks */
-struct flash_file {
+struct beam {
 	int gid;				/* internal global identifier */
-	int tgt;				/* fd of LightNVM target */
-	int beam_id;				/* beam associated with file */
+	int tgt;				/* LightNVM target */
+	int lun;				/* lun associated with beam*/
 	struct vblock *current_w_vblock;	/* current block in use */
 	struct vblock vblocks[MAX_BLOCKS];	/* vblocks forming the file */
 	int nvblocks;				/* number of vblocks */
 	struct w_buffer w_buffer;		/* write buffer */
 	unsigned long bytes;			/* valid bytes */
-	struct timespec atime;			/* last access time */
-	struct timespec mtime;			/* last modify time */
-	struct timespec ctime;			/* last change time */
 	UT_hash_handle hh;			/* hash handle for uthash */
-};
-
-struct flash_fdentry {
-	// uint32_t max_fds;		#<{(| Max number of fds |)}>#
-	int fd;				/* File descriptor */
-	struct flash_file *dfile;	/* Flash file associate with the fd */
-	UT_hash_handle hh;		/* hash handle for uthash */
 };
 
 static inline void atomic_init(struct atomic_cnt *cnt)
 {
-
 	pthread_spin_init(&cnt->lock, PTHREAD_PROCESS_SHARED);
 }
 
@@ -160,4 +149,4 @@ int flash_write(int tgt, struct vblock *vblock, const char *buf,
 int flash_read(int tgt, struct vblock *vblock, void *buf, size_t ppa_off,
 					size_t count);
 
-#endif /* __FLASH_FILE_H */
+#endif /* __FLASH_BEAM_H */

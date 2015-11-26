@@ -29,9 +29,9 @@
 #include <liblightnvm.h>
 
 #include "likely.h"
-#include "flash_file.h"
+#include "flash_beam.h"
 
-static struct atomic_cnt flash_file_guid = {
+static struct atomic_cnt beam_guid = {
 	.cnt = 0,
 };
 
@@ -42,30 +42,9 @@ static struct atomic_cnt fd_guid = {
 static struct lnvm_device *devt = NULL;
 static struct lnvm_target *tgtt = NULL;
 static struct lnvm_target_map *tgtmt = NULL;
-static struct flash_file *dfilet = NULL;
-static struct flash_fdentry *fdt = NULL;
+static struct beam *beamt = NULL;
 
-static void file_init(struct flash_file *f, int beam_id, int tgt)
-{
-	atomic_assign_inc(&flash_file_guid, &f->gid);
-	f->tgt = tgt;
-	f->beam_id = beam_id;
-	f->nvblocks = 0;
-	f->bytes = 0;
-
-	f->w_buffer.buf = NULL;
-	f->w_buffer.mem = NULL;
-	f->w_buffer.sync = NULL;
-	f->w_buffer.buf_limit = 0;
-	f->w_buffer.cursize = 0;
-	f->w_buffer.cursync = 0;
-
-	f->current_w_vblock = NULL;
-
-	/* TODO: Access times */
-}
-
-static void file_buf_free(struct w_buffer *buf)
+static void beam_buf_free(struct w_buffer *buf)
 {
 	if (buf->buf) {
 		free(buf->buf);
@@ -75,101 +54,114 @@ static void file_buf_free(struct w_buffer *buf)
 	}
 }
 
-static void file_put_blocks(struct flash_file *f)
+static void beam_put_blocks(struct beam *beam)
 {
 	int i;
 
-	for(i = 0; i < f->nvblocks; i++) {
-		put_block(f->tgt, &f->vblocks[i]);
+	for (i = 0; i < beam->nvblocks; i++) {
+		put_block(beam->tgt, &beam->vblocks[i]);
 	}
 }
 
-static void file_free(struct flash_file *f)
+static void beam_free(struct beam *beam)
 {
-	file_buf_free(&f->w_buffer);
-	free(f);
+	beam_put_blocks(beam);
+	beam_buf_free(&beam->w_buffer);
+	free(beam);
 }
 
 /* XXX: All block functions assume that block allocation is thread safe */
 /* TODO: Allocate blocks dynamically */
-static int switch_block(struct flash_file **f)
+static int switch_block(struct beam **beam)
 {
 	size_t buf_size;
 	int ret;
 
 	/* Write buffer for small writes */
-	buf_size = get_npages_block(&(*f)->vblocks[(*f)->nvblocks] - 1) *
+	buf_size = get_npages_block(&(*beam)->vblocks[(*beam)->nvblocks] - 1) *
 								PAGE_SIZE;
-	if (buf_size != (*f)->w_buffer.buf_limit) {
+	if (buf_size != (*beam)->w_buffer.buf_limit) {
 		LNVM_DEBUG("Allocating new write buffer of size %lu\n",
 								buf_size);
-		free((*f)->w_buffer.buf);
-		ret = posix_memalign(&(*f)->w_buffer.buf, PAGE_SIZE, buf_size);
+		free((*beam)->w_buffer.buf);
+		ret = posix_memalign(&(*beam)->w_buffer.buf, PAGE_SIZE, buf_size);
 		if (ret) {
 			LNVM_DEBUG("Cannot allocate memory "
 					" (%lu bytes - align. %d)\n",
 				buf_size, PAGE_SIZE);
 			return ret;
 		}
-		(*f)->w_buffer.buf_limit = buf_size;
+		(*beam)->w_buffer.buf_limit = buf_size;
 	}
 
-	(*f)->w_buffer.mem = (*f)->w_buffer.buf;
-	(*f)->w_buffer.sync = (*f)->w_buffer.buf;
-	(*f)->w_buffer.cursize = 0;
-	(*f)->w_buffer.cursync = 0;
+	(*beam)->w_buffer.mem = (*beam)->w_buffer.buf;
+	(*beam)->w_buffer.sync = (*beam)->w_buffer.buf;
+	(*beam)->w_buffer.cursize = 0;
+	(*beam)->w_buffer.cursync = 0;
 
-	(*f)->current_w_vblock = &(*f)->vblocks[(*f)->nvblocks - 1];
+	(*beam)->current_w_vblock = &(*beam)->vblocks[(*beam)->nvblocks - 1];
 
-	LNVM_DEBUG("Block switched. File: %lu, id: %lu. Total blocks: %d\n",
-			(*f)->gid,
-			(*f)->current_w_vblock->id,
-			(*f)->nvblocks);
+	LNVM_DEBUG("Block switched. Beam: %d, id: %d. Total blocks: %d\n",
+			(*beam)->gid,
+			(*beam)->current_w_vblock->id,
+			(*beam)->nvblocks);
 
 	return 0;
 }
 
-static int preallocate_block(struct flash_file *f)
+static int preallocate_block(struct beam *beam)
 {
-	struct vblock *vblock = &f->vblocks[f->nvblocks];
+	struct vblock *vblock = &beam->vblocks[beam->nvblocks];
 	int ret = 0;
 
-	ret = get_block(f->tgt, f->beam_id, vblock);
+	ret = get_block(beam->tgt, beam->lun, vblock);
 	if (ret) {
-		LNVM_DEBUG("Could not allocate a new block for file %lu\n",
-				f->gid);
+		LNVM_DEBUG("Could not allocate a new block for beam %d\n",
+				beam->gid);
 		goto out;
 	}
 
-	LNVM_DEBUG("Block preallocated (pos:%d). File: %lu, id: %lu, "
+	LNVM_DEBUG("Block preallocated (pos:%d). Beam: %d, id: %d, "
 			" bppa: %lu\n",
-			f->nvblocks,
-			f->gid,
-			f->vblocks[f->nvblocks].id,
-			f->vblocks[f->nvblocks].bppa);
+			beam->nvblocks,
+			beam->gid,
+			beam->vblocks[beam->nvblocks].id,
+			beam->vblocks[beam->nvblocks].bppa);
 
-	f->nvblocks++;
+	beam->nvblocks++;
 out:
 	return ret;
 }
 
-static int allocate_block(struct flash_file *f)
+static int allocate_block(struct beam *beam)
 {
 	int ret;
 
-	ret = preallocate_block(f);
+	// TODO: Retry if preallocation fails - when saving metadata
+	ret = preallocate_block(beam);
 	if (ret)
 		goto out;
-	ret = switch_block(&f);
+	ret = switch_block(&beam);
 
 out:
 	return ret;
 }
 
-static int file_sync(int fd, struct flash_file *f, int flags)
+static int beam_init(struct beam *beam, int lun, int tgt)
 {
-	size_t sync_len = f->w_buffer.cursize - f->w_buffer.cursync;
-	size_t ppa_off = calculate_ppa_off(f->w_buffer.cursync);
+	atomic_assign_inc(&beam_guid, &beam->gid);
+	beam->tgt = tgt;
+	beam->lun = lun;
+	beam->nvblocks = 0;
+	beam->bytes = 0;
+
+	return allocate_block(beam);
+}
+
+static int beam_sync(struct beam *beam, int flags)
+{
+	size_t sync_len = beam->w_buffer.cursize - beam->w_buffer.cursync;
+	size_t ppa_off = calculate_ppa_off(beam->w_buffer.cursync);
 	size_t disaligned_data = sync_len % PAGE_SIZE;
 	size_t synced_bytes;
 	int synced_pages;
@@ -180,16 +172,17 @@ static int file_sync(int fd, struct flash_file *f, int flags)
 		return 0;
 
 	if (flags & FORCE_SYNC) {
-		if (f->w_buffer.cursync + sync_len == f->w_buffer.buf_limit) {
+		if (beam->w_buffer.cursync + sync_len ==
+						beam->w_buffer.buf_limit) {
 			/* TODO: Metadata */
 		}
 
 		if (disaligned_data > 0) {
 			/* Add padding to current page */
 			int padding = PAGE_SIZE - disaligned_data;
-			memset(f->w_buffer.mem, '\0', padding);
-			f->w_buffer.cursize += padding;
-			f->w_buffer.mem += padding;
+			memset(beam->w_buffer.mem, '\0', padding);
+			beam->w_buffer.cursize += padding;
+			beam->w_buffer.mem += padding;
 
 			npages++;
 		}
@@ -198,8 +191,8 @@ static int file_sync(int fd, struct flash_file *f, int flags)
 	}
 
 	/* write data to media */
-	synced_pages = flash_write(f->tgt, f->current_w_vblock, f->w_buffer.sync,
-					ppa_off, npages);
+	synced_pages = flash_write(beam->tgt, beam->current_w_vblock,
+					beam->w_buffer.sync, ppa_off, npages);
 	if (synced_pages != npages) {
 		LNVM_DEBUG("Error syncing data\n");
 		return -1;
@@ -207,17 +200,17 @@ static int file_sync(int fd, struct flash_file *f, int flags)
 
 	/* We might need to take a lock here */
 	synced_bytes = synced_pages * PAGE_SIZE;
-	f->bytes += synced_bytes;
-	f->w_buffer.cursync += synced_bytes;
-	f->w_buffer.sync += synced_bytes;
+	beam->bytes += synced_bytes;
+	beam->w_buffer.cursync += synced_bytes;
+	beam->w_buffer.sync += synced_bytes;
 
-	LNVM_DEBUG("Synced bytes: %lu (%d pages)\n",
-			synced_bytes, synced_pages);
+	LNVM_DEBUG("Synced bytes: %lu (%d pages)\n", synced_bytes, synced_pages);
 
 	/* TODO: Access times */
 	return 0;
 }
 
+#if 0
 static void clean_fd(struct flash_fdentry *fd_entry)
 {
 	HASH_DEL(fdt, fd_entry);
@@ -226,7 +219,7 @@ static void clean_fd(struct flash_fdentry *fd_entry)
 	/* FIXME: For now, free write buffer here. In the future we might want
 	 * to maintain this buffer as a page cache for reads
 	 */
-	file_buf_free(&fd_entry->dfile->w_buffer);
+	beam_buf_free(&fd_entry->dfile->w_buffer);
 	free(fd_entry);
 }
 
@@ -239,6 +232,7 @@ static void clean_file_fd(int gid) {
 		}
 	}
 }
+#endif
 
 static void device_clean(struct lnvm_device *dev)
 {
@@ -258,15 +252,15 @@ static void target_clean(struct lnvm_target *tgt)
 
 static void target_ins_clean(int tgt)
 {
-	struct flash_file *f, *f_tmp;
+	struct beam *b, *b_tmp;
 	struct lnvm_target *t;
 	struct lnvm_target_map *tm;
 
-	/* Assume only one target and that all files belong to that target*/
-	HASH_ITER(hh, dfilet, f, f_tmp) {
-		clean_file_fd(f->gid);
-		HASH_DEL(dfilet, f);
-		file_free(f);
+	HASH_ITER(hh, beamt, b, b_tmp) {
+		if (b->tgt == tgt) {
+			HASH_DEL(beamt, b);
+			beam_free(b);
+		}
 	}
 
 	HASH_FIND_INT(tgtmt, &tgt, tm);
@@ -278,8 +272,8 @@ static void target_ins_clean(int tgt)
 		free(tm);
 	}
 
-	assert(HASH_COUNT(fdt) == 0);
-	assert(HASH_COUNT(dfilet) == 0);
+	// At the moment we only have one target
+	assert(HASH_COUNT(beamt) == 0);
 }
 
 static inline int get_tgt_info(char *tgt, char *dev,
@@ -453,42 +447,46 @@ void nvm_target_close(int tgt)
 	target_ins_clean(tgt);
 }
 
-int nvm_file_create(int tgt, int beam_id, int flags)
+int nvm_beam_create(int tgt, int lun, int flags)
 {
-	struct flash_file *f;
+	struct beam *beam;
+	int ret;
 
-	f = malloc(sizeof(struct flash_file));
-	if (!f)
+	LNVM_DEBUG("TOGO: nvm_beam create\n");
+	beam = malloc(sizeof(struct beam));
+	if (!beam)
 		return -ENOMEM;
 
-	file_init(f, beam_id, tgt);
-	HASH_ADD_INT(dfilet, gid, f);
-	LNVM_DEBUG("Created flash file (p:%p, id:%lu). Target: %d\n",
-			f, f->gid, tgt);
+	ret = beam_init(beam, lun, tgt);
+	if (ret)
+		goto error;
 
-	return f->gid;
+	HASH_ADD_INT(beamt, gid, beam);
+	LNVM_DEBUG("Created flash beam (p:%p, id:%d). Target: %d\n",
+			beam, beam->gid, tgt);
+
+	return beam->gid;
+
+error:
+	free(beam);
+	return ret;
 }
 
-void nvm_file_delete(int fid, int flags)
+void nvm_beam_destroy(int beam, int flags)
 {
-	struct flash_file *f;
+	struct beam *b;
 
-	LNVM_DEBUG("Deleting file with id %lu\n", fid);
+	LNVM_DEBUG("Deleting beam with id %d\n", beam);
 
-	HASH_FIND_INT(dfilet, &fid, f);
-	clean_file_fd(fid);
-	HASH_DEL(dfilet, f);
-	file_put_blocks(f);
-	file_free(f);
+	HASH_FIND_INT(beamt, &beam, b);
+	HASH_DEL(beamt, b);
+	beam_free(b);
 }
 
-/*
- * TODO: Assign different file descriptors to same flash file. For now access
- * flash files by file id
- */
+#if 0
 int nvm_file_open(int fid, int flags)
 {
-	struct flash_file *f;
+	struct beam *f;
 	struct flash_fdentry *fd_entry;
 	int ret = 0;
 
@@ -525,7 +523,7 @@ error:
 void nvm_file_close(int fd, int flags)
 {
 	struct flash_fdentry *fd_entry;
-	struct flash_file *f;
+	struct beam *f;
 
 	HASH_FIND_INT(fdt, &fd, fd_entry);
 	if (!fd_entry) {
@@ -539,68 +537,68 @@ void nvm_file_close(int fd, int flags)
 
 	clean_fd(fd_entry);
 }
+#endif
+
 
 /* TODO: Implement a pool of available bloks to support double buffering */
 /*
  * TODO: Flush pages in a different thread as write buffer gets filled up,
  * instead of flushing the whole block at a time
  */
-ssize_t nvm_file_append(int fd, const void *buf, size_t count)
+ssize_t nvm_beam_append(int beam, const void *buf, size_t count)
 {
-	struct flash_fdentry *fd_entry;
-	struct flash_file *f;
+	struct beam *b;
 	size_t offset = 0;
 	size_t left = count;
 	int ret;
 
-	HASH_FIND_INT(fdt, &fd, fd_entry);
-	if (!fd_entry) {
-		LNVM_DEBUG("File descriptor %d does not exist\n", fd);
+	HASH_FIND_INT(beamt, &beam, b);
+	if (!b) {
+		LNVM_DEBUG("Beam %d does not exits\n", beam);
 		return -EINVAL;
 	}
-	f = fd_entry->dfile;
 
-	LNVM_DEBUG("Append %lu bytes to file %lu (p:%p, fd:%d). Csize:%lu, "
+	LNVM_DEBUG("Append %lu bytes to beam %lu (p:%p, b:%d). Csize:%lu, "
 			"Csync:%lu, BL:%lu\n",
 				count,
-				f->gid, f,
-				fd,
-				f->w_buffer.cursize,
-				f->w_buffer.cursync,
-				f->w_buffer.buf_limit);
+				b->gid, b,
+				beam,
+				b->w_buffer.cursize,
+				b->w_buffer.cursync,
+				b->w_buffer.buf_limit);
 
-	while (f->w_buffer.cursize + left > f->w_buffer.buf_limit) {
+	while (b->w_buffer.cursize + left > b->w_buffer.buf_limit) {
 		LNVM_DEBUG("Block overflow. Csize:%lu, Csync:%lu, BL:%lu "
 				"left:%lu\n",
-				f->w_buffer.cursize,
-				f->w_buffer.cursync,
-				f->w_buffer.buf_limit,
+				b->w_buffer.cursize,
+				b->w_buffer.cursync,
+				b->w_buffer.buf_limit,
 				left);
-		size_t fits_buf = f->w_buffer.buf_limit - f->w_buffer.cursize;
-		ret = preallocate_block(f);
+		size_t fits_buf = b->w_buffer.buf_limit - b->w_buffer.cursize;
+		ret = preallocate_block(b);
 		if (ret)
 			return ret;
-		memcpy(f->w_buffer.mem, buf, fits_buf);
-		f->w_buffer.mem += fits_buf;
-		f->w_buffer.cursize += fits_buf;
-		if (file_sync(fd, f, FORCE_SYNC)) {
-			LNVM_DEBUG("Cannot force sync for file %lu\n", f->gid);
+		memcpy(b->w_buffer.mem, buf, fits_buf);
+		b->w_buffer.mem += fits_buf;
+		b->w_buffer.cursize += fits_buf;
+		if (beam_sync(b, FORCE_SYNC)) {
+			LNVM_DEBUG("Cannot force sync for beam %d\n", b->gid);
 			return -ENOSPC;
 		}
-		switch_block(&f);
+		switch_block(&b);
 
 		left -= fits_buf;
 		offset += fits_buf;
 	}
 
-	memcpy(f->w_buffer.mem, buf + offset, left);
-	f->w_buffer.mem += left;
-	f->w_buffer.cursize += left;
+	memcpy(b->w_buffer.mem, buf + offset, left);
+	b->w_buffer.mem += left;
+	b->w_buffer.cursize += left;
 
 	return count;
 }
 
-int nvm_file_sync(int fd, int flags)
+int nvm_beam_sync(int beam, int flags)
 {
 	return 0;
 }
@@ -608,10 +606,9 @@ int nvm_file_sync(int fd, int flags)
 /*
  * Flag for aligned buffer
  */
-ssize_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
+ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags)
 {
-	struct flash_fdentry *fd_entry;
-	struct flash_file *f;
+	struct beam *b;
 	struct vblock *current_r_vblock;
 	size_t block_off, ppa_off, page_off;
 	size_t ppa_count;
@@ -630,29 +627,27 @@ ssize_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
 	char *writer = buf;
 	int ret;
 
-	HASH_FIND_INT(fdt, &fd, fd_entry);
-	if (!fd_entry) {
-		LNVM_DEBUG("File descriptor %d does not exist\n", fd);
+	HASH_FIND_INT(beamt, &beam, b);
+	if (!b) {
+		LNVM_DEBUG("Beam %d does not exits\n", beam);
 		return -EINVAL;
 	}
-	f = fd_entry->dfile;
-	/* cache = f->w_buffer.mem; */
 
-	LNVM_DEBUG("Read %lu bytes (pgs:%lu) from file %lu (p:%p, fd:%d). Off:%lu\n",
+	LNVM_DEBUG("Read %lu bytes (pgs:%lu) from beam %d (p:%p, b:%d). Off:%lu\n",
 			count, left_pages,
-			f->gid, f,
-			fd,
+			b->gid, b,
+			beam,
 			offset);
 
-	/* Assume that all blocks forming the file have same size */
-	nppas = get_npages_block(&f->vblocks[0]);
+	/* Assume that all blocks forming the beam have same size */
+	nppas = get_npages_block(&b->vblocks[0]);
 
 	ppa_count = offset / PAGE_SIZE;
 	block_off = ppa_count/ nppas;
 	ppa_off = ppa_count % nppas;
 	page_off = offset % PAGE_SIZE;
 
-	current_r_vblock = &f->vblocks[block_off];
+	current_r_vblock = &b->vblocks[block_off];
 
 	pages_to_read = (nppas > left_pages) ? left_pages : nppas;
 	ret = posix_memalign(&read_buf, PAGE_SIZE, pages_to_read * PAGE_SIZE);
@@ -678,7 +673,7 @@ ssize_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
 
 		assert(left_bytes <= left_pages * PAGE_SIZE);
 
-		read_pages = flash_read(f->tgt, current_r_vblock, reader,
+		read_pages = flash_read(b->tgt, current_r_vblock, reader,
 						ppa_off, pages_to_read);
 		if (read_pages != pages_to_read)
 			return -1;
@@ -692,7 +687,7 @@ ssize_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
 		block_off++;
 		ppa_off = 0;
 		page_off = 0;
-		current_r_vblock = &f->vblocks[block_off];
+		current_r_vblock = &b->vblocks[block_off];
 
 		left_pages -= read_pages;
 		left_bytes -= valid_bytes;
@@ -708,16 +703,16 @@ ssize_t nvm_file_read(int fd, void *buf, size_t count, off_t offset, int flags)
 int nvm_init()
 {
 	pthread_spin_init(&fd_guid.lock, PTHREAD_PROCESS_SHARED);
-	pthread_spin_init(&flash_file_guid.lock, PTHREAD_PROCESS_SHARED);
+	pthread_spin_init(&beam_guid.lock, PTHREAD_PROCESS_SHARED);
 
 	/* TODO: Recover state */
 	return 0;
 }
 
-void nvm_fini()
+void nvm_exit()
 {
 	pthread_spin_destroy(&fd_guid.lock);
-	pthread_spin_destroy(&flash_file_guid.lock);
+	pthread_spin_destroy(&beam_guid.lock);
 
 	/* TODO: save state */
 }
