@@ -4,4 +4,15 @@ LIBLIGHTNVM_0.1 {
 		nvm_get_devices;
 		nvm_create_target;
 		nvm_remove_target;
+		nvm_get_device_info;
+		nvm_get_target_info;
+		nvm_target_open;
+		nvm_target_close;
+		nvm_beam_create;
+		nvm_beam_destroy;
+		nvm_beam_append;
+		nvm_beam_read;
+		nvm_beam_sync;
+	local:
+		*;
 };
