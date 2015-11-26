@@ -155,6 +155,9 @@ static int beam_init(struct beam *beam, int lun, int tgt)
 	beam->nvblocks = 0;
 	beam->bytes = 0;
 
+	beam->w_buffer.buf_limit = 0;
+	beam->w_buffer.buf = NULL;
+
 	return allocate_block(beam);
 }
 
@@ -209,30 +212,6 @@ static int beam_sync(struct beam *beam, int flags)
 	/* TODO: Access times */
 	return 0;
 }
-
-#if 0
-static void clean_fd(struct flash_fdentry *fd_entry)
-{
-	HASH_DEL(fdt, fd_entry);
-	LNVM_DEBUG("Closed fd %lu for file %lu\n",
-			fd_entry->fd, fd_entry->dfile->gid);
-	/* FIXME: For now, free write buffer here. In the future we might want
-	 * to maintain this buffer as a page cache for reads
-	 */
-	beam_buf_free(&fd_entry->dfile->w_buffer);
-	free(fd_entry);
-}
-
-static void clean_file_fd(int gid) {
-	struct flash_fdentry *fd_entry, *tmp;
-
-	HASH_ITER(hh, fdt, fd_entry, tmp) {
-		if (fd_entry->dfile->gid == gid) {
-			clean_fd(fd_entry);
-		}
-	}
-}
-#endif
 
 static void device_clean(struct lnvm_device *dev)
 {
@@ -483,62 +462,6 @@ void nvm_beam_destroy(int beam, int flags)
 	beam_free(b);
 }
 
-#if 0
-int nvm_file_open(int fid, int flags)
-{
-	struct beam *f;
-	struct flash_fdentry *fd_entry;
-	int ret = 0;
-
-	HASH_FIND_INT(dfilet, &fid, f);
-	if (!f) {
-		LNVM_DEBUG("File with id %lu does not exist\n", fid);
-		return -EINVAL;
-	}
-
-	if (!f->current_w_vblock) {
-		ret = allocate_block(f);
-		if (ret)
-			goto error;
-	}
-
-	fd_entry = malloc(sizeof(struct flash_fdentry));
-	if (!fd_entry) {
-		ret = -ENOMEM;
-		goto error;
-	}
-
-	atomic_assign_inc(&fd_guid, &fd_entry->fd);
-	fd_entry->dfile = f;
-	HASH_ADD_INT(fdt, fd, fd_entry);
-
-	LNVM_DEBUG("Opened fd %lu for file %lu\n", fd_entry->fd, fid);
-	return fd_entry->fd;
-
-error:
-	free(f->w_buffer.buf);
-	return ret;
-}
-
-void nvm_file_close(int fd, int flags)
-{
-	struct flash_fdentry *fd_entry;
-	struct beam *f;
-
-	HASH_FIND_INT(fdt, &fd, fd_entry);
-	if (!fd_entry) {
-		LNVM_DEBUG("File descriptor %d does not exist\n", fd);
-	}
-	f = fd_entry->dfile;
-
-	if (file_sync(fd, f, FORCE_SYNC)) {
-		LNVM_DEBUG("Cannot force sync for file %lu\n", f->gid);
-	}
-
-	clean_fd(fd_entry);
-}
-#endif
-
 
 /* TODO: Implement a pool of available bloks to support double buffering */
 /*
@@ -600,7 +523,16 @@ ssize_t nvm_beam_append(int beam, const void *buf, size_t count)
 
 int nvm_beam_sync(int beam, int flags)
 {
-	return 0;
+	struct beam *b;
+
+	HASH_FIND_INT(beamt, &beam, b);
+	if (!b) {
+		LNVM_DEBUG("Beam %d does not exits\n", beam);
+		return -EINVAL;
+	}
+
+	// TODO: Expose flags to application
+	return beam_sync(b, FORCE_SYNC);
 }
 
 /*

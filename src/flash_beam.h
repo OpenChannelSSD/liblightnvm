@@ -1,5 +1,5 @@
 /*
- * flash beam - File abstraction for flash memories
+ * flash beam - I/O abtraction for flash memories.
  *
  * Copyright (C) 2015 Javier Gonzalez <javier@cnexlabs.com>
  *
@@ -90,7 +90,7 @@ struct beam {
 	int tgt;				/* LightNVM target */
 	int lun;				/* lun associated with beam*/
 	struct vblock *current_w_vblock;	/* current block in use */
-	struct vblock vblocks[MAX_BLOCKS];	/* vblocks forming the file */
+	struct vblock vblocks[MAX_BLOCKS];	/* vblocks forming the beam */
 	int nvblocks;				/* number of vblocks */
 	struct w_buffer w_buffer;		/* write buffer */
 	unsigned long bytes;			/* valid bytes */
