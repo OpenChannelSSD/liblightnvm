@@ -25,7 +25,8 @@
 #include "assert.h"
 
 int flash_write(int tgt, struct vblock *vblock, const char *buf,
-			size_t ppa_off, size_t count)
+				size_t ppa_off, size_t count,
+				int max_pages_write, int write_page_size)
 {
 	size_t bppa = vblock->bppa;
 	size_t nppas = vblock->nppas;
@@ -33,7 +34,6 @@ int flash_write(int tgt, struct vblock *vblock, const char *buf,
 	size_t left = count;
 	size_t bytes_per_write;
 	ssize_t written;
-	int max_pages_write = 1; /* Get from NVM_DEV_MAX_SEC */
 	int pages_per_write;
 	char *writer = (char*)buf;
 
@@ -47,10 +47,10 @@ int flash_write(int tgt, struct vblock *vblock, const char *buf,
 	while (left > 0) {
 		pages_per_write = (left > max_pages_write) ?
 						max_pages_write : left;
-		bytes_per_write = pages_per_write * PAGE_SIZE;
+		bytes_per_write = pages_per_write * write_page_size;
 
 		written = pwrite(tgt, writer, bytes_per_write,
-					current_ppa * PAGE_SIZE);
+					current_ppa * write_page_size);
 		if (written != bytes_per_write) {
 			LNVM_DEBUG("Error writing %d pages (%lu bytes) "
 					"to ppa: %lu, block %lu (tgt:%d)\n",
@@ -73,7 +73,7 @@ int flash_write(int tgt, struct vblock *vblock, const char *buf,
 }
 
 int flash_read(int tgt, struct vblock *vblock, void *buf, size_t ppa_off,
-								size_t count)
+			size_t count, int max_pages_read, int dev_page_size)
 {
 	size_t bppa = vblock->bppa;
 	size_t nppas = vblock->nppas;
@@ -81,7 +81,6 @@ int flash_read(int tgt, struct vblock *vblock, void *buf, size_t ppa_off,
 	size_t left = count;
 	size_t bytes_per_read;
 	ssize_t read;
-	int max_pages_read = 1; /* Get from NVM_DEV_MAX_SEC */
 	int pages_per_read;
 	char *reader = (char*)buf;
 
@@ -94,14 +93,14 @@ int flash_read(int tgt, struct vblock *vblock, void *buf, size_t ppa_off,
 	while (left > 0) {
 		pages_per_read = (left > max_pages_read) ?
 						max_pages_read : left;
-		bytes_per_read = pages_per_read * PAGE_SIZE;
+		bytes_per_read = pages_per_read * dev_page_size;
 
 		/* LNVM_DEBUG("Read %lu bytes (%d pages) - blk:%lu, ppa:%lu\n", */
 				/* bytes_per_read, pages_per_read, vblock->id, */
 				/* current_ppa); */
 retry:
 		read = pread(tgt, reader, bytes_per_read,
-					current_ppa * PAGE_SIZE);
+					current_ppa * dev_page_size);
 		if (read != bytes_per_read) {
 			if (errno == EINTR)
 				goto retry;

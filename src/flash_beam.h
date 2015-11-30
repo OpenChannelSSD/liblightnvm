@@ -38,7 +38,6 @@
 #define NVM_TGT_NAME_MAX DISK_NAME_LEN + 5	/* 5 = strlen(/dev/) */
 
 #define MAX_BLOCKS 5
-#define PAGE_SIZE 4096
 
 #define FORCE_SYNC 1
 #define OPTIONAL_SYNC 2
@@ -138,17 +137,19 @@ static inline int atomic_dec_and_test(struct atomic_cnt *cnt)
 	return ret;
 }
 
-static inline size_t calculate_ppa_off(size_t cursync)
+static inline size_t calculate_ppa_off(size_t cursync, int write_page_size)
 {
-	size_t disaligned_data = cursync % PAGE_SIZE;
-	size_t aligned_data = cursync / PAGE_SIZE;
+	size_t disaligned_data = cursync % write_page_size;
+	size_t aligned_data = cursync / write_page_size;
 	int rest = (disaligned_data == 0) ? 0 : 1;
 	return (aligned_data + rest);
 }
 
 int flash_write(int tgt, struct vblock *vblock, const char *buf,
-					size_t ppa_off, size_t count);
+				size_t ppa_off, size_t count,
+				int max_pages_write, int write_page_size);
 int flash_read(int tgt, struct vblock *vblock, void *buf, size_t ppa_off,
-					size_t count);
+				size_t count, int max_pages_read,
+				int dev_page_size);
 
 #endif /* __FLASH_BEAM_H */

@@ -74,20 +74,22 @@ static void beam_free(struct beam *beam)
 static int switch_block(struct beam **beam)
 {
 	size_t buf_size;
+	int dev_page_size = (*beam)->tgt->tgt->dev->dev_page_size;
 	int ret;
 
 	/* Write buffer for small writes */
 	buf_size = get_npages_block(&(*beam)->vblocks[(*beam)->nvblocks] - 1) *
-								PAGE_SIZE;
+								dev_page_size;
 	if (buf_size != (*beam)->w_buffer.buf_limit) {
 		LNVM_DEBUG("Allocating new write buffer of size %lu\n",
 								buf_size);
 		free((*beam)->w_buffer.buf);
-		ret = posix_memalign(&(*beam)->w_buffer.buf, PAGE_SIZE, buf_size);
+		ret = posix_memalign(&(*beam)->w_buffer.buf, dev_page_size,
+								buf_size);
 		if (ret) {
 			LNVM_DEBUG("Cannot allocate memory "
 					" (%lu bytes - align. %d)\n",
-				buf_size, PAGE_SIZE);
+				buf_size, dev_page_size);
 			return ret;
 		}
 		(*beam)->w_buffer.buf_limit = buf_size;
@@ -172,13 +174,16 @@ static int beam_init(struct beam *beam, int lun, int tgt)
 static int beam_sync(struct beam *beam, int flags)
 {
 	size_t sync_len = beam->w_buffer.cursize - beam->w_buffer.cursync;
-	size_t ppa_off = calculate_ppa_off(beam->w_buffer.cursync);
-	size_t disaligned_data = sync_len % PAGE_SIZE;
 	size_t synced_bytes;
+	int write_page_size = beam->tgt->tgt->dev->write_page_size;
+	size_t disaligned_data = sync_len % write_page_size;
+	size_t ppa_off = calculate_ppa_off(beam->w_buffer.cursync, write_page_size);
+	int dev_page_size = beam->tgt->tgt->dev->dev_page_size;
+	int max_pages_write = beam->tgt->tgt->dev->max_io_size;
+	int npages = sync_len / dev_page_size;
 	int synced_pages;
-	int npages = sync_len / PAGE_SIZE;
 
-	if (((flags & OPTIONAL_SYNC) && (sync_len < PAGE_SIZE)) ||
+	if (((flags & OPTIONAL_SYNC) && (sync_len < write_page_size)) ||
 		(sync_len == 0))
 		return 0;
 
@@ -190,7 +195,7 @@ static int beam_sync(struct beam *beam, int flags)
 
 		if (disaligned_data > 0) {
 			/* Add padding to current page */
-			int padding = PAGE_SIZE - disaligned_data;
+			int padding = write_page_size - disaligned_data;
 			memset(beam->w_buffer.mem, '\0', padding);
 			beam->w_buffer.cursize += padding;
 			beam->w_buffer.mem += padding;
@@ -203,14 +208,15 @@ static int beam_sync(struct beam *beam, int flags)
 
 	/* write data to media */
 	synced_pages = flash_write(beam->tgt->tgt_id, beam->current_w_vblock,
-					beam->w_buffer.sync, ppa_off, npages);
+					beam->w_buffer.sync, ppa_off, npages,
+					max_pages_write, write_page_size);
 	if (synced_pages != npages) {
 		LNVM_DEBUG("Error syncing data\n");
 		return -1;
 	}
 
 	/* We might need to take a lock here */
-	synced_bytes = synced_pages * PAGE_SIZE;
+	synced_bytes = synced_pages * dev_page_size;
 	beam->bytes += synced_bytes;
 	beam->w_buffer.cursync += synced_bytes;
 	beam->w_buffer.sync += synced_bytes;
@@ -244,7 +250,7 @@ static void target_ins_clean(int tgt)
 	struct lnvm_target_map *tm;
 
 	HASH_ITER(hh, beamt, b, b_tmp) {
-		if (b->tgt == tgt) {
+		if (b->tgt->tgt_id == tgt) {
 			HASH_DEL(beamt, b);
 			beam_free(b);
 		}
@@ -558,16 +564,17 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 	size_t nppas;
 	size_t left_bytes = count;
 	/* TODO: Improve this calculations */
-	size_t left_pages = count / PAGE_SIZE +
-		((((count) % PAGE_SIZE) > 0) ? 1 : 0) +
-		(((offset / PAGE_SIZE) != (count + offset) / PAGE_SIZE) ? 1 : 0);
 	size_t valid_bytes;
+	size_t left_pages;
 	size_t pages_to_read, bytes_to_read;
-	int read_pages;
-	/* char *cache; // Used when trying write cache for reads*/
 	void *read_buf;
 	char *reader;
 	char *writer = buf;
+	/* char *cache; // Used when trying write cache for reads*/
+	int read_pages;
+	/* We can read at device page size granurality */
+	int dev_page_size;
+	int max_pages_read;
 	int ret;
 
 	HASH_FIND_INT(beamt, &beam, b);
@@ -575,6 +582,13 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 		LNVM_DEBUG("Beam %d does not exits\n", beam);
 		return -EINVAL;
 	}
+
+	dev_page_size = b->tgt->tgt->dev->dev_page_size;
+	max_pages_read = b->tgt->tgt->dev->max_io_size;
+	left_pages = count / dev_page_size +
+		((((count) % dev_page_size) > 0) ? 1 : 0) +
+		(((offset / dev_page_size) != (count + offset) / dev_page_size)
+		? 1 : 0);
 
 	LNVM_DEBUG("Read %lu bytes (pgs:%lu) from beam %d (p:%p, b:%d). Off:%lu\n",
 			count, left_pages,
@@ -585,24 +599,25 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 	/* Assume that all blocks forming the beam have same size */
 	nppas = get_npages_block(&b->vblocks[0]);
 
-	ppa_count = offset / PAGE_SIZE;
+	ppa_count = offset / dev_page_size;
 	block_off = ppa_count/ nppas;
 	ppa_off = ppa_count % nppas;
-	page_off = offset % PAGE_SIZE;
+	page_off = offset % dev_page_size;
 
 	current_r_vblock = &b->vblocks[block_off];
 
 	pages_to_read = (nppas > left_pages) ? left_pages : nppas;
-	ret = posix_memalign(&read_buf, PAGE_SIZE, pages_to_read * PAGE_SIZE);
+	ret = posix_memalign(&read_buf, dev_page_size,
+						pages_to_read * dev_page_size);
 	if (ret) {
 		LNVM_DEBUG("Cannot allocate memory (%lu bytes - align. %d )\n",
-				left_pages * PAGE_SIZE, PAGE_SIZE);
+				left_pages * dev_page_size, dev_page_size);
 		return ret;
 	}
 	reader = read_buf;
 
 	while (left_bytes) {
-		bytes_to_read = pages_to_read * PAGE_SIZE;
+		bytes_to_read = pages_to_read * dev_page_size;
 		valid_bytes = (left_bytes > bytes_to_read) ?
 						bytes_to_read : left_bytes;
 
@@ -610,14 +625,15 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 			while (pages_to_read + ppa_off > nppas)
 				pages_to_read--;
 
-			valid_bytes = (nppas * PAGE_SIZE) -
-					(ppa_off * PAGE_SIZE) - page_off;
+			valid_bytes = (nppas * dev_page_size) -
+					(ppa_off * dev_page_size) - page_off;
 		}
 
-		assert(left_bytes <= left_pages * PAGE_SIZE);
+		assert(left_bytes <= left_pages * dev_page_size);
 
-		read_pages = flash_read(b->tgt, current_r_vblock, reader,
-						ppa_off, pages_to_read);
+		read_pages = flash_read(b->tgt->tgt_id, current_r_vblock, reader,
+						ppa_off, pages_to_read,
+						max_pages_read, dev_page_size);
 		if (read_pages != pages_to_read)
 			return -1;
 
