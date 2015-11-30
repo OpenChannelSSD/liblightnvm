@@ -21,7 +21,7 @@
 #include "provisioning.h"
 #include "../util/debug.h"
 
-int get_block(int tgt, uint32_t beam_id, struct vblock *vblock)
+int get_block(int tgt, uint32_t lun_id, struct vblock *vblock)
 {
 	int ret = 0;
 
@@ -31,18 +31,18 @@ int get_block(int tgt, uint32_t beam_id, struct vblock *vblock)
 	vblock->nppas = 0;
 	vblock->ppa_bitmap = 0;
 
-	vblock->beam_id = beam_id;
+	vblock->lun_id = lun_id;
 	vblock->owner_id = 101;
 	vblock->flags = 0x0;
 
 	ret = ioctl(tgt, NVM_PR_GET_BLOCK, vblock);
 	if (ret) {
-		LNVM_DEBUG("Could not get block from lun %d\n", beam_id);
+		LNVM_DEBUG("Could not get block from lun %d\n", lun_id);
 		goto out;
 	}
 
 	LNVM_DEBUG("Get block from lun %d. Block id:%lu bppa:%lu\n",
-			vblock->beam_id,
+			vblock->lun_id,
 			vblock->id,
 			vblock->bppa);
 out:
@@ -57,7 +57,7 @@ int get_block_meta(int tgt, uint64_t vblock_id, struct vblock *vblock)
 	vblock->bppa = 0;
 	vblock->nppas = 0;
 	vblock->ppa_bitmap = 0;
-	vblock->beam_id = 0;
+	vblock->lun_id = 0;
 	vblock->owner_id = 0;
 	vblock->flags = 0x0;
 
@@ -71,7 +71,7 @@ int get_block_meta(int tgt, uint64_t vblock_id, struct vblock *vblock)
 
 	LNVM_DEBUG("Get block medatada for block %lu. Lun: %d, bppa:%lu\n",
 			vblock->id,
-			vblock->beam_id,
+			vblock->lun_id,
 			vblock->bppa);
 out:
 	return ret;
@@ -84,12 +84,12 @@ int put_block(int tgt, struct vblock *vblock)
 	ret = ioctl(tgt, NVM_PR_PUT_BLOCK, vblock);
 	if (ret) {
 		LNVM_DEBUG("Could not put block %lu (bppa:%lu) to lun %d\n",
-				vblock->id, vblock->bppa, vblock->beam_id);
+				vblock->id, vblock->bppa, vblock->lun_id);
 		goto out;
 	}
 
 	LNVM_DEBUG("Put block %lu (bbpa:%lu) to lun %d\n",
-			vblock->id, vblock->bppa, vblock->beam_id);
+			vblock->id, vblock->bppa, vblock->lun_id);
 out:
 	return ret;
 }
