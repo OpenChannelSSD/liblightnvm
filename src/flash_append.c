@@ -312,7 +312,10 @@ static inline int get_dev_info(char *dev, struct lnvm_device *device)
 		goto out;
 
 	strncpy(device->dev, dev_info.dev, DISK_NAME_LEN);
-	device->page_size = dev_info.prop.page_size;
+	device->dev_page_size = dev_info.prop.page_size;
+	device->write_page_size =
+			dev_info.prop.page_size * dev_info.prop.nr_planes;
+	device->nr_luns = dev_info.prop.nr_luns;
 	device->max_io_size = dev_info.prop.max_io_size;
 
 	LNVM_DEBUG("Device cached: %s(page_size:%u, max_io_size:%u)\n",

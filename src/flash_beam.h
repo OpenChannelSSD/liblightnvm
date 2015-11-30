@@ -50,7 +50,9 @@ typedef struct atomic_cnt {
 
 struct lnvm_device {
 	char dev[DISK_NAME_LEN];	/* open-channel SSD device */
-	uint32_t page_size;		/* Device page size */
+	uint32_t dev_page_size;		/* Device page size */
+	uint32_t write_page_size;	/* Write page size (depends on planes) */
+	uint32_t nr_luns;		/* Number of LUNs exposed by the device*/
 	uint32_t max_io_size;		/* Supported ppas in a single IO*/
 	atomic_cnt ref_cnt;		/* Reference counter */
 	UT_hash_handle hh;		/* hash handle for uthash */
