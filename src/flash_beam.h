@@ -89,8 +89,8 @@ struct w_buffer {
 /* TODO: Allocate dynamic number of blocks */
 struct beam {
 	int gid;				/* internal global identifier */
-	int tgt;				/* LightNVM target */
-	int lun;				/* lun associated with beam*/
+	int lun;				/* virtual lun mapped to beam*/
+	struct lnvm_target_map *tgt;		/* LightNVM target */
 	struct vblock *current_w_vblock;	/* current block in use */
 	struct vblock vblocks[MAX_BLOCKS];	/* vblocks forming the beam */
 	int nvblocks;				/* number of vblocks */

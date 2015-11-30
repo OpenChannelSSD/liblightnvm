@@ -58,7 +58,7 @@ static void beam_put_blocks(struct beam *beam)
 	int i;
 
 	for (i = 0; i < beam->nvblocks; i++) {
-		put_block(beam->tgt, &beam->vblocks[i]);
+		put_block(beam->tgt->tgt_id, &beam->vblocks[i]);
 	}
 }
 
@@ -113,7 +113,7 @@ static int preallocate_block(struct beam *beam)
 	struct vblock *vblock = &beam->vblocks[beam->nvblocks];
 	int ret = 0;
 
-	ret = get_block(beam->tgt, beam->lun, vblock);
+	ret = get_block(beam->tgt->tgt_id, beam->lun, vblock);
 	if (ret) {
 		LNVM_DEBUG("Could not allocate a new block for beam %d\n",
 				beam->gid);
@@ -148,11 +148,20 @@ out:
 
 static int beam_init(struct beam *beam, int lun, int tgt)
 {
+	struct lnvm_target_map *tm;
+
 	atomic_assign_inc(&beam_guid, &beam->gid);
-	beam->tgt = tgt;
 	beam->lun = lun;
 	beam->nvblocks = 0;
 	beam->bytes = 0;
+
+
+	HASH_FIND_INT(tgtmt, &tgt, tm);
+	if (!tm) {
+		LNVM_DEBUG("Initializing beam on uninitialized target\n");
+		return -EINVAL;
+	}
+	beam->tgt = tm;
 
 	beam->w_buffer.buf_limit = 0;
 	beam->w_buffer.buf = NULL;
@@ -193,7 +202,7 @@ static int beam_sync(struct beam *beam, int flags)
 	}
 
 	/* write data to media */
-	synced_pages = flash_write(beam->tgt, beam->current_w_vblock,
+	synced_pages = flash_write(beam->tgt->tgt_id, beam->current_w_vblock,
 					beam->w_buffer.sync, ppa_off, npages);
 	if (synced_pages != npages) {
 		LNVM_DEBUG("Error syncing data\n");
