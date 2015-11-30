@@ -38,7 +38,6 @@ int nvm_get_device_info(struct nvm_ioctl_dev_info *);
 int nvm_get_target_info(struct nvm_ioctl_tgt_info *);
 
 // int nvm_get_lun_info(int lun);
-// int nvm_get_nluns();
 
 /* Append store functionality - flash_append.c */
 int nvm_target_open(const char *tgt, int flags);
@@ -46,7 +45,8 @@ void nvm_target_close(int tgt);
 int nvm_beam_create(int tgt, int lun, int flags);
 void nvm_beam_destroy(int beam, int flags);
 ssize_t nvm_beam_append(int beam, const void *buf, size_t count);
-ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags);
+ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
+								int flags);
 int nvm_beam_sync(int beam, int flags);
 
 int nvm_init();
