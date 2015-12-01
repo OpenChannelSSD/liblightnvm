@@ -13,6 +13,8 @@ LIBLIGHTNVM_0.1 {
 		nvm_beam_append;
 		nvm_beam_read;
 		nvm_beam_sync;
+		nvm_init;
+		nvm_exit;
 	local:
 		*;
 };
