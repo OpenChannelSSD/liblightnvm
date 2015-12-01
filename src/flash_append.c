@@ -150,19 +150,16 @@ out:
 
 static int beam_init(struct beam *beam, int lun, int tgt)
 {
-	struct lnvm_target_map *tm;
-
 	atomic_assign_inc(&beam_guid, &beam->gid);
 	beam->lun = lun;
 	beam->nvblocks = 0;
 	beam->bytes = 0;
 
-	HASH_FIND_INT(tgtmt, &tgt, tm);
-	if (!tm) {
+	HASH_FIND_INT(tgtmt, &tgt, beam->tgt);
+	if (!beam->tgt) {
 		LNVM_DEBUG("Initializing beam on uninitialized target\n");
 		return -EINVAL;
 	}
-	beam->tgt = tm;
 
 	beam->w_buffer.buf_limit = 0;
 	beam->w_buffer.buf = NULL;
