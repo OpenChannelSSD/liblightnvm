@@ -102,7 +102,7 @@ static int switch_block(struct beam **beam)
 
 	(*beam)->current_w_vblock = &(*beam)->vblocks[(*beam)->nvblocks - 1];
 
-	LNVM_DEBUG("Block switched. Beam: %d, id: %d. Total blocks: %d\n",
+	LNVM_DEBUG("Block switched. Beam: %d, id: %lu. Total blocks: %d\n",
 			(*beam)->gid,
 			(*beam)->current_w_vblock->id,
 			(*beam)->nvblocks);
@@ -122,7 +122,7 @@ static int preallocate_block(struct beam *beam)
 		goto out;
 	}
 
-	LNVM_DEBUG("Block preallocated (pos:%d). Beam: %d, id: %d, "
+	LNVM_DEBUG("Block preallocated (pos:%d). Beam: %d, id: %lu, "
 			" bppa: %lu\n",
 			beam->nvblocks,
 			beam->gid,
@@ -156,7 +156,6 @@ static int beam_init(struct beam *beam, int lun, int tgt)
 	beam->lun = lun;
 	beam->nvblocks = 0;
 	beam->bytes = 0;
-
 
 	HASH_FIND_INT(tgtmt, &tgt, tm);
 	if (!tm) {
@@ -333,8 +332,9 @@ static inline int get_dev_info(char *dev, struct lnvm_device *device)
 	device->nr_luns = dev_info.prop.nr_luns;
 	device->max_io_size = dev_info.prop.max_io_size;
 
-	LNVM_DEBUG("Device cached: %s(page_size:%u, max_io_size:%u)\n",
-			device->dev, device->page_size, device->max_io_size);
+	LNVM_DEBUG("Device cached: %s(page_size:%u-%u, max_io_size:%u)\n",
+			device->dev, device->dev_page_size,
+			device->write_page_size, device->max_io_size);
 out:
 	return ret;
 }

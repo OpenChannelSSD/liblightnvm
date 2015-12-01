@@ -35,6 +35,10 @@ int get_block(int tgt, uint32_t lun_id, struct vblock *vblock)
 	vblock->owner_id = 101;
 	vblock->flags = 0x0;
 
+	vblock->prov.nr_free_blocks = 0;
+	vblock->prov.nr_inuse_blocks = 0;
+	vblock->prov.nr_bad_blocks = 0;
+
 	ret = ioctl(tgt, NVM_PR_GET_BLOCK, vblock);
 	if (ret) {
 		LNVM_DEBUG("Could not get block from lun %d\n", lun_id);
@@ -60,6 +64,10 @@ int get_block_meta(int tgt, uint64_t vblock_id, struct vblock *vblock)
 	vblock->lun_id = 0;
 	vblock->owner_id = 0;
 	vblock->flags = 0x0;
+
+	vblock->prov.nr_free_blocks = 0;
+	vblock->prov.nr_inuse_blocks = 0;
+	vblock->prov.nr_bad_blocks = 0;
 
 	vblock->id = vblock_id;
 

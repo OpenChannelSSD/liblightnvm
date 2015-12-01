@@ -34,6 +34,7 @@ struct vblock {
 	uint32_t nppas;
 	uint16_t ppa_bitmap;
 	uint16_t flags;
+	struct nvm_ioctl_prov_info prov;
 };
 
 static inline int get_npages_block(struct vblock *vblock)
