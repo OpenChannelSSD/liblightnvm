@@ -24,7 +24,7 @@
 #include "flash_beam.h"
 #include "assert.h"
 
-int flash_write(int tgt, struct vblock *vblock, const char *buf,
+int flash_write(int tgt, VBLOCK *vblock, const char *buf,
 				size_t ppa_off, size_t count,
 				int max_pages_write, int write_page_size)
 {
@@ -72,7 +72,7 @@ int flash_write(int tgt, struct vblock *vblock, const char *buf,
 	return count;
 }
 
-int flash_read(int tgt, struct vblock *vblock, void *buf, size_t ppa_off,
+int flash_read(int tgt, VBLOCK *vblock, void *buf, size_t ppa_off,
 			size_t count, int max_pages_read, int dev_page_size)
 {
 	size_t bppa = vblock->bppa;

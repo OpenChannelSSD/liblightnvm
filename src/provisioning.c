@@ -21,9 +21,22 @@
 #include "provisioning.h"
 #include "../util/debug.h"
 
-int get_block(int tgt, uint32_t lun_id, struct vblock *vblock)
+int get_block(int tgt, uint32_t lun_id, VBLOCK *vblock)
 {
+	struct nvm_ioctl_provisioning prov = {
+		.flags = 0,
+	};
+	struct nvm_ioctl_lun_status lun_status = {
+		.nr_free_blocks = 0,
+		.nr_inuse_blocks = 0,
+		.nr_bad_blocks = 0,
+	};
 	int ret = 0;
+
+#ifdef LNVM_DEBUG
+	/* Initialize all bytes in structure, including padding for debugging */
+	memset(&prov, 0, sizeof(prov));
+#endif
 
 	/* Initialize ioctl values */
 	vblock->id = 0;
@@ -31,15 +44,15 @@ int get_block(int tgt, uint32_t lun_id, struct vblock *vblock)
 	vblock->nppas = 0;
 	vblock->ppa_bitmap = 0;
 
-	vblock->lun_id = lun_id;
+	vblock->vlun_id = lun_id;
 	vblock->owner_id = 101;
 	vblock->flags = 0x0;
 
-	vblock->prov.nr_free_blocks = 0;
-	vblock->prov.nr_inuse_blocks = 0;
-	vblock->prov.nr_bad_blocks = 0;
+	prov.vblock = vblock;
+	prov.lun_status = &lun_status;
+	prov.flags |= NVM_PROV_SPEC_LUN; //TODO: Expose in prov. API
 
-	ret = ioctl(tgt, NVM_PR_GET_BLOCK, vblock);
+	ret = ioctl(tgt, NVM_PR_GET_BLOCK, &prov);
 	if (ret) {
 		LNVM_DEBUG("Could not get block from lun %d\n", lun_id);
 		goto out;
@@ -53,25 +66,37 @@ out:
 	return ret;
 }
 
-int get_block_meta(int tgt, uint64_t vblock_id, struct vblock *vblock)
+int get_block_meta(int tgt, uint64_t vblock_id, VBLOCK *vblock)
 {
+	struct nvm_ioctl_provisioning prov = {
+		.flags = 0,
+	};
+	struct nvm_ioctl_lun_status lun_status = {
+		.nr_free_blocks = 0,
+		.nr_inuse_blocks = 0,
+		.nr_bad_blocks = 0,
+	};
 	int ret = 0;
+
+#ifdef LNVM_DEBUG
+	/* Initialize all bytes in structure, including padding for debugging */
+	memset(&prov, 0, sizeof(prov));
+#endif
 
 	/* Initialize ioctl values */
 	vblock->bppa = 0;
 	vblock->nppas = 0;
 	vblock->ppa_bitmap = 0;
-	vblock->lun_id = 0;
+	vblock->vlun_id = 0;
 	vblock->owner_id = 0;
 	vblock->flags = 0x0;
 
-	vblock->prov.nr_free_blocks = 0;
-	vblock->prov.nr_inuse_blocks = 0;
-	vblock->prov.nr_bad_blocks = 0;
-
 	vblock->id = vblock_id;
 
-	ret = ioctl(tgt, NVM_PR_GET_BLOCK_INFO, vblock);
+	prov.vblock = vblock;
+	prov.lun_status = &lun_status;
+
+	ret = ioctl(tgt, NVM_PR_GET_BLOCK_INFO, &prov);
 	if (ret) {
 		LNVM_DEBUG("Could not get metadata for block %lu\n", vblock_id);
 		goto out;
@@ -85,11 +110,26 @@ out:
 	return ret;
 }
 
-int put_block(int tgt, struct vblock *vblock)
+int put_block(int tgt, VBLOCK *vblock)
 {
+	struct nvm_ioctl_provisioning prov = {
+		.flags = 0,
+	};
+	struct nvm_ioctl_lun_status lun_status = {
+		.nr_free_blocks = 0,
+		.nr_inuse_blocks = 0,
+		.nr_bad_blocks = 0,
+	};
 	int ret = 0;
 
-	ret = ioctl(tgt, NVM_PR_PUT_BLOCK, vblock);
+#ifdef LNVM_DEBUG
+	/* Initialize all bytes in structure, including padding for debugging */
+	memset(&prov, 0, sizeof(prov));
+#endif
+	prov.vblock = vblock;
+	prov.lun_status = &lun_status;
+
+	ret = ioctl(tgt, NVM_PR_PUT_BLOCK, &prov);
 	if (ret) {
 		LNVM_DEBUG("Could not put block %lu (bppa:%lu) to lun %d\n",
 				vblock->id, vblock->bppa, vblock->lun_id);

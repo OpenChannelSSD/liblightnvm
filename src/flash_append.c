@@ -112,7 +112,7 @@ static int switch_block(struct beam **beam)
 
 static int preallocate_block(struct beam *beam)
 {
-	struct vblock *vblock = &beam->vblocks[beam->nvblocks];
+	VBLOCK *vblock = &beam->vblocks[beam->nvblocks];
 	int ret = 0;
 
 	ret = get_block(beam->tgt->tgt_id, beam->lun, vblock);
@@ -555,7 +555,7 @@ int nvm_beam_sync(int beam, int flags)
 ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags)
 {
 	struct beam *b;
-	struct vblock *current_r_vblock;
+	VBLOCK *current_r_vblock;
 	size_t block_off, ppa_off, page_off;
 	size_t ppa_count;
 	size_t nppas;

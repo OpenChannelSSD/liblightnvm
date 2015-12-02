@@ -119,12 +119,7 @@ struct nvm_ioctl_lun_info {
 	// TODO
 };
 
-/* nvm_ioctl_vblock flags */
-enum {
-	NVM_VBLOCK_RETURN_META = 1,
-};
-
-struct nvm_ioctl_prov_info {
+struct nvm_ioctl_lun_status {
 	__u32 nr_free_blocks;
 	__u32 nr_inuse_blocks;
 	__u32 nr_bad_blocks;
@@ -138,7 +133,19 @@ struct nvm_ioctl_vblock {
 	__u32 nppas;
 	__u16 ppa_bitmap;
 	__u16 flags;
-	struct nvm_ioctl_prov_info prov;
+};
+
+/* nvm_ioctl_provisioning flags */
+enum {
+	NVM_PROV_SPEC_LUN = 1,
+	NVM_PROV_RAND_LUN = 2,
+	NVM_PROV_LUN_STATE = 4,
+};
+
+struct nvm_ioctl_provisioning {
+	struct nvm_ioctl_vblock *vblock;
+	struct nvm_ioctl_lun_status *lun_status;
+	int flags;
 };
 
 /* The ioctl type, 'L', 0x20 - 0x2F documented in ioctl-number.txt */
@@ -180,11 +187,11 @@ enum {
 #define NVM_LUN_GET_INFO	_IOR(NVM_IOCTL, NVM_LUN_GET_INFO_CMD, \
 						struct nvm_ioctl_lun_info)
 #define NVM_PR_GET_BLOCK	_IOWR(NVM_IOCTL, NVM_PR_GET_BLOCK_CMD, \
-						struct nvm_ioctl_vblock)
+						struct nvm_ioctl_provisioning)
 #define NVM_PR_GET_BLOCK_INFO	_IOWR(NVM_IOCTL, NVM_PR_GET_BLOCK_INFO_CMD, \
-						struct nvm_ioctl_vblock)
+						struct nvm_ioctl_provisioning)
 #define NVM_PR_PUT_BLOCK	_IOWR(NVM_IOCTL, NVM_PR_PUT_BLOCK_CMD, \
-						struct nvm_ioctl_vblock)
+						struct nvm_ioctl_provisioning)
 
 #define NVM_VERSION_MAJOR	1
 #define NVM_VERSION_MINOR	0
