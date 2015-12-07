@@ -58,8 +58,8 @@ int get_block(int tgt, uint32_t lun_id, VBLOCK *vblock)
 		goto out;
 	}
 
-	LNVM_DEBUG("Get block from lun %d. Block id:%lu bppa:%lu\n",
-			vblock->lun_id,
+	LNVM_DEBUG("Get block from lun %d. Block id:%llu bppa:%llu\n",
+			vblock->vlun_id,
 			vblock->id,
 			vblock->bppa);
 out:
@@ -102,9 +102,9 @@ int get_block_meta(int tgt, uint64_t vblock_id, VBLOCK *vblock)
 		goto out;
 	}
 
-	LNVM_DEBUG("Get block medatada for block %lu. Lun: %d, bppa:%lu\n",
+	LNVM_DEBUG("Get block medatada for block %llu. Lun: %d, bppa:%llu\n",
 			vblock->id,
-			vblock->lun_id,
+			vblock->vlun_id,
 			vblock->bppa);
 out:
 	return ret;
@@ -131,13 +131,13 @@ int put_block(int tgt, VBLOCK *vblock)
 
 	ret = ioctl(tgt, NVM_PR_PUT_BLOCK, &prov);
 	if (ret) {
-		LNVM_DEBUG("Could not put block %lu (bppa:%lu) to lun %d\n",
-				vblock->id, vblock->bppa, vblock->lun_id);
+		LNVM_DEBUG("Could not put block %llu (bppa:%llu) to lun %d\n",
+				vblock->id, vblock->bppa, vblock->vlun_id);
 		goto out;
 	}
 
-	LNVM_DEBUG("Put block %lu (bbpa:%lu) to lun %d\n",
-			vblock->id, vblock->bppa, vblock->lun_id);
+	LNVM_DEBUG("Put block %llu (bbpa:%llu) to lun %d\n",
+			vblock->id, vblock->bppa, vblock->vlun_id);
 out:
 	return ret;
 }

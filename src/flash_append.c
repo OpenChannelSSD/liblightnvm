@@ -102,7 +102,7 @@ static int switch_block(struct beam **beam)
 
 	(*beam)->current_w_vblock = &(*beam)->vblocks[(*beam)->nvblocks - 1];
 
-	LNVM_DEBUG("Block switched. Beam: %d, id: %lu. Total blocks: %d\n",
+	LNVM_DEBUG("Block switched. Beam: %d, id: %llu. Total blocks: %d\n",
 			(*beam)->gid,
 			(*beam)->current_w_vblock->id,
 			(*beam)->nvblocks);
@@ -122,8 +122,8 @@ static int preallocate_block(struct beam *beam)
 		goto out;
 	}
 
-	LNVM_DEBUG("Block preallocated (pos:%d). Beam: %d, id: %lu, "
-			" bppa: %lu\n",
+	LNVM_DEBUG("Block preallocated (pos:%d). Beam: %d, id: %llu, "
+			" bppa: %llu\n",
 			beam->nvblocks,
 			beam->gid,
 			beam->vblocks[beam->nvblocks].id,
@@ -493,7 +493,7 @@ ssize_t nvm_beam_append(int beam, const void *buf, size_t count)
 		return -EINVAL;
 	}
 
-	LNVM_DEBUG("Append %lu bytes to beam %lu (p:%p, b:%d). Csize:%lu, "
+	LNVM_DEBUG("Append %lu bytes to beam %d (p:%p, b:%d). Csize:%lu, "
 			"Csync:%lu, BL:%lu\n",
 				count,
 				b->gid, b,

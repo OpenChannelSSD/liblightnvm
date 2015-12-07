@@ -39,7 +39,7 @@ int flash_write(int tgt, VBLOCK *vblock, const char *buf,
 
 	/* TODO: Metadata */
 
-	LNVM_DEBUG("Writing %lu pages to block %lu. ppa_off: %lu, nppas:%lu\n",
+	LNVM_DEBUG("Writing %lu pages to block %llu. ppa_off: %lu, nppas:%lu\n",
 					count, vblock->id, ppa_off, nppas);
 	assert(count <= nppas - ppa_off);
 
@@ -53,7 +53,7 @@ int flash_write(int tgt, VBLOCK *vblock, const char *buf,
 					current_ppa * write_page_size);
 		if (written != bytes_per_write) {
 			LNVM_DEBUG("Error writing %d pages (%lu bytes) "
-					"to ppa: %lu, block %lu (tgt:%d)\n",
+					"to ppa: %lu, block %llu (tgt:%d)\n",
 					pages_per_write, bytes_per_write,
 					current_ppa, vblock->id,
 					tgt);
@@ -66,7 +66,7 @@ int flash_write(int tgt, VBLOCK *vblock, const char *buf,
 		left -= pages_per_write;
 	}
 
-	LNVM_DEBUG("Written %lu pages to block %lu (tgt:%d)",
+	LNVM_DEBUG("Written %lu pages to block %llu (tgt:%d)",
 					count, vblock->id, tgt);
 
 	return count;
@@ -86,7 +86,7 @@ int flash_read(int tgt, VBLOCK *vblock, void *buf, size_t ppa_off,
 
 	assert(count <= nppas - ppa_off);
 
-	LNVM_DEBUG("Read %lu pages from block %lu (tgt:%d)",
+	LNVM_DEBUG("Read %lu pages from block %llu (tgt:%d)",
 					count, vblock->id, tgt);
 
 	/* For now we use pread. We will have different IO backends */
