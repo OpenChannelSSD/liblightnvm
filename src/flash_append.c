@@ -425,6 +425,17 @@ static void nvm_target_close(int tgt)
 	target_ins_clean(tgt);
 }
 
+static void clean_all()
+{
+	struct beam *b, *b_tmp;
+
+	HASH_ITER(hh, beamt, b, b_tmp) {
+		HASH_DEL(beamt, b);
+		nvm_target_close(b->tgt->tgt_id);
+		beam_free(b);
+	}
+}
+
 /*
  * liblightnvm flash API
  */
@@ -669,4 +680,6 @@ void nvm_exit()
 	pthread_spin_destroy(&beam_guid.lock);
 
 	/* TODO: save state */
+
+	clean_all();
 }
