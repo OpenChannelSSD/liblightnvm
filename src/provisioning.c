@@ -33,7 +33,7 @@ int get_block(int tgt, uint32_t lun_id, VBLOCK *vblock)
 	};
 	int ret = 0;
 
-#ifdef LNVM_DEBUG
+#ifdef LNVM_DEBUG_ENABLED
 	/* Initialize all bytes in structure, including padding for debugging */
 	memset(&prov, 0, sizeof(prov));
 #endif
@@ -78,7 +78,7 @@ int get_block_meta(int tgt, uint64_t vblock_id, VBLOCK *vblock)
 	};
 	int ret = 0;
 
-#ifdef LNVM_DEBUG
+#ifdef LNVM_DEBUG_ENABLED
 	/* Initialize all bytes in structure, including padding for debugging */
 	memset(&prov, 0, sizeof(prov));
 #endif
@@ -122,7 +122,7 @@ int put_block(int tgt, VBLOCK *vblock)
 	};
 	int ret = 0;
 
-#ifdef LNVM_DEBUG
+#ifdef LNVM_DEBUG_ENABLED
 	/* Initialize all bytes in structure, including padding for debugging */
 	memset(&prov, 0, sizeof(prov));
 #endif
