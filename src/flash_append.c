@@ -45,12 +45,12 @@ static struct beam *beamt = NULL;
 
 static void beam_buf_free(struct w_buffer *buf)
 {
-	if (buf->buf) {
+	if (buf->buf)
 		free(buf->buf);
-		buf->buf = NULL;
-		buf->mem = NULL;
-		buf->sync = NULL;
-	}
+
+	buf->buf = NULL;
+	buf->mem = NULL;
+	buf->sync = NULL;
 }
 
 static void beam_put_blocks(struct beam *beam)
@@ -64,8 +64,8 @@ static void beam_put_blocks(struct beam *beam)
 
 static void beam_free(struct beam *beam)
 {
-	beam_put_blocks(beam);
 	beam_buf_free(&beam->w_buffer);
+	beam_put_blocks(beam);
 	free(beam);
 }
 
@@ -241,16 +241,8 @@ static void target_clean(struct lnvm_target *tgt)
 
 static void target_ins_clean(int tgt)
 {
-	struct beam *b, *b_tmp;
 	struct lnvm_target *t;
 	struct lnvm_target_map *tm;
-
-	HASH_ITER(hh, beamt, b, b_tmp) {
-		if (b->tgt->tgt_id == tgt) {
-			HASH_DEL(beamt, b);
-			beam_free(b);
-		}
-	}
 
 	HASH_FIND_INT(tgtmt, &tgt, tm);
 	if (tm) {
@@ -260,9 +252,6 @@ static void target_ins_clean(int tgt)
 		HASH_DEL(tgtmt, tm);
 		free(tm);
 	}
-
-	// At the moment we only have one target
-	assert(HASH_COUNT(beamt) == 0);
 }
 
 static inline int get_tgt_info(char *tgt, char *dev,
@@ -336,12 +325,8 @@ out:
 	return ret;
 }
 
-/*
- * liblightnvm flash API
- */
-
 /*TODO: Add which application opens tgt? */
-int nvm_target_open(const char *tgt, int flags)
+static int nvm_target_open(const char *tgt, int flags)
 {
 	struct lnvm_device *dev_entry;
 	struct lnvm_target *tgt_entry;
@@ -434,29 +419,37 @@ error:
 	return ret;
 }
 
-void nvm_target_close(int tgt)
+static void nvm_target_close(int tgt)
 {
 	close(tgt);
 	target_ins_clean(tgt);
 }
 
-int nvm_beam_create(int tgt, int lun, int flags)
+/*
+ * liblightnvm flash API
+ */
+
+int nvm_beam_create(const char *tgt, int lun, int flags)
 {
 	struct beam *beam;
+	int tgt_fd;
 	int ret;
 
-	LNVM_DEBUG("TOGO: nvm_beam create\n");
+	tgt_fd = nvm_target_open(tgt, flags);
+	if (tgt_fd < 0)
+		return tgt_fd;
+
 	beam = malloc(sizeof(struct beam));
 	if (!beam)
 		return -ENOMEM;
 
-	ret = beam_init(beam, lun, tgt);
+	ret = beam_init(beam, lun, tgt_fd);
 	if (ret)
 		goto error;
 
 	HASH_ADD_INT(beamt, gid, beam);
 	LNVM_DEBUG("Created flash beam (p:%p, id:%d). Target: %d\n",
-			beam, beam->gid, tgt);
+			beam, beam->gid, tgt_fd);
 
 	return beam->gid;
 
@@ -468,11 +461,16 @@ error:
 void nvm_beam_destroy(int beam, int flags)
 {
 	struct beam *b;
+	int tm;
 
 	LNVM_DEBUG("Deleting beam with id %d\n", beam);
 
 	HASH_FIND_INT(beamt, &beam, b);
 	HASH_DEL(beamt, b);
+
+	tm = b->tgt->tgt_id;
+	nvm_target_close(tm);
+
 	beam_free(b);
 }
 
