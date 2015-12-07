@@ -55,14 +55,11 @@ static void create_beam(CuTest *ct)
 	int i;
 
 	create_tgt(ct);
-	tgt_id = nvm_target_open("test1", 0);
-	CuAssertTrue(ct, tgt_id > 0);
 
-	beam_id = nvm_beam_create(tgt_id, 0, 0);
+	beam_id = nvm_beam_create("test1", 0, 0);
 	CuAssertTrue(ct, beam_id > 0);
 
 	nvm_beam_destroy(beam_id, 0);
-	nvm_target_close(tgt_id);
 
 	remove_tgt(ct);
 }
@@ -72,25 +69,18 @@ static void beam_close_ungrac(CuTest *ct)
 	int tgt_id, beam_id;
 
 	create_tgt(ct);
-	tgt_id = nvm_target_open("test1", 0);
-	CuAssertTrue(ct, tgt_id > 0);
 
-	beam_id = nvm_beam_create(tgt_id, 0, 0);
+	beam_id = nvm_beam_create("test1", 0, 0);
 	CuAssertTrue(ct, beam_id > 0);
 
 	nvm_beam_destroy(beam_id, 0);
-	nvm_target_close(tgt_id);
 
 	remove_tgt(ct);
 
 	create_tgt(ct);
-	tgt_id = nvm_target_open("test1", 0);
-	CuAssertTrue(ct, tgt_id > 0);
 
-	beam_id = nvm_beam_create(tgt_id, 0, 0);
+	beam_id = nvm_beam_create("test1", 0, 0);
 	CuAssertTrue(ct, beam_id > 0);
-
-	nvm_target_close(tgt_id);
 
 	remove_tgt(ct);
 }
@@ -110,10 +100,8 @@ static void beam_ar1(CuTest *ct)
 	int ret;
 
 	create_tgt(ct);
-	tgt_id = nvm_target_open("test1", 0);
-	CuAssertTrue(ct, tgt_id > 0);
 
-	beam_id = nvm_beam_create(tgt_id, 0, 0);
+	beam_id = nvm_beam_create("test1", 0, 0);
 	CuAssertTrue(ct, beam_id > 0);
 
 	written = nvm_beam_append(beam_id, test, 12);
@@ -128,7 +116,6 @@ static void beam_ar1(CuTest *ct)
 	CuAssertByteArrayEquals(ct, test, test2, 12, 12);
 
 	nvm_beam_destroy(beam_id, 0);
-	nvm_target_close(tgt_id);
 
 	remove_tgt(ct);
 }
@@ -155,10 +142,8 @@ static void beam_ar_generic(CuTest *ct, char *src, char *dst, size_t len,
 	size_t i;
 
 	create_tgt(ct);
-	tgt_id = nvm_target_open("test1", 0);
-	CuAssertTrue(ct, tgt_id > 0);
 
-	beam_id = nvm_beam_create(tgt_id, 0, 0);
+	beam_id = nvm_beam_create("test1", 0, 0);
 	CuAssertTrue(ct, beam_id > 0);
 
 	written = nvm_beam_append(beam_id, src, len);
@@ -198,7 +183,6 @@ static void beam_ar_generic(CuTest *ct, char *src, char *dst, size_t len,
 	}
 
 	nvm_beam_destroy(beam_id, 0);
-	nvm_target_close(tgt_id);
 
 	remove_tgt(ct);
 }
