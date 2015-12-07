@@ -31,6 +31,7 @@ physical - logical translation table. liblightnvm exposes append-only primitives
 using direct physical flash to support this class of applications.
 
 ## API description
+
 liblightnvm's API is divided in two parts: (i) a management interface, and (ii)
 an append only interface, which primarily target applications that can handle
 data placement and garbage collection in their primary data structures (e.g.
@@ -38,6 +39,12 @@ Log-Structured Merge Trees). As we target more applications, the API will expand
 to target them.
 
 ### Management API
+
+liblightnvm's management API enables applications to easily create and remove
+LightNVM targets, and query device, media, and target information. The
+structures sent in the ioctls used to communicate with LightNVM are directly
+exposed in the API to enable flexibility.
+
 - *int nvm_get_info(struct nvm_ioctl_info *);*
 - *int nvm_get_devices(struct nvm_ioctl_get_devices *);*
 - *int nvm_create_target(struct nvm_ioctl_tgt_create *);*
@@ -45,9 +52,21 @@ to target them.
 - *int nvm_get_device_info(struct nvm_ioctl_dev_info *);*
 - *int nvm_get_target_info(struct nvm_ioctl_tgt_info *);*
 
-
 ### Append-only API
-liblightnvm's append-only
+
+liblightnvm's I/O functionality is based around the concept of **beams**,
+i.e., I/O flows that operate directly with physical addresses and belong to a
+single application, which is completely in control over data placement and
+garbage collection. In the case of the append-only functionality, liblightnvm
+deals with flash blocks internally and guarantees that a writer can append to an
+I/O beam as long as there are available free blocks in the target and lun blocks
+are being allocated from.
+
+An application can *read* from a beam by providing an offset, without caring about
+the actual flash blocks containing user data. A *sync* operator is also provider
+to allow applications define barriers and persist data as needed. Flash pages
+are padded when necessary to respect flash constrains; space amplification must
+be accounted for when making use of the *sync* operator.
 
 - *int nvm_beam_create(const char *tgt, int lun, int flags);*
 - *void nvm_beam_destroy(int beam, int flags);*
