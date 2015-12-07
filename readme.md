@@ -33,10 +33,12 @@ using direct physical flash to support this class of applications.
 ## API description
 
 liblightnvm's API is divided in two parts: (i) a management interface, and (ii)
-an append only interface, which primarily target applications that can handle
-data placement and garbage collection in their primary data structures (e.g.
-Log-Structured Merge Trees). As we target more applications, the API will expand
-to target them.
+an I/O interface. The raw I/O interface is a simple get_block / put_block API
+that allows applications to directly deal with physical flash blocks. To
+minimize changes on the application side, we also provide an append-only
+interface,which targets applications that can handle data placement and garbage
+collection in their primary data structures (e.g. Log-Structured Merge Trees).
+As we target more classes of applications, the API will expand to target them.
 
 ### Management API
 
@@ -73,6 +75,10 @@ be accounted for when making use of the *sync* operator.
 - *ssize_t nvm_beam_append(int beam, const void *buf, size_t count);*
 - *ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags);*
 - *int nvm_beam_sync(int beam, int flags);*
+
+## Raw I/O API
+
+TODO
 
 ## How to use
 
