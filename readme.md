@@ -38,23 +38,22 @@ Log-Structured Merge Trees). As we target more applications, the API will expand
 to target them.
 
 ### Management API
-- int nvm_get_info(struct nvm_ioctl_info *);
-- int nvm_get_devices(struct nvm_ioctl_get_devices *);
-- int nvm_create_target(struct nvm_ioctl_tgt_create *);
-- int nvm_remove_target(struct nvm_ioctl_tgt_remove *);
-- int nvm_get_device_info(struct nvm_ioctl_dev_info *);
-- int nvm_get_target_info(struct nvm_ioctl_tgt_info *);
+- *int nvm_get_info(struct nvm_ioctl_info *);*
+- *int nvm_get_devices(struct nvm_ioctl_get_devices *);*
+- *int nvm_create_target(struct nvm_ioctl_tgt_create *);*
+- *int nvm_remove_target(struct nvm_ioctl_tgt_remove *);*
+- *int nvm_get_device_info(struct nvm_ioctl_dev_info *);*
+- *int nvm_get_target_info(struct nvm_ioctl_tgt_info *);*
 
 
 ### Append-only API
 liblightnvm's append-only
 
-- int nvm_beam_create(const char *tgt, int lun, int flags);
-Create anbeam
-- void nvm_beam_destroy(int beam, int flags);
-- ssize_t nvm_beam_append(int beam, const void *buf, size_t count);
-- ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags);
-- int nvm_beam_sync(int beam, int flags);
+- *int nvm_beam_create(const char *tgt, int lun, int flags);*
+- *void nvm_beam_destroy(int beam, int flags);*
+- *ssize_t nvm_beam_append(int beam, const void *buf, size_t count);*
+- *ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags);*
+- *int nvm_beam_sync(int beam, int flags);*
 
 ## How to use
 
