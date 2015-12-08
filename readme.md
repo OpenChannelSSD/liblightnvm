@@ -70,11 +70,48 @@ to allow applications define barriers and persist data as needed. Flash pages
 are padded when necessary to respect flash constrains; space amplification must
 be accounted for when making use of the *sync* operator.
 
-- *int nvm_beam_create(const char *tgt, int lun, int flags);*
-- *void nvm_beam_destroy(int beam, int flags);*
-- *ssize_t nvm_beam_append(int beam, const void *buf, size_t count);*
-- *ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags);*
-- *int nvm_beam_sync(int beam, int flags);*
+- **int nvm_beam_create(const char _*tgt_, int _lun_, int _flags_);**
+  - Description:
+  Creates a new I/O beam associated with the target *tgt* in LUN *lun* (see flags).
+  - Return Value:
+  On success, a beam id that can be used to issue I/Os (e.g., append, read). On
+  error, -1 is returned, in which case *errno* is set to indicate the error.
+  - Flags:
+    - *NVM_PROV_SPEC_LUN* - A LUN is specified. If there are free blocks in LUN
+      *lun* a block from that LUN is allocated. Error is return otherwise.
+    - *NVM_PROV_RAND_LUN* - LightNVM's media manager selects the LUN from which
+      the block is allocated. If there are free blocks available to the target
+      *tgt* a block is allocated. Error is returned otherwise.
+
+- **void nvm_beam_destroy(int _beam_, int _flags_);**
+  - Description:
+  Destroys the I/O beam associated with the id *beam*.
+
+- **ssize_t nvm_beam_append(int _beam_, const void _*buf_, size_t _count_);**
+  - Description:
+  Appends *count* bytes from buffer *buf* to the I/O beam associated with the id
+  *beam*.
+  - Return Value:
+  On success the number of bytes written to the beam is returned (zero indicates
+  that nothing has been written). On error, -1 is returned, in which case
+  *errno* is set to indicate the error.
+
+- **ssize_t nvm_beam_read(int _beam_, void _*buf_, size_t _count_, off_t
+  _offset_, int _flags_);**
+  - Description:
+  Reads *count* bytes to buffer *buf* from the I/O beam associated with the id
+  *beam* at offset *offset*.
+  - Return Value:
+  On success the number of bytes read from the beam is returned (zero indicates
+  that nothing has been read). On error, -1 is returned, in which case
+  *errno* is set to indicate the error.
+
+- **int nvm_beam_sync(int _beam_, int _flags_);**
+  - Description:
+  Syncs all data buffered on I/O beam *beam* to the device.
+  - Return Value:
+  On success, 0 is returned. On error, -1 is returned, in which case *errno* is
+  set to indicate the error.
 
 ## Raw I/O API
 
