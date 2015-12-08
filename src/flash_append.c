@@ -108,9 +108,10 @@ static int switch_block(struct beam **beam)
 
 	(*beam)->current_w_vblock = &(*beam)->vblocks[(*beam)->nvblocks - 1];
 
-	LNVM_DEBUG("Block switched. Beam: %d, id: %llu. Total blocks: %d\n",
+	LNVM_DEBUG("Block switched. Beam:%d,id:%llu,nppas:%d;.Total blocks: %d\n",
 			(*beam)->gid,
 			(*beam)->current_w_vblock->id,
+			(*beam)->current_w_vblock->nppas,
 			(*beam)->nvblocks);
 
 	return 0;
@@ -318,11 +319,12 @@ static inline int get_dev_info(char *dev, struct lnvm_device *device)
 		goto out;
 
 	strncpy(device->dev, dev_info.dev, DISK_NAME_LEN);
-	device->dev_page_size = dev_info.prop.page_size;
+	device->dev_page_size = dev_info.prop.page_size / 4;
 	device->write_page_size =
 			dev_info.prop.page_size * dev_info.prop.nr_planes;
 	device->nr_luns = dev_info.prop.nr_luns;
-	device->max_io_size = dev_info.prop.max_io_size;
+	/* device->max_io_size = dev_info.prop.max_io_size; */
+	device->max_io_size = 1; //JAVIER::::: ONLY OF DEBUGGING
 
 	LNVM_DEBUG("Device cached: %s(page_size:%u-%u, max_io_size:%u)\n",
 			device->dev, device->dev_page_size,
@@ -586,6 +588,7 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 	int read_pages;
 	/* We can read at device page size granurality */
 	int dev_page_size;
+	int read_page_size;
 	int max_pages_read;
 	int ret;
 
@@ -595,12 +598,14 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 		return -EINVAL;
 	}
 
+	read_page_size = b->tgt->tgt->dev->write_page_size;
 	dev_page_size = b->tgt->tgt->dev->dev_page_size;
 	max_pages_read = b->tgt->tgt->dev->max_io_size;
 	left_pages = count / dev_page_size +
 		((((count) % dev_page_size) > 0) ? 1 : 0) +
 		(((offset / dev_page_size) != (count + offset) / dev_page_size)
 		? 1 : 0);
+		//JAVIER:::::: LOOK INTO THIS!!!!
 
 	LNVM_DEBUG("Read %lu bytes (pgs:%lu) from beam %d (p:%p, b:%d). Off:%lu\n",
 			count, left_pages,
@@ -612,7 +617,7 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 	nppas = get_npages_block(&b->vblocks[0]);
 
 	ppa_count = offset / dev_page_size;
-	block_off = ppa_count/ nppas;
+	block_off = ppa_count / nppas;
 	ppa_off = ppa_count % nppas;
 	page_off = offset % dev_page_size;
 
@@ -620,7 +625,9 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 
 	pages_to_read = (nppas > left_pages) ? left_pages : nppas;
 	ret = posix_memalign(&read_buf, dev_page_size,
-						pages_to_read * dev_page_size);
+						pages_to_read * read_page_size);
+						/* pages_to_read * dev_page_size); */
+						/* JAVIER: TMP Solution */
 	if (ret) {
 		LNVM_DEBUG("Cannot allocate memory (%lu bytes - align. %d )\n",
 				left_pages * dev_page_size, dev_page_size);
@@ -645,7 +652,7 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 
 		read_pages = flash_read(b->tgt->tgt_id, current_r_vblock, reader,
 						ppa_off, pages_to_read,
-						max_pages_read, dev_page_size);
+						max_pages_read, read_page_size);
 		if (read_pages != pages_to_read)
 			return -1;
 

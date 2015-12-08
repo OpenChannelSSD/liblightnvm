@@ -46,7 +46,7 @@ typedef struct nvm_ioctl_vblock VBLOCK;
 
 static inline int get_npages_block(VBLOCK *vblock)
 {
-	return vblock->nppas;
+	return vblock->nppas / 4; //JAVIER: / NR_PLANES
 }
 
 /* provisioning */

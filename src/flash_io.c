@@ -32,13 +32,13 @@
 
 int flash_write(int tgt, VBLOCK *vblock, const char *buf,
 				size_t ppa_off, size_t count,
-				int max_pages_write, int write_page_size)
+				int max_pages_write, int page_size)
 {
 	size_t bppa = vblock->bppa;
 	size_t nppas = vblock->nppas;
-	size_t current_ppa = bppa + ppa_off;
-	size_t left = count;
+	size_t current_ppa = bppa + (ppa_off * 16);
 	size_t bytes_per_write;
+	ssize_t left = count;
 	ssize_t written;
 	int pages_per_write;
 	char *writer = (char*)buf;
@@ -49,14 +49,19 @@ int flash_write(int tgt, VBLOCK *vblock, const char *buf,
 					count, vblock->id, ppa_off, nppas);
 	assert(count <= nppas - ppa_off);
 
+	int i = 0;
 	/* For now we use pwrite. We will have different IO backends */
 	while (left > 0) {
 		pages_per_write = (left > max_pages_write) ?
 						max_pages_write : left;
-		bytes_per_write = pages_per_write * write_page_size;
+		bytes_per_write = pages_per_write * page_size;
+
+		LNVM_DEBUG("Write %lu bytes (%d pages) - blk:%llu, ppa:%lu\n",
+				bytes_per_write, pages_per_write, vblock->id,
+				current_ppa);
 
 		written = pwrite(tgt, writer, bytes_per_write,
-					current_ppa * write_page_size);
+						current_ppa * 4096);
 		if (written != bytes_per_write) {
 			LNVM_DEBUG("Error writing %d pages (%lu bytes) "
 					"to ppa: %lu, block %llu (tgt:%d)\n",
@@ -68,8 +73,10 @@ int flash_write(int tgt, VBLOCK *vblock, const char *buf,
 		}
 
 		writer += bytes_per_write;
-		current_ppa += pages_per_write;
-		left -= pages_per_write;
+		current_ppa += pages_per_write * 16;
+		left -= pages_per_write * 16;
+
+		printf("i:%d, left:%d\n", i++, left);
 	}
 
 	LNVM_DEBUG("Written %lu pages to block %llu (tgt:%d)",
@@ -79,13 +86,13 @@ int flash_write(int tgt, VBLOCK *vblock, const char *buf,
 }
 
 int flash_read(int tgt, VBLOCK *vblock, void *buf, size_t ppa_off,
-			size_t count, int max_pages_read, int dev_page_size)
+			size_t count, int max_pages_read, int page_size)
 {
 	size_t bppa = vblock->bppa;
 	size_t nppas = vblock->nppas;
-	size_t current_ppa = bppa + ppa_off;
-	size_t left = count;
+	size_t current_ppa = bppa + (ppa_off * 16);
 	size_t bytes_per_read;
+	ssize_t left = count;
 	ssize_t read;
 	int pages_per_read;
 	char *reader = (char*)buf;
@@ -99,14 +106,14 @@ int flash_read(int tgt, VBLOCK *vblock, void *buf, size_t ppa_off,
 	while (left > 0) {
 		pages_per_read = (left > max_pages_read) ?
 						max_pages_read : left;
-		bytes_per_read = pages_per_read * dev_page_size;
+		bytes_per_read = pages_per_read * page_size;
 
-		/* LNVM_DEBUG("Read %lu bytes (%d pages) - blk:%lu, ppa:%lu\n", */
-				/* bytes_per_read, pages_per_read, vblock->id, */
-				/* current_ppa); */
+		LNVM_DEBUG("Read %lu bytes (%d pages) - blk:%llu, ppa:%lu\n",
+				bytes_per_read, pages_per_read, vblock->id,
+				current_ppa);
 retry:
 		read = pread(tgt, reader, bytes_per_read,
-					current_ppa * dev_page_size);
+						current_ppa * 4096);
 		if (read != bytes_per_read) {
 			if (errno == EINTR)
 				goto retry;
@@ -114,8 +121,8 @@ retry:
 		}
 
 		reader += bytes_per_read;
-		current_ppa += pages_per_read;
-		left -= pages_per_read;
+		current_ppa += pages_per_read * 16;
+		left -= pages_per_read * 16;
 	}
 
 	return count;

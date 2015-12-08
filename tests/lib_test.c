@@ -118,7 +118,7 @@ static void create_remove_all_tgts(CuTest *ct)
 	struct nvm_ioctl_tgt_remove r;
 
 	printf("Testing device: nvme, target: rrpc\n");
-	sprintf(c.target.dev, "nvme0n1");
+	sprintf(c.target.dev, "nexus0n1");
 	sprintf(c.target.tgttype, "rrpc");
 	sprintf(c.target.tgtname, "test");
 	c.flags = 0;
@@ -132,7 +132,7 @@ static void create_remove_all_tgts(CuTest *ct)
 	create_remove_tgt(ct, &c, &r);
 
 	printf("Testing device: dflash, target: dflash\n");
-	sprintf(c.target.dev, "nvme0n1");
+	sprintf(c.target.dev, "nexus0n1");
 	sprintf(c.target.tgttype, "dflash");
 	sprintf(c.target.tgtname, "test");
 	c.flags = 0;
