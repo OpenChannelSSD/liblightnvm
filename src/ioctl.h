@@ -62,10 +62,14 @@ enum {
 };
 
 struct nvm_ioctl_dev_prop {
-	__u32 page_size;
-	__u32 nr_planes;
-	__u32 nr_luns;
-	__u32 max_io_size;
+	__u32 sec_size;		/* Device sector size */
+	__u32 sec_per_page;	/* Number of sectors per flash page */
+	__u32 max_sec_io;	/* Maximum number of sectors per I/O */
+	__u32 nr_planes;	/* Number of planes in device */
+	__u32 nr_luns;		/* Number of LUNs in device */
+	__u32 nr_channels;	/* Number of channels in device */
+	__u32 plane_mode;	/* Device plane mode: single, dual, quad */
+	__u32 oob_size;		/* Sector out-of-bound area size */
 };
 
 struct nvm_ioctl_dev_info {
@@ -145,7 +149,7 @@ enum {
 struct nvm_ioctl_provisioning {
 	struct nvm_ioctl_vblock *vblock;
 	struct nvm_ioctl_lun_status *lun_status;
-	int flags;
+	__u16 flags;
 };
 
 /* The ioctl type, 'L', 0x20 - 0x2F documented in ioctl-number.txt */
