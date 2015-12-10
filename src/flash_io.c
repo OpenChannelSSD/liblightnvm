@@ -30,9 +30,14 @@
 #include "flash_beam.h"
 #include "assert.h"
 
+/*
+ * Write count number of flash pages of size fpage_size to the device.
+ * fpage_size is the write page size. This is, the size of a virtual flash
+ * pages, i.e., across flash planes.
+ */
 int flash_write(int tgt, VBLOCK *vblock, const char *buf,
 				size_t ppa_off, size_t count,
-				int max_pages_write, int page_size)
+				int max_pages_write, int fpage_size)
 {
 	size_t bppa = vblock->bppa;
 	size_t nppas = vblock->nppas;
@@ -54,9 +59,9 @@ int flash_write(int tgt, VBLOCK *vblock, const char *buf,
 	while (left > 0) {
 		pages_per_write = (left > max_pages_write) ?
 						max_pages_write : left;
-		bytes_per_write = pages_per_write * page_size;
+		bytes_per_write = pages_per_write * fpage_size;
 
-		LNVM_DEBUG("Write %lu bytes (%d pages) - blk:%llu, ppa:%lu\n",
+		LNVM_DEBUG("Write %lu bytes (%d full pages) - blk:%llu, ppa:%lu\n",
 				bytes_per_write, pages_per_write, vblock->id,
 				current_ppa);
 
@@ -74,7 +79,7 @@ int flash_write(int tgt, VBLOCK *vblock, const char *buf,
 
 		writer += bytes_per_write;
 		current_ppa += pages_per_write * 16;
-		left -= pages_per_write * 16;
+		left -= pages_per_write;
 
 		printf("i:%d, left:%d\n", i++, left);
 	}
@@ -85,12 +90,18 @@ int flash_write(int tgt, VBLOCK *vblock, const char *buf,
 	return count;
 }
 
+/*
+ * Read count number of flash pages of size fpage_size from the device.
+ * fpage_size is the read page size, which might be smaller than the write page
+ * size; some controllers support reading at a sector granurality (typically
+ * 4KB), instead of reading the whole virtual flash page (across planes).
+ */
 int flash_read(int tgt, VBLOCK *vblock, void *buf, size_t ppa_off,
-			size_t count, int max_pages_read, int page_size)
+			size_t count, int max_pages_read, int fpage_size)
 {
 	size_t bppa = vblock->bppa;
 	size_t nppas = vblock->nppas;
-	size_t current_ppa = bppa + (ppa_off * 16);
+	size_t current_ppa = bppa + ppa_off;
 	size_t bytes_per_read;
 	ssize_t left = count;
 	ssize_t read;
@@ -103,10 +114,11 @@ int flash_read(int tgt, VBLOCK *vblock, void *buf, size_t ppa_off,
 					count, vblock->id, tgt);
 
 	/* For now we use pread. We will have different IO backends */
+	int i;
 	while (left > 0) {
 		pages_per_read = (left > max_pages_read) ?
 						max_pages_read : left;
-		bytes_per_read = pages_per_read * page_size;
+		bytes_per_read = pages_per_read * fpage_size;
 
 		LNVM_DEBUG("Read %lu bytes (%d pages) - blk:%llu, ppa:%lu\n",
 				bytes_per_read, pages_per_read, vblock->id,
@@ -121,8 +133,10 @@ retry:
 		}
 
 		reader += bytes_per_read;
-		current_ppa += pages_per_read * 16;
-		left -= pages_per_read * 16;
+		left -= pages_per_read;
+		current_ppa += pages_per_read;
+
+		printf("i:%d, left:%d\n", i++, left);
 	}
 
 	return count;

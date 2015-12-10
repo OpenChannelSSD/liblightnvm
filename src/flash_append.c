@@ -80,22 +80,22 @@ static void beam_free(struct beam *beam)
 static int switch_block(struct beam **beam)
 {
 	size_t buf_size;
-	int dev_page_size = (*beam)->tgt->tgt->dev->dev_page_size;
+	int sec_size = (*beam)->tgt->tgt->dev->flash_page.sec_size;
 	int ret;
 
 	/* Write buffer for small writes */
 	buf_size = get_npages_block(&(*beam)->vblocks[(*beam)->nvblocks] - 1) *
-								dev_page_size;
+								sec_size;
 	if (buf_size != (*beam)->w_buffer.buf_limit) {
 		LNVM_DEBUG("Allocating new write buffer of size %lu\n",
 								buf_size);
 		free((*beam)->w_buffer.buf);
-		ret = posix_memalign(&(*beam)->w_buffer.buf, dev_page_size,
+		ret = posix_memalign(&(*beam)->w_buffer.buf, sec_size,
 								buf_size);
 		if (ret) {
 			LNVM_DEBUG("Cannot allocate memory "
 					" (%lu bytes - align. %d)\n",
-				buf_size, dev_page_size);
+				buf_size, sec_size);
 			return ret;
 		}
 		(*beam)->w_buffer.buf_limit = buf_size;
@@ -174,19 +174,24 @@ static int beam_init(struct beam *beam, int lun, int tgt)
 	return allocate_block(beam);
 }
 
+/*
+ * Sync write buffer to the device. The write granurality is determined by the
+ * size of the full page size, across flash planes. These sizes are device
+ * specific and are queried for each operating device.
+ */
 static int beam_sync(struct beam *beam, int flags)
 {
+	struct lnvm_fpage *fpage = &beam->tgt->tgt->dev->flash_page;
 	size_t sync_len = beam->w_buffer.cursize - beam->w_buffer.cursync;
 	size_t synced_bytes;
-	int write_page_size = beam->tgt->tgt->dev->write_page_size;
-	size_t disaligned_data = sync_len % write_page_size;
-	size_t ppa_off = calculate_ppa_off(beam->w_buffer.cursync, write_page_size);
-	int dev_page_size = beam->tgt->tgt->dev->dev_page_size;
-	int max_pages_write = beam->tgt->tgt->dev->max_io_size;
-	int npages = sync_len / dev_page_size;
+	size_t disaligned_data = sync_len % fpage->pln_pg_size;
+	size_t ppa_off =
+		calculate_ppa_off(beam->w_buffer.cursync, fpage->pln_pg_size);
+	int max_pages_write = beam->tgt->tgt->dev->info.prop.max_sec_io;
+	int npages = sync_len / fpage->pln_pg_size;
 	int synced_pages;
 
-	if (((flags & OPTIONAL_SYNC) && (sync_len < write_page_size)) ||
+	if (((flags & OPTIONAL_SYNC) && (sync_len < fpage->pln_pg_size)) ||
 		(sync_len == 0))
 		return 0;
 
@@ -198,7 +203,7 @@ static int beam_sync(struct beam *beam, int flags)
 
 		if (disaligned_data > 0) {
 			/* Add padding to current page */
-			int padding = write_page_size - disaligned_data;
+			int padding = fpage->pln_pg_size - disaligned_data;
 			memset(beam->w_buffer.mem, '\0', padding);
 			beam->w_buffer.cursize += padding;
 			beam->w_buffer.mem += padding;
@@ -210,16 +215,17 @@ static int beam_sync(struct beam *beam, int flags)
 	}
 
 	/* write data to media */
+	// JAVIER max_pages_write is a hack
 	synced_pages = flash_write(beam->tgt->tgt_id, beam->current_w_vblock,
 					beam->w_buffer.sync, ppa_off, npages,
-					max_pages_write, write_page_size);
+					max_pages_write, fpage->pln_pg_size);
 	if (synced_pages != npages) {
 		LNVM_DEBUG("Error syncing data\n");
 		return -1;
 	}
 
 	/* We might need to take a lock here */
-	synced_bytes = synced_pages * dev_page_size;
+	synced_bytes = synced_pages * fpage->pln_pg_size;
 	beam->bytes += synced_bytes;
 	beam->w_buffer.cursync += synced_bytes;
 	beam->w_buffer.sync += synced_bytes;
@@ -298,37 +304,46 @@ out:
 
 static inline int get_dev_info(char *dev, struct lnvm_device *device)
 {
-	struct nvm_ioctl_dev_info dev_info;
+	struct nvm_ioctl_dev_info *dev_info = &device->info;
+	struct lnvm_fpage *fpage = &device->flash_page;
 	int ret = 0;
 	int i;
 
 	/* Initialize ioctl values */
-	memset(dev_info.bmname, 0, NVM_TTYPE_MAX);
+	memset(dev_info->bmname, 0, NVM_TTYPE_MAX);
 	for (i = 0; i < 3; i++)
-		dev_info.bmversion[i] = 0;
+		dev_info->bmversion[i] = 0;
 	for (i = 0; i < 8; i++)
-		dev_info.reserved[i] = 0;
-	dev_info.prop.page_size = 0;
-	dev_info.prop.max_io_size = 0;
+		dev_info->reserved[i] = 0;
+	dev_info->flags = 0;
+	dev_info->prop.sec_size = 0;
+	dev_info->prop.sec_per_page = 0;
+	dev_info->prop.max_sec_io = 0;
+	dev_info->prop.nr_planes = 0;
+	dev_info->prop.nr_luns = 0;
+	dev_info->prop.nr_channels = 0;
+	dev_info->prop.plane_mode = 0;
+	dev_info->prop.oob_size = 0;
 
-	dev_info.flags = 0;
-
-	strncpy(dev_info.dev, dev, DISK_NAME_LEN);
-	ret = nvm_get_device_info(&dev_info);
+	strncpy(dev_info->dev, dev, DISK_NAME_LEN);
+	ret = nvm_get_device_info(dev_info);
 	if (ret)
 		goto out;
 
-	strncpy(device->dev, dev_info.dev, DISK_NAME_LEN);
-	device->dev_page_size = dev_info.prop.page_size / 4;
-	device->write_page_size =
-			dev_info.prop.page_size * dev_info.prop.nr_planes;
-	device->nr_luns = dev_info.prop.nr_luns;
-	/* device->max_io_size = dev_info.prop.max_io_size; */
-	device->max_io_size = 1; //JAVIER::::: ONLY OF DEBUGGING
+	/* Calculated values */
+	fpage->sec_size = dev_info->prop.sec_size;
+	fpage->page_size = fpage->sec_size * dev_info->prop.sec_per_page;
+	fpage->pln_pg_size = fpage->page_size * dev_info->prop.nr_planes;
 
-	LNVM_DEBUG("Device cached: %s(page_size:%u-%u, max_io_size:%u)\n",
-			device->dev, device->dev_page_size,
-			device->write_page_size, device->max_io_size);
+	// JAVIER: ONLY FOR DEBUGGING!!
+	dev_info->prop.max_sec_io = 1;
+
+	LNVM_DEBUG("Device cached: %s(sizes:%d/%d/%d, max_sec_io:%d)\n",
+			device->info.dev,
+			device->flash_page.sec_size,
+			device->flash_page.page_size,
+			device->flash_page.pln_pg_size,
+			device->info.prop.max_sec_io);
 out:
 	return ret;
 }
@@ -379,8 +394,8 @@ static int nvm_target_open(const char *tgt, int flags)
 				return ret;
 			}
 
-			strncpy(dev_entry->dev, dev, DISK_NAME_LEN);
-			HASH_ADD_STR(devt, dev, dev_entry);
+			strncpy(dev_entry->info.dev, dev, DISK_NAME_LEN);
+			HASH_ADD_STR(devt, info.dev, dev_entry);
 
 			atomic_init(&dev_entry->ref_cnt);
 			atomic_set(&dev_entry->ref_cnt, 0);
@@ -573,11 +588,11 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 {
 	struct beam *b;
 	VBLOCK *current_r_vblock;
+	struct lnvm_fpage *fpage;
 	size_t block_off, ppa_off, page_off;
 	size_t ppa_count;
 	size_t nppas;
 	size_t left_bytes = count;
-	/* TODO: Improve this calculations */
 	size_t valid_bytes;
 	size_t left_pages;
 	size_t pages_to_read, bytes_to_read;
@@ -586,9 +601,6 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 	char *writer = buf;
 	/* char *cache; // Used when trying write cache for reads*/
 	int read_pages;
-	/* We can read at device page size granurality */
-	int dev_page_size;
-	int read_page_size;
 	int max_pages_read;
 	int ret;
 
@@ -598,14 +610,15 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 		return -EINVAL;
 	}
 
-	read_page_size = b->tgt->tgt->dev->write_page_size;
-	dev_page_size = b->tgt->tgt->dev->dev_page_size;
-	max_pages_read = b->tgt->tgt->dev->max_io_size;
-	left_pages = count / dev_page_size +
-		((((count) % dev_page_size) > 0) ? 1 : 0) +
-		(((offset / dev_page_size) != (count + offset) / dev_page_size)
-		? 1 : 0);
-		//JAVIER:::::: LOOK INTO THIS!!!!
+	fpage = &b->tgt->tgt->dev->flash_page;
+	max_pages_read = b->tgt->tgt->dev->info.prop.max_sec_io;
+
+	/* TODO: Improve calculations */
+	left_pages = count / fpage->sec_size +
+		((((count) % fpage->sec_size) > 0) ? 1 : 0) +
+		(((offset / fpage->sec_size) !=
+		(count + offset) / fpage->sec_size) ? 1 : 0);
+		//FIXME: JAVIER:::::: LOOK INTO THIS!!!!
 
 	LNVM_DEBUG("Read %lu bytes (pgs:%lu) from beam %d (p:%p, b:%d). Off:%lu\n",
 			count, left_pages,
@@ -616,27 +629,30 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 	/* Assume that all blocks forming the beam have same size */
 	nppas = get_npages_block(&b->vblocks[0]);
 
-	ppa_count = offset / dev_page_size;
+	ppa_count = offset / fpage->sec_size;
 	block_off = ppa_count / nppas;
 	ppa_off = ppa_count % nppas;
-	page_off = offset % dev_page_size;
+	page_off = offset % fpage->sec_size;
 
 	current_r_vblock = &b->vblocks[block_off];
 
 	pages_to_read = (nppas > left_pages) ? left_pages : nppas;
-	ret = posix_memalign(&read_buf, dev_page_size,
-						pages_to_read * read_page_size);
-						/* pages_to_read * dev_page_size); */
-						/* JAVIER: TMP Solution */
+	ret = posix_memalign(&read_buf, fpage->sec_size,
+						pages_to_read * fpage->sec_size);
 	if (ret) {
 		LNVM_DEBUG("Cannot allocate memory (%lu bytes - align. %d )\n",
-				left_pages * dev_page_size, dev_page_size);
+				left_pages * fpage->sec_size, fpage->sec_size);
 		return ret;
 	}
 	reader = read_buf;
 
+	/*
+	 * We assume that the device supports reading at a sector granurality
+	 * (typically 4KB). If not, we deal with the read in LightNVM in the
+	 * kernel.
+	 */
 	while (left_bytes) {
-		bytes_to_read = pages_to_read * dev_page_size;
+		bytes_to_read = pages_to_read * fpage->sec_size;
 		valid_bytes = (left_bytes > bytes_to_read) ?
 						bytes_to_read : left_bytes;
 
@@ -644,15 +660,16 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 			while (pages_to_read + ppa_off > nppas)
 				pages_to_read--;
 
-			valid_bytes = (nppas * dev_page_size) -
-					(ppa_off * dev_page_size) - page_off;
+			valid_bytes = (nppas * fpage->sec_size) -
+					(ppa_off * fpage->sec_size) - page_off;
 		}
 
-		assert(left_bytes <= left_pages * dev_page_size);
+		assert(left_bytes <= left_pages * fpage->sec_size);
 
+		// TODO: Send bigger I/Os if we have enough data
 		read_pages = flash_read(b->tgt->tgt_id, current_r_vblock, reader,
 						ppa_off, pages_to_read,
-						max_pages_read, read_page_size);
+						max_pages_read, fpage->sec_size);
 		if (read_pages != pages_to_read)
 			return -1;
 

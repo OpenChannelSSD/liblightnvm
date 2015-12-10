@@ -53,12 +53,15 @@ typedef struct atomic_cnt {
 	pthread_spinlock_t lock;
 } atomic_cnt;
 
+struct lnvm_fpage {
+	uint32_t sec_size;
+	uint32_t page_size;
+	uint32_t pln_pg_size;
+};
+
 struct lnvm_device {
-	char dev[DISK_NAME_LEN];	/* open-channel SSD device */
-	uint32_t dev_page_size;		/* Device page size */
-	uint32_t write_page_size;	/* Write page size (depends on planes) */
-	uint32_t nr_luns;		/* Number of LUNs exposed by the device*/
-	uint32_t max_io_size;		/* Supported ppas in a single IO*/
+	struct nvm_ioctl_dev_info info;	/* Device properties */
+	struct lnvm_fpage flash_page;	/* Calculated device flash page sizes */
 	atomic_cnt ref_cnt;		/* Reference counter */
 	UT_hash_handle hh;		/* hash handle for uthash */
 };
