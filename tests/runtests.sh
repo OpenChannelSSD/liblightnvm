@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NVME_DEVICE="nexus0n1"
+NVME_DEVICE="nvme0n1"
 
 echo "Checks starting - " `date`
 
