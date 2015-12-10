@@ -334,9 +334,6 @@ static inline int get_dev_info(char *dev, struct lnvm_device *device)
 	fpage->pln_pg_size = fpage->page_size * dev_info->prop.nr_planes;
 	fpage->max_sec_io = dev_info->prop.max_sec_io;
 
-	// JAVIER: ONLY FOR DEBUGGING!!
-	dev_info->prop.max_sec_io = 1;
-
 	LNVM_DEBUG("Device cached: %s(sizes:%d/%d/%d, max_sec_io:%d)\n",
 			device->info.dev,
 			device->flash_page.sec_size,
