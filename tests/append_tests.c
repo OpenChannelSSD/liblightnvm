@@ -197,8 +197,7 @@ static void beam_ar2(CuTest *ct)
 {
 	char test[5000];
 	char test2[5000];
-	/* int flags = TEST_AR_ALL | TEST_AR_1K_BYTES | TEST_AR_1_BYTE; */
-	int flags = TEST_AR_ALL | TEST_AR_1K_BYTES;
+	int flags = TEST_AR_ALL | TEST_AR_1K_BYTES | TEST_AR_1_BYTE;
 
 	init_data_test(test, 5000);
 	beam_ar_generic(ct, test, test2, 5000, flags);
@@ -214,8 +213,7 @@ static void beam_ar3(CuTest *ct)
 {
 	char test[50000];
 	char test2[50000];
-	/* int flags = TEST_AR_ALL | TEST_AR_1K_BYTES | TEST_AR_1_BYTE; */
-	int flags = TEST_AR_ALL;
+	int flags = TEST_AR_ALL | TEST_AR_1K_BYTES | TEST_AR_1_BYTE;
 
 	init_data_test(test, 50000);
 	beam_ar_generic(ct, test, test2, 50000, flags);
@@ -232,8 +230,7 @@ static void beam_ar4(CuTest *ct)
 	size_t test_size = 2000000;
 	char test[test_size];
 	char test2[test_size];
-	/* int flags = TEST_AR_ALL | TEST_AR_1K_BYTES; */
-	int flags = TEST_AR_ALL;
+	int flags = TEST_AR_ALL | TEST_AR_1K_BYTES;
 
 	init_data_test(test, test_size);
 	beam_ar_generic(ct, test, test2, test_size, flags);
