@@ -24,10 +24,11 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "provisioning.h"
+#include <liblightnvm.h>
+
 #include "../util/debug.h"
 
-int get_block(int tgt, uint32_t lun_id, VBLOCK *vblock)
+int nvm_get_block(int tgt, uint32_t lun, VBLOCK *vblock)
 {
 	struct nvm_ioctl_provisioning prov = {
 		.flags = 0,
@@ -50,7 +51,7 @@ int get_block(int tgt, uint32_t lun_id, VBLOCK *vblock)
 	vblock->nppas = 0;
 	vblock->ppa_bitmap = 0;
 
-	vblock->vlun_id = lun_id;
+	vblock->vlun_id = lun;
 	vblock->owner_id = 101;
 	vblock->flags = 0x0;
 
@@ -60,7 +61,7 @@ int get_block(int tgt, uint32_t lun_id, VBLOCK *vblock)
 
 	ret = ioctl(tgt, NVM_PR_GET_BLOCK, &prov);
 	if (ret) {
-		LNVM_DEBUG("Could not get block from lun %d\n", lun_id);
+		LNVM_DEBUG("Could not get block from lun %d\n", lun);
 		goto out;
 	}
 
@@ -72,7 +73,7 @@ out:
 	return ret;
 }
 
-int get_block_meta(int tgt, uint64_t vblock_id, VBLOCK *vblock)
+int nvm_get_block_meta(int tgt, uint64_t vblock_id, VBLOCK *vblock)
 {
 	struct nvm_ioctl_provisioning prov = {
 		.flags = 0,
@@ -116,7 +117,7 @@ out:
 	return ret;
 }
 
-int put_block(int tgt, VBLOCK *vblock)
+int nvm_put_block(int tgt, VBLOCK *vblock)
 {
 	struct nvm_ioctl_provisioning prov = {
 		.flags = 0,

@@ -31,8 +31,8 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <time.h>
+#include <liblightnvm.h>
 
-#include "provisioning.h"
 #include "../util/uthash.h"
 #include "../util/debug.h"
 

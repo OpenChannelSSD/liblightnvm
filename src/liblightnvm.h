@@ -36,6 +36,8 @@ extern "C" {
 #include <sys/types.h>
 #include <linux/lightnvm.h>
 
+typedef struct nvm_ioctl_vblock VBLOCK;
+
 /* Management - mgmt.c */
 int nvm_get_info(struct nvm_ioctl_info *);
 int nvm_get_devices(struct nvm_ioctl_get_devices *);
@@ -46,7 +48,12 @@ int nvm_get_target_info(struct nvm_ioctl_tgt_info *);
 
 // int nvm_get_lun_info(int lun);
 
-/* Append store functionality - flash_append.c */
+/* Raw I/O functionality - flash*/
+int nvm_get_block(int tgt, uint32_t lun, VBLOCK *vblock);
+int nvm_put_block(int tgt, VBLOCK *vblock);
+int nvm_get_block_meta(int tgt, uint64_t vblock_id, VBLOCK *vblock);
+
+/* Append-only functionality  - flash_append.c */
 int nvm_beam_create(const char *tgt, int lun, int flags);
 void nvm_beam_destroy(int beam, int flags);
 ssize_t nvm_beam_append(int beam, const void *buf, size_t count);

@@ -31,7 +31,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <assert.h>
-#include <liblightnvm.h>
 
 #include "../util/likely.h"
 #include "flash_beam.h"
@@ -64,7 +63,7 @@ static void beam_put_blocks(struct beam *beam)
 	int i;
 
 	for (i = 0; i < beam->nvblocks; i++) {
-		put_block(beam->tgt->tgt_id, &beam->vblocks[i]);
+		nvm_put_block(beam->tgt->tgt_id, &beam->vblocks[i]);
 	}
 }
 
@@ -73,6 +72,11 @@ static void beam_free(struct beam *beam)
 	beam_buf_free(&beam->w_buffer);
 	beam_put_blocks(beam);
 	free(beam);
+}
+
+static inline int get_npages_block(VBLOCK *vblock)
+{
+	return vblock->nppas;
 }
 
 /* XXX: All block functions assume that block allocation is thread safe */
@@ -122,7 +126,7 @@ static int preallocate_block(struct beam *beam)
 	VBLOCK *vblock = &beam->vblocks[beam->nvblocks];
 	int ret = 0;
 
-	ret = get_block(beam->tgt->tgt_id, beam->lun, vblock);
+	ret = nvm_get_block(beam->tgt->tgt_id, beam->lun, vblock);
 	if (ret) {
 		LNVM_DEBUG("Could not allocate a new block for beam %d\n",
 				beam->gid);
