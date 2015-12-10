@@ -230,7 +230,6 @@ static int beam_sync(struct beam *beam, int flags)
 
 	LNVM_DEBUG("Synced bytes: %lu (%d pages)\n", synced_bytes, synced_pages);
 
-	/* TODO: Access times */
 	return 0;
 }
 
