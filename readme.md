@@ -119,21 +119,24 @@ TODO
 
 ## How to use
 
-liblightnvm runs on top of LightNVM. However, the code is still not ready to
-be sent upstream. Development is taking place on the liblnvm branch [1]; please
+liblightnvm runs on top of LightNVM. However, support for it in the kernel is
+not yet upstream. Development is taking place on the liblnvm branch [1]; please
 check it out to test liblightnvm. This branch will follow master. This is, it
 will have all new functionality and fixes sent upstream to LightNVM.
 
 Also, it is necessary to have an Open-Channel SSD that supports LightNVM
 commands. For testing purposes you can use QEMU. Please checkout [2] to get
-Keith Busch's qemu-nvme with support for Open-Channel SSDs. Documentation on how
-to setup LightNVM and QEMU can be found in [3]. Refer to [4] for LightNVM sanity
-checks.
+Keith Busch's qemu-nvme with support for Open-Channel SSDs. Use the liblnvm
+branch. Documentation on how to setup LightNVM and QEMU can be found in [3].
+Refer to [4] for LightNVM sanity checks.
 
 Once LightNVM is running on QEMU you can install liblightnvm and test it. Note
 that superuser privileges are required to install the library. Also, superuser
 privileges are required to execute the library sanity checks. This is because
 LightNVM target creation requires it.
+
+Modify NVME_DEVICE in tests/runtests.sh to match the device you are testing. The
+default is nvme0n1. To run sanity checks:
 
 - *$ sudo make install_local* - Copy the necessary headers
 - *$ sudo make install* - Install liblightnvm
@@ -141,7 +144,7 @@ LightNVM target creation requires it.
 
 Refer to tests/ to find example code.
 
-A storage backend for RocksDB using liblightnvm will follow soon [5]
+A storage backend for RocksDB using liblightnvm is under development [5].
 
 To know more about Open-Channel SSDs and the software ecosystem around
 them please see [6].
