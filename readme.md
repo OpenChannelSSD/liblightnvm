@@ -33,10 +33,10 @@ using direct physical flash to support this class of applications.
 ## API description
 
 liblightnvm's API is divided in two parts: (i) a management interface, and (ii)
-an I/O interface. The raw I/O interface is a simple get_block / put_block API
+an I/O interface. The I/O interface is a simple get_block / put_block API
 that allows applications to directly deal with physical flash blocks. To
 minimize changes on the application side, we also provide an append-only
-interface,which targets applications that can handle data placement and garbage
+interface, which targets applications that can handle data placement and garbage
 collection in their primary data structures (e.g. Log-Structured Merge Trees).
 As we target more classes of applications, the API will expand to target them.
 
@@ -115,7 +115,48 @@ be accounted for when making use of the *sync* operator.
 
 ## Raw I/O API
 
-TODO
+liblightnvm's raw I/O API allows to use physical flash blocks directly. This
+means that users of this interface have the responsibility to deal the
+restrictions associated with writing and reading from flash memories, e.g.,,
+writing sequentially within a flash block at a flash page granurality, probably
+reading at a sector granurality, erasing at a flash block granurality.
+
+Flash blocks are described by the VBLOCK structure, which is an alias for the
+actual structure used in the ioctl provisioning interface. This is the reason
+behind the used types.
+
+
+- **struct VBLOCK**: 
+VBLOCK represents virtual block, since it can be formed by a collection of
+physical blocks stripped across flash planes and/or LUNs. VBLOCK is the unit at
+which LightNVM's media manager operates.
+
+	*struct VBLOCK { <br />
+	__uint64_t id; <br />
+	__uint64_t bppa; <br />
+	__uint32_t vlun_id; <br />
+	__uint32_t owner_id; <br />
+	__uint32_t nppas; <br />
+	__uint16_t ppa_bitmap; <br />
+	__uint16_t flags; <br />
+	};*
+
+- **int nvm_get_block(int _tgt_, uint32_t _lun_, VBLOCK _*vblock_);**
+  - Description:
+  Get a flash block from target *tgt* and LUN *lun*.
+  - Return Value:
+  On success, a flash block is allocated in LightNVM's media manager and *vblock*
+  is filled up accordingly. On error, -1 is returned, in which case *errno* is
+  set to indicate the error.
+- **int nvm_put_block(int _tgt_, VBLOCK _*vblock_);**
+  - Description:
+  Put flash block *vblock* back to the target *tgt*. This action implies that
+  the owner of the flash block previous to this function call no longer owns the
+  flash block, and therefor an no longer submit I/Os to it, or expect that data
+  on it is persisted. The flash block cannot be reclaimed by the previous owner.
+  - Return Value:
+  On success, a flash block is returned to LightNVM's media manager. On error,
+  -1 is returned, in which case *errno* is set to indicate the error.
 
 ## How to use
 
@@ -162,6 +203,7 @@ http://openchannelssd.readthedocs.org/en/latest/gettingstarted/#configure-qemu
 
 liblightnvm is in active development. Until the basic functionality is in
 place, development will take place on master. We will start using feature
-branches when the library reaches a stable version.
+branches when the library reaches a stable version. Also, the API is subject to
+changes, at least until kernel support has been upstreamed.
 
 Please write to Javier at jg@lightnvm.io for more information.
