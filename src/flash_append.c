@@ -609,10 +609,7 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 
 	/* TODO: Improve calculations */
 	left_pages = count / fpage->sec_size +
-		((((count) % fpage->sec_size) > 0) ? 1 : 0) +
-		(((offset / fpage->sec_size) !=
-		(count + offset) / fpage->sec_size) ? 1 : 0);
-		//FIXME: JAVIER:::::: LOOK INTO THIS!!!!
+		((((offset + count) % fpage->sec_size) > 0) ? 1 : 0);
 
 	LNVM_DEBUG("Read %lu bytes (pgs:%lu) from beam %d (p:%p, b:%d). Off:%lu\n",
 			count, left_pages,
