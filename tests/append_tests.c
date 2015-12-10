@@ -11,6 +11,9 @@
 #include "../src/ioctl.h"
 
 static CuSuite *per_test_suite = NULL;
+static char lnvm_dev[DISK_NAME_LEN];
+static char lnvm_tgt_type[NVM_TTYPE_NAME_MAX] = "dflash";
+static char lnvm_tgt_name[DISK_NAME_LEN] = "liblnvm_test";
 
 static void init_lib(CuTest *ct)
 {
@@ -23,9 +26,9 @@ static void create_tgt(CuTest *ct)
 	struct nvm_ioctl_tgt_create c;
 	int ret;
 
-	strncpy(c.target.dev, "nexus0n1", DISK_NAME_LEN);
-	strncpy(c.target.tgttype, "dflash", NVM_TTYPE_NAME_MAX);
-	strncpy(c.target.tgtname, "test1", DISK_NAME_LEN);
+	strncpy(c.target.dev, lnvm_dev, DISK_NAME_LEN);
+	strncpy(c.target.tgttype, lnvm_tgt_type, NVM_TTYPE_NAME_MAX);
+	strncpy(c.target.tgtname, lnvm_tgt_name, DISK_NAME_LEN);
 	c.flags = 0;
 	c.conf.type = 0;
 	c.conf.s.lun_begin = 0;
@@ -41,7 +44,7 @@ static void remove_tgt(CuTest *ct)
 	struct nvm_ioctl_tgt_remove r;
 	int ret;
 
-	strncpy(r.tgtname, "test1", DISK_NAME_LEN);
+	strncpy(r.tgtname, lnvm_tgt_name, DISK_NAME_LEN);
 	r.flags = 0;
 
 	ret = nvm_remove_target(&r);
@@ -56,7 +59,7 @@ static void create_beam(CuTest *ct)
 
 	create_tgt(ct);
 
-	beam_id = nvm_beam_create("test1", 0, 0);
+	beam_id = nvm_beam_create(lnvm_tgt_name, 0, 0);
 	CuAssertTrue(ct, beam_id > 0);
 
 	nvm_beam_destroy(beam_id, 0);
@@ -70,7 +73,7 @@ static void beam_close_ungrac(CuTest *ct)
 
 	create_tgt(ct);
 
-	beam_id = nvm_beam_create("test1", 0, 0);
+	beam_id = nvm_beam_create(lnvm_tgt_name, 0, 0);
 	CuAssertTrue(ct, beam_id > 0);
 
 	nvm_beam_destroy(beam_id, 0);
@@ -79,7 +82,7 @@ static void beam_close_ungrac(CuTest *ct)
 
 	create_tgt(ct);
 
-	beam_id = nvm_beam_create("test1", 0, 0);
+	beam_id = nvm_beam_create(lnvm_tgt_name, 0, 0);
 	CuAssertTrue(ct, beam_id > 0);
 
 	remove_tgt(ct);
@@ -101,7 +104,7 @@ static void beam_ar1(CuTest *ct)
 
 	create_tgt(ct);
 
-	beam_id = nvm_beam_create("test1", 0, 0);
+	beam_id = nvm_beam_create(lnvm_tgt_name, 0, 0);
 	CuAssertTrue(ct, beam_id > 0);
 
 	written = nvm_beam_append(beam_id, test, 12);
@@ -143,7 +146,7 @@ static void beam_ar_generic(CuTest *ct, char *src, char *dst, size_t len,
 
 	create_tgt(ct);
 
-	beam_id = nvm_beam_create("test1", 0, 0);
+	beam_id = nvm_beam_create(lnvm_tgt_name, 0, 0);
 	CuAssertTrue(ct, beam_id > 0);
 
 	written = nvm_beam_append(beam_id, src, len);
@@ -163,7 +166,8 @@ static void beam_ar_generic(CuTest *ct, char *src, char *dst, size_t len,
 
 		for (i = 0; i < len / 1000; i++) {
 			int offset = i * 1000;
-			read = nvm_beam_read(beam_id, dst + offset, 1000, offset, 0);
+			read = nvm_beam_read(beam_id, dst + offset, 1000,
+								offset, 0);
 			CuAssertIntEquals(ct, 1000, read);
 		}
 
@@ -275,8 +279,22 @@ void run_all_test(void)
 	free(per_test_suite);
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
+	if (argc != 2) {
+		printf("Usage: %s lnvm_dev / lnvm_dev: LightNVM device\n",
+									argv[0]);
+		return -1;
+	}
+
+	if (strlen(argv[1]) > DISK_NAME_LEN) {
+		printf("Argument lnvm_dev can be maximum %d characters\n",
+							DISK_NAME_LEN - 1);
+	}
+
+	strcpy(lnvm_dev, argv[1]);
+
 	run_all_test();
+
 	return 0;
 }
