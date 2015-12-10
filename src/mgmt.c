@@ -29,9 +29,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <linux/lightnvm.h>
 #include <liblightnvm.h>
-
-#include "ioctl.h"
 
 static int nvm_execute_ioctl(int opcode, void *u)
 {

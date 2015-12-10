@@ -4,11 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <liblightnvm.h>
 #include <unistd.h>
+#include <linux/lightnvm.h>
+#include <liblightnvm.h>
 
 #include "CuTest/CuTest.h"
-#include "../src/ioctl.h"
 
 static CuSuite *per_test_suite = NULL;
 static char lnvm_dev[DISK_NAME_LEN];

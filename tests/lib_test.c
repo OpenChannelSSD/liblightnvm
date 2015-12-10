@@ -10,10 +10,10 @@
 #include <sys/ioctl.h>
 #include <string.h>
 #include <errno.h>
-
+#include <linux/lightnvm.h>
 #include <liblightnvm.h>
+
 #include "CuTest/CuTest.h"
-#include "../src/ioctl.h"
 
 static CuSuite *per_test_suite = NULL;
 
