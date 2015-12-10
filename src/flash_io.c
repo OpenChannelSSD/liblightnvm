@@ -80,8 +80,6 @@ int flash_write(int tgt, VBLOCK *vblock, const char *buf,
 		writer += bytes_per_write;
 		current_ppa += pages_per_write * 16;
 		left -= pages_per_write;
-
-		printf("i:%d, left:%d\n", i++, left);
 	}
 
 	LNVM_DEBUG("Written %lu pages to block %llu (tgt:%d)",
@@ -135,8 +133,6 @@ retry:
 		reader += bytes_per_read;
 		left -= pages_per_read;
 		current_ppa += pages_per_read;
-
-		printf("i:%d, left:%d\n", i++, left);
 	}
 
 	return count;
