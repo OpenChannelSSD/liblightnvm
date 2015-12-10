@@ -37,7 +37,7 @@
  */
 int flash_write(int tgt, VBLOCK *vblock, const char *buf,
 				size_t ppa_off, size_t count,
-				int max_pages_write, int fpage_size)
+				struct lnvm_fpage *fpage)
 {
 	size_t bppa = vblock->bppa;
 	size_t nppas = vblock->nppas;
@@ -45,8 +45,11 @@ int flash_write(int tgt, VBLOCK *vblock, const char *buf,
 	size_t bytes_per_write;
 	ssize_t left = count;
 	ssize_t written;
-	int pages_per_write;
 	char *writer = (char*)buf;
+	int pages_per_write;
+	uint32_t write_page_size = fpage->pln_pg_size;
+	uint32_t pg_sec_ratio = write_page_size / fpage->sec_size;
+	uint32_t max_pages_write = fpage->max_sec_io / pg_sec_ratio;
 
 	/* TODO: Metadata */
 
@@ -54,12 +57,11 @@ int flash_write(int tgt, VBLOCK *vblock, const char *buf,
 					count, vblock->id, ppa_off, nppas);
 	assert(count <= nppas - ppa_off);
 
-	int i = 0;
 	/* For now we use pwrite. We will have different IO backends */
 	while (left > 0) {
 		pages_per_write = (left > max_pages_write) ?
 						max_pages_write : left;
-		bytes_per_write = pages_per_write * fpage_size;
+		bytes_per_write = pages_per_write * write_page_size;
 
 		LNVM_DEBUG("Write %lu bytes (%d full pages) - blk:%llu, ppa:%lu\n",
 				bytes_per_write, pages_per_write, vblock->id,
@@ -78,7 +80,7 @@ int flash_write(int tgt, VBLOCK *vblock, const char *buf,
 		}
 
 		writer += bytes_per_write;
-		current_ppa += pages_per_write * 16;
+		current_ppa += pages_per_write * pg_sec_ratio;
 		left -= pages_per_write;
 	}
 
@@ -93,9 +95,12 @@ int flash_write(int tgt, VBLOCK *vblock, const char *buf,
  * fpage_size is the read page size, which might be smaller than the write page
  * size; some controllers support reading at a sector granurality (typically
  * 4KB), instead of reading the whole virtual flash page (across planes).
+ *
+ * XXX(1): For now, we assume that the device supports reading at a sector
+ * granurality; we will take this information from the device in the future.
  */
 int flash_read(int tgt, VBLOCK *vblock, void *buf, size_t ppa_off,
-			size_t count, int max_pages_read, int fpage_size)
+			size_t count, struct lnvm_fpage *fpage)
 {
 	size_t bppa = vblock->bppa;
 	size_t nppas = vblock->nppas;
@@ -103,8 +108,11 @@ int flash_read(int tgt, VBLOCK *vblock, void *buf, size_t ppa_off,
 	size_t bytes_per_read;
 	ssize_t left = count;
 	ssize_t read;
-	int pages_per_read;
 	char *reader = (char*)buf;
+	int pages_per_read;
+	uint32_t read_page_size = fpage->sec_size; // XXX(1)
+	uint32_t pg_sec_ratio = read_page_size / fpage->sec_size;
+	uint32_t max_pages_read = fpage->max_sec_io / pg_sec_ratio;
 
 	assert(count <= nppas - ppa_off);
 
@@ -112,11 +120,10 @@ int flash_read(int tgt, VBLOCK *vblock, void *buf, size_t ppa_off,
 					count, vblock->id, tgt);
 
 	/* For now we use pread. We will have different IO backends */
-	int i;
 	while (left > 0) {
 		pages_per_read = (left > max_pages_read) ?
 						max_pages_read : left;
-		bytes_per_read = pages_per_read * fpage_size;
+		bytes_per_read = pages_per_read * read_page_size;
 
 		LNVM_DEBUG("Read %lu bytes (%d pages) - blk:%llu, ppa:%lu\n",
 				bytes_per_read, pages_per_read, vblock->id,
@@ -131,7 +138,7 @@ retry:
 		}
 
 		reader += bytes_per_read;
-		left -= pages_per_read;
+		left -= pages_per_read * pg_sec_ratio;
 		current_ppa += pages_per_read;
 	}
 

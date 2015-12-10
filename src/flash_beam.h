@@ -57,6 +57,7 @@ struct lnvm_fpage {
 	uint32_t sec_size;
 	uint32_t page_size;
 	uint32_t pln_pg_size;
+	uint32_t max_sec_io;
 };
 
 struct lnvm_device {
@@ -156,9 +157,8 @@ static inline size_t calculate_ppa_off(size_t cursync, int write_page_size)
 
 int flash_write(int tgt, VBLOCK *vblock, const char *buf,
 				size_t ppa_off, size_t count,
-				int max_pages_write, int write_page_size);
+				struct lnvm_fpage *fpage);
 int flash_read(int tgt, VBLOCK *vblock, void *buf, size_t ppa_off,
-				size_t count, int max_pages_read,
-				int dev_page_size);
+				size_t count, struct lnvm_fpage *fpage);
 
 #endif /* __FLASH_BEAM_H */

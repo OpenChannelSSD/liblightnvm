@@ -187,7 +187,6 @@ static int beam_sync(struct beam *beam, int flags)
 	size_t disaligned_data = sync_len % fpage->pln_pg_size;
 	size_t ppa_off =
 		calculate_ppa_off(beam->w_buffer.cursync, fpage->pln_pg_size);
-	int max_pages_write = beam->tgt->tgt->dev->info.prop.max_sec_io;
 	int npages = sync_len / fpage->pln_pg_size;
 	int synced_pages;
 
@@ -215,10 +214,9 @@ static int beam_sync(struct beam *beam, int flags)
 	}
 
 	/* write data to media */
-	// JAVIER max_pages_write is a hack
 	synced_pages = flash_write(beam->tgt->tgt_id, beam->current_w_vblock,
-					beam->w_buffer.sync, ppa_off, npages,
-					max_pages_write, fpage->pln_pg_size);
+				beam->w_buffer.sync, ppa_off, npages, fpage);
+
 	if (synced_pages != npages) {
 		LNVM_DEBUG("Error syncing data\n");
 		return -1;
@@ -334,6 +332,7 @@ static inline int get_dev_info(char *dev, struct lnvm_device *device)
 	fpage->sec_size = dev_info->prop.sec_size;
 	fpage->page_size = fpage->sec_size * dev_info->prop.sec_per_page;
 	fpage->pln_pg_size = fpage->page_size * dev_info->prop.nr_planes;
+	fpage->max_sec_io = dev_info->prop.max_sec_io;
 
 	// JAVIER: ONLY FOR DEBUGGING!!
 	dev_info->prop.max_sec_io = 1;
@@ -601,7 +600,6 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 	char *writer = buf;
 	/* char *cache; // Used when trying write cache for reads*/
 	int read_pages;
-	int max_pages_read;
 	int ret;
 
 	HASH_FIND_INT(beamt, &beam, b);
@@ -611,7 +609,6 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 	}
 
 	fpage = &b->tgt->tgt->dev->flash_page;
-	max_pages_read = b->tgt->tgt->dev->info.prop.max_sec_io;
 
 	/* TODO: Improve calculations */
 	left_pages = count / fpage->sec_size +
@@ -668,8 +665,7 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 
 		// TODO: Send bigger I/Os if we have enough data
 		read_pages = flash_read(b->tgt->tgt_id, current_r_vblock, reader,
-						ppa_off, pages_to_read,
-						max_pages_read, fpage->sec_size);
+					ppa_off, pages_to_read, fpage);
 		if (read_pages != pages_to_read)
 			return -1;
 
