@@ -20,6 +20,7 @@ debug:
 	@$(MAKE) -C tests
 	ln -sf tests/lib_test .
 	ln -sf tests/append_test .
+	ln -sf tests/raw_test .
 
 tests_check:
 	@$(MAKE) -C tests check
