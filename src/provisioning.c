@@ -28,22 +28,15 @@
 
 #include "../util/debug.h"
 
-int nvm_get_block(int tgt, uint32_t lun, NVM_VBLOCK *vblock)
+int nvm_get_block(int tgt, uint32_t lun, NVM_PROV *prov)
 {
-	struct nvm_ioctl_provisioning prov = {
-		.flags = 0,
-	};
+	NVM_VBLOCK *vblock = prov->vblock;
 	struct nvm_ioctl_lun_status lun_status = {
 		.nr_free_blocks = 0,
 		.nr_inuse_blocks = 0,
 		.nr_bad_blocks = 0,
 	};
 	int ret = 0;
-
-#ifdef LNVM_DEBUG_ENABLED
-	/* Initialize all bytes in structure, including padding for debugging */
-	memset(&prov, 0, sizeof(prov));
-#endif
 
 	/* Initialize ioctl values */
 	vblock->id = 0;
@@ -55,11 +48,9 @@ int nvm_get_block(int tgt, uint32_t lun, NVM_VBLOCK *vblock)
 	vblock->owner_id = 101;
 	vblock->flags = 0x0;
 
-	prov.vblock = vblock;
-	prov.lun_status = &lun_status;
-	prov.flags |= NVM_PROV_SPEC_LUN; //TODO: Expose in prov. API
+	prov->lun_status = &lun_status;
 
-	ret = ioctl(tgt, NVM_PR_GET_BLOCK, &prov);
+	ret = ioctl(tgt, NVM_PR_GET_BLOCK, prov);
 	if (ret) {
 		LNVM_DEBUG("Could not get block from lun %d\n", lun);
 		goto out;
@@ -73,6 +64,7 @@ out:
 	return ret;
 }
 
+#if 0
 int nvm_get_block_meta(int tgt, uint64_t vblock_id, NVM_VBLOCK *vblock)
 {
 	struct nvm_ioctl_provisioning prov = {
@@ -116,12 +108,13 @@ int nvm_get_block_meta(int tgt, uint64_t vblock_id, NVM_VBLOCK *vblock)
 out:
 	return ret;
 }
+#endif
 
-int nvm_put_block(int tgt, NVM_VBLOCK *vblock)
+int nvm_put_block(int tgt, NVM_PROV *prov)
 {
-	struct nvm_ioctl_provisioning prov = {
-		.flags = 0,
-	};
+#ifdef LNVM_DEBUG_ENABLED
+	NVM_VBLOCK *vblock = prov->vblock;
+#endif
 	struct nvm_ioctl_lun_status lun_status = {
 		.nr_free_blocks = 0,
 		.nr_inuse_blocks = 0,
@@ -129,14 +122,9 @@ int nvm_put_block(int tgt, NVM_VBLOCK *vblock)
 	};
 	int ret = 0;
 
-#ifdef LNVM_DEBUG_ENABLED
-	/* Initialize all bytes in structure, including padding for debugging */
-	memset(&prov, 0, sizeof(prov));
-#endif
-	prov.vblock = vblock;
-	prov.lun_status = &lun_status;
+	prov->lun_status = &lun_status;
 
-	ret = ioctl(tgt, NVM_PR_PUT_BLOCK, &prov);
+	ret = ioctl(tgt, NVM_PR_PUT_BLOCK, prov);
 	if (ret) {
 		LNVM_DEBUG("Could not put block %llu (bppa:%llu) to lun %d\n",
 				vblock->id, vblock->bppa, vblock->vlun_id);
