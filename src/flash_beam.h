@@ -29,10 +29,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
-#include <time.h>
 #include <liblightnvm.h>
 
+#include <provisioning.h>
+
+#include "../util/atomic.h"
 #include "../util/uthash.h"
 #include "../util/debug.h"
 
@@ -41,47 +42,10 @@
  *	- Dynamic block list
  */
 
-#define NVM_TGT_NAME_MAX DISK_NAME_LEN + 5	/* 5 = strlen(/dev/) */
-
 #define MAX_BLOCKS 5
 
 #define FORCE_SYNC 1
 #define OPTIONAL_SYNC 2
-
-typedef struct atomic_cnt {
-	int cnt;
-	pthread_spinlock_t lock;
-} atomic_cnt;
-
-struct lnvm_fpage {
-	uint32_t sec_size;
-	uint32_t page_size;
-	uint32_t pln_pg_size;
-	uint32_t max_sec_io;
-};
-
-struct lnvm_device {
-	struct nvm_ioctl_dev_info info;	/* Device properties */
-	struct lnvm_fpage flash_page;	/* Calculated device flash page sizes */
-	atomic_cnt ref_cnt;		/* Reference counter */
-	UT_hash_handle hh;		/* hash handle for uthash */
-};
-
-struct lnvm_target {
-	uint32_t version[3];
-	uint32_t reserved;
-	char tgtname[DISK_NAME_LEN];		/* dev to expose target as */
-	char tgttype[NVM_TTYPE_NAME_MAX];	/* target type name */
-	struct lnvm_device *dev;		/* Device associated */
-	atomic_cnt ref_cnt;			/* Reference counter */
-	UT_hash_handle hh;			/* hash handle for uthash */
-};
-
-struct lnvm_target_map {
-	struct lnvm_target *tgt;
-	int tgt_id;
-	UT_hash_handle hh;			/* hash handle for uthash */
-};
 
 struct w_buffer {
 	size_t cursize;		/* Current buf lenght. Follows mem */
@@ -107,45 +71,6 @@ struct beam {
 	unsigned long bytes;			/* valid bytes */
 	UT_hash_handle hh;			/* hash handle for uthash */
 };
-
-static inline void atomic_init(struct atomic_cnt *cnt)
-{
-	pthread_spin_init(&cnt->lock, PTHREAD_PROCESS_SHARED);
-}
-
-static inline void atomic_set(struct atomic_cnt *cnt, int value)
-{
-	pthread_spin_lock(&cnt->lock);
-	cnt->cnt = value;
-	pthread_spin_unlock(&cnt->lock);
-}
-
-static inline void atomic_assign_inc(struct atomic_cnt *cnt, int *dst)
-{
-	pthread_spin_lock(&cnt->lock);
-	cnt->cnt++;
-	*dst = cnt->cnt;
-	pthread_spin_unlock(&cnt->lock);
-}
-
-static inline void atomic_inc(struct atomic_cnt *cnt)
-{
-	pthread_spin_lock(&cnt->lock);
-	cnt->cnt++;
-	pthread_spin_unlock(&cnt->lock);
-}
-
-static inline int atomic_dec_and_test(struct atomic_cnt *cnt)
-{
-	int ret;
-
-	pthread_spin_lock(&cnt->lock);
-	cnt->cnt--;
-	ret = (cnt->cnt == 0) ? 1 : 0;
-	pthread_spin_unlock(&cnt->lock);
-
-	return ret;
-}
 
 static inline size_t calculate_ppa_off(size_t cursync, int write_page_size)
 {

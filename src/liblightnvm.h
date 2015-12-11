@@ -53,6 +53,8 @@ int nvm_get_target_info(struct nvm_ioctl_tgt_info *);
 /* Raw I/O functionality - flash*/
 int nvm_get_block(int tgt, uint32_t lun, NVM_PROV *prov);
 int nvm_put_block(int tgt, NVM_PROV *prov);
+int nvm_target_open(const char *tgt, int flags);
+void nvm_target_close(int tgt);
 // int nvm_get_block_meta(int tgt, uint64_t vblock_id, NVM_VBLOCK *vblock);
 
 /* Append-only functionality  - flash_append.c */
