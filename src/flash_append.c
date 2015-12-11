@@ -74,7 +74,7 @@ static void beam_free(struct beam *beam)
 	free(beam);
 }
 
-static inline int get_npages_block(VBLOCK *vblock)
+static inline int get_npages_block(NVM_VBLOCK *vblock)
 {
 	return vblock->nppas;
 }
@@ -123,7 +123,7 @@ static int switch_block(struct beam **beam)
 
 static int preallocate_block(struct beam *beam)
 {
-	VBLOCK *vblock = &beam->vblocks[beam->nvblocks];
+	NVM_VBLOCK *vblock = &beam->vblocks[beam->nvblocks];
 	int ret = 0;
 
 	ret = nvm_get_block(beam->tgt->tgt_id, beam->lun, vblock);
@@ -586,7 +586,7 @@ int nvm_beam_sync(int beam, int flags)
 ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags)
 {
 	struct beam *b;
-	VBLOCK *current_r_vblock;
+	NVM_VBLOCK *current_r_vblock;
 	struct lnvm_fpage *fpage;
 	size_t block_off, ppa_off, page_off;
 	size_t ppa_count;

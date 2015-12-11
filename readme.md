@@ -121,17 +121,17 @@ restrictions associated with writing and reading from flash memories, e.g.,,
 writing sequentially within a flash block at a flash page granurality, probably
 reading at a sector granurality, erasing at a flash block granurality.
 
-Flash blocks are described by the VBLOCK structure, which is an alias for the
+Flash blocks are described by the NVM_VBLOCK structure, which is an alias for the
 actual structure used in the ioctl provisioning interface. This is the reason
 behind the used types.
 
 
-- **struct VBLOCK**: 
-VBLOCK represents virtual block, since it can be formed by a collection of
-physical blocks stripped across flash planes and/or LUNs. VBLOCK is the unit at
-which LightNVM's media manager operates.
+- **struct NVM_VBLOCK**:
+NVM_VBLOCK represents virtual block, since it can be formed by a collection of
+physical blocks stripped across flash planes and/or LUNs. NVM_VBLOCK is the unit
+at which LightNVM's media manager operates.
 
-	*struct VBLOCK { <br />
+	*struct NVM_VBLOCK { <br />
 	__uint64_t id; <br />
 	__uint64_t bppa; <br />
 	__uint32_t vlun_id; <br />
@@ -141,14 +141,14 @@ which LightNVM's media manager operates.
 	__uint16_t flags; <br />
 	};*
 
-- **int nvm_get_block(int _tgt_, uint32_t _lun_, VBLOCK _*vblock_);**
+- **int nvm_get_block(int _tgt_, uint32_t _lun_, NVM_VBLOCK _*vblock_);**
   - Description:
   Get a flash block from target *tgt* and LUN *lun*.
   - Return Value:
   On success, a flash block is allocated in LightNVM's media manager and *vblock*
   is filled up accordingly. On error, -1 is returned, in which case *errno* is
   set to indicate the error.
-- **int nvm_put_block(int _tgt_, VBLOCK _*vblock_);**
+- **int nvm_put_block(int _tgt_, NVM_VBLOCK _*vblock_);**
   - Description:
   Put flash block *vblock* back to the target *tgt*. This action implies that
   the owner of the flash block previous to this function call no longer owns the

@@ -35,7 +35,7 @@
  * fpage_size is the write page size. This is, the size of a virtual flash
  * pages, i.e., across flash planes.
  */
-int flash_write(int tgt, VBLOCK *vblock, const char *buf,
+int flash_write(int tgt, NVM_VBLOCK *vblock, const char *buf,
 				size_t ppa_off, size_t count,
 				struct lnvm_fpage *fpage)
 {
@@ -99,7 +99,7 @@ int flash_write(int tgt, VBLOCK *vblock, const char *buf,
  * XXX(1): For now, we assume that the device supports reading at a sector
  * granurality; we will take this information from the device in the future.
  */
-int flash_read(int tgt, VBLOCK *vblock, void *buf, size_t ppa_off,
+int flash_read(int tgt, NVM_VBLOCK *vblock, void *buf, size_t ppa_off,
 			size_t count, struct lnvm_fpage *fpage)
 {
 	size_t bppa = vblock->bppa;

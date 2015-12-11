@@ -28,7 +28,7 @@
 
 #include "../util/debug.h"
 
-int nvm_get_block(int tgt, uint32_t lun, VBLOCK *vblock)
+int nvm_get_block(int tgt, uint32_t lun, NVM_VBLOCK *vblock)
 {
 	struct nvm_ioctl_provisioning prov = {
 		.flags = 0,
@@ -73,7 +73,7 @@ out:
 	return ret;
 }
 
-int nvm_get_block_meta(int tgt, uint64_t vblock_id, VBLOCK *vblock)
+int nvm_get_block_meta(int tgt, uint64_t vblock_id, NVM_VBLOCK *vblock)
 {
 	struct nvm_ioctl_provisioning prov = {
 		.flags = 0,
@@ -117,7 +117,7 @@ out:
 	return ret;
 }
 
-int nvm_put_block(int tgt, VBLOCK *vblock)
+int nvm_put_block(int tgt, NVM_VBLOCK *vblock)
 {
 	struct nvm_ioctl_provisioning prov = {
 		.flags = 0,

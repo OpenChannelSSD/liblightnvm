@@ -100,8 +100,8 @@ struct beam {
 	int gid;				/* internal global identifier */
 	int lun;				/* virtual lun mapped to beam*/
 	struct lnvm_target_map *tgt;		/* LightNVM target */
-	VBLOCK *current_w_vblock;	/* current block in use */
-	VBLOCK vblocks[MAX_BLOCKS];	/* vblocks forming the beam */
+	NVM_VBLOCK *current_w_vblock;	/* current block in use */
+	NVM_VBLOCK vblocks[MAX_BLOCKS];	/* vblocks forming the beam */
 	int nvblocks;				/* number of vblocks */
 	struct w_buffer w_buffer;		/* write buffer */
 	unsigned long bytes;			/* valid bytes */
@@ -155,10 +155,10 @@ static inline size_t calculate_ppa_off(size_t cursync, int write_page_size)
 	return (aligned_data + rest);
 }
 
-int flash_write(int tgt, VBLOCK *vblock, const char *buf,
+int flash_write(int tgt, NVM_VBLOCK *vblock, const char *buf,
 				size_t ppa_off, size_t count,
 				struct lnvm_fpage *fpage);
-int flash_read(int tgt, VBLOCK *vblock, void *buf, size_t ppa_off,
+int flash_read(int tgt, NVM_VBLOCK *vblock, void *buf, size_t ppa_off,
 				size_t count, struct lnvm_fpage *fpage);
 
 #endif /* __FLASH_BEAM_H */
