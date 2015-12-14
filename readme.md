@@ -157,6 +157,20 @@ at which LightNVM's media manager operates.
   - Return Value:
   On success, a flash block is returned to LightNVM's media manager. On error,
   -1 is returned, in which case *errno* is set to indicate the error.
+- **int nvm_target_open(const char _*tgt_, int _flags_);**
+  - Description:
+  Open target *tgt*.
+  - Return Value:
+  On success, a file descriptor to the target is returned. This file descriptor
+  is the one provided by the nvm_get_block / nvm_put_block interface. By using
+  nvm_target_open instead of directly opening a file descriptor to the target
+  path, liblightnvm can keep track of which targets are being used and manage
+  memory accordingly. On error, -1 ie returned, in which case *errno* is set to
+  indicate the error.
+
+- **void nvm_target_close(int _tgt_);**
+  - Description:
+  Close target *tgt*.
 
 ## How to use
 
