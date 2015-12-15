@@ -117,46 +117,98 @@ be accounted for when making use of the *sync* operator.
 
 liblightnvm's raw I/O API allows to use physical flash blocks directly. This
 means that users of this interface have the responsibility to deal the
-restrictions associated with writing and reading from flash memories, e.g.,,
+restrictions associated with writing and reading from flash memories, e.g.,
 writing sequentially within a flash block at a flash page granurality, probably
 reading at a sector granurality, erasing at a flash block granurality.
 
-Flash blocks are described by the NVM_VBLOCK structure, which is an alias for the
-actual structure used in the ioctl provisioning interface. This is the reason
-behind the used types.
+In order to allow applications describe flash luns, blocks and pages we define a
+number of types. Also, we define a type to interact with the get_block /
+put_block provisioning interface in order to obtain status metadata at the same
+time that new blocks are allocated and/or freed. Note that we use standard
+integer types to match the user space types defined in the LightNVM kernel API.
 
+- **NVM_VBLOCK**:
+Describes a virtual flash block. We refer to it as "virtual" since it can be
+formed by a collection of physical blocks stripped across flash planes and/or
+LUNs, as defined by the controller on the Open-Channel SSD. NVM_VBLOCK is the
+unit at which LightNVM's media manager provisioning interface operates.
 
-- **struct NVM_VBLOCK**:
-NVM_VBLOCK represents virtual block, since it can be formed by a collection of
-physical blocks stripped across flash planes and/or LUNs. NVM_VBLOCK is the unit
-at which LightNVM's media manager operates.
-
-	*struct NVM_VBLOCK { <br />
-	__uint64_t id; <br />
-	__uint64_t bppa; <br />
-	__uint32_t vlun_id; <br />
-	__uint32_t owner_id; <br />
-	__uint32_t nppas; <br />
-	__uint16_t ppa_bitmap; <br />
-	__uint16_t flags; <br />
+	*NVM_VBLOCK { <br />
+		__uint64_t id; <br />
+		__uint64_t bppa; <br />
+		__uint32_t vlun_id; <br />
+		__uint32_t owner_id; <br />
+		__uint32_t nppas; <br />
+		__uint16_t ppa_bitmap; <br />
+		__uint16_t flags; <br />
 	};*
 
-- **int nvm_get_block(int _tgt_, uint32_t _lun_, NVM_VBLOCK _*vblock_);**
+- **NVM_LUN_STAT**:
+
+	*NVM_PROV_SPEC_LUN*:
+	*NVM_PROV_RAND_LUN*:
+	*NVM_PROV_LUN_STATE*:
+
+	*NVM_LUN_STAT { <br />
+		__u32 nr_free_blocks; <br />
+		__u32 nr_inuse_blocks; <br />
+		__u32 nr_bad_blocks; <br />
+	};*
+
+
+- **NVM_PROV**:
+
+	*NVM_PROV{ <br />
+		NVM_VBLOCK *vblock; <br />
+		NVM_LUN_STAT *lun_status; <br />
+		__u16 flags; <br />
+	};*
+
+- **NVM_FLASH_PAGE**:
+
+	*NVM_FLASH_PAGE { <br \>
+		uint32_t sec_size; <br \>
+		uint32_t page_size; <br \>
+		uint32_t pln_pg_size; <br \>
+		uint32_t max_sec_io; <br \>
+	};*
+
+
+- **int nvm_get_block(int _tgt_, uint32_t _lun_, NVM_PROV _*prov);**
   - Description:
-  Get a flash block from target *tgt* and LUN *lun*.
+  Get a flash block from target *tgt* and LUN *lun* through the NVM_PROV
+  communication interface *prov*.
   - Return Value:
   On success, a flash block is allocated in LightNVM's media manager and *vblock*
-  is filled up accordingly. On error, -1 is returned, in which case *errno* is
-  set to indicate the error.
-- **int nvm_put_block(int _tgt_, NVM_VBLOCK _*vblock_);**
+  is filled up accordingly. If NVM_PROV_LUN_STATE is set, *lun_status* is also
+  filled with LUN status metadata.  On error, -1 is returned, in which case
+  *errno* is set to indicate the error.
+
+- **int nvm_put_block(int _tgt_, NVM_PROC _*prov_);**
   - Description:
   Put flash block *vblock* back to the target *tgt*. This action implies that
   the owner of the flash block previous to this function call no longer owns the
   flash block, and therefor an no longer submit I/Os to it, or expect that data
   on it is persisted. The flash block cannot be reclaimed by the previous owner.
+  The NVM_PROV communication interface is used, represented by *prov*.
   - Return Value:
-  On success, a flash block is returned to LightNVM's media manager. On error,
-  -1 is returned, in which case *errno* is set to indicate the error.
+  On success, a flash block is returned to LightNVM's media manager. If
+  NVM_PROV_LUN_STATE is set, *lun_status* is also filled with LUN status
+  metadata. On error, -1 is returned, in which case *errno* is set to indicate
+  the error.
+
+- **int nvm_flash_write(int _tgt_, NVM_VBLOCK _*vblock_, const void _*buf_,
+				size_t _ppa_off_, size_t _count_,
+				NVM_FLASH_PAGE _*fpage_, int _flags_);**
+  - Description:
+  - Return Value:
+
+- **int nvm_flash_read(int _tgt_, NVM_VBLOCK _*vblock_, void _*buf_,
+				size_t _ppa_off_, size_t _count_,
+				NVM_FLASH_PAGE _*fpage_, int _flags_);**
+  - Description:
+  - Return Value:
+
 - **int nvm_target_open(const char _*tgt_, int _flags_);**
   - Description:
   Open target *tgt*.
