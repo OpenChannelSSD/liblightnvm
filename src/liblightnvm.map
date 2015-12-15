@@ -12,6 +12,8 @@ LIBLIGHTNVM_0.1 {
 		nvm_target_close;
 		nvm_get_block;
 		nvm_put_block;
+		nvm_flash_write;
+		nvm_flash_read;
 		/* Append */
 		nvm_beam_create;
 		nvm_beam_destroy;

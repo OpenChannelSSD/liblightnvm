@@ -80,10 +80,4 @@ static inline size_t calculate_ppa_off(size_t cursync, int write_page_size)
 	return (aligned_data + rest);
 }
 
-int flash_write(int tgt, NVM_VBLOCK *vblock, const char *buf,
-				size_t ppa_off, size_t count,
-				struct lnvm_fpage *fpage);
-int flash_read(int tgt, NVM_VBLOCK *vblock, void *buf, size_t ppa_off,
-				size_t count, struct lnvm_fpage *fpage);
-
 #endif /* __FLASH_BEAM_H */

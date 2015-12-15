@@ -223,8 +223,8 @@ static int beam_sync(struct beam *beam, int flags)
 	}
 
 	/* write data to media */
-	synced_pages = flash_write(beam->tgt->tgt_id, beam->current_w_vblock,
-				beam->w_buffer.sync, ppa_off, npages, fpage);
+	synced_pages = nvm_flash_write(beam->tgt->tgt_id, beam->current_w_vblock,
+			beam->w_buffer.sync, ppa_off, npages, fpage, flags);
 
 	if (synced_pages != npages) {
 		LNVM_DEBUG("Error syncing data\n");
@@ -456,8 +456,8 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 		assert(left_bytes <= left_pages * fpage->sec_size);
 
 		// TODO: Send bigger I/Os if we have enough data
-		read_pages = flash_read(b->tgt->tgt_id, current_r_vblock, reader,
-					ppa_off, pages_to_read, fpage);
+		read_pages = nvm_flash_read(b->tgt->tgt_id, current_r_vblock,
+				reader, ppa_off, pages_to_read, fpage, flags);
 		if (read_pages != pages_to_read)
 			return -1;
 

@@ -39,6 +39,7 @@ extern "C" {
 typedef struct nvm_ioctl_provisioning NVM_PROV;
 typedef struct nvm_ioctl_vblock NVM_VBLOCK;
 typedef struct nvm_ioctl_lun_status NVM_LUN_STAT;
+typedef struct lnvm_fpage NVM_FLASH_PAGE;
 
 /* Management - mgmt.c */
 int nvm_get_info(struct nvm_ioctl_info *);
@@ -53,6 +54,10 @@ int nvm_get_target_info(struct nvm_ioctl_tgt_info *);
 /* Raw I/O functionality - flash*/
 int nvm_get_block(int tgt, uint32_t lun, NVM_PROV *prov);
 int nvm_put_block(int tgt, NVM_PROV *prov);
+int nvm_flash_write(int tgt, NVM_VBLOCK *vblock, const char *buf, size_t ppa_off,
+			size_t count, NVM_FLASH_PAGE *fpage, int flags);
+int nvm_flash_read(int tgt, NVM_VBLOCK *vblock, void *buf, size_t ppa_off,
+			size_t count, NVM_FLASH_PAGE *fpage, int flags);
 int nvm_target_open(const char *tgt, int flags);
 void nvm_target_close(int tgt);
 // int nvm_get_block_meta(int tgt, uint64_t vblock_id, NVM_VBLOCK *vblock);
