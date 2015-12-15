@@ -36,7 +36,7 @@
  * fpage_size is the write page size. This is, the size of a virtual flash
  * pages, i.e., across flash planes.
  */
-int nvm_flash_write(int tgt, NVM_VBLOCK *vblock, const char *buf,
+int nvm_flash_write(int tgt, NVM_VBLOCK *vblock, const void *buf,
 				size_t ppa_off, size_t count,
 				struct nvm_fpage *fpage, int flags)
 {
