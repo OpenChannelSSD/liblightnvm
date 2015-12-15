@@ -38,7 +38,7 @@
  */
 int nvm_flash_write(int tgt, NVM_VBLOCK *vblock, const char *buf,
 				size_t ppa_off, size_t count,
-				struct lnvm_fpage *fpage, int flags)
+				struct nvm_fpage *fpage, int flags)
 {
 	size_t bppa = vblock->bppa;
 	size_t nppas = vblock->nppas;
@@ -101,7 +101,7 @@ int nvm_flash_write(int tgt, NVM_VBLOCK *vblock, const char *buf,
  * granurality; we will take this information from the device in the future.
  */
 int nvm_flash_read(int tgt, NVM_VBLOCK *vblock, void *buf, size_t ppa_off,
-			size_t count, struct lnvm_fpage *fpage, int flags)
+			size_t count, struct nvm_fpage *fpage, int flags)
 {
 	size_t bppa = vblock->bppa;
 	size_t nppas = vblock->nppas;

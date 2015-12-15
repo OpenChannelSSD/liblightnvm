@@ -36,19 +36,19 @@
 #include "provisioning.h"
 #include "../util/debug.h"
 
-static struct lnvm_device *devt = NULL;
-static struct lnvm_target *tgtt = NULL;
-static struct lnvm_target_map *tgtmt = NULL;
+static struct nvm_device *devt = NULL;
+static struct nvm_target *tgtt = NULL;
+static struct nvm_target_map *tgtmt = NULL;
 
-static void device_clean(struct lnvm_device *dev)
+static void device_clean(struct nvm_device *dev)
 {
 	HASH_DEL(devt, dev);
 	free(dev);
 }
 
-static void target_clean(struct lnvm_target *tgt)
+static void target_clean(struct nvm_target *tgt)
 {
-	struct lnvm_device *dev = tgt->dev;
+	struct nvm_device *dev = tgt->dev;
 
 	HASH_DEL(tgtt, tgt);
 	if (atomic_dec_and_test(&dev->ref_cnt))
@@ -58,8 +58,8 @@ static void target_clean(struct lnvm_target *tgt)
 
 static void target_ins_clean(int tgt)
 {
-	struct lnvm_target *t;
-	struct lnvm_target_map *tm;
+	struct nvm_target *t;
+	struct nvm_target_map *tm;
 
 	HASH_FIND_INT(tgtmt, &tgt, tm);
 	if (tm) {
@@ -71,10 +71,10 @@ static void target_ins_clean(int tgt)
 	}
 }
 
-static inline int get_dev_info(char *dev, struct lnvm_device *device)
+static inline int get_dev_info(char *dev, struct nvm_device *device)
 {
 	struct nvm_ioctl_dev_info *dev_info = &device->info;
-	struct lnvm_fpage *fpage = &device->flash_page;
+	struct nvm_fpage *fpage = &device->flash_page;
 	int ret = 0;
 	int i;
 
@@ -116,7 +116,7 @@ out:
 }
 
 static inline int get_tgt_info(char *tgt, char *dev,
-						struct lnvm_target *target)
+						struct nvm_target *target)
 {
 	struct nvm_ioctl_tgt_info tgt_info;
 	int ret = 0;
@@ -150,8 +150,8 @@ out:
 	return ret;
 }
 
-struct lnvm_target_map *get_lnvm_tgt_map(int tgt){
-	struct lnvm_target_map *tgt_map;
+struct nvm_target_map *get_nvm_tgt_map(int tgt){
+	struct nvm_target_map *tgt_map;
 
 	HASH_FIND_INT(tgtmt, &tgt, tgt_map);
 	if (!tgt_map)
@@ -166,9 +166,9 @@ struct lnvm_target_map *get_lnvm_tgt_map(int tgt){
 /*TODO: Add which application opens tgt? */
 int nvm_target_open(const char *tgt, int flags)
 {
-	struct lnvm_device *dev_entry;
-	struct lnvm_target *tgt_entry;
-	struct lnvm_target_map *tgtm_entry;
+	struct nvm_device *dev_entry;
+	struct nvm_target *tgt_entry;
+	struct nvm_target_map *tgtm_entry;
 	char tgt_loc[NVM_TGT_NAME_MAX] = "/dev/";
 	char tgt_eol[DISK_NAME_LEN];
 	char dev[DISK_NAME_LEN];
@@ -181,7 +181,7 @@ int nvm_target_open(const char *tgt, int flags)
 
 	HASH_FIND_STR(tgtt, tgt_eol, tgt_entry);
 	if (!tgt_entry) {
-		tgt_entry = malloc(sizeof(struct lnvm_target));
+		tgt_entry = malloc(sizeof(struct nvm_target));
 		if (!tgt_entry)
 			return -ENOMEM;
 
@@ -195,7 +195,7 @@ int nvm_target_open(const char *tgt, int flags)
 		dev[DISK_NAME_LEN - 1] = '\0';
 		HASH_FIND_STR(devt, dev, dev_entry);
 		if (!dev_entry) {
-			dev_entry = malloc(sizeof(struct lnvm_device));
+			dev_entry = malloc(sizeof(struct nvm_device));
 			if (!dev_entry) {
 				free(tgt_entry);
 				return -ENOMEM;
@@ -235,7 +235,7 @@ int nvm_target_open(const char *tgt, int flags)
 		goto error;
 	}
 
-	tgtm_entry = malloc(sizeof(struct lnvm_target_map));
+	tgtm_entry = malloc(sizeof(struct nvm_target_map));
 	if (!tgtm_entry) {
 		ret = -ENOMEM;
 		goto error;

@@ -171,7 +171,7 @@ static int beam_init(struct beam *beam, int lun, int tgt)
 	beam->nvblocks = 0;
 	beam->bytes = 0;
 
-	beam->tgt = get_lnvm_tgt_map(tgt);
+	beam->tgt = get_nvm_tgt_map(tgt);
 	if (!beam->tgt) {
 		LNVM_DEBUG("Initializing beam on uninitialized target\n");
 		return -EINVAL;
@@ -190,7 +190,7 @@ static int beam_init(struct beam *beam, int lun, int tgt)
  */
 static int beam_sync(struct beam *beam, int flags)
 {
-	struct lnvm_fpage *fpage = &beam->tgt->tgt->dev->flash_page;
+	struct nvm_fpage *fpage = &beam->tgt->tgt->dev->flash_page;
 	size_t sync_len = beam->w_buffer.cursize - beam->w_buffer.cursync;
 	size_t synced_bytes;
 	size_t disaligned_data = sync_len % fpage->pln_pg_size;
@@ -382,7 +382,7 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset, int flags
 {
 	struct beam *b;
 	NVM_VBLOCK *current_r_vblock;
-	struct lnvm_fpage *fpage;
+	struct nvm_fpage *fpage;
 	size_t block_off, ppa_off, page_off;
 	size_t ppa_count;
 	size_t nppas;

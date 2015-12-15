@@ -39,7 +39,7 @@ extern "C" {
 typedef struct nvm_ioctl_provisioning NVM_PROV;
 typedef struct nvm_ioctl_vblock NVM_VBLOCK;
 typedef struct nvm_ioctl_lun_status NVM_LUN_STAT;
-typedef struct lnvm_fpage NVM_FLASH_PAGE;
+typedef struct nvm_fpage NVM_FLASH_PAGE;
 
 /* Management - mgmt.c */
 int nvm_get_info(struct nvm_ioctl_info *);

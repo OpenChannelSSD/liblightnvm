@@ -35,36 +35,36 @@
 
 #define NVM_TGT_NAME_MAX DISK_NAME_LEN + 5	/* 5 = strlen(/dev/) */
 
-struct lnvm_fpage {
+struct nvm_fpage {
 	uint32_t sec_size;
 	uint32_t page_size;
 	uint32_t pln_pg_size;
 	uint32_t max_sec_io;
 };
 
-struct lnvm_device {
+struct nvm_device {
 	struct nvm_ioctl_dev_info info;	/* Device properties */
-	struct lnvm_fpage flash_page;	/* Calculated device flash page sizes */
+	struct nvm_fpage flash_page;	/* Calculated device flash page sizes */
 	atomic_cnt ref_cnt;		/* Reference counter */
 	UT_hash_handle hh;		/* hash handle for uthash */
 };
 
-struct lnvm_target {
+struct nvm_target {
 	uint32_t version[3];
 	uint32_t reserved;
 	char tgtname[DISK_NAME_LEN];		/* dev to expose target as */
 	char tgttype[NVM_TTYPE_NAME_MAX];	/* target type name */
-	struct lnvm_device *dev;		/* Device associated */
+	struct nvm_device *dev;		/* Device associated */
 	atomic_cnt ref_cnt;			/* Reference counter */
 	UT_hash_handle hh;			/* hash handle for uthash */
 };
 
-struct lnvm_target_map {
-	struct lnvm_target *tgt;
+struct nvm_target_map {
+	struct nvm_target *tgt;
 	int tgt_id;
 	UT_hash_handle hh;			/* hash handle for uthash */
 };
 
-struct lnvm_target_map *get_lnvm_tgt_map(int tgt);
+struct nvm_target_map *get_nvm_tgt_map(int tgt);
 
 #endif /* __PROVISIONING_H */
