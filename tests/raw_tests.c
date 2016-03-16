@@ -93,16 +93,13 @@ out:
  */
 static void raw_gp1(CuTest *ct)
 {
-	NVM_VBLOCK vblock[N_TEST_BLOCKS];
-	NVM_PROV prov = {
-		.flags = 0x0,
-		.lun_status = NULL,
-	};
-	NVM_LUN_STAT lun_status = {
-		.nr_free_blocks = 0,
-		.nr_inuse_blocks = 0,
-		.nr_bad_blocks = 0,
-	};
+	NVM_VBLOCK vblocks[N_TEST_BLOCKS];
+	NVM_VBLOCK *vblock;
+	/* NVM_LUN_STAT lun_status = { */
+		/* .nr_free_blocks = 0, */
+		/* .nr_inuse_blocks = 0, */
+		/* .nr_bad_blocks = 0, */
+	/* }; */
 	long nvblocks, nvblocks_old;
 	int tgt_fd;
 	int i;
@@ -116,30 +113,22 @@ static void raw_gp1(CuTest *ct)
 	// TODO - wait until we have defined this ioctl
 
 	/* get block from lun 0*/
-	vblock[0].vlun_id = 0;
+	vblocks[0].vlun_id = 0;
 
-	prov.vblock = &vblock[0];
-	prov.lun_status = &lun_status;
-	prov.flags |= NVM_PROV_SPEC_LUN | NVM_PROV_LUN_STATE;
+	vblock = &vblocks[0];
+	vblock->flags |= NVM_PROV_SPEC_LUN;
 
 	/* get block from lun 0, request LUN satus*/
-	ret = nvm_get_block(tgt_fd, 0, &prov);
+	ret = nvm_get_block(tgt_fd, 0, vblock);
 	CuAssertIntEquals(ct, 0, ret);
 
-	nvblocks = get_nvblocks(&lun_status);
+	/* nvblocks = get_nvblocks(&lun_status); */
 
-	/* put block, request LUN status*/
-	memset(&prov, 0, sizeof(prov));
+	ret = nvm_put_block(tgt_fd, vblock);
 
-	prov.vblock = &vblock[0];
-	prov.lun_status = &lun_status;
-	prov.flags |= NVM_PROV_SPEC_LUN | NVM_PROV_LUN_STATE;
-
-	ret = nvm_put_block(tgt_fd, &prov);
-
-	nvblocks_old = nvblocks;
-	nvblocks = get_nvblocks(&lun_status);
-	CuAssertIntEquals(ct, nvblocks_old, nvblocks);
+	/* nvblocks_old = nvblocks; */
+	/* nvblocks = get_nvblocks(&lun_status); */
+	/* CuAssertIntEquals(ct, nvblocks_old, nvblocks); */
 
 	nvm_target_close(tgt_fd);
 	remove_tgt(ct);
@@ -156,17 +145,13 @@ static void raw_gp1(CuTest *ct)
  */
 static void raw_gp2(CuTest *ct)
 {
-	NVM_VBLOCK vblock[N_TEST_BLOCKS];
-	NVM_VBLOCK *current_vblock;
-	NVM_PROV prov = {
-		.flags = 0x0,
-		.lun_status = NULL,
-	};
-	NVM_LUN_STAT lun_status = {
-		.nr_free_blocks = 0,
-		.nr_inuse_blocks = 0,
-		.nr_bad_blocks = 0,
-	};
+	NVM_VBLOCK vblocks[N_TEST_BLOCKS];
+	NVM_VBLOCK *vblock;
+	/* NVM_LUN_STAT lun_status = { */
+		/* .nr_free_blocks = 0, */
+		/* .nr_inuse_blocks = 0, */
+		/* .nr_bad_blocks = 0, */
+	/* }; */
 	static struct nvm_ioctl_dev_info dev_info;
 	static struct nvm_fpage fpage;
 	long nvblocks, nvblocks_old;
@@ -193,18 +178,16 @@ static void raw_gp2(CuTest *ct)
 	// TODO - wait until we have defined this ioctl
 
 	/* get block from lun 0*/
-	vblock[0].vlun_id = 0;
+	vblocks[0].vlun_id = 0;
+	vblock = &vblock[0];
 
-	prov.vblock = &vblock[0];
-	prov.lun_status = &lun_status;
-	prov.flags |= NVM_PROV_SPEC_LUN | NVM_PROV_LUN_STATE;
+	vblock->flags |= NVM_PROV_SPEC_LUN;
 
 	/* get block from lun 0, request LUN satus*/
-	ret = nvm_get_block(tgt_fd, 0, &prov);
+	ret = nvm_get_block(tgt_fd, 0, vblock);
 	CuAssertIntEquals(ct, 0, ret);
 
-	current_vblock = &vblock[0];
-	nvblocks = get_nvblocks(&lun_status);
+	/* nvblocks = get_nvblocks(&lun_status); */
 
 	/* Allocate aligned memory to use direct IO */
 	ret = posix_memalign((void**)&input_payload, fpage.sec_size,
@@ -228,7 +211,7 @@ static void raw_gp2(CuTest *ct)
 
 	/* write first full write page */
 	ret = pwrite(tgt_fd, input_payload, fpage.pln_pg_size,
-				current_vblock->bppa * fpage.sec_size);
+						vblock->bppa * fpage.sec_size);
 	if (ret != fpage.pln_pg_size) {
 		printf("Could not write data to vblock\n");
 		goto clean;
@@ -237,7 +220,7 @@ static void raw_gp2(CuTest *ct)
 retry:
 	/* read first full write page at once */
 	ret = pread(tgt_fd, read_payload, fpage.pln_pg_size,
-				current_vblock->bppa * fpage.sec_size);
+						vblock->bppa * fpage.sec_size);
 	if (ret != fpage.pln_pg_size) {
 		if (errno == EINTR)
 			goto retry;
@@ -252,7 +235,7 @@ retry:
 	memset(read_payload, 0, fpage.pln_pg_size);
 
 	left_bytes = fpage.pln_pg_size;
-	current_ppa = current_vblock->bppa;
+	current_ppa = vblock->bppa;
 	writer = read_payload;
 	/* read first full write page at 4KB granurality */
 	while (left_bytes > 0) {
@@ -277,7 +260,7 @@ retry2:
 
 	//JAVIER::: Take npages from kernel
 	left_pages = 255;
-	current_ppa = current_vblock->bppa + pg_sec_ratio;
+	current_ppa = vblock->bppa + pg_sec_ratio;
 
 	/* Write rest of block */
 	while (left_pages > 0) {
@@ -293,7 +276,7 @@ retry2:
 	}
 
 	left_pages = 255;
-	current_ppa = current_vblock->bppa + pg_sec_ratio;
+	current_ppa = vblock->bppa + pg_sec_ratio;
 
 	/* Read rest of block at full write page granurality */
 	while (left_pages > 0) {
@@ -317,7 +300,7 @@ retry3:
 	}
 
 	left_bytes = fpage.pln_pg_size * 255;
-	current_ppa = current_vblock->bppa + pg_sec_ratio;
+	current_ppa = vblock->bppa + pg_sec_ratio;
 	writer = read_payload;
 
 	int cnt = 0;
@@ -352,18 +335,11 @@ clean:
 	free(input_payload);
 	free(read_payload);
 
-	/* put block, request LUN status*/
-	memset(&prov, 0, sizeof(prov));
+	ret = nvm_put_block(tgt_fd, vblock);
 
-	prov.vblock = &vblock[0];
-	prov.lun_status = &lun_status;
-	prov.flags |= NVM_PROV_SPEC_LUN | NVM_PROV_LUN_STATE;
-
-	ret = nvm_put_block(tgt_fd, &prov);
-
-	nvblocks_old = nvblocks;
-	nvblocks = get_nvblocks(&lun_status);
-	CuAssertIntEquals(ct, nvblocks_old, nvblocks);
+	/* nvblocks_old = nvblocks; */
+	/* nvblocks = get_nvblocks(&lun_status); */
+	/* CuAssertIntEquals(ct, nvblocks_old, nvblocks); */
 
 	nvm_target_close(tgt_fd);
 	remove_tgt(ct);

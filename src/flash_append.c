@@ -55,15 +55,12 @@ static void beam_buf_free(struct w_buffer *buf)
 
 static void beam_put_blocks(struct beam *beam)
 {
-	NVM_PROV prov = {
-		.flags = NVM_PROV_SPEC_LUN,
-		.lun_status = NULL,
-	};
+	NVM_VBLOCK *vblock;
 	int i;
 
 	for (i = 0; i < beam->nvblocks; i++) {
-		prov.vblock = &beam->vblocks[i];
-		nvm_put_block(beam->tgt->tgt_id, &prov);
+		vblock = &beam->vblocks[i];
+		nvm_put_block(beam->tgt->tgt_id, vblock);
 	}
 }
 
@@ -124,14 +121,11 @@ static int switch_block(struct beam **beam)
 static int preallocate_block(struct beam *beam)
 {
 	NVM_VBLOCK *vblock = &beam->vblocks[beam->nvblocks];
-	NVM_PROV prov = {
-		.vblock = vblock,
-		.flags = NVM_PROV_SPEC_LUN,
-		.lun_status = NULL,
-	};
 	int ret = 0;
 
-	ret = nvm_get_block(beam->tgt->tgt_id, beam->lun, &prov);
+	vblock->flags |= NVM_PROV_SPEC_LUN,
+
+	ret = nvm_get_block(beam->tgt->tgt_id, beam->lun, vblock);
 	if (ret) {
 		LNVM_DEBUG("Could not allocate a new block for beam %d\n",
 				beam->gid);
@@ -145,6 +139,7 @@ static int preallocate_block(struct beam *beam)
 			beam->vblocks[beam->nvblocks].id,
 			beam->vblocks[beam->nvblocks].bppa);
 
+	vblock->flags &= ~NVM_PROV_SPEC_LUN;
 	beam->nvblocks++;
 out:
 	return ret;

@@ -266,14 +266,8 @@ void nvm_target_close(int tgt)
 /*
  * Provisioning
  */
-int nvm_get_block(int tgt, uint32_t lun, NVM_PROV *prov)
+int nvm_get_block(int tgt, uint32_t lun, NVM_VBLOCK *vblock)
 {
-	NVM_VBLOCK *vblock = prov->vblock;
-	struct nvm_ioctl_lun_status lun_status = {
-		.nr_free_blocks = 0,
-		.nr_inuse_blocks = 0,
-		.nr_bad_blocks = 0,
-	};
 	int ret = 0;
 
 	/* Initialize ioctl values */
@@ -284,11 +278,8 @@ int nvm_get_block(int tgt, uint32_t lun, NVM_PROV *prov)
 
 	vblock->vlun_id = lun;
 	vblock->owner_id = 101;
-	vblock->flags = 0x0;
 
-	prov->lun_status = &lun_status;
-
-	ret = ioctl(tgt, NVM_PR_GET_BLOCK, prov);
+	ret = ioctl(tgt, NVM_PR_GET_BLOCK, vblock);
 	if (ret) {
 		LNVM_DEBUG("Could not get block from lun %d\n", lun);
 		goto out;
@@ -348,21 +339,11 @@ out:
 }
 #endif
 
-int nvm_put_block(int tgt, NVM_PROV *prov)
+int nvm_put_block(int tgt, NVM_VBLOCK *vblock)
 {
-#ifdef LNVM_DEBUG_ENABLED
-	NVM_VBLOCK *vblock = prov->vblock;
-#endif
-	struct nvm_ioctl_lun_status lun_status = {
-		.nr_free_blocks = 0,
-		.nr_inuse_blocks = 0,
-		.nr_bad_blocks = 0,
-	};
 	int ret = 0;
 
-	prov->lun_status = &lun_status;
-
-	ret = ioctl(tgt, NVM_PR_PUT_BLOCK, prov);
+	ret = ioctl(tgt, NVM_PR_PUT_BLOCK, vblock);
 	if (ret) {
 		LNVM_DEBUG("Could not put block %llu (bppa:%llu) to lun %d\n",
 				vblock->id, vblock->bppa, vblock->vlun_id);

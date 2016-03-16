@@ -155,15 +155,6 @@ unit at which LightNVM's media manager provisioning interface operates.
 		__u32 nr_bad_blocks; <br />
 	};*
 
-
-- **NVM_PROV**:
-
-	*NVM_PROV{ <br />
-		NVM_VBLOCK *vblock; <br />
-		NVM_LUN_STAT *lun_status; <br />
-		__u16 flags; <br />
-	};*
-
 - **NVM_FLASH_PAGE**:
 
 	*NVM_FLASH_PAGE { <br \>
@@ -174,9 +165,9 @@ unit at which LightNVM's media manager provisioning interface operates.
 	};*
 
 
-- **int nvm_get_block(int _tgt_, uint32_t _lun_, NVM_PROV _*prov);**
+- **int nvm_get_block(int _tgt_, uint32_t _lun_, NVM_VBLOCK _*vblock_);**
   - Description:
-  Get a flash block from target *tgt* and LUN *lun* through the NVM_PROV
+  Get a flash block from target *tgt* and LUN *lun* through the NVM_VBLOCK
   communication interface *prov*.
   - Return Value:
   On success, a flash block is allocated in LightNVM's media manager and *vblock*
@@ -184,13 +175,12 @@ unit at which LightNVM's media manager provisioning interface operates.
   filled with LUN status metadata.  On error, -1 is returned, in which case
   *errno* is set to indicate the error.
 
-- **int nvm_put_block(int _tgt_, NVM_PROC _*prov_);**
+- **int nvm_put_block(int _tgt_, NVM_VBLOCK _*vblock_);**
   - Description:
   Put flash block *vblock* back to the target *tgt*. This action implies that
   the owner of the flash block previous to this function call no longer owns the
   flash block, and therefor an no longer submit I/Os to it, or expect that data
   on it is persisted. The flash block cannot be reclaimed by the previous owner.
-  The NVM_PROV communication interface is used, represented by *prov*.
   - Return Value:
   On success, a flash block is returned to LightNVM's media manager. If
   NVM_PROV_LUN_STATE is set, *lun_status* is also filled with LUN status
