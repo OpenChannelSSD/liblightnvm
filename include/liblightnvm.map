@@ -1,0 +1,64 @@
+LIBLIGHTNVM_0.2 {
+	global:
+		nvm_dev_open;
+		nvm_dev_close;
+
+		nvm_dev_new;
+		nvm_dev_free;
+		nvm_dev_pr;
+		nvm_dev_get_fpage;
+		nvm_dev_get_info;
+
+		nvm_dev_info_new;
+		nvm_dev_info_free;
+		nvm_dev_info_pr;
+		nvm_dev_info_fill;
+
+		nvm_fpage_new;
+		nvm_fpage_free;
+		nvm_fpage_pr;
+
+		nvm_fpage_get_max_sec_io;
+		nvm_fpage_get_page_size;
+		nvm_fpage_get_pln_pg_size;
+		nvm_fpage_get_sec_size;
+
+		nvm_tgt_open;
+		nvm_tgt_close;
+
+		nvm_tgt_info_free;
+		nvm_tgt_info_new;
+		nvm_tgt_info_pr;
+		nvm_tgt_info_fill;
+
+		nvm_vblock_get;
+		nvm_vblock_gets;
+		nvm_vblock_put;
+		nvm_vblock_read;
+		nvm_vblock_write;
+
+		nvm_vblock_new;
+		nvm_vblock_free;
+		nvm_vblock_pr;
+		nvm_vblock_get_bitmap;
+		nvm_vblock_get_bppa;
+		nvm_vblock_get_flags;
+		nvm_vblock_get_id;
+		nvm_vblock_get_lun;
+		nvm_vblock_get_nppas;
+		nvm_vblock_get_owner;
+
+		nvm_mgmt_tgt_create;
+		nvm_mgmt_tgt_remove;
+
+		nvm_beam_create;
+		nvm_beam_destroy;
+		nvm_beam_read;
+		nvm_beam_append;
+		nvm_beam_sync;
+		nvm_beam_init;
+		nvm_beam_exit;
+
+	local:
+		*;
+};

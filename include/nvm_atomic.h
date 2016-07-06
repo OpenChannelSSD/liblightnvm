@@ -1,5 +1,5 @@
 /*
- * provisioning - LightNVM get/put block API
+ * atomic - atomic operations
  *
  * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
  * All rights reserved.
@@ -24,47 +24,52 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef __PROVISIONING_H
-#define __PROVISIONING_H
-
+#ifndef __NVM_ATOMIC_H
+#define __NVM_ATOMIC_H
 #include <pthread.h>
-#include <liblightnvm.h>
 
-#include "../util/atomic.h"
-#include "../util/uthash.h"
+typedef struct atomic_cnt {
+	int cnt;
+	pthread_spinlock_t lock;
+} atomic_cnt;
 
-#define NVM_TGT_NAME_MAX DISK_NAME_LEN + 5	/* 5 = strlen(/dev/) */
+static inline void atomic_init(struct atomic_cnt *cnt)
+{
+	pthread_spin_init(&cnt->lock, PTHREAD_PROCESS_SHARED);
+}
 
-struct nvm_fpage {
-	uint32_t sec_size;
-	uint32_t page_size;
-	uint32_t pln_pg_size;
-	uint32_t max_sec_io;
-};
+static inline void atomic_set(struct atomic_cnt *cnt, int value)
+{
+	pthread_spin_lock(&cnt->lock);
+	cnt->cnt = value;
+	pthread_spin_unlock(&cnt->lock);
+}
 
-struct nvm_device {
-	struct nvm_ioctl_dev_info info;	/* Device properties */
-	struct nvm_fpage flash_page;	/* Calculated device flash page sizes */
-	atomic_cnt ref_cnt;		/* Reference counter */
-	UT_hash_handle hh;		/* hash handle for uthash */
-};
+static inline void atomic_assign_inc(struct atomic_cnt *cnt, int *dst)
+{
+	pthread_spin_lock(&cnt->lock);
+	cnt->cnt++;
+	*dst = cnt->cnt;
+	pthread_spin_unlock(&cnt->lock);
+}
 
-struct nvm_target {
-	uint32_t version[3];
-	uint32_t reserved;
-	char tgtname[DISK_NAME_LEN];		/* dev to expose target as */
-	char tgttype[NVM_TTYPE_NAME_MAX];	/* target type name */
-	struct nvm_device *dev;		/* Device associated */
-	atomic_cnt ref_cnt;			/* Reference counter */
-	UT_hash_handle hh;			/* hash handle for uthash */
-};
+static inline void atomic_inc(struct atomic_cnt *cnt)
+{
+	pthread_spin_lock(&cnt->lock);
+	cnt->cnt++;
+	pthread_spin_unlock(&cnt->lock);
+}
 
-struct nvm_target_map {
-	struct nvm_target *tgt;
-	int tgt_id;
-	UT_hash_handle hh;			/* hash handle for uthash */
-};
+static inline int atomic_dec_and_test(struct atomic_cnt *cnt)
+{
+	int ret;
 
-struct nvm_target_map *get_nvm_tgt_map(int tgt);
+	pthread_spin_lock(&cnt->lock);
+	cnt->cnt--;
+	ret = (cnt->cnt == 0) ? 1 : 0;
+	pthread_spin_unlock(&cnt->lock);
 
-#endif /* __PROVISIONING_H */
+	return ret;
+}
+
+#endif /* __NVM_ATOMIC_H */
