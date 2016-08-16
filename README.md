@@ -4,24 +4,15 @@
 
 liblightnvm is a user space library that manages provisioning of and I/O
 submission to physical flash. The motivation is to enable I/O-intensive
-applications to implement their own Flash Translation Tables (FTLs) directly on
-their logic.  Our system design is based on the principle that high-performance
-I/O applications use log-structured data structures to map flash constrains and
-implement their own data placement, garbage collection, and I/O scheduling
-strategies.  Using liblightnvm, applications have direct access to a physical
-flash provisioning interface, and perceive storage as large single address
-space flash pool from which they can allocate flash blocks from individual NAND
-flash chips (LUNs) in the SSDs. This is relevant to match parallelism in the
-host and in the device. Each application submits I/Os using physical addressing
-that corresponds to specific block, page, etc. on device.
+applications to implement their own Flash Translation Layer (FTLs) using
+the internal application data structures.  The design is based on the principle that high-performance
+I/O applications often use structures that assimilates structures found within a 
+Flash translation layer. This include log-structured data structures that provides their
+own mechanisms for data placement, garbage collection, and I/O scheduling
+strategies.  
 
-liblightnvm relies on Open-Channel SSDs, devices that share responsibilities
-with the host to enable full host-based FTLs; and LightNVM, the Linux Kernel
-subsystem supporting them. To know more about Open-Channel SSDs and the
-software ecosystem around them please see [6].
-
-For example, most key-value stores use Log Structured Merge Trees (LSMs) as
-their base data structure (e.g., RocksDB, MongoDG, Apache Cassandra). The LSM
+For example, popular key-value stores often use a form of Log Structured Merge Trees (LSMs) as
+their base data structure (including RocksDB, MongoDB, Apache Cassandra). The LSM
 is in itself a form of FTL, which manages data placement and garbage
 collection.  This class of applications can benefit from a direct path to
 physical flash to take full advantage of the optimizations they do and spend
@@ -33,13 +24,10 @@ support this class of applications.
 
 # API
 
-Liblightnvm allows direct usage of physical flash blocks. This means that the
+liblightnvm allows direct usage of physical flash blocks. This means that the
 library user is responsible for managing flash constraints such as writing
 sequentially within a flash block, writing/erasing at flash page granularity,
 reading at a sector granularity, etc.
-
-Liblightnvm also provides a beam abstraction, encapsulating some of these
-responsibilities, see section X.
 
 Data structures for representing luns, blocks, and pages are described in the
 following section. Followed by a description the functions for provisioning
@@ -165,113 +153,6 @@ int nvm_vblock_read(int tgt, NVM_VBLOCK *vblock, void *buf, size_t ppa_off,
 			size_t count, NVM_FLASH_PAGE *fpage, int flags);
 ```
 
-## The beam abstraction / Append Only Interface
-
-Build on top of the RAW I/O 
-
-liblightnvm's I/O functionality is based around the concept of **beams**, i.e.,
-I/O flows that operate directly with physical addresses and belong to a single
-application, which is completely in control over data placement and garbage
-collection. In the case of the append-only functionality, liblightnvm deals with
-flash blocks internally and guarantees that a writer can append to an I/O beam
-as long as there are available free blocks in the target and lun blocks are
-being allocated from.
-
-An application can *read* from a beam by providing an offset, without caring
-about the actual flash blocks containing user data. A *sync* operator is also
-provider to allow applications define barriers and persist data as needed. Flash
-pages are padded when necessary to respect flash constrains; space amplification
-must be accounted for when making use of the *sync* operator.
-
-### Interface initialization and teardown
-
-Initializes locks used by the beam abstraction. Should probably be removed such
-that the library could be made re-entrant.
-
-```c
-/*
- * TODO: Describe
- */
-int nvm_beam_init();
-```
-
-```c
-/*
- * TODO: Describe
- */
-void nvm_beam_exit();
-```
-
-### Beam Handle
-
-```c
-/*
- * Creates a new I/O beam associated with the target(tgt) in LUN(lun).
- * Flags:
- * NVM_PROV_SPEC_LUN - A LUN is specified. If there are free blocks in LUN
- *                     a block from that LUN is allocated.
- *                     Error is returned otherwise.
- * NVM_PROV_RAND_LUN - LightNVM's media manager selects the LUN from which
- *                     the block is allocated. If there are free blocks
- *                     available in tgt a block is allocated.
- *                     Error is returned otherwise.
- *
- * Returns: On success, a beam id that can be used to issue I/Os (e.g., append,
- * read). On error, -1 is returned, in which case *errno* is set to indicate the
- * error.
- */
-int nvm_beam_create(const char *tgt, int lun, int flags);
-```
-
-```c
-/*
- * Destroys the I/O beam associated with the id beam
- */
-void nvm_beam_destroy(int _beam_, int _flags_);
-```
-
-### Beam I/O
-
-```c
-/*
- * Appends count bytes from buf to the I/O beam associated with the id beam.
- *
- * Returns: On success the number of bytes written to the beam is returned (zero
- * indicates that nothing has been written). On error, -1 is returned, in which
- * case errno is set to indicate the error.
- */
-ssize_t nvm_beam_append(int _beam_, const void _*buf_, size_t _count_);
-```
-
-```c
-/*
- * Reads count bytes to buffer buf from the I/O beam associated with the id
- * beam at offset.
- *
- * Returns: On success the number of bytes read from the beam is returned (zero
- * indicates that nothing has been read). On error, -1 is returned, in which case
- * errno is set to indicate the error.
- */
-ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
-                      int flags);
-```
-
-### Beam Synchronization
-
-```c
-/*
- * Syncs all data buffered on I/O beam *beam* to the device.
- *
- * Returns: On success, 0 is returned. On error, -1 is returned, in which case
- * errno is set to indicate the error.
- */
-int nvm_beam_sync(int beam, int flags);
-```
-
-# Usage
-
-WIP: This needs updating.
-
 ## Prerequisites
 
 
@@ -281,7 +162,7 @@ check it out to test liblightnvm. This branch will follow master. This is, it
 will have all new functionality and fixes sent upstream to LightNVM.
 
 Also, it is necessary to have an Open-Channel SSD that supports LightNVM
-commands. For testing purposes you can use QEMU. Please checkout [2] to get
+command set. For testing purposes you can use QEMU. Please checkout [2] to get
 Keith Busch's qemu-nvme with support for Open-Channel SSDs.
 Documentation on how to setup LightNVM and QEMU can be found in [3].
 Refer to [4] for LightNVM sanity checks.
@@ -328,21 +209,17 @@ With the above commands then the nvme device `nvme0n1` is LigthNVM enabled and
 a `dflash` target named `tgt0` created capable of utilizing luns 0-63 of
 `nvme0n1`.
 
-### Retrieving information
+### Retrieving geometry information
 
-... WIP ...
+To be filled in
 
 # Contact and Contributions
 
-liblightnvm is in active development on the master branch. We will start using
-feature branches when the library stabilizes. Also, the API is subject to
-change, at least until kernel support has been sent upstream.
-
-Please write to Javier at jg@lightnvm.io for more information.
+liblightnvm is in active development and pull requests are very welcome.
 
 # References
 
-[1]: https://github.com/OpenChannelSSD/linux/tree/liblnvm "bla"
+[1]: https://github.com/OpenChannelSSD/linux/tree/liblnvm 
 [2]: http://openchannelssd.readthedocs.org/en/latest/gettingstarted/#configure-qemu
 [3]: https://github.com/OpenChannelSSD/qemu-nvme
 [4]: https://github.com/OpenChannelSSD/lightnvm-hw
