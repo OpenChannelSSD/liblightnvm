@@ -3,9 +3,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 include(FeatureSummary)
 project(liblightnvm C)
 
-
 find_package(Threads REQUIRED)
-
 find_package(udev REQUIRED liblightnvm)
 set_package_properties(udev PROPERTIES DESCRIPTION "Queriying OpenChannel SSDs via sysfs/udev.")
 set_package_properties(udev PROPERTIES TYPE REQUIRED PURPOSE "Queriying OpenChannel SSDs via sysfs/udev.")
@@ -21,7 +19,6 @@ set(NVM_VERSION ${NVM_VERSION_MAJOR}.${NVM_VERSION_MINOR}.${NVM_VERSION_PATCH})
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DNVM_DEBUG_ENABLED")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -Wall -O0")
 
 set(HEADER_FILES
 	include/liblightnvm.h

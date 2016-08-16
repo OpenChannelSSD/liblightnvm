@@ -10,7 +10,10 @@ default: configure make
 debug:
 	$(eval BUILD_TYPE := Debug)
 
-configure:
+cmake_check:
+	@cmake --version || (echo "\n** Please install 'cmake' **\n" && exit 1)
+
+configure: cmake_check
 	mkdir -p $(BUILD_DIR)
 	cd $(BUILD_DIR) && cmake -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) ../
 	@echo "Modify build configuration in '$(BUILD_DIR)'"

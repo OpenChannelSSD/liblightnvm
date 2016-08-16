@@ -3,10 +3,18 @@ project(liblightnvm_tests C)
 include(FeatureSummary)
 
 find_package(cunit REQUIRED liblightnvm_tests)
+set_package_properties(cunit PROPERTIES DESCRIPTION "libcunit")
+set_package_properties(cunit PROPERTIES TYPE REQUIRED PURPOSE "Tests depends on libcunit")
+
+if ( NOT ${CUNIT_FOUND} )
+	message(FATAL_ERROR
+		"Please install libcunit (e.g. 'libcunit1-dev' on Ubuntu 16.04)")
+endif()
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DNVM_DEBUG_ENABLED")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -O2")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 
+include_directories("${CUNIT_INCLUDE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/../include")
 include_directories("${PROJECT_SOURCE_DIR}/../include/linux/uapi")
 
