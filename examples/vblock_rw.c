@@ -1,5 +1,4 @@
 #define _GNU_SOURCE
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -47,23 +46,22 @@ void ex_vblock_rw(const char* dev_name, const char* tgt_name)
 		printf("Failed getting block via tgt(%p)\n", tgt);
 		return;
 	}
-
-	wbuf = aligned_alloc(sec_size, pln_pg_size);	/* Allocate buffer */
-	if (!wbuf) {
+						/* Write to media */
+	ret = posix_memalign((void**)&wbuf, sec_size, pln_pg_size);
+	if (ret) {
 		printf("Failed allocating write buffer(%p)\n", wbuf);
 		return;
 	}
 	strcpy(wbuf, "Hello World of NVM");
-							/* Write to media */
 	written = nvm_vblock_write(vblock, fpage, 0, 1, tgt, wbuf, 0x0);
 	printf("written(%d)\n", written);
-	
-	rbuf = aligned_alloc(sec_size, pln_pg_size);	/* Allocate buffer */
-	if (!rbuf) {
+
+						/* Read from media */
+	ret = posix_memalign((void**)&rbuf, sec_size, pln_pg_size);
+	if (ret) {
 		printf("Failed allocating read buffer(%p)\n", wbuf);
 		return;
 	}
-							/* Read from media */
 	read = nvm_vblock_read(vblock, fpage, 0, 1, tgt, rbuf, 0x0);
 	printf("read(%d), rbuf(%s)\n", read, rbuf);
 
