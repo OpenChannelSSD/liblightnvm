@@ -1,0 +1,15 @@
+language: c
+compiler:
+  - gcc
+  - clang
+
+before_script:
+  - echo "Fetching checkpatch"
+  - wget "https://raw.githubusercontent.com/torvalds/linux/master/scripts/checkpatch.pl" -O checkpatch.pl
+  - chmod +x checkpatch.pl
+  - ./checkpatch.pl --no-tree -f include/*nvm.h --terse
+  - ./checkpatch.pl --no-tree -f include/nvm_*.h --terse
+  - ./checkpatch.pl --no-tree -f src/*.c --terse
+
+script:
+  - make

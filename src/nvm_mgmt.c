@@ -8,11 +8,11 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- *  - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ *  - Redistributions of source code must retain the above copyright notice,
+ *  this list of conditions and the following disclaimer.
  *  - Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
+ *  this list of conditions and the following disclaimer in the documentation
+ *  and/or other materials provided with the distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -26,55 +26,32 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <string.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <linux/lightnvm.h>
 #include <liblightnvm.h>
+#include <nvm_utils.h>
 
-static int nvm_execute_ioctl(int opcode, void *u)
+int nvm_mgmt_tgt_create(const char *tgt_name, const char *tgt_type_name,
+                        const char *dev_name, int lun_begin, int lun_end)
 {
-	char dev[FILENAME_MAX] = NVM_CTRL_FILE;
-	int ret, fd;
+	struct nvm_ioctl_create ctl;
 
-	fd = open(dev, O_WRONLY);
-	if (fd < 0)
-		return fd;
+	memset(&ctl, 0, sizeof(ctl));
+	strncpy(ctl.dev, dev_name, DISK_NAME_LEN);
+	strncpy(ctl.tgtname, tgt_name, DISK_NAME_LEN);
+	strncpy(ctl.tgttype, tgt_type_name, NVM_TTYPE_NAME_MAX);
+	ctl.conf.s.lun_begin = lun_begin;
+	ctl.conf.s.lun_end = lun_end;
 
-	ret = ioctl(fd, opcode, u);
-	if (ret)
-		return ret;
-
-	close(fd);
-	return 0;
+	return nvm_execute_ioctl(NVM_DEV_CREATE, &ctl);
 }
 
-int nvm_get_info(struct nvm_ioctl_info *u)
+int nvm_mgmt_tgt_remove(const char* tgt_name)
 {
-	return nvm_execute_ioctl(NVM_INFO, u);
+	struct nvm_ioctl_remove ctl;
+
+	memset(&ctl, 0, sizeof(ctl));
+	strncpy(ctl.tgtname, tgt_name, DISK_NAME_LEN);
+
+	return nvm_execute_ioctl(NVM_DEV_REMOVE, &ctl);
 }
 
-int nvm_get_devices(struct nvm_ioctl_get_devices *u)
-{
-	return nvm_execute_ioctl(NVM_GET_DEVICES, u);
-}
-
-int nvm_create_target(struct nvm_ioctl_tgt_create *u)
-{
-	return nvm_execute_ioctl(NVM_DEV_CREATE_TGT, u);
-}
-
-int nvm_remove_target(struct nvm_ioctl_tgt_remove *u)
-{
-	return nvm_execute_ioctl(NVM_DEV_REMOVE_TGT, u);
-}
-
-int nvm_get_device_info(struct nvm_ioctl_dev_info *u)
-{
-	return nvm_execute_ioctl(NVM_DEV_GET_INFO, u);
-}
-
-int nvm_get_target_info(struct nvm_ioctl_tgt_info *u)
-{
-	return nvm_execute_ioctl(NVM_TGT_GET_INFO, u);
-}

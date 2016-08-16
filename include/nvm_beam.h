@@ -24,23 +24,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef __FLASH_BEAM_H
-#define __FLASH_BEAM_H
+#ifndef __NVM_BEAM_H
+#define __NVM_BEAM_H
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <uthash.h>
+
 #include <liblightnvm.h>
-
-#include <provisioning.h>
-
-#include "../util/atomic.h"
-#include "../util/uthash.h"
-#include "../util/debug.h"
-
-/*
- * TODO:
- *	- Dynamic block list
- */
+#include <nvm.h>
 
 #define MAX_BLOCKS 5
 
@@ -63,9 +55,9 @@ struct w_buffer {
 struct beam {
 	int gid;				/* internal global identifier */
 	int lun;				/* virtual lun mapped to beam*/
-	struct nvm_target_map *tgt;		/* LightNVM target */
-	NVM_VBLOCK *current_w_vblock;	/* current block in use */
-	NVM_VBLOCK vblocks[MAX_BLOCKS];	/* vblocks forming the beam */
+	struct nvm_tgt *tgt;			/* LightNVM target */
+	struct nvm_ioctl_vblock *current_w_vblock;	/* current block in use */
+	struct nvm_ioctl_vblock vblocks[MAX_BLOCKS];	/* vblocks forming the beam */
 	int nvblocks;				/* number of vblocks */
 	struct w_buffer w_buffer;		/* write buffer */
 	unsigned long bytes;			/* valid bytes */
@@ -80,4 +72,4 @@ static inline size_t calculate_ppa_off(size_t cursync, int write_page_size)
 	return (aligned_data + rest);
 }
 
-#endif /* __FLASH_BEAM_H */
+#endif /* __NVM_BEAM_H */

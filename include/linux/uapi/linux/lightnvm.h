@@ -33,20 +33,14 @@
 
 #define NVM_TTYPE_NAME_MAX 48
 #define NVM_TTYPE_MAX 63
+#define NVM_MMTYPE_LEN 8
 
 #define NVM_CTRL_FILE "/dev/lightnvm/control"
 
-struct nvm_ioctl_target {
-	char dev[DISK_NAME_LEN];		/* open-channel SSD device */
-	char tgttype[NVM_TTYPE_NAME_MAX];	/* target type name */
-	char tgtname[DISK_NAME_LEN];		/* dev to expose target as */
-};
-
-struct nvm_ioctl_tgt_info {
+struct nvm_ioctl_info_tgt {
 	__u32 version[3];
 	__u32 reserved;
-
-	struct nvm_ioctl_target target;
+	char tgtname[NVM_TTYPE_NAME_MAX];
 };
 
 struct nvm_ioctl_info {
@@ -54,39 +48,25 @@ struct nvm_ioctl_info {
 	__u16 tgtsize;		/* number of targets */
 	__u16 reserved16;	/* pad to 4K page */
 	__u32 reserved[12];
-	struct nvm_ioctl_tgt_info tgts[NVM_TTYPE_MAX];
+	struct nvm_ioctl_info_tgt tgts[NVM_TTYPE_MAX];
 };
 
 enum {
 	NVM_DEVICE_ACTIVE = 1 << 0,
 };
 
-struct nvm_ioctl_dev_prop {
-	__u32 sec_size;		/* Device sector size */
-	__u32 sec_per_page;	/* Number of sectors per flash page */
-	__u32 max_sec_io;	/* Maximum number of sectors per I/O */
-	__u32 nr_planes;	/* Number of planes in device */
-	__u32 nr_luns;		/* Number of LUNs in device */
-	__u32 nr_channels;	/* Number of channels in device */
-	__u32 plane_mode;	/* Device plane mode: single, dual, quad */
-	__u32 oob_size;		/* Sector out-of-bound area size */
-};
-
-struct nvm_ioctl_dev_info {
-	char dev[DISK_NAME_LEN];
+struct nvm_ioctl_device_info {
+	char devname[DISK_NAME_LEN];
 	char bmname[NVM_TTYPE_NAME_MAX];
-
 	__u32 bmversion[3];
 	__u32 flags;
 	__u32 reserved[8];
-
-	struct nvm_ioctl_dev_prop prop;
 };
 
 struct nvm_ioctl_get_devices {
 	__u32 nr_devices;
 	__u32 reserved[31];
-	struct nvm_ioctl_dev_info info[31];
+	struct nvm_ioctl_device_info info[31];
 };
 
 struct nvm_ioctl_create_simple {
@@ -105,31 +85,43 @@ struct nvm_ioctl_create_conf {
 	};
 };
 
-struct nvm_ioctl_tgt_create {
-	struct nvm_ioctl_target target;
+struct nvm_ioctl_create {
+	char dev[DISK_NAME_LEN];		/* open-channel SSD device */
+	char tgttype[NVM_TTYPE_NAME_MAX];	/* target type name */
+	char tgtname[DISK_NAME_LEN];		/* dev to expose target as */
 
 	__u32 flags;
 
 	struct nvm_ioctl_create_conf conf;
 };
 
-struct nvm_ioctl_tgt_remove {
+struct nvm_ioctl_remove {
 	char tgtname[DISK_NAME_LEN];
 
 	__u32 flags;
 };
 
-struct nvm_ioctl_lun_info {
-	// TODO
+struct nvm_ioctl_dev_init {
+	char dev[DISK_NAME_LEN];		/* open-channel SSD device */
+	char mmtype[NVM_MMTYPE_LEN];		/* register to media manager */
+
+	__u32 flags;
 };
 
-struct nvm_ioctl_lun_status {
-	__u32 nr_free_blocks;
-	__u32 nr_inuse_blocks;
-	__u32 nr_bad_blocks;
+enum {
+	NVM_FACTORY_ERASE_ONLY_USER	= 1 << 0, /* erase only blocks used as
+						   * host blks or grown blks */
+	NVM_FACTORY_RESET_HOST_BLKS	= 1 << 1, /* remove host blk marks */
+	NVM_FACTORY_RESET_GRWN_BBLKS	= 1 << 2, /* remove grown blk marks */
+	NVM_FACTORY_NR_BITS		= 1 << 3, /* stops here */
 };
 
-/* nvm_ioctl_provisioning flags */
+struct nvm_ioctl_dev_factory {
+	char dev[DISK_NAME_LEN];
+
+	__u32 flags;
+};
+
 enum {
 	NVM_PROV_SPEC_LUN = 1,
 	NVM_PROV_RAND_LUN = 2,
@@ -152,19 +144,18 @@ enum {
 	NVM_GET_DEVICES_CMD,
 
 	/* device level cmds */
-	NVM_DEV_GET_INFO_CMD,
-	NVM_DEV_CREATE_TGT_CMD,
-	NVM_DEV_REMOVE_TGT_CMD,
+	NVM_DEV_CREATE_CMD,
+	NVM_DEV_REMOVE_CMD,
 
-	/* target level cmds */
-	NVM_TGT_GET_INFO_CMD,
-	NVM_LUN_GET_INFO_CMD, /* TODO: Describe lun to application (QoS) */
+	/* Init a device to support LightNVM media managers */
+	NVM_DEV_INIT_CMD,
 
-	/* provisioning cmds */
-	NVM_PR_GET_BLOCK_CMD,
-	NVM_PR_GET_BLOCK_INFO_CMD,
-	NVM_PR_GET_BLOCK_META_CMD, /* TODO: Depends on media manager recovery */
-	NVM_PR_PUT_BLOCK_CMD,
+	/* Factory reset device */
+	NVM_DEV_FACTORY_CMD,
+
+	/* Provisioning interface */
+	NVM_BLOCK_GET_CMD,
+	NVM_BLOCK_PUT_CMD,
 };
 
 #define NVM_IOCTL 'L' /* 0x4c */
@@ -173,23 +164,18 @@ enum {
 						struct nvm_ioctl_info)
 #define NVM_GET_DEVICES		_IOR(NVM_IOCTL, NVM_GET_DEVICES_CMD, \
 						struct nvm_ioctl_get_devices)
-#define NVM_DEV_CREATE_TGT	_IOW(NVM_IOCTL, NVM_DEV_CREATE_TGT_CMD, \
-						struct nvm_ioctl_tgt_create)
-#define NVM_DEV_REMOVE_TGT	_IOW(NVM_IOCTL, NVM_DEV_REMOVE_TGT_CMD, \
-						struct nvm_ioctl_tgt_remove)
-#define NVM_DEV_GET_INFO	_IOR(NVM_IOCTL, NVM_DEV_GET_INFO_CMD, \
-						struct nvm_ioctl_dev_info)
-#define NVM_TGT_GET_INFO	_IOW(NVM_IOCTL, NVM_TGT_GET_INFO_CMD, \
-						struct nvm_ioctl_tgt_info)
-#define NVM_LUN_GET_INFO	_IOR(NVM_IOCTL, NVM_LUN_GET_INFO_CMD, \
-						struct nvm_ioctl_lun_info)
-#define NVM_PR_GET_BLOCK	_IOWR(NVM_IOCTL, NVM_PR_GET_BLOCK_CMD, \
+#define NVM_DEV_CREATE		_IOW(NVM_IOCTL, NVM_DEV_CREATE_CMD, \
+						struct nvm_ioctl_create)
+#define NVM_DEV_REMOVE		_IOW(NVM_IOCTL, NVM_DEV_REMOVE_CMD, \
+						struct nvm_ioctl_remove)
+#define NVM_DEV_INIT		_IOW(NVM_IOCTL, NVM_DEV_INIT_CMD, \
+						struct nvm_ioctl_dev_init)
+#define NVM_DEV_FACTORY		_IOW(NVM_IOCTL, NVM_DEV_FACTORY_CMD, \
+						struct nvm_ioctl_dev_factory)
+#define NVM_BLOCK_GET		_IOWR(NVM_IOCTL, NVM_BLOCK_GET_CMD, \
 						struct nvm_ioctl_vblock)
-#define NVM_PR_PUT_BLOCK	_IOWR(NVM_IOCTL, NVM_PR_PUT_BLOCK_CMD, \
+#define NVM_BLOCK_PUT		_IOWR(NVM_IOCTL, NVM_BLOCK_PUT_CMD, \
 						struct nvm_ioctl_vblock)
-/*#define NVM_PR_GET_BLOCK_INFO	_IOWR(NVM_IOCTL, NVM_PR_GET_BLOCK_INFO_CMD, \
-						struct nvm_ioctl_provisioning)
-*/
 
 #define NVM_VERSION_MAJOR	1
 #define NVM_VERSION_MINOR	0
