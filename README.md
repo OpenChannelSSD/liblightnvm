@@ -1,6 +1,6 @@
 # liblightnvm - Userspace I/O library for LightNVM
 
-[![Build Status](https://travis-ci.org/OpenChannelSSD/liblightnvm.svg?branch=master)](https://travis-ci.org/safl/liblightnvm)
+[![Build Status](https://travis-ci.org/OpenChannelSSD/liblightnvm.svg?branch=master)](https://travis-ci.org/OpenChannelSSD/liblightnvm)
 
 liblightnvm is a user space library that manages provisioning of and I/O
 submission to physical flash. The motivation is to enable I/O-intensive
