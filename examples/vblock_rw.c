@@ -5,20 +5,18 @@
 #include <string.h>
 #include <liblightnvm.h>
 
-#define BUF_LEN 4096
-
-// WIP: Example is broken...
-
 void ex_vblock_rw(const char* dev_name, const char* tgt_name)
 {
 	NVM_DEV dev;
 	NVM_FPAGE fpage;
+	uint32_t sec_size, pln_pg_size;
+
 	NVM_TGT tgt;
 	NVM_VBLOCK vblock;
 	int ret, read, written;
 
-	char wbuf[BUF_LEN] = "Hello";
-	char rbuf[BUF_LEN] = "";
+	char *wbuf;
+	char *rbuf;
 
 	dev = nvm_dev_open(dev_name);
 	if (!dev) {
@@ -27,6 +25,9 @@ void ex_vblock_rw(const char* dev_name, const char* tgt_name)
 	}
 
 	fpage = nvm_dev_get_fpage(dev);
+	sec_size = nvm_fpage_get_sec_size(fpage);
+	pln_pg_size = nvm_fpage_get_pln_pg_size(fpage);
+	nvm_fpage_pr(fpage);
 
 	tgt = nvm_tgt_open(tgt_name, 0x0);	/* Why 0x0? */
 	if (!tgt) {
@@ -47,11 +48,23 @@ void ex_vblock_rw(const char* dev_name, const char* tgt_name)
 		return;
 	}
 
-	nvm_vblock_pr(vblock);
-	written = nvm_vblock_write(vblock, fpage, 1, 1, tgt, wbuf, 0x0);
+	wbuf = aligned_alloc(sec_size, pln_pg_size);	/* Allocate buffer */
+	if (!wbuf) {
+		printf("Failed allocating write buffer(%p)\n", wbuf);
+		return;
+	}
+	strcpy(wbuf, "Hello World of NVM");
+							/* Write to media */
+	written = nvm_vblock_write(vblock, fpage, 0, 1, tgt, wbuf, 0x0);
 	printf("written(%d)\n", written);
-
-	read = nvm_vblock_read(vblock, fpage, 1, 1, tgt, rbuf, 0x0);
+	
+	rbuf = aligned_alloc(sec_size, pln_pg_size);	/* Allocate buffer */
+	if (!rbuf) {
+		printf("Failed allocating read buffer(%p)\n", wbuf);
+		return;
+	}
+							/* Read from media */
+	read = nvm_vblock_read(vblock, fpage, 0, 1, tgt, rbuf, 0x0);
 	printf("read(%d), rbuf(%s)\n", read, rbuf);
 
 	ret = nvm_vblock_put(vblock, tgt);	/* Release vblock from tgt */
