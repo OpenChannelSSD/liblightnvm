@@ -33,14 +33,11 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <libudev.h>
-#include <uthash.h>
 #include <linux/lightnvm.h>
 #include <liblightnvm.h>
 #include <nvm.h>
 #include <nvm_utils.h>
 #include <nvm_debug.h>
-
-static struct nvm_tgt *targets = NULL;
 
 struct nvm_tgt_info* nvm_tgt_info_new(void)
 {
@@ -105,67 +102,42 @@ int nvm_tgt_info_fill(struct nvm_tgt_info *info, const char *tgt_name)
 
 struct nvm_tgt* nvm_tgt_open(const char *tgt_name, int flags)
 {
-	struct nvm_dev *dev;
+	char tgt_path[NVM_TGT_NAME_MAX];
 	struct nvm_tgt *tgt;
-	char tgt_loc[NVM_TGT_NAME_MAX] = "/dev/";
-	char tgt_eol[DISK_NAME_LEN];
-	char dev_name[DISK_NAME_LEN];
-	int ret = 0;
+	int err;
 
-	strcpy(tgt_eol, tgt_name);
-	tgt_eol[DISK_NAME_LEN - 1] = '\0';
+	tgt = malloc(sizeof(*tgt));
+	if (!tgt)
+		return NULL;
 
-	HASH_FIND_STR(targets, tgt_eol, tgt);
-
-	if (!tgt) {
-		tgt = malloc(sizeof(struct nvm_tgt));
-		if (!tgt)
-			return NULL;
-
-		ret = nvm_tgt_info_fill(&tgt->info, tgt_name);
-		if (ret) {
-			NVM_DEBUG("nvm_tgt_open: Failed retrieving tgt information.\n")
-			free(tgt);
-			return NULL;
-		}
-		strncpy(dev_name, tgt->info.dev_name, DISK_NAME_LEN);
-
-		dev_name[DISK_NAME_LEN - 1] = '\0';
-
-		dev = nvm_dev_open(dev_name);
-		if (!dev) {
-			return NULL;
-		}
-
-		tgt->dev = dev;
-		strncpy(tgt->info.tgt_name, tgt_eol, DISK_NAME_LEN);
-		HASH_ADD_STR(targets, info.tgt_name, tgt);
-		atomic_inc(&dev->ref_cnt);
-
-		atomic_init(&tgt->ref_cnt);
-		atomic_set(&tgt->ref_cnt, 0);
+	err = nvm_tgt_info_fill(&tgt->info, tgt_name);
+	if (err) {
+		NVM_DEBUG("nvm_tgt_open: Failed retrieving tgt information.\n")
+		free(tgt);
+		return NULL;
 	}
 
-	strcat(tgt_loc, tgt_name);
-	tgt->fd = open(tgt_loc, O_RDWR | O_DIRECT);
+	tgt->dev = nvm_dev_open(tgt->info.dev_name);
+	if (!tgt->dev) {
+		NVM_DEBUG("nvm_tgt_open: Failed opening device(%s).\n",
+			  tgt->info.dev_name)
+		free(tgt);
+		return NULL;
+	}
+
+	sprintf(tgt_path, "/dev/%s", tgt_name);
+	tgt->fd = open(tgt_path, O_RDWR | O_DIRECT);
 	if (tgt->fd < 0) {
-		NVM_DEBUG("FAILED: open - tgt->fd(%d), tgt_loc(%s)\n",
-			  tgt->fd, tgt_loc);
-		goto error;
-	}
+		NVM_DEBUG("FAILED: open - tgt->fd(%d), tgt_path(%s)\n",
+			  tgt->fd, tgt_path);
 
-	atomic_inc(&tgt->ref_cnt);
-
-	return tgt;
-
-error:
-	NVM_DEBUG("nvm_tgt_open: FAILED\n");
-
-	nvm_dev_close(dev);
-	if (tgt)
+		nvm_dev_close(tgt->dev);
 		free(tgt);
 
-	return NULL;
+		return NULL;
+	}
+
+	return tgt;
 }
 
 int nvm_tgt_get_fd(struct nvm_tgt *tgt)
@@ -177,10 +149,7 @@ void nvm_tgt_close(struct nvm_tgt *tgt)
 {
 	NVM_DEBUG("tgt(%p), tgt->fd(%d)\n", tgt, tgt->fd);
 
-        if (atomic_dec_and_test(&tgt->ref_cnt)) {
-		close(tgt->fd);
-		HASH_DEL(targets, tgt);
-		nvm_dev_close(tgt->dev);
-		free(tgt);
-	}
+	close(tgt->fd);
+	nvm_dev_close(tgt->dev);
+	free(tgt);
 }
