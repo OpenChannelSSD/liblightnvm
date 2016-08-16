@@ -219,9 +219,9 @@ liblightnvm is in active development and pull requests are very welcome.
 
 # References
 
-[1]: https://github.com/OpenChannelSSD/linux/tree/liblnvm 
-[2]: http://openchannelssd.readthedocs.org/en/latest/gettingstarted/#configure-qemu
-[3]: https://github.com/OpenChannelSSD/qemu-nvme
-[4]: https://github.com/OpenChannelSSD/lightnvm-hw
-[5]: https://github.com/OpenChannelSSD/rocksdb
-[6]: http://openchannelssd.readthedocs.org/en/latest/
+1: https://github.com/OpenChannelSSD/linux/tree/liblnvm 
+2: http://openchannelssd.readthedocs.org/en/latest/gettingstarted/#configure-qemu
+3: https://github.com/OpenChannelSSD/qemu-nvme
+4: https://github.com/OpenChannelSSD/lightnvm-hw
+5: https://github.com/OpenChannelSSD/rocksdb
+6: http://openchannelssd.readthedocs.org/en/latest/
