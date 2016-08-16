@@ -3,6 +3,12 @@ compiler:
   - gcc
   - clang
 
+addons:
+  apt:
+    packages:
+      - libudev-dev
+      - libcunit1-dev
+
 before_script:
   - echo "Fetching checkpatch"
   - wget "https://raw.githubusercontent.com/torvalds/linux/master/scripts/checkpatch.pl" -O checkpatch.pl
