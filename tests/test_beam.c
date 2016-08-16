@@ -49,10 +49,12 @@ void beam_ar_generic(char *src, char *dst, size_t len, int flags)
 	CU_ASSERT_STRING_EQUAL(src, dst);
 
 	if (flags & TEST_AR_1K_BYTES) {
+		int i;
+
 		/* read in 1000 byte chunks */
 		memset(dst, 0, len);
 
-		for (int i = 0; i < len / 1000; i++) {
+		for (i = 0; i < len / 1000; i++) {
 			int offset = i * 1000;
 			read = nvm_beam_read(beam_id, dst + offset, 1000,
 								offset, 0);
@@ -62,10 +64,12 @@ void beam_ar_generic(char *src, char *dst, size_t len, int flags)
 	}
 
 	if (flags & TEST_AR_1_BYTE) {
+		int i;
+
 		/* read in 1 byte chunks */
 		memset(dst, 0, len);
 
-		for (int i = 0; i < len; i++) {
+		for (i = 0; i < len; i++) {
 			read = nvm_beam_read(beam_id, dst + i, 1, i, 0);
 			CU_ASSERT(1 == read);
 		}

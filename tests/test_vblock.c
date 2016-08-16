@@ -137,6 +137,7 @@ void test_VBLOCK_GETS_PUT_02(void)
 	unsigned long left_bytes;
 	int left_pages;
 	int ret = 0;
+	int i;
 
 	uint32_t sec_size, pln_pg_size;
 	uint32_t pg_sec_ratio;
@@ -183,7 +184,7 @@ void test_VBLOCK_GETS_PUT_02(void)
 		goto clean;
 	}
 
-	for (int i = 0; i < pln_pg_size; i++)
+	for (i = 0; i < pln_pg_size; i++)
 		input_payload[i] = (i % 28) + 65;
 
 	/* write first full write page */

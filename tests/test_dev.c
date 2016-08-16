@@ -74,13 +74,14 @@ void test_DEV_OPEN_CLOSE_N(void)
 {
 	NVM_DEV dev;
 	const int n = 10;
+	int i;
 
-	for(int i=0; i<n; ++i) {
+	for(i=0; i<n; ++i) {
 		dev = nvm_dev_open(nvm_dev_name);
 		CU_ASSERT_PTR_NOT_NULL(dev);
 	}
 
-	for(int i=0; i<n; ++i) {
+	for(i=0; i<n; ++i) {
 		nvm_dev_close(dev);
 		CU_ASSERT_PTR_NOT_NULL(dev);
 		// still dangling...
