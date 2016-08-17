@@ -177,9 +177,8 @@ int nvm_vblock_put(struct nvm_vblock *vblock, struct nvm_tgt *tgt)
 	return ret;
 }
 
-int nvm_vblock_read(struct nvm_vblock *vblock,
-		    size_t ppa_off, size_t count, struct nvm_tgt *tgt,
-		    void *buf, int flags)
+size_t nvm_vblock_read(struct nvm_vblock *vblock, struct nvm_tgt *tgt,
+		       void *buf, size_t count, size_t ppa_off, int flags)
 {
 	size_t bppa = vblock->bppa;
 	size_t nppas = vblock->nppas;
@@ -225,9 +224,9 @@ int nvm_vblock_read(struct nvm_vblock *vblock,
 	return count;
 }
 
-int nvm_vblock_write(struct nvm_vblock *vblock,
-		     size_t ppa_off, size_t count, struct nvm_tgt *tgt,
-		     const void *buf, int flags)
+size_t nvm_vblock_write(struct nvm_vblock *vblock, struct nvm_tgt *tgt,
+			const void *buf, size_t count, size_t ppa_off,
+			int flags)
 {
 	size_t bppa = vblock->bppa;
 	size_t nppas = vblock->nppas;
