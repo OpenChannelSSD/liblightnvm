@@ -1,7 +1,12 @@
 language: c
-compiler:
-  - gcc
-  - clang
+
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: required
+    - os: linux
+      dist: precise
 
 addons:
   apt:
@@ -21,15 +26,9 @@ before_script:
   - ./checkpatch.pl --no-tree -f src/*.c --terse || true
 
 script:
+  - echo $DIST
+  - DIST=`lsb_release -c -s`
+  - echo $DIST
   - make
   - make pkg
-  - package_cloud push slund/liblightnvm/ubuntu/precise /home/travis/build/OpenChannelSSD/liblightnvm/build/liblightnvm-0.1.1-Linux.deb
-  - package_cloud push slund/liblightnvm/ubuntu/quantal /home/travis/build/OpenChannelSSD/liblightnvm/build/liblightnvm-0.1.1-Linux.deb
-  - package_cloud push slund/liblightnvm/ubuntu/raring /home/travis/build/OpenChannelSSD/liblightnvm/build/liblightnvm-0.1.1-Linux.deb
-  - package_cloud push slund/liblightnvm/ubuntu/saucy /home/travis/build/OpenChannelSSD/liblightnvm/build/liblightnvm-0.1.1-Linux.deb
-  - package_cloud push slund/liblightnvm/ubuntu/trusty /home/travis/build/OpenChannelSSD/liblightnvm/build/liblightnvm-0.1.1-Linux.deb
-  - package_cloud push slund/liblightnvm/ubuntu/utopic /home/travis/build/OpenChannelSSD/liblightnvm/build/liblightnvm-0.1.1-Linux.deb
-  - package_cloud push slund/liblightnvm/ubuntu/vivid /home/travis/build/OpenChannelSSD/liblightnvm/build/liblightnvm-0.1.1-Linux.deb
-  - package_cloud push slund/liblightnvm/ubuntu/wily /home/travis/build/OpenChannelSSD/liblightnvm/build/liblightnvm-0.1.1-Linux.deb
-  - package_cloud push slund/liblightnvm/ubuntu/xenial /home/travis/build/OpenChannelSSD/liblightnvm/build/liblightnvm-0.1.1-Linux.deb
-  - package_cloud push slund/liblightnvm/ubuntu/yakkety /home/travis/build/OpenChannelSSD/liblightnvm/build/liblightnvm-0.1.1-Linux.deb
+  - package_cloud push slund/liblightnvm/ubuntu/$DIST /home/travis/build/OpenChannelSSD/liblightnvm/build/liblightnvm-0.1.1-Linux.deb
