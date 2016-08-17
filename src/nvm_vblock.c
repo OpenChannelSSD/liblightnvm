@@ -177,82 +177,90 @@ int nvm_vblock_put(struct nvm_vblock *vblock, struct nvm_tgt *tgt)
 	return ret;
 }
 
+/* Currently pread is used to submit IO, in the future this might be SPDK,
+ * libnvme, IOCTL or some other means.
+ */
 ssize_t nvm_vblock_read(struct nvm_vblock *vblock, struct nvm_tgt *tgt,
                         void *buf, size_t count, size_t ppa_off, int flags)
 {
-	size_t bppa = vblock->bppa;
-	size_t nppas = vblock->nppas;
-	size_t current_ppa = bppa + ppa_off;
-	size_t bytes_per_read;
-	ssize_t left = count;
-	ssize_t read;
-	char *reader = (char*)buf;
-	int pages_per_read;
+	size_t current_ppa;
+	ssize_t remaining;
+	char *reader;
 
 	struct nvm_fpage *fpage = &tgt->dev->fpage;	/* Grab geometry */
-	uint32_t read_page_size = fpage->sec_size; /* XXX(1) */
-	uint32_t pg_sec_ratio = read_page_size / fpage->sec_size;
-	uint32_t max_pages_read = fpage->max_sec_io / pg_sec_ratio;
+	const uint32_t read_page_size = fpage->sec_size;/* XXX(1) */
+	const uint32_t pg_sec_ratio = read_page_size / fpage->sec_size;
+	const uint32_t max_pages_read = fpage->max_sec_io / pg_sec_ratio;
 
-	assert(count <= nppas - ppa_off);
+	assert(count <= (vblock->nppas - ppa_off));
 
 	NVM_DEBUG("count(%lu), blk_id(%llu), tgt(%d)", count, vblock->id,
 		  tgt->fd);
 
-	/* For now we use pread. We will have different IO backends */
-	while (left > 0) {
-		pages_per_read = (left > max_pages_read) ?
-				 max_pages_read : left;
+	current_ppa = vblock->bppa + ppa_off;
+	remaining = count;
+	reader = (char*)buf;
+	while (remaining > 0) {
+		int pages_per_read;
+		size_t bytes_per_read;
+		ssize_t bytes_read;
+
+		pages_per_read = (remaining > max_pages_read) ?
+				 max_pages_read : remaining;
 		bytes_per_read = pages_per_read * read_page_size;
 
-		NVM_DEBUG("bytes_per_read(%lu), pages_per_read(%d), current_ppa(%lu)\n",
+		NVM_DEBUG("bytes_per_read(%lu)"
+			  ", pages_per_read(%d)"
+			  ", current_ppa(%lu)\n",
 			  bytes_per_read, pages_per_read, current_ppa);
-		retry:
-		read = pread(tgt->fd, reader, bytes_per_read,
-			     current_ppa * 4096);
-		if (read != bytes_per_read) {
+retry:
+		bytes_read = pread(tgt->fd, reader, bytes_per_read,
+				   current_ppa * 4096);
+		if (bytes_read != bytes_per_read) {
 			if (errno == EINTR)
 				goto retry;
 			return -1;
 		}
 
 		reader += bytes_per_read;
-		left -= pages_per_read * pg_sec_ratio;
+		remaining -= pages_per_read * pg_sec_ratio;
 		current_ppa += pages_per_read;
 	}
 
 	return count;
 }
 
+/* Currently pwrite is used to submit IO, in the future this might be SPDK,
+ * libnvme, IOCTL or some other means.
+ */
 ssize_t nvm_vblock_write(struct nvm_vblock *vblock, struct nvm_tgt *tgt,
 			 const void *buf, size_t count, size_t ppa_off,
 			 int flags)
 {
-	size_t bppa = vblock->bppa;
-	size_t nppas = vblock->nppas;
-	size_t current_ppa = bppa + (ppa_off * 16);
-	size_t bytes_per_write;
-	ssize_t left = count;
-	ssize_t written;
-	char *writer = (char*)buf;
-	int pages_per_write;
+	size_t current_ppa;
+	ssize_t remaining;
+	char *writer;
 
 	struct nvm_fpage *fpage = &tgt->dev->fpage;	/* Grab geometry */
 	uint32_t write_page_size = fpage->pln_pg_size;
 	uint32_t pg_sec_ratio = write_page_size / fpage->sec_size;
 	uint32_t max_pages_write = fpage->max_sec_io / pg_sec_ratio;
 
-	/* TODO: Metadata */
-
 	NVM_DEBUG("vblock_id(%llu), count(%lu), ppa_off(%lu), nppas(%lu)\n",
 		  vblock->id, count, ppa_off, nppas);
 
-	assert(count <= nppas - ppa_off);
+	assert(count <= (vblock->nppa - ppa_off));
 
-	/* For now we use pwrite. We will have different IO backends */
-	while (left > 0) {
-		pages_per_write = (left > max_pages_write) ?
-				  max_pages_write : left;
+	current_ppa = vblock->bppa + (ppa_off * 16);
+	remaining = count;
+	writer = (char*)buf;
+	while (remaining > 0) {
+		int pages_per_write;
+		size_t bytes_per_write;
+		ssize_t written;
+
+		pages_per_write = (remaining > max_pages_write) ?
+				  max_pages_write : remaining;
 		bytes_per_write = pages_per_write * write_page_size;
 
 		NVM_DEBUG("bytes_per_write(%lu), pages_per_write(%d), "
@@ -271,10 +279,10 @@ ssize_t nvm_vblock_write(struct nvm_vblock *vblock, struct nvm_tgt *tgt,
 
 		writer += bytes_per_write;
 		current_ppa += pages_per_write * pg_sec_ratio;
-		left -= pages_per_write;
+		remaining -= pages_per_write;
 	}
 
-	NVM_DEBUG("Written %lu pages to block %llu (tgt:%d)",
+	NVM_DEBUG("Wrote count(%lu) pages to block(%llu), tgt->fd(%d)",
 		  count, vblock->id, tgt->fd);
 
 	return count;
