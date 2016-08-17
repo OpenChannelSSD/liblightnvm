@@ -177,7 +177,7 @@ int nvm_vblock_put(struct nvm_vblock *vblock, struct nvm_tgt *tgt)
 	return ret;
 }
 
-int nvm_vblock_read(struct nvm_vblock *vblock, struct nvm_fpage *fpage,
+int nvm_vblock_read(struct nvm_vblock *vblock,
 		    size_t ppa_off, size_t count, struct nvm_tgt *tgt,
 		    void *buf, int flags)
 {
@@ -190,6 +190,7 @@ int nvm_vblock_read(struct nvm_vblock *vblock, struct nvm_fpage *fpage,
 	char *reader = (char*)buf;
 	int pages_per_read;
 
+	struct nvm_fpage *fpage = &tgt->dev->fpage;	/* Grab geometry */
 	uint32_t read_page_size = fpage->sec_size; /* XXX(1) */
 	uint32_t pg_sec_ratio = read_page_size / fpage->sec_size;
 	uint32_t max_pages_read = fpage->max_sec_io / pg_sec_ratio;
@@ -224,7 +225,7 @@ int nvm_vblock_read(struct nvm_vblock *vblock, struct nvm_fpage *fpage,
 	return count;
 }
 
-int nvm_vblock_write(struct nvm_vblock *vblock, struct nvm_fpage *fpage,
+int nvm_vblock_write(struct nvm_vblock *vblock,
 		     size_t ppa_off, size_t count, struct nvm_tgt *tgt,
 		     const void *buf, int flags)
 {
@@ -237,6 +238,7 @@ int nvm_vblock_write(struct nvm_vblock *vblock, struct nvm_fpage *fpage,
 	char *writer = (char*)buf;
 	int pages_per_write;
 
+	struct nvm_fpage *fpage = &tgt->dev->fpage;	/* Grab geometry */
 	uint32_t write_page_size = fpage->pln_pg_size;
 	uint32_t pg_sec_ratio = write_page_size / fpage->sec_size;
 	uint32_t max_pages_write = fpage->max_sec_io / pg_sec_ratio;

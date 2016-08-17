@@ -366,14 +366,14 @@ void __test_VBLOCK_WRITE_READ_N(int iterations)
 		CU_ASSERT(0==ret)
 		strcpy(wbuf, "Hello World of NVM");
 
-		written = nvm_vblock_write(vblock, fpage, 0, 1, tgt, wbuf, 0x0);
+		written = nvm_vblock_write(vblock, 0, 1, tgt, wbuf, 0x0);
 		CU_ASSERT(1==written)
 
 							/* Read from media */
 		ret = posix_memalign((void**)&rbuf, sec_size, pln_pg_size);
 		CU_ASSERT(0==ret);
 
-		read = nvm_vblock_read(vblock, fpage, 0, 1, tgt, rbuf, 0x0);
+		read = nvm_vblock_read(vblock, 0, 1, tgt, rbuf, 0x0);
 		CU_ASSERT(1==read);
 
 		CU_ASSERT_STRING_EQUAL(wbuf, rbuf);
