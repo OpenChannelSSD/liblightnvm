@@ -31,5 +31,5 @@ script:
   - echo $DIST
   - make
   - make pkg
-  - package_cloud yank slund/liblightnvm/ubuntu/$DIST liblightnvm_0.1.1_amd64.deb
-  - package_cloud push slund/liblightnvm/ubuntu/$DIST /home/travis/build/OpenChannelSSD/liblightnvm/build/liblightnvm-0.1.1-Linux.deb
+  - package_cloud yank slund/liblightnvm/ubuntu/$DIST liblightnvm_0.1.1_amd64.deb || true
+  - package_cloud push slund/liblightnvm/ubuntu/$DIST /home/travis/build/OpenChannelSSD/liblightnvm/build/liblightnvm-0.1.1-Linux.deb || true
