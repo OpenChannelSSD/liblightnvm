@@ -57,7 +57,7 @@ static void beam_buf_free(struct w_buffer *buf)
 
 static void beam_put_blocks(struct beam *beam)
 {
-	struct nvm_ioctl_vblock *vblock;
+	struct nvm_vblock *vblock;
 	int i;
 
 	for (i = 0; i < beam->nvblocks; i++) {
@@ -73,7 +73,7 @@ static void beam_free(struct beam *beam)
 	free(beam);
 }
 
-static inline int get_npages_block(struct nvm_ioctl_vblock *vblock)
+static inline int get_npages_block(struct nvm_vblock *vblock)
 {
 	return vblock->nppas;
 }
@@ -120,7 +120,7 @@ static int switch_block(struct beam **beam)
 
 static int preallocate_block(struct beam *beam)
 {
-	struct nvm_ioctl_vblock *vblock = &beam->vblocks[beam->nvblocks];
+	struct nvm_vblock *vblock = &beam->vblocks[beam->nvblocks];
 	int ret;
 
 	vblock->flags |= NVM_PROV_SPEC_LUN,
@@ -383,7 +383,7 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 		      int flags)
 {
 	struct beam *b;
-	struct nvm_ioctl_vblock *current_r_vblock;
+	struct nvm_vblock *current_r_vblock;
 	struct nvm_fpage *fpage;
 	size_t block_off, ppa_off, page_off;
 	size_t ppa_count;

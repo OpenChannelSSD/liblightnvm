@@ -33,7 +33,6 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <libudev.h>
-#include <linux/lightnvm.h>
 #include <liblightnvm.h>
 #include <nvm.h>
 #include <nvm_utils.h>

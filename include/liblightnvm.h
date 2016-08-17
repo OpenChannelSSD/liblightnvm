@@ -50,7 +50,7 @@ extern "C" {
 #define NVM_TGT_NAME_MAX DISK_NAME_LEN + 5	/* 5 = strlen(/dev/) */
 #endif
 
-typedef struct nvm_ioctl_vblock *NVM_VBLOCK;
+typedef struct nvm_vblock *NVM_VBLOCK;
 typedef struct nvm_fpage *NVM_FPAGE;
 typedef struct nvm_dev_info *NVM_DEV_INFO;
 typedef struct nvm_dev *NVM_DEV;

@@ -37,15 +37,15 @@
 #include <nvm.h>
 #include <nvm_debug.h>
 
-struct nvm_ioctl_vblock* nvm_vblock_new(void)
+struct nvm_vblock* nvm_vblock_new(void)
 {
-	struct nvm_ioctl_vblock *vblock = malloc(sizeof(*vblock));
+	struct nvm_vblock *vblock = malloc(sizeof(*vblock));
 	memset(vblock, 0, sizeof(*vblock));
 
 	return vblock;
 }
 
-void nvm_vblock_free(struct nvm_ioctl_vblock **vblock)
+void nvm_vblock_free(struct nvm_vblock **vblock)
 {
 	if (!vblock || !*vblock)
 		return;
@@ -54,62 +54,71 @@ void nvm_vblock_free(struct nvm_ioctl_vblock **vblock)
 	*vblock = NULL;
 }
 
-void nvm_vblock_pr(struct nvm_ioctl_vblock *vblock)
+void nvm_vblock_pr(struct nvm_vblock *vblock)
 {
-	printf("vblock: id(%llu), bppa(%llu), vlun_id(%d), owner_id(%d),"
+	printf("vblock: id(%lu), bppa(%lu), vlun_id(%d), owner_id(%d),"
 		" nppas(%d), ppa_bitmap(%d), flags(%d)\n",
 		vblock->id, vblock->bppa, vblock->vlun_id, vblock->owner_id,
 		vblock->nppas, vblock->ppa_bitmap, vblock->flags);
 }
 
-uint64_t nvm_vblock_get_id(struct nvm_ioctl_vblock *vblock)
+uint64_t nvm_vblock_get_id(struct nvm_vblock *vblock)
 {
 	return vblock->id;
 }
 
-uint64_t nvm_vblock_get_bppa(struct nvm_ioctl_vblock *vblock)
+uint64_t nvm_vblock_get_bppa(struct nvm_vblock *vblock)
 {
 	return vblock->bppa;
 }
 
-uint32_t nvm_vblock_get_lun(struct nvm_ioctl_vblock *vblock)
+uint32_t nvm_vblock_get_lun(struct nvm_vblock *vblock)
 {
 	return vblock->vlun_id;
 }
 
-uint32_t nvm_vblock_get_owner(struct nvm_ioctl_vblock *vblock)
+uint32_t nvm_vblock_get_owner(struct nvm_vblock *vblock)
 {
 	return vblock->owner_id;
 }
 
-uint32_t nvm_vblock_get_nppas(struct nvm_ioctl_vblock *vblock)
+uint32_t nvm_vblock_get_nppas(struct nvm_vblock *vblock)
 {
 	return vblock->nppas;
 }
 
-uint16_t nvm_vblock_get_bitmap(struct nvm_ioctl_vblock *vblock)
+uint16_t nvm_vblock_get_bitmap(struct nvm_vblock *vblock)
 {
 	return vblock->ppa_bitmap;
 }
 
-uint16_t nvm_vblock_get_flags(struct nvm_ioctl_vblock *vblock)
+uint16_t nvm_vblock_get_flags(struct nvm_vblock *vblock)
 {
 	return vblock->flags;
 }
 
-int nvm_vblock_get(struct nvm_ioctl_vblock *vblock, struct nvm_tgt *tgt)
+int nvm_vblock_get(struct nvm_vblock *vblock, struct nvm_tgt *tgt)
 {
-	int ret = 0;
+	int ret;
 
-	vblock->id = 0;
-	vblock->bppa = 0;
-	vblock->nppas = 0;
-	vblock->ppa_bitmap = 0;
-	vblock->vlun_id = 0;
-	vblock->owner_id = 101;
-	vblock->flags = NVM_PROV_RAND_LUN;
+	struct nvm_ioctl_vblock ctl;
+	ctl.id = 0;
+	ctl.bppa = 0;
+	ctl.nppas = 0;
+	ctl.ppa_bitmap = 0;
+	ctl.vlun_id = 0;
+	ctl.owner_id = 101;
+	ctl.flags = NVM_PROV_RAND_LUN;
 
-	ret = ioctl(tgt->fd, NVM_BLOCK_GET, vblock);
+	ret = ioctl(tgt->fd, NVM_BLOCK_GET, &ctl);
+
+	vblock->id = ctl.id;
+	vblock->bppa = ctl.bppa;
+	vblock->nppas = ctl.nppas;
+	vblock->ppa_bitmap = ctl.ppa_bitmap;
+	vblock->vlun_id = ctl.vlun_id;
+	vblock->owner_id = ctl.owner_id;
+	vblock->flags = ctl.flags;
 
 	NVM_DEBUG("ret(%d), vlun_id(%d), id(%llu), bppa(%llu)\n",
 		  ret, vblock->vlun_id, vblock->id, vblock->bppa);
@@ -117,20 +126,29 @@ int nvm_vblock_get(struct nvm_ioctl_vblock *vblock, struct nvm_tgt *tgt)
 	return ret;
 }
 
-int nvm_vblock_gets(struct nvm_ioctl_vblock *vblock, struct nvm_tgt *tgt,
+int nvm_vblock_gets(struct nvm_vblock *vblock, struct nvm_tgt *tgt,
 		    uint32_t lun)
 {
-	int ret = 0;
+	int ret;
 
-	vblock->id = 0;
-	vblock->bppa = 0;
-	vblock->nppas = 0;
-	vblock->ppa_bitmap = 0;
-	vblock->vlun_id = lun;
-	vblock->owner_id = 101;
-	vblock->flags = NVM_PROV_SPEC_LUN;
+	struct nvm_ioctl_vblock ctl;
+	ctl.id = 0;
+	ctl.bppa = 0;
+	ctl.nppas = 0;
+	ctl.ppa_bitmap = 0;
+	ctl.vlun_id = lun;
+	ctl.owner_id = 101;
+	ctl.flags = NVM_PROV_SPEC_LUN;
 
-	ret = ioctl(tgt->fd, NVM_BLOCK_GET, vblock);
+	ret = ioctl(tgt->fd, NVM_BLOCK_GET, &ctl);
+
+	vblock->id = ctl.id;
+	vblock->bppa = ctl.bppa;
+	vblock->nppas = ctl.nppas;
+	vblock->ppa_bitmap = ctl.ppa_bitmap;
+	vblock->vlun_id = ctl.vlun_id;
+	vblock->owner_id = ctl.owner_id;
+	vblock->flags = ctl.flags;
 
 	NVM_DEBUG("ret(%d), vlun_id(%d), id(%llu), bppa(%llu)\n",
 		  ret, vblock->vlun_id, vblock->id, vblock->bppa);
@@ -138,11 +156,20 @@ int nvm_vblock_gets(struct nvm_ioctl_vblock *vblock, struct nvm_tgt *tgt,
 	return ret;
 }
 
-int nvm_vblock_put(struct nvm_ioctl_vblock *vblock, struct nvm_tgt *tgt)
+int nvm_vblock_put(struct nvm_vblock *vblock, struct nvm_tgt *tgt)
 {
-	int ret = 0;
+	int ret;
 
-	ret = ioctl(tgt->fd, NVM_BLOCK_PUT, vblock);
+	struct nvm_ioctl_vblock ctl;
+	ctl.id = vblock->id;
+	ctl.bppa = vblock->bppa;
+	ctl.nppas = vblock->nppas;
+	ctl.ppa_bitmap = vblock->ppa_bitmap;
+	ctl.vlun_id = vblock->vlun_id;
+	ctl.owner_id = vblock->owner_id;
+	ctl.flags = vblock->flags;
+
+	ret = ioctl(tgt->fd, NVM_BLOCK_PUT, &ctl);
 
 	NVM_DEBUG("ret(%d), block(%llu), bppa(%llu), lun(%d)\n",
 		  ret, vblock->id, vblock->bppa, vblock->vlun_id);
@@ -150,7 +177,7 @@ int nvm_vblock_put(struct nvm_ioctl_vblock *vblock, struct nvm_tgt *tgt)
 	return ret;
 }
 
-int nvm_vblock_read(struct nvm_ioctl_vblock *vblock, struct nvm_fpage *fpage,
+int nvm_vblock_read(struct nvm_vblock *vblock, struct nvm_fpage *fpage,
 		    size_t ppa_off, size_t count, struct nvm_tgt *tgt,
 		    void *buf, int flags)
 {
@@ -160,8 +187,9 @@ int nvm_vblock_read(struct nvm_ioctl_vblock *vblock, struct nvm_fpage *fpage,
 	size_t bytes_per_read;
 	ssize_t left = count;
 	ssize_t read;
-	char *reader = (char *)buf;
+	char *reader = (char*)buf;
 	int pages_per_read;
+
 	uint32_t read_page_size = fpage->sec_size; /* XXX(1) */
 	uint32_t pg_sec_ratio = read_page_size / fpage->sec_size;
 	uint32_t max_pages_read = fpage->max_sec_io / pg_sec_ratio;
@@ -196,7 +224,7 @@ int nvm_vblock_read(struct nvm_ioctl_vblock *vblock, struct nvm_fpage *fpage,
 	return count;
 }
 
-int nvm_vblock_write(struct nvm_ioctl_vblock *vblock, struct nvm_fpage *fpage,
+int nvm_vblock_write(struct nvm_vblock *vblock, struct nvm_fpage *fpage,
 		     size_t ppa_off, size_t count, struct nvm_tgt *tgt,
 		     const void *buf, int flags)
 {

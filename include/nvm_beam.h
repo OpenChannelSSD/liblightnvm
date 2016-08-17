@@ -56,8 +56,8 @@ struct beam {
 	int gid;				/* internal global identifier */
 	int lun;				/* virtual lun mapped to beam*/
 	struct nvm_tgt *tgt;			/* LightNVM target */
-	struct nvm_ioctl_vblock *current_w_vblock;	/* current block in use */
-	struct nvm_ioctl_vblock vblocks[MAX_BLOCKS];	/* vblocks forming the beam */
+	struct nvm_vblock *current_w_vblock;	/* current block in use */
+	struct nvm_vblock vblocks[MAX_BLOCKS];	/* vblocks forming the beam */
 	int nvblocks;				/* number of vblocks */
 	struct w_buffer w_buffer;		/* write buffer */
 	unsigned long bytes;			/* valid bytes */

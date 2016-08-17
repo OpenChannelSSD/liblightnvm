@@ -111,4 +111,14 @@ struct nvm_tgt {
 	UT_hash_handle hh;		/* Handle to manage to open targets */
 };
 
+struct nvm_vblock {
+	uint64_t id;
+	uint64_t bppa;
+	uint32_t vlun_id;
+	uint32_t owner_id;
+	uint32_t nppas;
+	uint16_t ppa_bitmap;
+	uint16_t flags;
+};
+
 #endif /* __NVM_H */
