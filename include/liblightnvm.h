@@ -47,7 +47,7 @@ extern "C" {
 #endif
 
 #ifndef NVM_TGT_NAME_MAX
-#define NVM_TGT_NAME_MAX DISK_NAME_LEN + 5	/* 5 = strlen(/dev/) */
+#define NVM_TGT_NAME_MAX (DISK_NAME_LEN + 5)	/* 5 = strlen(/dev/) */
 #endif
 
 typedef struct nvm_vblock *NVM_VBLOCK;
@@ -89,7 +89,7 @@ void nvm_dev_pr(NVM_DEV dev);
 NVM_FPAGE nvm_dev_get_fpage(NVM_DEV dev);
 NVM_DEV_INFO nvm_dev_get_info(NVM_DEV dev);
 
-NVM_DEV nvm_dev_open(const char* dev_name);
+NVM_DEV nvm_dev_open(const char *dev_name);
 void nvm_dev_close(NVM_DEV dev);
 
 NVM_DEV_INFO nvm_dev_info_new(void);
@@ -97,7 +97,7 @@ void nvm_dev_info_free(NVM_DEV_INFO *info);
 void nvm_dev_info_pr(NVM_DEV_INFO info);
 int nvm_dev_info_fill(NVM_DEV_INFO info, const char *dev_name);
 
-/*
+/**
  * Open a target file descriptor for the target named tgt.
  *
  * Descriptor is passed to the nvm_vblock_get / nvm_vblock_put interface.
@@ -112,7 +112,7 @@ int nvm_dev_info_fill(NVM_DEV_INFO info, const char *dev_name);
  */
 NVM_TGT nvm_tgt_open(const char *tgt_name, int flags);
 
-/*
+/**
  * Close a target file descriptor.
  */
 void nvm_tgt_close(NVM_TGT tgt);
@@ -135,7 +135,7 @@ uint32_t nvm_vblock_get_nppas(NVM_VBLOCK vblock);
 uint16_t nvm_vblock_get_bitmap(NVM_VBLOCK vblock);
 uint16_t nvm_vblock_get_flags(NVM_VBLOCK vblock);
 
-/*
+/**
  * Get ownership of an arbitrary flash block from tgt through vblock.
  *
  * Returns: On success, a flash block is allocated in LightNVM's media manager
@@ -155,7 +155,7 @@ int nvm_vblock_get(NVM_VBLOCK vblock, NVM_TGT tgt);
  */
 int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_TGT tgt, uint32_t lun);
 
-/*
+/**
  * Put flash block(s) represented by vblock back to tgt.
  *
  * This action implies that the owner of the flash block previous to this
@@ -168,7 +168,7 @@ int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_TGT tgt, uint32_t lun);
  */
 int nvm_vblock_put(NVM_VBLOCK vblock, NVM_TGT tgt);
 
-/*
+/**
  * Read count pages starting at ppa_off from tgt into buf using flags
  *
  * fpage_size is the flash page *read* size, which might be smaller than the
@@ -180,17 +180,16 @@ int nvm_vblock_put(NVM_VBLOCK vblock, NVM_TGT tgt);
  * granurality; we will take this information from the device in the future.
  */
 ssize_t nvm_vblock_read(NVM_VBLOCK vblock, NVM_TGT tgt, void *buf, size_t count,
-                        size_t ppa_off, int flags);
+			size_t ppa_off, int flags);
 
-/*
+/**
  * Write count flash pages of size fpage_size.
  *
  * fpage_size is the flash page write size. That is, the size of a virtual flash
  * pages, i.e., spanning flash planes.
  */
 ssize_t nvm_vblock_write(NVM_VBLOCK vblock, NVM_TGT tgt, const void *buf,
-                         size_t count,
-                         size_t ppa_off, int flags);
+			 size_t count, size_t ppa_off, int flags);
 
 /**
  * Instantiates a target with a given target type on top of an nvme device
@@ -209,7 +208,7 @@ ssize_t nvm_vblock_write(NVM_VBLOCK vblock, NVM_TGT tgt, const void *buf,
  * @return Error code ?
  */
 int nvm_mgmt_tgt_create(const char *tgt_name, const char *tgt_type_name,
-                        const char *dev_name, int lun_begin, int lun_end);
+			const char *dev_name, int lun_begin, int lun_end);
 
 /**
  * Removes an instantiated target.
@@ -221,13 +220,7 @@ int nvm_mgmt_tgt_create(const char *tgt_name, const char *tgt_type_name,
  */
 int nvm_mgmt_tgt_remove(const char *tgt_name);
 
-/*
- * The beam abstraction / append only interface - flash_append.c
- * Allow for application-level control of parallelism while encapsulating
- * device-specific flash-management concerns.
- */
-
-/*
+/**
  * Initialize structures for beams
  */
 int nvm_beam_init(void);
