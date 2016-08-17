@@ -23,13 +23,4 @@ before_script:
 script:
   - make
   - make pkg
-  - package_cloud push slund/liblightnvm/ubuntu/precise build/OpenChannelSSD/liblightnvm/build/liblightnvm*.deb
-  - package_cloud push slund/liblightnvm/ubuntu/quantal build/OpenChannelSSD/liblightnvm/build/liblightnvm*.deb
-  - package_cloud push slund/liblightnvm/ubuntu/raring build/OpenChannelSSD/liblightnvm/build/liblightnvm*.deb
-  - package_cloud push slund/liblightnvm/ubuntu/saucy build/OpenChannelSSD/liblightnvm/build/liblightnvm*.deb
-  - package_cloud push slund/liblightnvm/ubuntu/trusty build/OpenChannelSSD/liblightnvm/build/liblightnvm*.deb
-  - package_cloud push slund/liblightnvm/ubuntu/utopic build/OpenChannelSSD/liblightnvm/build/liblightnvm*.deb
-  - package_cloud push slund/liblightnvm/ubuntu/vivid build/OpenChannelSSD/liblightnvm/build/liblightnvm*.deb
-  - package_cloud push slund/liblightnvm/ubuntu/wily build/OpenChannelSSD/liblightnvm/build/liblightnvm*.deb
-  - package_cloud push slund/liblightnvm/ubuntu/xenial build/OpenChannelSSD/liblightnvm/build/liblightnvm*.deb
-  - package_cloud push slund/liblightnvm/ubuntu/yakkety build/OpenChannelSSD/liblightnvm/build/liblightnvm*.deb
+  - package_cloud push slund/liblightnvm/ubuntu/precise /home/travis/build/OpenChannelSSD/liblightnvm/build/liblightnvm-0.1.1-Linux.deb
