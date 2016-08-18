@@ -43,4 +43,4 @@ script:
   - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm-0.1.1-Linux.deb .
   - docker stop "${CONTAINER_ID}"
   - package_cloud yank slund/liblightnvm/ubuntu/$DIST_CODE liblightnvm_0.1.1_amd64.deb || true
-  - package_cloud push slund/liblightnvm/ubuntu/$DIST_CODE /home/travis/build/OpenChannelSSD/liblightnvm/build/liblightnvm-0.1.1-Linux.deb || true
+  - package_cloud push slund/liblightnvm/ubuntu/$DIST_CODE liblightnvm-0.1.1-Linux.deb || true
