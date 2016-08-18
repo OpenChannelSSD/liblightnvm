@@ -1,21 +1,31 @@
+sudo: required
 language: c
+services:
+  - docker
 
-matrix:
-  include:
-    - os: linux
-      dist: trusty
-      sudo: required
-    - os: linux
-      dist: precise
-
-addons:
-  apt:
-    packages:
-      - libudev-dev
-      - libcunit1-dev
+env:
+  - DIST_NAME: ubuntu
+    DIST_VERS: 16.04
+    DIST_CODE: xenial
+    TAG: liblightnvm
+  - DIST_NAME: ubuntu
+    DIST_VERS: 14.04
+    DIST_CODE: trusty
+    TAG: liblightnvm
+  - DIST_NAME: ubuntu
+    DIST_VERS: 12.04
+    DIST_CODE: precise
+    TAG: liblightnvm
 
 before_install:
   - gem install package_cloud
+  - docker pull ${DIST_NAME}:${DIST_VERS}
+  - docker build --rm=true --file=ci/DockerFile.${DIST_NAME}-${DIST_VERS} --tag=${DIST_NAME}-${DIST_VERS}:${TAG} .
+  - docker run --name ${TAG} -d -t ${DIST_NAME}-${DIST_VERS}:${TAG} /bin/bash > container.id
+  - docker ps -a
+  - docker exec -t ${TAG} hostname
+  - docker exec -t ${TAG} uname -a
+  - docker exec -t ${TAG} cat /etc/lsb-release
 
 before_script:
   - echo "Fetching checkpatch"
@@ -26,10 +36,11 @@ before_script:
   - ./checkpatch.pl --no-tree -f src/*.c --terse || true
 
 script:
-  - echo $DIST
-  - DIST=`lsb_release -c -s`
-  - echo $DIST
-  - make
-  - make pkg
-  - package_cloud yank slund/liblightnvm/ubuntu/$DIST liblightnvm_0.1.1_amd64.deb || true
-  - package_cloud push slund/liblightnvm/ubuntu/$DIST /home/travis/build/OpenChannelSSD/liblightnvm/build/liblightnvm-0.1.1-Linux.deb || true
+  - CONTAINER_ID=$(cat container.id)
+  - docker ps -a
+  - docker exec -t ${TAG} make
+  - docker exec -t ${TAG} make pkg
+  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm-0.1.1-Linux.deb .
+  - docker stop "${CONTAINER_ID}"
+  - package_cloud yank slund/liblightnvm/ubuntu/$DIST_CODE liblightnvm_0.1.1_amd64.deb || true
+  - package_cloud push slund/liblightnvm/ubuntu/$DIST_CODE /home/travis/build/OpenChannelSSD/liblightnvm/build/liblightnvm-0.1.1-Linux.deb || true
