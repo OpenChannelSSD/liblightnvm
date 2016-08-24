@@ -29,6 +29,7 @@
 
 #include <uthash.h>
 #include <nvm_atomic.h>
+#include <dflash_ioctl.h>
 
 struct nvm_dev_info {
 

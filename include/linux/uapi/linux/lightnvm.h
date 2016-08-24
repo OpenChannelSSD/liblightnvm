@@ -122,21 +122,6 @@ struct nvm_ioctl_dev_factory {
 	__u32 flags;
 };
 
-enum {
-	NVM_PROV_SPEC_LUN = 1,
-	NVM_PROV_RAND_LUN = 2,
-};
-
-struct nvm_ioctl_vblock {
-	__u64 id;
-	__u64 bppa;
-	__u32 vlun_id;
-	__u32 owner_id;
-	__u32 nppas;
-	__u16 ppa_bitmap;
-	__u16 flags;
-};
-
 /* The ioctl type, 'L', 0x20 - 0x2F documented in ioctl-number.txt */
 enum {
 	/* top level cmds */
@@ -152,10 +137,6 @@ enum {
 
 	/* Factory reset device */
 	NVM_DEV_FACTORY_CMD,
-
-	/* Provisioning interface */
-	NVM_BLOCK_GET_CMD,
-	NVM_BLOCK_PUT_CMD,
 };
 
 #define NVM_IOCTL 'L' /* 0x4c */
@@ -172,10 +153,6 @@ enum {
 						struct nvm_ioctl_dev_init)
 #define NVM_DEV_FACTORY		_IOW(NVM_IOCTL, NVM_DEV_FACTORY_CMD, \
 						struct nvm_ioctl_dev_factory)
-#define NVM_BLOCK_GET		_IOWR(NVM_IOCTL, NVM_BLOCK_GET_CMD, \
-						struct nvm_ioctl_vblock)
-#define NVM_BLOCK_PUT		_IOWR(NVM_IOCTL, NVM_BLOCK_PUT_CMD, \
-						struct nvm_ioctl_vblock)
 
 #define NVM_VERSION_MAJOR	1
 #define NVM_VERSION_MINOR	0
