@@ -252,11 +252,11 @@ struct nvm_dev* nvm_dev_new(void)
 	struct nvm_dev *dev;
 
 	dev = malloc(sizeof(*dev));
-        if (dev) {
-                memset(dev, 0, sizeof(*dev));
-                atomic_init(&dev->ref_cnt);
-                atomic_set(&dev->ref_cnt, 0);
-        }
+	if (dev) {
+		memset(dev, 0, sizeof(*dev));
+		atomic_init(&dev->ref_cnt);
+		atomic_set(&dev->ref_cnt, 0);
+	}
 
 	return dev;
 }
@@ -267,7 +267,7 @@ void nvm_dev_free(struct nvm_dev **dev)
 	if (!dev)
 		return;
 
-        NVM_DEBUG("Freeing\n");
+	NVM_DEBUG("Freeing\n");
 	free(*dev);
 	*dev = NULL;
 }
