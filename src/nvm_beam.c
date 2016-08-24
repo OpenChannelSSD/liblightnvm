@@ -43,7 +43,7 @@ static struct atomic_cnt fd_guid = {
 	.cnt = 0,
 };
 
-static struct beam *beamt = NULL;
+static struct beam *beamt;
 
 static void beam_buf_free(struct w_buffer *buf)
 {
@@ -93,10 +93,10 @@ static int switch_block(struct beam **beam)
 		NVM_DEBUG("Allocating write buffer, buf_size(%lu)\n", buf_size);
 		free((*beam)->w_buffer.buf);
 		ret = posix_memalign(&(*beam)->w_buffer.buf, sec_size,
-                                     buf_size);
+				     buf_size);
 		if (ret) {
 			NVM_DEBUG("FAILED: buf_size(%lu), sec_size(%d)\n",
-                                  buf_size, sec_size);
+				  buf_size, sec_size);
 			return ret;
 		}
 		(*beam)->w_buffer.buf_limit = buf_size;
@@ -110,10 +110,10 @@ static int switch_block(struct beam **beam)
 	(*beam)->current_w_vblock = &(*beam)->vblocks[(*beam)->nvblocks - 1];
 
 	NVM_DEBUG("SWITCHED: gid(%d), id(%llu), nppas(%d), nvblocks(%d)\n",
-                  (*beam)->gid,
-                  (*beam)->current_w_vblock->id,
-                  (*beam)->current_w_vblock->nppas,
-                  (*beam)->nvblocks);
+		  (*beam)->gid,
+		  (*beam)->current_w_vblock->id,
+		  (*beam)->current_w_vblock->nppas,
+		  (*beam)->nvblocks);
 
 	return 0;
 }
@@ -128,14 +128,14 @@ static int preallocate_block(struct beam *beam)
 	ret = nvm_vblock_gets(vblock, beam->tgt, beam->lun);
 	if (ret) {
 		NVM_DEBUG("FAILED: gid(%d)\n", beam->gid);
-                return ret;
+		return ret;
 	}
 
 	NVM_DEBUG("SUCCESS: nvblocks(%d), gid(%d), id(%llu), bppa(%llu)\n",
-                  beam->nvblocks,
-                  beam->gid,
-                  beam->vblocks[beam->nvblocks].id,
-                  beam->vblocks[beam->nvblocks].bppa);
+		  beam->nvblocks,
+		  beam->gid,
+		  beam->vblocks[beam->nvblocks].id,
+		  beam->vblocks[beam->nvblocks].bppa);
 
 	vblock->flags &= ~NVM_PROV_SPEC_LUN;
 	beam->nvblocks++;
@@ -150,7 +150,7 @@ static int allocate_block(struct beam *beam)
 	/* TODO: Retry if preallocation fails - when saving metadata */
 	ret = preallocate_block(beam);
 	if (ret)
-                return ret;
+		return ret;
 
 	ret = switch_block(&beam);
 
@@ -273,8 +273,8 @@ int nvm_beam_create(const char *tgt_name, int lun, int flags)
 	if (ret) {
 		NVM_DEBUG("FAILED: initializing beam\n");
 		nvm_tgt_close(tgt);
-                free(beam);
-                return ret;
+		free(beam);
+		return ret;
         }
 
 	HASH_ADD_INT(beamt, gid, beam);
