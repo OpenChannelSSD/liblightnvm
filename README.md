@@ -96,19 +96,29 @@ void nvm_tgt_close(int tgt);
 
 ### Provisioning
 
-The `get_blk` / `put_blk` interface allows the library user to obtain and yield
-ownership of physical blocks on LightNVM managed media.
+The `nvm_vblock_get` / `nvm_vblock_put` interface allows the library user to
+obtain and yield ownership of physical blocks on LightNVM managed media.
 
 ```c
-/*
-  Get a flash block from target *tgt* and LUN *lun* through the NVM_VBLOCK
-  communication interface *prov*.
-  returns On success, a flash block is allocated in LightNVM's media manager
-  and *vblock* is filled up accordingly. If NVM_PROV_LUN_STATE is set,
-  *lun_status* is also filled with LUN status metadata.  On error, -1 is
-  returned, in which case *errno* is set to indicate the error.
-*/
-int nvm_vblock_get(int tgt, uint32_t lun, NVM_VBLOCK *vblock);
+/**
+ * Reserves a block on given target using a specific lun
+ *
+ * @param vblock Block created with nvm_vblock_new
+ * @param tgt Handle obtained with nvm_tgt_open
+ * @param lun Identifier of lun to reserve via
+ * @return -1 on error and errno set, zero otherwise.
+ */
+int nvm_vblock_gets(NVM_VBLOCK *vblock, NVM_TGT tgt, uint32_t lun);
+
+/**
+ * Reserve a block on given target using an arbitrary lun
+ *
+ * @param vblock Block created with nvm_vblock_new
+ * @param tgt Handle obtained with nvm_tgt_open
+ * @param lun Identifier of lun to reserve via
+ * @return -1 on error and errno set, zero otherwise.
+ */
+int nvm_vblock_get(NVM_VBLOCK vblock, NVM_TGT tgt);
 ```
 
 ```c
@@ -123,7 +133,7 @@ int nvm_vblock_get(int tgt, uint32_t lun, NVM_VBLOCK *vblock);
   metadata. On error, -1 is returned, in which case *errno* is set to indicate
   the error.
 */
-int nvm_vblock_put(int tgt, NVM_VBLOCK *vblock);
+int nvm_vblock_put(NVM_VBLOCK vblock, NVM_TGT tgt);
 ```
 
 ### I/O Submission
