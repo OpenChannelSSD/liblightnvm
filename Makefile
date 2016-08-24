@@ -26,6 +26,7 @@ install:
 
 clean:
 	rm -r $(BUILD_DIR) || true
+	rm tags || true
 
 all: clean default install
 
