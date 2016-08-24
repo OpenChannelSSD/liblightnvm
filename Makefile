@@ -62,11 +62,14 @@ test_tgt:
 test_vblock:
 	sudo nvm_test_vblock nvme0n1
 
+test_vblock_rw:
+	sudo nvm_test_vblock_rw nvme0n1
+
 test_beam:
 	sudo nvm_test_beam nvme0n1
 
 # ... all of them
-test: test_mgmt test_dev test_tgt test_vblock test_beam
+test: test_mgmt test_dev test_tgt test_vblock test_vblock_rw test_beam
 
 # Invoking examples ...
 
