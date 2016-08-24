@@ -29,6 +29,8 @@
 #include <string.h>
 #include <fcntl.h>
 #include <linux/lightnvm.h>
+#include <liblightnvm.h>
+#include <nvm.h>
 #include <nvm_utils.h>
 
 int nvm_execute_ioctl(int opcode, void *u)
@@ -46,6 +48,13 @@ int nvm_execute_ioctl(int opcode, void *u)
 
 	close(fd);
 	return 0;
+}
+
+void nvm_misc_pr(void)
+{
+	printf("_GET(%lu:0x%lx), _PUT(%lu:0x%lx), _PIO(%lu:0x%lx)\n",
+	       NVM_BLOCK_GET, NVM_BLOCK_GET, NVM_BLOCK_PUT, NVM_BLOCK_PUT,
+	       NVM_PIO, NVM_PIO);
 }
 
 /*
