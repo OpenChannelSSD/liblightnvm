@@ -131,8 +131,9 @@ void test_VBLOCK_GETS_PUT_02(void)
 	NVM_FPAGE fpage;
 	int tgt_fd;
 
-	char *input_payload;
-	char *read_payload, *writer;
+	char *input_payload = NULL;
+	char *read_payload = NULL;
+	char *writer;
 	size_t current_ppa;
 	unsigned long left_bytes;
 	int left_pages;
@@ -327,7 +328,7 @@ clean:
 	CU_ASSERT(0==ret);
 }
 
-void __test_VBLOCK_WRITE_READ_N(int iterations)
+void __test_VBLOCK_WRITE_READ_N(int iterations, int npage_io)
 {
 	NVM_DEV dev;
 	NVM_FPAGE fpage;
@@ -335,7 +336,7 @@ void __test_VBLOCK_WRITE_READ_N(int iterations)
 
 	NVM_TGT tgt;
 	NVM_VBLOCK vblock;
-	int i, ret;
+	int i, j, ret;
 						/* Create target */
 	ret = nvm_mgmt_tgt_create(nvm_tgt_name, nvm_tgt_type, nvm_dev_name, 0, 0);
 	CU_ASSERT(0==ret);
@@ -354,29 +355,28 @@ void __test_VBLOCK_WRITE_READ_N(int iterations)
 		int read, written;
 		char *wbuf = NULL;
 		char *rbuf = NULL;
-
-		vblock = nvm_vblock_new();		/* Allocate the vblock */
-		CU_ASSERT_PTR_NOT_NULL(vblock);
-
-		ret = nvm_vblock_gets(vblock, tgt, 0);	/* Reserve from tgt on lun 0 */
-		CU_ASSERT(0==ret)
-
-							/* Write to media */
+							/* Allocate buffers */
 		ret = posix_memalign((void**)&wbuf, sec_size, pln_pg_size);
 		CU_ASSERT(0==ret)
 		strcpy(wbuf, "Hello World of NVM");
 
-		written = nvm_vblock_write(vblock, tgt, wbuf, 1, 0, 0x0);
-		CU_ASSERT(1==written)
-
-							/* Read from media */
 		ret = posix_memalign((void**)&rbuf, sec_size, pln_pg_size);
 		CU_ASSERT(0==ret);
 
-		read = nvm_vblock_read(vblock, tgt, rbuf, 1, 0, 0x0);
-		CU_ASSERT(1==read);
+		vblock = nvm_vblock_new();		/* Allocate vblock */
+		CU_ASSERT_PTR_NOT_NULL(vblock);
 
-		CU_ASSERT_STRING_EQUAL(wbuf, rbuf);
+		ret = nvm_vblock_gets(vblock, tgt, 0);	/* Reserve from tgt on lun 0 */
+		CU_ASSERT(0==ret)
+		for(j=0; j<npage_io; ++j) {
+			written = nvm_vblock_write(vblock, tgt, wbuf, 1, 0, 0x0);
+			CU_ASSERT(1==written)
+
+			read = nvm_vblock_read(vblock, tgt, rbuf, 1, 0, 0x0);
+			CU_ASSERT(1==read);
+
+			CU_ASSERT_STRING_EQUAL(wbuf, rbuf);
+		}
 
 		ret = nvm_vblock_put(vblock, tgt);	/* Release vblock from tgt */
 		CU_ASSERT(0==ret);
@@ -395,12 +395,17 @@ void __test_VBLOCK_WRITE_READ_N(int iterations)
 
 void test_VBLOCK_WRITE_READ_01(void)
 {
-	__test_VBLOCK_WRITE_READ_N(1);
+	__test_VBLOCK_WRITE_READ_N(1, 1);
 }
 
 void test_VBLOCK_WRITE_READ_02(void)
 {
-	__test_VBLOCK_WRITE_READ_N(1000);
+	__test_VBLOCK_WRITE_READ_N(1000, 1);
+}
+
+void test_VBLOCK_WRITE_READ_03(void)
+{
+	__test_VBLOCK_WRITE_READ_N(1, 1000);
 }
 
 int main(int argc, char **argv)
@@ -431,6 +436,7 @@ int main(int argc, char **argv)
 	(NULL == CU_add_test(pSuite, "nvm_vblock_[gets|put] 2", test_VBLOCK_GETS_PUT_02)) ||
 	(NULL == CU_add_test(pSuite, "nvm_vblock_[write|read] 1", test_VBLOCK_WRITE_READ_01)) ||
 	(NULL == CU_add_test(pSuite, "nvm_vblock_[write|read] 2", test_VBLOCK_WRITE_READ_02)) ||
+	(NULL == CU_add_test(pSuite, "nvm_vblock_[write|read] 3", test_VBLOCK_WRITE_READ_03)) ||
 	0)
 	{
 		CU_cleanup_registry();
