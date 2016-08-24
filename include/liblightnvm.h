@@ -145,13 +145,12 @@ uint16_t nvm_vblock_get_flags(NVM_VBLOCK vblock);
 int nvm_vblock_get(NVM_VBLOCK vblock, NVM_TGT tgt);
 
 /**
- * Reserves a block, and fills up vblock accordingly, on given target using
- * a specific lun.
+ * Reserves a block on given target using a specific lun.
  *
  * @param vblock Block created with nvm_vblock_new
- * @param tgt Handle obtained with nvm_open
+ * @param tgt Handle obtained with nvm_tgt_open
  * @param lun Identifier of lun to reserve via
- * @return -1 on error and errno set, zero othervise.
+ * @return -1 on error and *errno* set, zero otherwise.
  */
 int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_TGT tgt, uint32_t lun);
 
@@ -163,8 +162,7 @@ int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_TGT tgt, uint32_t lun);
  * submit I/Os to it, or expect that data on it is persisted. The flash block
  * cannot be reclaimed by the previous owner.
  *
- * Returns: On success, a flash block is returned to LightNVM's media manager.
- * On error, -1 is returned, in which case *errno* is set to indicate the error.
+ * @return -1 on error and *errno* set, zero otherwise.
  */
 int nvm_vblock_put(NVM_VBLOCK vblock, NVM_TGT tgt);
 
