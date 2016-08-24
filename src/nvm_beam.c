@@ -89,8 +89,7 @@ static int switch_block(struct beam **beam)
 	int ret;
 
 	/* Write buffer for small writes */
-	buf_size = get_vblock_nbytes(&(*beam)->vblocks[(*beam)->nvblocks] - 1) *
-								sec_size;
+	buf_size = get_vblock_nbytes((*beam)->tgt->dev);
 	if (buf_size != (*beam)->w_buffer.buf_limit) {
 		NVM_DEBUG("Allocating write buffer, buf_size(%lu)\n", buf_size);
 		free((*beam)->w_buffer.buf);
@@ -418,7 +417,7 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 		  count, left_pages, b->gid, b, beam, offset);
 
 	/* Assume that all blocks forming the beam have same size */
-	nppas = get_vblock_nbytes(&b->vblocks[0]);
+	nppas = get_vblock_nbytes(b->tgt->dev);
 
 	ppa_count = offset / fpage->sec_size;
 	block_off = ppa_count / nppas;
