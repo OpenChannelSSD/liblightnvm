@@ -70,17 +70,33 @@ test: test_mgmt test_dev test_tgt test_vblock test_beam
 
 # Invoking examples ...
 
+ex_tgt_create:
+	@sudo lnvm create -d nvme0n1 -n nvm_ex_tgt -t dflash || true
+
+ex_tgt_remove:
+	@sudo lnvm remove -n nvm_ex_tgt || true
+
 ex_vblock:
-	sudo lnvm create -d nvme0n1 -n nvm_ex_tgt -t dflash
-	sudo nvm_ex_vblock nvm_ex_tgt
-	sudo lnvm remove -n nvm_ex_tgt
+	@make ex_tgt_create
+	@sudo nvm_ex_vblock nvm_ex_tgt || true
+	@make ex_tgt_remove
 
 ex_vblock_rw:
-	sudo lnvm create -d nvme0n1 -n nvm_ex_tgt -t dflash
-	sudo nvm_ex_vblock_rw nvme0n1 nvm_ex_tgt
-	sudo lnvm remove -n nvm_ex_tgt
+	@make ex_tgt_create
+	@sudo nvm_ex_vblock_rw nvme0n1 nvm_ex_tgt || true
+	@make ex_tgt_remove
 
-example: ex_vblock ex_vblock_rw
+ex_vblock_rw_multilun:
+	@make ex_tgt_create
+	sudo nvm_ex_vblock_rw_multilun nvme0n1 nvm_ex_tgt || true
+	@make ex_tgt_remove
+
+ex_vblock_reserve_n:
+	@make ex_tgt_create
+	@sudo nvm_ex_vblock_reserve_n nvme0n1 nvm_ex_tgt 8 || true
+	@make ex_tgt_remove
+
+example: ex_vblock_reserve_n ex_vblock ex_vblock_rw 
 
 # ... all of them
 
