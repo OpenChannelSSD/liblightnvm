@@ -56,6 +56,6 @@ add_subdirectory(examples)
 add_subdirectory(tests)
 
 # For building debian packages
-set(CPACK_GENERATOR "DEB")
+set(CPACK_GENERATOR "DEB" "RPM" "TGZ")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Javier González")
 include(CPack)
