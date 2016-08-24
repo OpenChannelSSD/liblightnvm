@@ -152,3 +152,4 @@ void nvm_tgt_close(struct nvm_tgt *tgt)
 	nvm_dev_close(tgt->dev);
 	free(tgt);
 }
+
