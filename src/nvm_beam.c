@@ -91,13 +91,13 @@ static int switch_block(struct beam **beam)
 	/* Write buffer for small writes */
 	buf_size = get_vblock_nbytes((*beam)->tgt->dev);
 	if (buf_size != (*beam)->w_buffer.buf_limit) {
-		NVM_DEBUG("Allocating write buffer, buf_size(%lu)\n", buf_size);
+		//NVM_DEBUG("Allocating write buffer, buf_size(%lu)\n", buf_size);
 		free((*beam)->w_buffer.buf);
 		ret = posix_memalign(&(*beam)->w_buffer.buf, sec_size,
 				     buf_size);
 		if (ret) {
-			NVM_DEBUG("FAILED: buf_size(%lu), sec_size(%d)\n",
-				  buf_size, sec_size);
+			/*NVM_DEBUG("FAILED: buf_size(%lu), sec_size(%d)\n",
+				  buf_size, sec_size);*/
 			return ret;
 		}
 		(*beam)->w_buffer.buf_limit = buf_size;
@@ -110,11 +110,11 @@ static int switch_block(struct beam **beam)
 
 	(*beam)->current_w_vblock = &(*beam)->vblocks[(*beam)->nvblocks - 1];
 
-	NVM_DEBUG("SWITCHED: gid(%d), id(%llu), nppas(%d), nvblocks(%d)\n",
-		  (*beam)->gid,
-		  (*beam)->current_w_vblock->id,
-		  (*beam)->current_w_vblock->nppas,
-		  (*beam)->nvblocks);
+	/*NVM_DEBUG("SWITCHED: ppa(%lu:0x%lx), flags(%d), nvblocks(%d)\n",
+		  (*beam)->current_w_vblock->ppa,
+		  (*beam)->current_w_vblock->ppa,
+		  (*beam)->current_w_vblock->flags,
+		  (*beam)->nvblocks);*/
 
 	return 0;
 }
@@ -126,14 +126,14 @@ static int preallocate_block(struct beam *beam)
 
 	ret = nvm_vblock_gets(vblock, beam->tgt, 0, beam->lun);
 	if (ret) {
-		NVM_DEBUG("FAILED: gid(%d)\n", beam->gid);
+		//NVM_DEBUG("FAILED: gid(%d)\n", beam->gid);
 		return ret;
 	}
 
-	NVM_DEBUG("SUCCESS: nvblocks(%d), gid(%d), ppa(%llu)\n",
+	/*NVM_DEBUG("SUCCESS: nvblocks(%d), gid(%d), ppa(%lu)\n",
 		  beam->nvblocks,
 		  beam->gid,
-		  beam->vblocks[beam->nvblocks].ppa);
+		  beam->vblocks[beam->nvblocks].ppa);*/
 
 	beam->nvblocks++;
 
@@ -162,7 +162,7 @@ static int beam_init(struct beam *beam, int lun, struct nvm_tgt *tgt)
 	beam->bytes = 0;
 	beam->tgt = tgt;
 	if (!beam->tgt) {
-		NVM_DEBUG("FAILED: !beam->tgt\n");
+		//NVM_DEBUG("FAILED: !beam->tgt\n");
 		return -EINVAL;
 	}
 
@@ -187,7 +187,7 @@ static int beam_sync(struct beam *beam, int flags)
 	int synced_pages;
 	size_t synced_bytes;
 
-	NVM_DEBUG("called with beam(%p), flags(%d)\n", beam, flags);
+	//NVM_DEBUG("called with beam(%p), flags(%d)\n", beam, flags);
 
 	if (((flags & OPTIONAL_SYNC) && (sync_len < pln_pg_size)) ||
 		(sync_len == 0))
@@ -219,7 +219,7 @@ static int beam_sync(struct beam *beam, int flags)
 					flags);
 
 	if (synced_pages != npages) {
-		NVM_DEBUG("FAILED: synced_pages != npages\n");
+		//NVM_DEBUG("FAILED: synced_pages != npages\n");
 		return -1;
 	}
 
@@ -229,8 +229,8 @@ static int beam_sync(struct beam *beam, int flags)
 	beam->w_buffer.cursync += synced_bytes;
 	beam->w_buffer.sync += synced_bytes;
 
-	NVM_DEBUG("synced_bytes(%lu), synced_pages(%d)\n",
-		  synced_bytes, synced_pages);
+	/*NVM_DEBUG("synced_bytes(%lu), synced_pages(%d)\n",
+		  synced_bytes, synced_pages);*/
 
 	return 0;
 }
@@ -254,28 +254,28 @@ int nvm_beam_create(const char *tgt_name, int lun, int flags)
 
 	tgt = nvm_tgt_open(tgt_name, flags);
 	if (!tgt) {
-		NVM_DEBUG("FAILED: opening target\n");
+		//NVM_DEBUG("FAILED: opening target\n");
 		return -1;
 	}
 
 	beam = malloc(sizeof(struct beam));
 	if (!beam) {
-		NVM_DEBUG("FAILED: allocating beam\n");
+		//NVM_DEBUG("FAILED: allocating beam\n");
 		nvm_tgt_close(tgt);
 		return -ENOMEM;
 	}
 
 	ret = beam_init(beam, lun, tgt);
 	if (ret) {
-		NVM_DEBUG("FAILED: initializing beam\n");
+		//NVM_DEBUG("FAILED: initializing beam\n");
 		nvm_tgt_close(tgt);
 		free(beam);
 		return ret;
         }
 
 	HASH_ADD_INT(beamt, gid, beam);
-	NVM_DEBUG("beam(%p), beam->gid(%d), tgt(%p), tgt->fd(%d)\n",
-		  beam, beam->gid, tgt, tgt->fd);
+	/*NVM_DEBUG("beam(%p), beam->gid(%d), tgt(%p), tgt->fd(%d)\n",
+		  beam, beam->gid, tgt, tgt->fd);*/
 
 	return beam->gid;
 }
@@ -285,7 +285,7 @@ void nvm_beam_destroy(int beam, int flags)
 	struct beam *b;
 	struct nvm_tgt *tgt;
 
-	NVM_DEBUG("beam(%d)\n", beam);
+	//NVM_DEBUG("beam(%d)\n", beam);
 
 	HASH_FIND_INT(beamt, &beam, b);
 	HASH_DEL(beamt, b);
@@ -309,31 +309,31 @@ ssize_t nvm_beam_append(int beam, const void *buf, size_t count)
 
 	HASH_FIND_INT(beamt, &beam, b);
 	if (!b) {
-		NVM_DEBUG("FAILED: beam(%d) does not exist\n", beam);
+		//NVM_DEBUG("FAILED: beam(%d) does not exist\n", beam);
 		return -EINVAL;
 	}
 
-	NVM_DEBUG("count(%lu), gid(%d), b(%p), beam(%d), cursize(%lu), "
+	/*NVM_DEBUG("count(%lu), gid(%d), b(%p), beam(%d), cursize(%lu), "
 		  "cursync(%lu), buf_limit(%lu)\n",
 		  count,
 		  b->gid, b,
 		  beam,
 		  b->w_buffer.cursize,
 		  b->w_buffer.cursync,
-		  b->w_buffer.buf_limit);
+		  b->w_buffer.buf_limit);*/
 
 	while (b->w_buffer.cursize + left > b->w_buffer.buf_limit) {
-		NVM_DEBUG("Block overflow: cursize(%lu), cursync(%lu)"
+		/*NVM_DEBUG("Block overflow: cursize(%lu), cursync(%lu)"
 			  ", buf_limit(%lu), left(%lu)\n",
 			  b->w_buffer.cursize,
 			  b->w_buffer.cursync,
 			  b->w_buffer.buf_limit,
-			  left);
+			  left);*/
 		size_t fits_buf = b->w_buffer.buf_limit - b->w_buffer.cursize;
 
 		ret = preallocate_block(b);
 		if (ret) {
-			NVM_DEBUG("FAILED: preallocate_block - ret(%d)", ret);
+			//NVM_DEBUG("FAILED: preallocate_block - ret(%d)", ret);
 			return ret;
 		}
 
@@ -341,7 +341,7 @@ ssize_t nvm_beam_append(int beam, const void *buf, size_t count)
 		b->w_buffer.mem += fits_buf;
 		b->w_buffer.cursize += fits_buf;
 		if (beam_sync(b, FORCE_SYNC)) {
-			NVM_DEBUG("FAILED: beam_sync gid(%d)\n", b->gid);
+			//NVM_DEBUG("FAILED: beam_sync gid(%d)\n", b->gid);
 			return -ENOSPC;
 		}
 
@@ -364,7 +364,7 @@ int nvm_beam_sync(int beam, int flags)
 
 	HASH_FIND_INT(beamt, &beam, b);
 	if (!b) {
-		NVM_DEBUG("FAILED: Beam %d does not exits\n", beam);
+		//NVM_DEBUG("FAILED: Beam %d does not exits\n", beam);
 		return -EINVAL;
 	}
 
@@ -398,7 +398,7 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 
 	HASH_FIND_INT(beamt, &beam, b);
 	if (!b) {
-		NVM_DEBUG("FAILED: Beam %d does not exits\n", beam);
+		//NVM_DEBUG("FAILED: Beam %d does not exits\n", beam);
 		return -EINVAL;
 	}
 
@@ -408,9 +408,9 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 	left_pages = ((count + offset % sec_size) / sec_size) +
 		((((count) % sec_size) > 0) ? 1 : 0);
 
-	NVM_DEBUG("count(%lu), left_pages(%lu), gid(%d), b(%p), beam(%d)"
+	/*NVM_DEBUG("count(%lu), left_pages(%lu), gid(%d), b(%p), beam(%d)"
 		  ", offset(%lu)\n",
-		  count, left_pages, b->gid, b, beam, offset);
+		  count, left_pages, b->gid, b, beam, offset);*/
 
 	/* Assume that all blocks forming the beam have same size */
 	nppas = get_vblock_nbytes(b->tgt->dev);
@@ -426,8 +426,8 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 	ret = posix_memalign(&read_buf, sec_size,
 			     pages_to_read * sec_size);
 	if (ret) {
-		NVM_DEBUG("FAILED: left_pages*sec_size(%lu), sec_size(%d)\n",
-			  left_pages * sec_size, sec_size);
+		/*NVM_DEBUG("FAILED: left_pages * sec_size(%lu), sec_size(%lu)\n",
+			  left_pages * sec_size, sec_size);*/
 		return ret;
 	}
 	reader = read_buf;
@@ -456,7 +456,7 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 		read_pages = nvm_vblock_read(current_r_vblock, reader,
 					     pages_to_read, ppa_off, flags);
 		if (read_pages != pages_to_read) {
-			NVM_DEBUG("FAILED: read_pages != pages_to_read\n");
+			//NVM_DEBUG("FAILED: read_pages != pages_to_read\n");
 			return -1;
 		}
 
