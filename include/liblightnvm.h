@@ -50,6 +50,31 @@ extern "C" {
 #define NVM_TGT_NAME_MAX (DISK_NAME_LEN + 5)	/* 5 = strlen(/dev/) */
 #endif
 
+/* BITS ALLOCATED FOR THE GENERAL ADDRESS FORMAT */
+#define NVM_BLK_BITS (16)
+#define NVM_PG_BITS  (16)
+#define NVM_SEC_BITS (8)
+#define NVM_PL_BITS  (8)
+#define NVM_LUN_BITS (8)
+#define NVM_CH_BITS  (7)
+
+struct NVM_ADDR {
+	union {
+		/* General address format */
+		struct {
+			uint64_t blk		: NVM_BLK_BITS;
+			uint64_t pg		: NVM_PG_BITS;
+			uint64_t sec		: NVM_SEC_BITS;
+			uint64_t pl		: NVM_PL_BITS;
+			uint64_t lun		: NVM_LUN_BITS;
+			uint64_t ch		: NVM_CH_BITS;
+			uint64_t reserved	: 1;
+		} g;
+
+		uint64_t ppa;
+	};
+};
+
 typedef struct nvm_vblock *NVM_VBLOCK;
 typedef struct nvm_fpage *NVM_FPAGE;
 typedef struct nvm_dev_info *NVM_DEV_INFO;
@@ -127,12 +152,7 @@ NVM_VBLOCK nvm_vblock_new(void);
 void nvm_vblock_free(NVM_VBLOCK *vblock);
 void nvm_vblock_pr(NVM_VBLOCK vblock);
 
-uint64_t nvm_vblock_get_id(NVM_VBLOCK vblock);
-uint64_t nvm_vblock_get_bppa(NVM_VBLOCK vblock);
-uint32_t nvm_vblock_get_lun(NVM_VBLOCK vblock);
-uint32_t nvm_vblock_get_owner(NVM_VBLOCK vblock);
-uint32_t nvm_vblock_get_nppas(NVM_VBLOCK vblock);
-uint16_t nvm_vblock_get_bitmap(NVM_VBLOCK vblock);
+uint64_t nvm_vblock_get_ppa(NVM_VBLOCK vblock);
 uint16_t nvm_vblock_get_flags(NVM_VBLOCK vblock);
 
 /**
