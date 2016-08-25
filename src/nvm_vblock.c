@@ -67,34 +67,9 @@ void nvm_vblock_pr(struct nvm_vblock *vblock)
 	       addr.g.sec);
 }
 
-uint64_t nvm_vblock_get_id(struct nvm_vblock *vblock)
+uint64_t nvm_vblock_get_ppa(struct nvm_vblock *vblock)
 {
-	return vblock->id;
-}
-
-uint64_t nvm_vblock_get_bppa(struct nvm_vblock *vblock)
-{
-	return vblock->bppa;
-}
-
-uint32_t nvm_vblock_get_lun(struct nvm_vblock *vblock)
-{
-	return vblock->vlun_id;
-}
-
-uint32_t nvm_vblock_get_owner(struct nvm_vblock *vblock)
-{
-	return vblock->owner_id;
-}
-
-uint32_t nvm_vblock_get_nppas(struct nvm_vblock *vblock)
-{
-	return vblock->nppas;
-}
-
-uint16_t nvm_vblock_get_bitmap(struct nvm_vblock *vblock)
-{
-	return vblock->ppa_bitmap;
+	return vblock->ppa;
 }
 
 uint16_t nvm_vblock_get_flags(struct nvm_vblock *vblock)
@@ -102,12 +77,11 @@ uint16_t nvm_vblock_get_flags(struct nvm_vblock *vblock)
 	return vblock->flags;
 }
 
-int nvm_vblock_gets(struct nvm_vblock *vblock, struct nvm_tgt *tgt,
-		    uint32_t lun)
+int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_TGT tgt, uint32_t ch, uint32_t lun)
 {
 	struct nvm_ioctl_vblock ctl;
 	struct NVM_ADDR addr;
-	int ret;
+	int err;
 
 	addr.ppa = 0;
 	addr.g.lun = lun;
@@ -115,19 +89,23 @@ int nvm_vblock_gets(struct nvm_vblock *vblock, struct nvm_tgt *tgt,
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.ppa = addr.ppa;
 
-	ret = ioctl(tgt->fd, NVM_BLOCK_GET, &ctl);
-	vblock->ppa = addr.ppa;
+	err = ioctl(tgt->fd, NVM_BLOCK_GET, &ctl);
+	if (err) {
+		return err;
+	}
+
+	vblock->ppa = ctl.ppa;
 	vblock->tgt = tgt;
 
-	return ret;
+	return 0;
 }
 
 int nvm_vblock_get(struct nvm_vblock *vblock, struct nvm_tgt *tgt)
 {
-	return nvm_vblock_gets(vblock, tgt, 0);
+	return nvm_vblock_gets(vblock, tgt, 0, 0);
 }
 
-int nvm_vblock_put(struct nvm_vblock *vblock, struct nvm_tgt *tgt)
+int nvm_vblock_put(struct nvm_vblock *vblock)
 {
 	struct nvm_ioctl_vblock ctl;
 	int ret;
@@ -135,118 +113,36 @@ int nvm_vblock_put(struct nvm_vblock *vblock, struct nvm_tgt *tgt)
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.ppa = vblock->ppa;
 	
-	ret = ioctl(tgt->fd, NVM_BLOCK_PUT, &ctl);
+	ret = ioctl(vblock->tgt->fd, NVM_BLOCK_PUT, &ctl);
 
 	return ret;
 }
 
-/* Currently pread is used to submit IO, in the future this might be SPDK,
- * libnvme, IOCTL or some other means.
- */
-ssize_t nvm_vblock_read(struct nvm_vblock *vblock, struct nvm_tgt *tgt,
-                        void *buf, size_t count, size_t ppa_off, int flags)
+ssize_t nvm_vblock_read(struct nvm_vblock *vblock, void *buf, size_t count,
+			size_t ppa_off, int flags)
 {
-	size_t current_ppa;
-	ssize_t remaining;
-	char *reader;
+	struct nvm_ioctl_io ctl;
+	int ret;
 
-	struct nvm_fpage *fpage = &tgt->dev->fpage;	/* Grab geometry */
-	const uint32_t read_page_size = fpage->sec_size;/* XXX(1) */
-	const uint32_t pg_sec_ratio = read_page_size / fpage->sec_size;
-	const uint32_t max_pages_read = fpage->max_sec_io / pg_sec_ratio;
+	memset(&ctl, 0, sizeof(ctl));
+	ctl.opcode = 0;
 
-	assert(count <= (vblock->nppas - ppa_off));
-
-	NVM_DEBUG("count(%lu), blk_id(%llu), tgt(%d)", count, vblock->id,
-		  tgt->fd);
-
-	current_ppa = vblock->bppa + ppa_off;
-	remaining = count;
-	reader = (char*)buf;
-	while (remaining > 0) {
-		int pages_per_read;
-		size_t bytes_per_read;
-		ssize_t bytes_read;
-
-		pages_per_read = (remaining > max_pages_read) ?
-				 max_pages_read : remaining;
-		bytes_per_read = pages_per_read * read_page_size;
-
-		NVM_DEBUG("bytes_per_read(%lu)"
-			  ", pages_per_read(%d)"
-			  ", current_ppa(%lu)\n",
-			  bytes_per_read, pages_per_read, current_ppa);
-retry:
-		bytes_read = pread(tgt->fd, reader, bytes_per_read,
-				   current_ppa * 4096);
-		if (bytes_read != bytes_per_read) {
-			if (errno == EINTR)
-				goto retry;
-			return -1;
-		}
-
-		reader += bytes_per_read;
-		remaining -= pages_per_read * pg_sec_ratio;
-		current_ppa += pages_per_read;
-	}
+	ret = ioctl(vblock->tgt->fd, NVM_PIO, &ctl);
 
 	return count;
 }
 
-/* Currently pwrite is used to submit IO, in the future this might be SPDK,
- * libnvme, IOCTL or some other means.
- */
-ssize_t nvm_vblock_write(struct nvm_vblock *vblock, struct nvm_tgt *tgt,
-			 const void *buf, size_t count, size_t ppa_off,
-			 int flags)
+ssize_t nvm_vblock_write(struct nvm_vblock *vblock, const void *buf,
+			 size_t count, size_t ppa_off, int flags)
 {
-	size_t current_ppa;
-	ssize_t remaining;
-	char *writer;
+	struct nvm_ioctl_io ctl;
+	int ret;
 
-	struct nvm_fpage *fpage = &tgt->dev->fpage;	/* Grab geometry */
-	uint32_t write_page_size = fpage->pln_pg_size;
-	uint32_t pg_sec_ratio = write_page_size / fpage->sec_size;
-	uint32_t max_pages_write = fpage->max_sec_io / pg_sec_ratio;
+	memset(&ctl, 0, sizeof(ctl));
+	ctl.opcode = 1;
 
-	NVM_DEBUG("vblock_id(%llu), count(%lu), ppa_off(%lu), nppas(%lu)\n",
-		  vblock->id, count, ppa_off, nppas);
-
-	assert(count <= (vblock->nppa - ppa_off));
-
-	current_ppa = vblock->bppa + (ppa_off * 16);
-	remaining = count;
-	writer = (char*)buf;
-	while (remaining > 0) {
-		int pages_per_write;
-		size_t bytes_per_write;
-		ssize_t written;
-
-		pages_per_write = (remaining > max_pages_write) ?
-				  max_pages_write : remaining;
-		bytes_per_write = pages_per_write * write_page_size;
-
-		NVM_DEBUG("bytes_per_write(%lu), pages_per_write(%d), "
-			  "current_ppa(%lu)\n",
-			  bytes_per_write, pages_per_write, current_ppa);
-
-		written = pwrite(tgt->fd, writer, bytes_per_write,
-				 current_ppa * 4096);
-		if (written != bytes_per_write) {
-			NVM_DEBUG("FAILED: written(%lu) != bytes_per_write(%lu)",
-				  written, bytes_per_write);
-
-			/* TODO: Retry with another page, and another block */
-			return 0;
-		}
-
-		writer += bytes_per_write;
-		current_ppa += pages_per_write * pg_sec_ratio;
-		remaining -= pages_per_write;
-	}
-
-	NVM_DEBUG("Wrote count(%lu) pages to block(%llu), tgt->fd(%d)",
-		  count, vblock->id, tgt->fd);
+	ret = ioctl(vblock->tgt->fd, NVM_PIO, &ctl);
 
 	return count;
 }
+

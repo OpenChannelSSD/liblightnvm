@@ -58,7 +58,7 @@ void ex_vblock_rw(const char* dev_name, const char* tgt_name)
 	}
 
 	for(i=0; i<nvblocks; ++i) {	/* Reserve from tgt on lun 0-3 */
-		ret = nvm_vblock_gets(vblocks[i], tgt, i);
+		ret = nvm_vblock_gets(vblocks[i], tgt, 0, i);
 		if (ret) {
 			printf("Failed getting block via tgt(%p)\n", tgt);
 			return;
@@ -68,16 +68,16 @@ void ex_vblock_rw(const char* dev_name, const char* tgt_name)
 
 	for(i=0; i<nvblocks; ++i) {
 							/* Write to media */
-		written = nvm_vblock_write(vblocks[i], tgt, wbuf, 1, 0, 0x0);
+		written = nvm_vblock_write(vblocks[i], wbuf, 1, 0, 0x0);
 		printf("written(%d)\n", written);
 							
 		strcpy(rbuf, "");			/* Read from media */
-		read = nvm_vblock_read(vblocks[i], tgt, rbuf, 1, 0, 0x0);
+		read = nvm_vblock_read(vblocks[i], rbuf, 1, 0, 0x0);
 		printf("read(%d), rbuf(%s)\n", read, rbuf);
 	}
 
 	for(i=0; i<nvblocks; ++i) {
-		ret = nvm_vblock_put(vblocks[i], tgt);	/* Release vblock from tgt */
+		ret = nvm_vblock_put(vblocks[i]);	/* Release vblock from tgt */
 		if (ret) {
 			printf("Failed putting block via tgt(%p)\n", tgt);
 		}

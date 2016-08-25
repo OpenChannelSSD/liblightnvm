@@ -41,7 +41,7 @@ void ex_vblock_rw(const char* dev_name, const char* tgt_name)
 		return;
 	}
 
-	ret = nvm_vblock_gets(vblock, tgt, 0);	/* Reserve from tgt on lun 0 */
+	ret = nvm_vblock_gets(vblock, tgt, 0, 0);	/* Reserve from tgt on lun 0 */
 	if (ret) {
 		printf("Failed getting block via tgt(%p)\n", tgt);
 		return;
@@ -53,7 +53,7 @@ void ex_vblock_rw(const char* dev_name, const char* tgt_name)
 		return;
 	}
 	strcpy(wbuf, "Hello World of NVM");
-	written = nvm_vblock_write(vblock, tgt, wbuf, 1, 0, 0x0);
+	written = nvm_vblock_write(vblock, wbuf, 1, 0, 0x0);
 	printf("written(%d)\n", written);
 
 						/* Read from media */
@@ -62,10 +62,10 @@ void ex_vblock_rw(const char* dev_name, const char* tgt_name)
 		printf("Failed allocating read buffer(%p)\n", wbuf);
 		return;
 	}
-	read = nvm_vblock_read(vblock, tgt, rbuf, 1, 0, 0x0);
+	read = nvm_vblock_read(vblock, rbuf, 1, 0, 0x0);
 	printf("read(%d), rbuf(%s)\n", read, rbuf);
 
-	ret = nvm_vblock_put(vblock, tgt);	/* Release vblock from tgt */
+	ret = nvm_vblock_put(vblock);	/* Release vblock from tgt */
 	if (ret) {
 		printf("Failed putting block via tgt(%p)\n", tgt);
 	}

@@ -50,7 +50,7 @@ void test_VBLOCK_GET_PUT_01(void)
 	ret = nvm_vblock_get(vblock, tgt);
 	CU_ASSERT(0==ret);
 
-	ret = nvm_vblock_put(vblock, tgt);
+	ret = nvm_vblock_put(vblock);
 	CU_ASSERT(0==ret);
 
 	nvm_vblock_free(&vblock);
@@ -76,10 +76,10 @@ void test_VBLOCK_GETS_PUT_01(void)
 	vblock = nvm_vblock_new();
 	CU_ASSERT_PTR_NOT_NULL(vblock);		/* get block from lun 0 */
 	
-	ret = nvm_vblock_gets(vblock, tgt, 0);
+	ret = nvm_vblock_gets(vblock, tgt, 0, 0);
 	CU_ASSERT(0==ret);
 
-	ret = nvm_vblock_put(vblock, tgt);
+	ret = nvm_vblock_put(vblock);
 
 	nvm_tgt_close(tgt);
 	ret = nvm_mgmt_tgt_remove(nvm_tgt_name);

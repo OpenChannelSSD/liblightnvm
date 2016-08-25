@@ -169,10 +169,11 @@ int nvm_vblock_get(NVM_VBLOCK vblock, NVM_TGT tgt);
  *
  * @param vblock Block created with nvm_vblock_new
  * @param tgt Handle obtained with nvm_tgt_open
- * @param lun Identifier of lun to reserve via
+ * @param ch Channel from which to reserve via
+ * @param lun Lun from which to reserve via
  * @return -1 on error and *errno* set, zero otherwise.
  */
-int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_TGT tgt, uint32_t lun);
+int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_TGT tgt, uint32_t ch, uint32_t lun);
 
 /**
  * Put flash block(s) represented by vblock back to tgt.
@@ -184,7 +185,7 @@ int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_TGT tgt, uint32_t lun);
  *
  * @return -1 on error and *errno* set, zero otherwise.
  */
-int nvm_vblock_put(NVM_VBLOCK vblock, NVM_TGT tgt);
+int nvm_vblock_put(NVM_VBLOCK vblock);
 
 /**
  * Read count pages starting at ppa_off from tgt into buf using flags
@@ -197,7 +198,7 @@ int nvm_vblock_put(NVM_VBLOCK vblock, NVM_TGT tgt);
  * XXX(1): For now, we assume that the device supports reading at a sector
  * granurality; we will take this information from the device in the future.
  */
-ssize_t nvm_vblock_read(NVM_VBLOCK vblock, NVM_TGT tgt, void *buf, size_t count,
+ssize_t nvm_vblock_read(NVM_VBLOCK vblock, void *buf, size_t count,
 			size_t ppa_off, int flags);
 
 /**
@@ -206,8 +207,8 @@ ssize_t nvm_vblock_read(NVM_VBLOCK vblock, NVM_TGT tgt, void *buf, size_t count,
  * fpage_size is the flash page write size. That is, the size of a virtual flash
  * pages, i.e., spanning flash planes.
  */
-ssize_t nvm_vblock_write(NVM_VBLOCK vblock, NVM_TGT tgt, const void *buf,
-			 size_t count, size_t ppa_off, int flags);
+ssize_t nvm_vblock_write(NVM_VBLOCK vblock, const void *buf, size_t count,
+			 size_t ppa_off, int flags);
 
 /**
  * Instantiates a target with a given target type on top of an nvme device

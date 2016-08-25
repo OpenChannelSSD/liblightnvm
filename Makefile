@@ -75,7 +75,7 @@ test: test_mgmt test_dev test_tgt test_vblock test_vblock_rw test_beam
 # Invoking examples ...
 
 ex_tgt_create:
-	@sudo lnvm create -d nvme0n1 -n nvm_ex_tgt -t dflash -o0:3 || true
+	@sudo lnvm create -d nvme0n1 -n nvm_ex_tgt -t dflash || true
 
 ex_tgt_remove:
 	@sudo lnvm remove -n nvm_ex_tgt || true

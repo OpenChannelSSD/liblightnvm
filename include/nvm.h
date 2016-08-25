@@ -113,13 +113,9 @@ struct nvm_tgt {
 };
 
 struct nvm_vblock {
-	uint64_t id;
-	uint64_t bppa;
-	uint32_t vlun_id;
-	uint32_t owner_id;
-	uint32_t nppas;
-	uint16_t ppa_bitmap;
+	uint64_t ppa;
 	uint16_t flags;
+	struct nvm_tgt *tgt;
 };
 
 #endif /* __NVM_H */

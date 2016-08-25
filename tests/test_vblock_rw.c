@@ -61,16 +61,16 @@ void __test_VBLOCK_WRITE_READ_N(int iterations, int npage_io)
 		ret = nvm_vblock_get(vblock, tgt);
 		CU_ASSERT(0==ret)
 		for(j=0; j<npage_io; ++j) {
-			written = nvm_vblock_write(vblock, tgt, wbuf, 1, 0, 0x0);
+			written = nvm_vblock_write(vblock, wbuf, 1, 0, 0x0);
 			CU_ASSERT(1==written)
 
-			read = nvm_vblock_read(vblock, tgt, rbuf, 1, 0, 0x0);
+			read = nvm_vblock_read(vblock, rbuf, 1, 0, 0x0);
 			CU_ASSERT(1==read);
 
 			CU_ASSERT_STRING_EQUAL(wbuf, rbuf);
 		}
 
-		ret = nvm_vblock_put(vblock, tgt);	/* Release vblock from tgt */
+		ret = nvm_vblock_put(vblock);	/* Release vblock from tgt */
 		CU_ASSERT(0==ret);
 
 		free(wbuf);

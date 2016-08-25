@@ -35,7 +35,7 @@ void ex_vblock_reserve_n(const char* dev_name, const char* tgt_name,
 	// NOTE: Reserves round-robin across lun 0-3
 	for(i=0; i<nvblocks; ++i) {			/* Reserve vblocks */
 		printf("_gets #%d : ", i);
-		ret = nvm_vblock_gets(vblocks[i], tgt, i % 4);
+		ret = nvm_vblock_gets(vblocks[i], tgt, 0, i % 4);
 		if (ret) {
 			printf("failed(%d) via tgt(%p)\n", ret, tgt);
 		} else {
@@ -45,7 +45,7 @@ void ex_vblock_reserve_n(const char* dev_name, const char* tgt_name,
 
 	for(i=0; i<nvblocks; ++i) {			/* Release blocks */
 		printf("_put #%d : ", i);
-		ret = nvm_vblock_put(vblocks[i], tgt);
+		ret = nvm_vblock_put(vblocks[i]);
 		if (ret) {
 			printf("failed(%d) via tgt(%p)\n", ret, tgt);
 		} else {

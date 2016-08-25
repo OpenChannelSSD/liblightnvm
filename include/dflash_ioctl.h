@@ -1,19 +1,10 @@
 #include <linux/lightnvm.h>
 
-/* COPY PASTE FROM dflash.h -- BEGIN */
-enum {
-	NVM_PROV_SPEC_LUN = 1,
-	NVM_PROV_RAND_LUN = 2,
-};
-
+/* COPY-PASTE FROM dflash.h -- BEGIN */
 struct nvm_ioctl_vblock {
-	__u64 id;
-	__u64 bppa;
-	__u32 vlun_id;
-	__u32 owner_id;
-	__u32 nppas;
-	__u16 ppa_bitmap;
+	__u64 ppa;
 	__u16 flags;
+	__u16 rsvd[3];
 };
 
 struct nvm_ioctl_io
@@ -48,5 +39,5 @@ enum {
 						struct nvm_ioctl_vblock)
 #define NVM_PIO			_IOWR(NVM_IOCTL, NVM_PIO_CMD, \
 						struct nvm_ioctl_io)
-/* COPY PASTE FROM dflash.h -- END */
+/* COPY-PASTE FROM dflash.h -- BEGIN */
 

@@ -11,20 +11,20 @@ void ex_vblock(const char* tgt_name)
 	NVM_TGT tgt;
 	int ret;
 
-	tgt = nvm_tgt_open(tgt_name, 0x0);	/* Why 0x0? */
+	tgt = nvm_tgt_open(tgt_name, 0x0);	/* Open a target */
 	if (!tgt) {
 		printf("Failed opening target, does it exist? Create with e.g."
 		       "'nvme lnvm -d nvme0n1 -n test_target -t dflash'\n");
 		return;
 	}
 
-	vblock = nvm_vblock_new();		/* Allocate the vblock */
+	vblock = nvm_vblock_new();		/* Allocate a vblock */
 	if (!vblock) {
 		printf("Failed allocating vblock\n");
 		return;
 	}
 
-	ret = nvm_vblock_gets(vblock, tgt, 0);	/* Reserve from tgt on lun 0 */
+	ret = nvm_vblock_get(vblock, tgt);
 	if (ret) {
 		printf("Failed getting block via tgt(%p)\n", tgt);
 		return;
@@ -33,7 +33,7 @@ void ex_vblock(const char* tgt_name)
 	/* Do something with the block e.g. print/read/write */
 	nvm_vblock_pr(vblock);
 
-	ret = nvm_vblock_put(vblock, tgt);	/* Release vblock from tgt */
+	ret = nvm_vblock_put(vblock);	/* Release vblock from tgt */
 	if (ret) {
 		printf("Failed putting block via tgt(%p)\n", tgt);
 	}

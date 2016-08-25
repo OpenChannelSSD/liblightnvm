@@ -62,7 +62,7 @@ static void beam_put_blocks(struct beam *beam)
 
 	for (i = 0; i < beam->nvblocks; i++) {
 		vblock = &beam->vblocks[i];
-		nvm_vblock_put(vblock, beam->tgt);
+		nvm_vblock_put(vblock);
 	}
 }
 
@@ -124,21 +124,17 @@ static int preallocate_block(struct beam *beam)
 	struct nvm_vblock *vblock = &beam->vblocks[beam->nvblocks];
 	int ret;
 
-	vblock->flags |= NVM_PROV_SPEC_LUN,
-
-	ret = nvm_vblock_gets(vblock, beam->tgt, beam->lun);
+	ret = nvm_vblock_gets(vblock, beam->tgt, 0, beam->lun);
 	if (ret) {
 		NVM_DEBUG("FAILED: gid(%d)\n", beam->gid);
 		return ret;
 	}
 
-	NVM_DEBUG("SUCCESS: nvblocks(%d), gid(%d), id(%llu), bppa(%llu)\n",
+	NVM_DEBUG("SUCCESS: nvblocks(%d), gid(%d), ppa(%llu)\n",
 		  beam->nvblocks,
 		  beam->gid,
-		  beam->vblocks[beam->nvblocks].id,
-		  beam->vblocks[beam->nvblocks].bppa);
+		  beam->vblocks[beam->nvblocks].ppa);
 
-	vblock->flags &= ~NVM_PROV_SPEC_LUN;
 	beam->nvblocks++;
 
 	return ret;
@@ -219,7 +215,7 @@ static int beam_sync(struct beam *beam, int flags)
 	}
 
 	/* write data to media */
-	synced_pages = nvm_vblock_write(beam->current_w_vblock, beam->tgt,
+	synced_pages = nvm_vblock_write(beam->current_w_vblock,
 					beam->w_buffer.sync, npages, ppa_off,
 					flags);
 
@@ -457,7 +453,7 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 		assert(left_bytes <= left_pages * fpage->sec_size);
 
 		/* TODO: Send bigger I/Os if we have enough data */
-		read_pages = nvm_vblock_read(current_r_vblock, b->tgt, reader,
+		read_pages = nvm_vblock_read(current_r_vblock, reader,
 					     pages_to_read, ppa_off, flags);
 		if (read_pages != pages_to_read) {
 			NVM_DEBUG("FAILED: read_pages != pages_to_read\n");
