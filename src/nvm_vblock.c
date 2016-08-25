@@ -118,16 +118,38 @@ int nvm_vblock_put(struct nvm_vblock *vblock)
 	return ret;
 }
 
+#define NPPAS 16
+#define NPLANES 4
 ssize_t nvm_vblock_read(struct nvm_vblock *vblock, void *buf, size_t count,
 			size_t ppa_off, int flags)
 {
+	struct NVM_ADDR ppas[NPPAS];
 	struct nvm_ioctl_io ctl;
-	int ret;
+	int i, ret;
 
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.opcode = 0;
+	ctl.flags = 0x2;
+	ctl.nppas = NPPAS;
+
+	for (i = 0; i < NPPAS; i++) {
+		struct NVM_ADDR ppa;
+
+		ppa.ppa = vblock->ppa;
+		ppa.g.sec = i % NPLANES;
+		ppa.g.pl = i / NPLANES;
+
+		ppas[i] = ppa;
+	}
+	ctl.ppas = (uint64_t)ppas;
+	ctl.addr = (uint64_t)buf;
+	ctl.data_len = vblock->tgt->dev->info.pln_pg_size;
 
 	ret = ioctl(vblock->tgt->fd, NVM_PIO, &ctl);
+	if (ret) {
+		NVM_DEBUG("failed ret(%d)\n", ret);
+		return 0;
+	}
 
 	return count;
 }
@@ -135,13 +157,33 @@ ssize_t nvm_vblock_read(struct nvm_vblock *vblock, void *buf, size_t count,
 ssize_t nvm_vblock_write(struct nvm_vblock *vblock, const void *buf,
 			 size_t count, size_t ppa_off, int flags)
 {
+	struct NVM_ADDR ppas[NPPAS];
 	struct nvm_ioctl_io ctl;
-	int ret;
+	int i, ret;
 
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.opcode = 1;
+	ctl.flags = 0x2;
+	ctl.nppas = NPPAS;
+
+	for (i = 0; i < NPPAS; i++) {
+		struct NVM_ADDR ppa;
+
+		ppa.ppa = vblock->ppa;
+		ppa.g.sec = i % NPLANES;
+		ppa.g.pl = i / NPLANES;
+
+		ppas[i] = ppa;
+	}
+	ctl.ppas = (uint64_t)ppas;
+	ctl.addr = (uint64_t)buf;
+	ctl.data_len = vblock->tgt->dev->info.pln_pg_size;
 
 	ret = ioctl(vblock->tgt->fd, NVM_PIO, &ctl);
+	if (ret) {
+		NVM_DEBUG("failed ret(%d)\n", ret);
+		return 0;
+	}
 
 	return count;
 }
