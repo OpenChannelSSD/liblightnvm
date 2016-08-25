@@ -23,7 +23,6 @@ int clean_suite1(void)
 void __test_VBLOCK_WRITE_READ_N(int iterations, int npage_io)
 {
 	NVM_DEV dev;
-	NVM_FPAGE fpage;
 	uint32_t sec_size, pln_pg_size;
 
 	NVM_TGT tgt;
@@ -36,9 +35,8 @@ void __test_VBLOCK_WRITE_READ_N(int iterations, int npage_io)
 	dev = nvm_dev_open(nvm_dev_name);		/* Open device */
 	CU_ASSERT_PTR_NOT_NULL(dev);
 
-	fpage = nvm_dev_get_fpage(dev);		/* Get geometry */
-	sec_size = nvm_fpage_get_sec_size(fpage);
-	pln_pg_size = nvm_fpage_get_pln_pg_size(fpage);
+	sec_size = nvm_dev_get_sec_size(dev);
+	pln_pg_size = nvm_dev_get_pln_pg_size(dev);
 
 	tgt = nvm_tgt_open(nvm_tgt_name, 0x0);	/* Open target */
 	CU_ASSERT_PTR_NOT_NULL(tgt);

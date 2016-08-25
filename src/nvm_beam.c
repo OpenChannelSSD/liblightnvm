@@ -85,7 +85,7 @@ static inline int get_vblock_nbytes(struct nvm_dev* dev)
 static int switch_block(struct beam **beam)
 {
 	size_t buf_size;
-	int sec_size = (*beam)->tgt->dev->fpage.sec_size;
+	int sec_size = (*beam)->tgt->dev->info.hw_sector_size;
 	int ret;
 
 	/* Write buffer for small writes */
@@ -179,18 +179,17 @@ static int beam_init(struct beam *beam, int lun, struct nvm_tgt *tgt)
  */
 static int beam_sync(struct beam *beam, int flags)
 {
-	struct nvm_fpage *fpage = &beam->tgt->dev->fpage;
+	size_t pln_pg_size = nvm_dev_get_pln_pg_size(beam->tgt->dev);
 	size_t sync_len = beam->w_buffer.cursize - beam->w_buffer.cursync;
-	size_t synced_bytes;
-	size_t disaligned_data = sync_len % fpage->pln_pg_size;
-	size_t ppa_off =
-		calculate_ppa_off(beam->w_buffer.cursync, fpage->pln_pg_size);
-	int npages = sync_len / fpage->pln_pg_size;
+	size_t disaligned_data = sync_len % pln_pg_size;
+	size_t ppa_off = calculate_ppa_off(beam->w_buffer.cursync, pln_pg_size);
+	int npages = sync_len / pln_pg_size;
 	int synced_pages;
+	size_t synced_bytes;
 
 	NVM_DEBUG("called with beam(%p), flags(%d)\n", beam, flags);
 
-	if (((flags & OPTIONAL_SYNC) && (sync_len < fpage->pln_pg_size)) ||
+	if (((flags & OPTIONAL_SYNC) && (sync_len < pln_pg_size)) ||
 		(sync_len == 0))
 		return 0;
 
@@ -202,7 +201,7 @@ static int beam_sync(struct beam *beam, int flags)
 
 		if (disaligned_data > 0) {
 			/* Add padding to current page */
-			int padding = fpage->pln_pg_size - disaligned_data;
+			int padding = pln_pg_size - disaligned_data;
 
 			memset(beam->w_buffer.mem, '\0', padding);
 			beam->w_buffer.cursize += padding;
@@ -225,7 +224,7 @@ static int beam_sync(struct beam *beam, int flags)
 	}
 
 	/* We might need to take a lock here */
-	synced_bytes = synced_pages * fpage->pln_pg_size;
+	synced_bytes = synced_pages * pln_pg_size;
 	beam->bytes += synced_bytes;
 	beam->w_buffer.cursync += synced_bytes;
 	beam->w_buffer.sync += synced_bytes;
@@ -381,7 +380,6 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 {
 	struct beam *b;
 	struct nvm_vblock *current_r_vblock;
-	struct nvm_fpage *fpage;
 	size_t block_off, ppa_off, page_off;
 	size_t ppa_count;
 	size_t nppas;
@@ -396,17 +394,19 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 	int read_pages;
 	int ret;
 
+	size_t sec_size;
+
 	HASH_FIND_INT(beamt, &beam, b);
 	if (!b) {
 		NVM_DEBUG("FAILED: Beam %d does not exits\n", beam);
 		return -EINVAL;
 	}
 
-	fpage = &b->tgt->dev->fpage;
+	sec_size = b->tgt->dev->info.hw_sector_size; 
 
 	/* TODO: Improve calculations */
-	left_pages = ((count + offset % fpage->sec_size) / fpage->sec_size) +
-		((((count) % fpage->sec_size) > 0) ? 1 : 0);
+	left_pages = ((count + offset % sec_size) / sec_size) +
+		((((count) % sec_size) > 0) ? 1 : 0);
 
 	NVM_DEBUG("count(%lu), left_pages(%lu), gid(%d), b(%p), beam(%d)"
 		  ", offset(%lu)\n",
@@ -415,19 +415,19 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 	/* Assume that all blocks forming the beam have same size */
 	nppas = get_vblock_nbytes(b->tgt->dev);
 
-	ppa_count = offset / fpage->sec_size;
+	ppa_count = offset / sec_size;
 	block_off = ppa_count / nppas;
 	ppa_off = ppa_count % nppas;
-	page_off = offset % fpage->sec_size;
+	page_off = offset % sec_size;
 
 	current_r_vblock = &b->vblocks[block_off];
 
 	pages_to_read = (nppas > left_pages) ? left_pages : nppas;
-	ret = posix_memalign(&read_buf, fpage->sec_size,
-			     pages_to_read * fpage->sec_size);
+	ret = posix_memalign(&read_buf, sec_size,
+			     pages_to_read * sec_size);
 	if (ret) {
 		NVM_DEBUG("FAILED: left_pages*sec_size(%lu), sec_size(%d)\n",
-			  left_pages * fpage->sec_size, fpage->sec_size);
+			  left_pages * sec_size, sec_size);
 		return ret;
 	}
 	reader = read_buf;
@@ -438,7 +438,7 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 	 * kernel.
 	 */
 	while (left_bytes) {
-		bytes_to_read = pages_to_read * fpage->sec_size;
+		bytes_to_read = pages_to_read * sec_size;
 		valid_bytes = (left_bytes > bytes_to_read) ?
 						bytes_to_read : left_bytes;
 
@@ -446,11 +446,11 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 			while (pages_to_read + ppa_off > nppas)
 				pages_to_read--;
 
-			valid_bytes = (nppas * fpage->sec_size) -
-					(ppa_off * fpage->sec_size) - page_off;
+			valid_bytes = (nppas * sec_size) -
+					(ppa_off * sec_size) - page_off;
 		}
 
-		assert(left_bytes <= left_pages * fpage->sec_size);
+		assert(left_bytes <= left_pages * sec_size);
 
 		/* TODO: Send bigger I/Os if we have enough data */
 		read_pages = nvm_vblock_read(current_r_vblock, reader,

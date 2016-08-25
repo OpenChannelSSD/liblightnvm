@@ -32,7 +32,6 @@
 #include <dflash_ioctl.h>
 
 struct nvm_dev_info {
-
 	char dev_name[NVM_DISK_NAME_LEN];
 	uint8_t version;
 	uint8_t vendor_opcode;
@@ -53,6 +52,7 @@ struct nvm_dev_info {
 	uint8_t sect_offset;
 	uint8_t sect_len;
 
+	int pln_pg_size;		/* Some magic number */
 	int fpg_size;
 	int sec_size;
 	int sec_per_pg;                 /* Number of sectors per flash page */
@@ -83,16 +83,8 @@ struct nvm_dev_info {
 	uint32_t max_phys_sect;         /* Maximum number of sectors per I/O */
 };
 
-struct nvm_fpage {
-	uint32_t sec_size;
-	uint32_t page_size;
-	uint32_t pln_pg_size;
-	uint32_t max_sec_io;
-};
-
 struct nvm_dev {
 	struct nvm_dev_info info;	/* Device information */
-	struct nvm_fpage fpage;		/* Calculated device flash page sizes */
 	atomic_cnt ref_cnt;		/* Reference counter */
 	UT_hash_handle hh;		/* Handle to manage open devices */
 };

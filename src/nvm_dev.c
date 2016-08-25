@@ -244,6 +244,9 @@ int nvm_dev_info_fill(struct nvm_dev_info *info, const char *dev_name)
 	udev_device_unref(dev);
 	udev_unref(udev);
 
+	/* Calculate magic value */
+	info->pln_pg_size = info->fpg_size * info->num_planes;
+
 	return 0;
 }
 
@@ -277,25 +280,19 @@ void nvm_dev_pr(struct nvm_dev* dev)
 	printf("nvm_dev {}\n");
 }
 
-struct nvm_fpage* nvm_dev_get_fpage(struct nvm_dev *dev)
-{
-	return &dev->fpage;
-}
-
 struct nvm_dev_info* nvm_dev_get_info(struct nvm_dev *dev)
 {
 	return &dev->info;
 }
 
-/* Calculate flash page values */
-static inline void nvm_dev_fpage_calc_values(struct nvm_dev* device)
+int nvm_dev_get_pln_pg_size(struct nvm_dev *dev)
 {
-	device->fpage.sec_size = device->info.hw_sector_size;
-	device->fpage.page_size = device->fpage.sec_size *
-				  device->info.sec_per_pg;
-	device->fpage.pln_pg_size = device->fpage.page_size *
-				    device->info.num_planes;
-	device->fpage.max_sec_io = device->info.max_phys_sect;
+	return dev->info.pln_pg_size;
+}
+
+int nvm_dev_get_sec_size(struct nvm_dev *dev)
+{
+	return dev->info.hw_sector_size;
 }
 
 struct nvm_dev* nvm_dev_open(const char *dev_name)
@@ -322,8 +319,6 @@ struct nvm_dev* nvm_dev_open(const char *dev_name)
 		return NULL;
 	}
 	
-	nvm_dev_fpage_calc_values(dev);
-
 	atomic_inc(&dev->ref_cnt);
 	HASH_ADD_STR(devices, info.dev_name, dev);
 

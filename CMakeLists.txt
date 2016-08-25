@@ -34,7 +34,6 @@ set(HEADER_FILES
 set(SOURCE_FILES
 	src/nvm_beam.c
 	src/nvm_dev.c
-	src/nvm_fpage.c
 	src/nvm_mgmt.c
 	src/nvm_tgt.c
 	src/nvm_utils.c

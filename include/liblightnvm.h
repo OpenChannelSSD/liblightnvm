@@ -76,51 +76,28 @@ struct NVM_ADDR {
 };
 
 typedef struct nvm_vblock *NVM_VBLOCK;
-typedef struct nvm_fpage *NVM_FPAGE;
 typedef struct nvm_dev_info *NVM_DEV_INFO;
 typedef struct nvm_dev *NVM_DEV;
 typedef struct nvm_tgt_info *NVM_TGT_INFO;
 typedef struct nvm_tgt *NVM_TGT;
 
-/**
- * Allocate an NVM_FPAGE.
- *
- * @return NVM_FPAGE on success, NULL otherwise.
- */
-NVM_FPAGE nvm_fpage_new(void);
-
-/**
- * Deallocate an NVM_FPAGE.
- *
- * @param info
- */
-void nvm_fpage_free(NVM_FPAGE *info);
-
-/**
- * Pretty print the attributes of the given NVM_FPAGE.
- *
- * @param info The NVM_FPAGE to print.
- */
-void nvm_fpage_pr(NVM_FPAGE info);
-
-uint32_t nvm_fpage_get_sec_size(NVM_FPAGE fpage);
-uint32_t nvm_fpage_get_page_size(NVM_FPAGE fpage);
-uint32_t nvm_fpage_get_pln_pg_size(NVM_FPAGE fpage);
-uint32_t nvm_fpage_get_max_sec_io(NVM_FPAGE fpage);
-
+/* TODO: Deprecate this... users should not allocate NVM_DEV and NVM_TGT structures */
 NVM_DEV nvm_dev_new(void);
 void nvm_dev_free(NVM_DEV *dev);
-void nvm_dev_pr(NVM_DEV dev);
-NVM_FPAGE nvm_dev_get_fpage(NVM_DEV dev);
-NVM_DEV_INFO nvm_dev_get_info(NVM_DEV dev);
 
 NVM_DEV nvm_dev_open(const char *dev_name);
 void nvm_dev_close(NVM_DEV dev);
+void nvm_dev_pr(NVM_DEV dev);
+
+NVM_DEV_INFO nvm_dev_get_info(NVM_DEV dev);
+void nvm_dev_info_pr(NVM_DEV_INFO info);
 
 NVM_DEV_INFO nvm_dev_info_new(void);
 void nvm_dev_info_free(NVM_DEV_INFO *info);
-void nvm_dev_info_pr(NVM_DEV_INFO info);
 int nvm_dev_info_fill(NVM_DEV_INFO info, const char *dev_name);
+
+int nvm_dev_get_pln_pg_size(NVM_DEV);
+int nvm_dev_get_sec_size(NVM_DEV);
 
 /**
  * Open a target file descriptor for the target named tgt.
@@ -156,7 +133,7 @@ uint64_t nvm_vblock_get_ppa(NVM_VBLOCK vblock);
 uint16_t nvm_vblock_get_flags(NVM_VBLOCK vblock);
 
 /**
- * Get ownership of an arbitrary flash block from tgt through vblock.
+ * Get ownership of an arbitrary flash block from via the given target.
  *
  * Returns: On success, a flash block is allocated in LightNVM's media manager
  * and vblock is filled up accordingly. On error, -1 is returned, in which case

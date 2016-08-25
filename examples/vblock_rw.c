@@ -7,7 +7,6 @@
 void ex_vblock_rw(const char* dev_name, const char* tgt_name)
 {
 	NVM_DEV dev;
-	NVM_FPAGE fpage;
 	uint32_t sec_size, pln_pg_size;
 
 	NVM_TGT tgt;
@@ -23,10 +22,8 @@ void ex_vblock_rw(const char* dev_name, const char* tgt_name)
 		return;
 	}
 
-	fpage = nvm_dev_get_fpage(dev);
-	sec_size = nvm_fpage_get_sec_size(fpage);
-	pln_pg_size = nvm_fpage_get_pln_pg_size(fpage);
-	nvm_fpage_pr(fpage);
+	sec_size = nvm_dev_get_sec_size(dev);
+	pln_pg_size = nvm_dev_get_pln_pg_size(dev);
 
 	tgt = nvm_tgt_open(tgt_name, 0x0);	/* Why 0x0? */
 	if (!tgt) {
