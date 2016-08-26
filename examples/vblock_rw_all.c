@@ -135,14 +135,20 @@ void ex_vblock_rw_all(const char* dev_name, const char* tgt_name)
 
 	for(i=0; i<vblks_nres; ++i) {
 							/* Write to media */
-		int written, read;
-		
-		written = nvm_vblock_write(vblks[i], wbuf, 1, 0);
-		printf("written(%d)\n", written);
-							
-		strcpy(rbuf, "");			/* Read from media */
-		read = nvm_vblock_read(vblks[i], rbuf, 1, 0);
-		printf("read(%d), rbuf(%s)\n", read, rbuf);
+		int page_offset;
+		for(page_offset=0; page_offset<geo.npages; ++page_offset) {
+			int written;
+			written = nvm_vblock_write(vblks[i], wbuf, 1, page_offset);
+			if (!written)
+				printf("_write failed page_offset(%d)\n", page_offset);
+		}
+		for(page_offset=0; page_offset<geo.npages; ++page_offset) {
+			int read;
+			strcpy(rbuf, "");			/* Read from media */
+			read = nvm_vblock_read(vblks[i], rbuf, 1, 0);
+			if (!read)
+				printf("_read failed page_offset(%d)\n", page_offset);
+		}
 	}
 
 	for(i=0; i<vblks_nres; ++i) {
