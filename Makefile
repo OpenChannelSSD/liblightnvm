@@ -85,6 +85,11 @@ ex_vblock:
 	@sudo nvm_ex_vblock nvm_ex_tgt || true
 	@make ex_tgt_remove
 
+ex_vblock_reserve_n:
+	@make ex_tgt_create
+	@sudo nvm_ex_vblock_reserve_n nvme0n1 nvm_ex_tgt 8 || true
+	@make ex_tgt_remove
+
 ex_vblock_rw:
 	@make ex_tgt_create
 	@sudo nvm_ex_vblock_rw nvme0n1 nvm_ex_tgt || true
@@ -95,12 +100,12 @@ ex_vblock_rw_multilun:
 	sudo nvm_ex_vblock_rw_multilun nvme0n1 nvm_ex_tgt || true
 	@make ex_tgt_remove
 
-ex_vblock_reserve_n:
+ex_vblock_rw_all:
 	@make ex_tgt_create
-	@sudo nvm_ex_vblock_reserve_n nvme0n1 nvm_ex_tgt 8 || true
+	sudo nvm_ex_vblock_rw_all nvme0n1 nvm_ex_tgt || true
 	@make ex_tgt_remove
 
-example: ex_vblock_reserve_n ex_vblock ex_vblock_rw 
+example: ex_vblock  ex_vblock_reserve_n ex_vblock_rw ex_vblock_rw_all 
 
 # ... all of them
 

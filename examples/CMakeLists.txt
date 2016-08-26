@@ -33,6 +33,11 @@ add_executable(nvm_ex_vblock_rw_multilun
 target_link_libraries(nvm_ex_vblock_rw_multilun lightnvm pthread udev)
 install(TARGETS nvm_ex_vblock_rw_multilun DESTINATION bin)
 
+add_executable(nvm_ex_vblock_rw_all
+	${PROJECT_SOURCE_DIR}/vblock_rw_all.c)
+target_link_libraries(nvm_ex_vblock_rw_all lightnvm pthread udev)
+install(TARGETS nvm_ex_vblock_rw_all DESTINATION bin)
+
 add_executable(nvm_ex_vblock_reserve_n
 	${PROJECT_SOURCE_DIR}/vblock_reserve_n.c)
 target_link_libraries(nvm_ex_vblock_reserve_n lightnvm pthread udev)

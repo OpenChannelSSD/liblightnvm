@@ -4,10 +4,10 @@
 #include <string.h>
 #include <liblightnvm.h>
 
-void ex_vblock_rw(const char* dev_name, const char* tgt_name)
+void ex_vblock_rw_multilun(const char* dev_name, const char* tgt_name)
 {
 	NVM_DEV dev;
-	uint32_t sec_size, pln_pg_size;
+	uint32_t sec_size, pln_pg_size, nluns;
 
 	NVM_TGT tgt;
 	NVM_VBLOCK vblocks[4];
@@ -22,15 +22,19 @@ void ex_vblock_rw(const char* dev_name, const char* tgt_name)
 		printf("Failed opening device(%s)\n", dev_name);
 		return;
 	}
-
 	sec_size = nvm_dev_get_sec_size(dev);
 	pln_pg_size = nvm_dev_get_pln_pg_size(dev);
+	nluns = nvm_dev_get_nluns(dev);
+	
+	printf("dev_name(%s) - sec_size(%u), pln_pg_size(%u), nluns(%u)\n",
+	       dev_name, sec_size, pln_pg_size, nluns);
 
 	ret = posix_memalign((void**)&wbuf, sec_size, pln_pg_size);
 	if (ret) {
 		printf("Failed allocating write buffer(%p)\n", wbuf);
 		return;
 	}
+	memset(wbuf, 0, pln_pg_size);
 	strcpy(wbuf, "Hello World of NVM");
 
 	ret = posix_memalign((void**)&rbuf, sec_size, pln_pg_size);
@@ -38,6 +42,8 @@ void ex_vblock_rw(const char* dev_name, const char* tgt_name)
 		printf("Failed allocating read buffer(%p)\n", wbuf);
 		return;
 	}
+	memset(wbuf, 0, pln_pg_size);
+	strcpy(wbuf, "Hello world of NVM");
 
 	tgt = nvm_tgt_open(tgt_name, 0x0);
 	if (!tgt) {
@@ -53,9 +59,10 @@ void ex_vblock_rw(const char* dev_name, const char* tgt_name)
 			return;
 		}
 	}
-
-	for(i=0; i<nvblocks; ++i) {	/* Reserve from tgt on lun 0-3 */
-		ret = nvm_vblock_gets(vblocks[i], tgt, 0, i);
+	
+	/* Reserve via tgt channel 0, round-robin via lun 0-nluns */
+	for(i=0; i<nvblocks; ++i) {	
+		ret = nvm_vblock_gets(vblocks[i], tgt, 0, i % nluns);
 		if (ret) {
 			printf("Failed getting block via tgt(%p)\n", tgt);
 			return;
@@ -98,7 +105,7 @@ int main(int argc, char **argv)
 		printf("len(device_name) > %d\n", DISK_NAME_LEN - 1);
 	}
 
-	ex_vblock_rw(argv[1], argv[2]);
+	ex_vblock_rw_multilun(argv[1], argv[2]);
 
 	return 0;
 }
