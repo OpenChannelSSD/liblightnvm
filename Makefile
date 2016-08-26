@@ -95,6 +95,11 @@ ex_vblock_rw:
 	@sudo nvm_ex_vblock_rw nvme0n1 nvm_ex_tgt || true
 	@make ex_tgt_remove
 
+ex_vblock_wr:
+	@make ex_tgt_create
+	@sudo nvm_ex_vblock_wr nvme0n1 nvm_ex_tgt || true
+	@make ex_tgt_remove
+
 ex_vblock_rw_multilun:
 	@make ex_tgt_create
 	sudo nvm_ex_vblock_rw_multilun nvme0n1 nvm_ex_tgt || true

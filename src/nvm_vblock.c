@@ -118,19 +118,22 @@ int nvm_vblock_put(struct nvm_vblock *vblock)
 	return ret;
 }
 
-#define NPPAS 16
-#define NPLANES 4
 ssize_t nvm_vblock_read(struct nvm_vblock *vblock, void *buf, size_t count,
 			size_t ppa_off, int flags)
 {
-	struct NVM_ADDR ppas[NPPAS];
+	struct nvm_dev *dev = vblock->tgt->dev;
+	const int NPLANES = nvm_dev_get_nplanes(dev);
+	const int NPPAS_MAX = NPLANES * nvm_dev_get_nsectors(dev);
+
+	struct NVM_ADDR ppas[NPPAS_MAX];
 	struct nvm_ioctl_io ctl;
 	int i, ret;
 
-	for (i = 0; i < NPPAS; i++) {
+	for (i = 0; i < NPPAS_MAX; i++) {
 		struct NVM_ADDR ppa;
 
 		ppa.ppa = vblock->ppa;
+		ppa.g.pg = ppa_off;
 		ppa.g.sec = i % NPLANES;
 		ppa.g.pl = i / NPLANES;
 
@@ -140,7 +143,7 @@ ssize_t nvm_vblock_read(struct nvm_vblock *vblock, void *buf, size_t count,
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.opcode = 0x92;	/* MAGIC NUMBER -- NVM_OP_PREAD */
 	ctl.flags = 0x2;	/* MAGIC NUMBER -- NVM_IO_QUAD_ACCESS */
-	ctl.nppas = NPPAS;
+	ctl.nppas = NPPAS_MAX;
 
 	ctl.ppas = (uint64_t)ppas;
 	ctl.addr = (uint64_t)buf;
@@ -163,14 +166,19 @@ ssize_t nvm_vblock_read(struct nvm_vblock *vblock, void *buf, size_t count,
 ssize_t nvm_vblock_write(struct nvm_vblock *vblock, const void *buf,
 			 size_t count, size_t ppa_off, int flags)
 {
-	struct NVM_ADDR ppas[NPPAS];
+	struct nvm_dev *dev = vblock->tgt->dev;
+	const int NPLANES = nvm_dev_get_nplanes(dev);
+	const int NPPAS_MAX = NPLANES * nvm_dev_get_nsectors(dev);
+
+	struct NVM_ADDR ppas[NPPAS_MAX];
 	struct nvm_ioctl_io ctl;
 	int i, ret;
 
-	for (i = 0; i < NPPAS; i++) {
+	for (i = 0; i < NPPAS_MAX; i++) {
 		struct NVM_ADDR ppa;
 
 		ppa.ppa = vblock->ppa;
+		ppa.g.pg = ppa_off;
 		ppa.g.sec = i % NPLANES;
 		ppa.g.pl = i / NPLANES;
 
@@ -180,7 +188,7 @@ ssize_t nvm_vblock_write(struct nvm_vblock *vblock, const void *buf,
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.opcode = 0x91;	/* MAGIC NUMBER -- NVM_OP_PWRITE */
 	ctl.flags = 0x2;	/* MAGIC NUMBER -- NVM_IO_QUAD_ACCESS */
-	ctl.nppas = NPPAS;
+	ctl.nppas = NPPAS_MAX;
 
 	ctl.ppas = (uint64_t)ppas;
 	ctl.addr = (uint64_t)buf;
