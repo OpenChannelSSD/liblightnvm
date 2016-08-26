@@ -81,6 +81,8 @@ typedef struct nvm_dev *NVM_DEV;
 typedef struct nvm_tgt_info *NVM_TGT_INFO;
 typedef struct nvm_tgt *NVM_TGT;
 
+void nvm_addr_pr(struct NVM_ADDR);
+
 /* TODO: Deprecate this... users should not allocate NVM_DEV and NVM_TGT structures */
 NVM_DEV nvm_dev_new(void);
 void nvm_dev_free(NVM_DEV *dev);
