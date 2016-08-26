@@ -25,6 +25,22 @@ void ex_vblock_rw(const char* dev_name, const char* tgt_name)
 	sec_size = nvm_dev_get_sec_size(dev);
 	pln_pg_size = nvm_dev_get_pln_pg_size(dev);
 
+	ret = posix_memalign((void**)&wbuf, sec_size, pln_pg_size);
+	if (ret) {
+		printf("Failed allocating write buffer(%p)\n", wbuf);
+		return;
+	}
+	memset(wbuf, 0, pln_pg_size);
+	strcpy(wbuf, "Hello World of NVM");
+
+	ret = posix_memalign((void**)&rbuf, sec_size, pln_pg_size);
+	if (ret) {
+		printf("Failed allocating read buffer(%p)\n", wbuf);
+		return;
+	}
+	memset(rbuf, 0, pln_pg_size);
+	strcpy(rbuf, "I WAS NOT WRITTEN");
+
 	tgt = nvm_tgt_open(tgt_name, 0x0);	/* Why 0x0? */
 	if (!tgt) {
 		printf("Failed opening target, does it exist? Create with e.g."
@@ -43,23 +59,12 @@ void ex_vblock_rw(const char* dev_name, const char* tgt_name)
 		printf("Failed getting block via tgt(%p)\n", tgt);
 		return;
 	}
-						/* Write to media */
-	ret = posix_memalign((void**)&wbuf, sec_size, pln_pg_size);
-	if (ret) {
-		printf("Failed allocating write buffer(%p)\n", wbuf);
-		return;
-	}
-	strcpy(wbuf, "Hello World of NVM");
-	written = nvm_vblock_write(vblock, wbuf, 1, 0, 0x0);
-	printf("written(%d)\n", written);
+	nvm_vblock_pr(vblock);
 
-						/* Read from media */
-	ret = posix_memalign((void**)&rbuf, sec_size, pln_pg_size);
-	if (ret) {
-		printf("Failed allocating read buffer(%p)\n", wbuf);
-		return;
-	}
-	read = nvm_vblock_read(vblock, rbuf, 1, 0, 0x0);
+	written = nvm_vblock_write(vblock, wbuf, 1, 0, 0x0);	/* WRITE */
+	printf("written(%d), wbuf(%s)\n", written, wbuf);
+
+	read = nvm_vblock_read(vblock, rbuf, 1, 0, 0x0);	/* READ */
 	printf("read(%d), rbuf(%s)\n", read, rbuf);
 
 	ret = nvm_vblock_put(vblock);	/* Release vblock from tgt */
