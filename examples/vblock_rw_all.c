@@ -117,7 +117,7 @@ void ex_vblock_rw_all(const char* dev_name, const char* tgt_name)
 				      i % geo.nchannels,
 				      i % geo.nluns);
 		if (ret) {
-			printf("F: _gets i(%d), ch(%d), lun(%d), tgt(%p)\n",
+			printf("F: _gets i(%d), ch(%lu), lun(%lu), tgt(%p)\n",
 				i, i % geo.nchannels, i % geo.nluns, tgt);
 			continue;
 		}
