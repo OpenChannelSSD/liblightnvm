@@ -96,6 +96,47 @@ NVM_DEV_INFO nvm_dev_info_new(void);
 void nvm_dev_info_free(NVM_DEV_INFO *info);
 int nvm_dev_info_fill(NVM_DEV_INFO info, const char *dev_name);
 
+/**
+ * @return Number of channels on given device
+ */
+int nvm_dev_get_nchannels(NVM_DEV);
+
+/**
+ * @return Number of NAND dies / luns on given device
+ */
+int nvm_dev_get_nluns(NVM_DEV);
+
+/**
+ * @return Number of planes in a lun on given device
+ */
+int nvm_dev_get_nplanes(NVM_DEV);
+
+/**
+ * @return Number of blocks per plane on given device
+
+ */
+int nvm_dev_get_nblocks(NVM_DEV);
+
+/**
+ * @return Number of pages per block on given device
+
+ */
+int nvm_dev_get_npages(NVM_DEV);
+
+/**
+ * @return Number of sectors per page on given device
+
+ */
+int nvm_dev_get_nsectors(NVM_DEV);
+
+/**
+ * @return Number of bytes per sector on given device
+
+ */
+int nvm_dev_get_nbytes(NVM_DEV);
+
+
+
 int nvm_dev_get_pln_pg_size(NVM_DEV);
 int nvm_dev_get_sec_size(NVM_DEV);
 

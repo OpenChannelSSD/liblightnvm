@@ -295,6 +295,41 @@ int nvm_dev_get_sec_size(struct nvm_dev *dev)
 	return dev->info.hw_sector_size;
 }
 
+int nvm_dev_get_nchannels(struct nvm_dev *dev)
+{
+	return dev->info.num_channels;
+}
+
+int nvm_dev_get_nluns(struct nvm_dev *dev)
+{
+	return dev->info.num_luns;
+}
+
+int nvm_dev_get_nplanes(struct nvm_dev *dev)
+{
+	return dev->info.num_planes;
+}
+
+int nvm_dev_get_nblocks(struct nvm_dev *dev)
+{
+	return dev->info.num_blocks;
+}
+
+int nvm_dev_get_npages(struct nvm_dev *dev)
+{
+	return dev->info.num_pages;
+}
+
+int nvm_dev_get_nsectors(struct nvm_dev *dev)
+{
+	return dev->info.sec_per_pg;
+}
+
+int nvm_dev_get_nbytes(struct nvm_dev *dev)
+{
+	return dev->info.hw_sector_size;
+}
+
 struct nvm_dev* nvm_dev_open(const char *dev_name)
 {
 	struct nvm_dev *dev;
