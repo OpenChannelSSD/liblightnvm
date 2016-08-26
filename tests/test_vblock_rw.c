@@ -47,7 +47,7 @@ void __test_VBLOCK_WRITE_READ_N(int iterations, int npage_io)
 		char *rbuf = NULL;
 							/* Allocate buffers */
 		ret = posix_memalign((void**)&wbuf, sec_size, pln_pg_size);
-		CU_ASSERT(0==ret)
+		CU_ASSERT(0==ret);
 		strcpy(wbuf, "Hello World of NVM");
 
 		ret = posix_memalign((void**)&rbuf, sec_size, pln_pg_size);
@@ -57,12 +57,12 @@ void __test_VBLOCK_WRITE_READ_N(int iterations, int npage_io)
 		CU_ASSERT_PTR_NOT_NULL(vblock);
 
 		ret = nvm_vblock_get(vblock, tgt);
-		CU_ASSERT(0==ret)
+		CU_ASSERT(0==ret);
 		for(j=0; j<npage_io; ++j) {
-			written = nvm_vblock_write(vblock, wbuf, 1, 0, 0x0);
-			CU_ASSERT(1==written)
+			written = nvm_vblock_write(vblock, wbuf, 1, 0);
+			CU_ASSERT(1==written);
 
-			read = nvm_vblock_read(vblock, rbuf, 1, 0, 0x0);
+			read = nvm_vblock_read(vblock, rbuf, 1, 0);
 			CU_ASSERT(1==read);
 
 			CU_ASSERT_STRING_EQUAL(wbuf, rbuf);

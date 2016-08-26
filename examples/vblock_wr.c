@@ -108,10 +108,10 @@ void ex_vblock_wr(const char* dev_name, const char* tgt_name)
 	nvm_vblock_pr(vblock);
 
 	for(i=0; i<geo.npages; i++) {
-		w_nbytes = nvm_vblock_write(vblock, wbuf, 1, i, 0x0);	/* WRITE */
+		w_nbytes = nvm_vblock_write(vblock, wbuf, 1, i);	/* WRITE */
 		printf("written(%d), wbuf(%s)\n", w_nbytes, wbuf);
 
-		r_nbytes = nvm_vblock_read(vblock, rbuf, 1, i, 0x0);	/* READ */
+		r_nbytes = nvm_vblock_read(vblock, rbuf, 1, i);	/* READ */
 		printf("read(%d), rbuf(%s)\n", r_nbytes, rbuf);
 	}
 

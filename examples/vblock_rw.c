@@ -61,10 +61,10 @@ void ex_vblock_rw(const char* dev_name, const char* tgt_name)
 	}
 	nvm_vblock_pr(vblock);
 
-	written = nvm_vblock_write(vblock, wbuf, 1, 0, 0x0);	/* WRITE */
+	written = nvm_vblock_write(vblock, wbuf, 1, 0);	/* WRITE */
 	printf("written(%d), wbuf(%s)\n", written, wbuf);
 
-	read = nvm_vblock_read(vblock, rbuf, 1, 0, 0x0);	/* READ */
+	read = nvm_vblock_read(vblock, rbuf, 1, 0);	/* READ */
 	printf("read(%d), rbuf(%s)\n", read, rbuf);
 
 	ret = nvm_vblock_put(vblock);	/* Release vblock from tgt */

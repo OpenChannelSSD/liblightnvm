@@ -137,11 +137,11 @@ void ex_vblock_rw_all(const char* dev_name, const char* tgt_name)
 							/* Write to media */
 		int written, read;
 		
-		written = nvm_vblock_write(vblks[i], wbuf, 1, 0, 0x0);
+		written = nvm_vblock_write(vblks[i], wbuf, 1, 0);
 		printf("written(%d)\n", written);
 							
 		strcpy(rbuf, "");			/* Read from media */
-		read = nvm_vblock_read(vblks[i], rbuf, 1, 0, 0x0);
+		read = nvm_vblock_read(vblks[i], rbuf, 1, 0);
 		printf("read(%d), rbuf(%s)\n", read, rbuf);
 	}
 
