@@ -127,11 +127,6 @@ ssize_t nvm_vblock_read(struct nvm_vblock *vblock, void *buf, size_t count,
 	struct nvm_ioctl_io ctl;
 	int i, ret;
 
-	memset(&ctl, 0, sizeof(ctl));
-	ctl.opcode = 0;
-	ctl.flags = 0x2;
-	ctl.nppas = NPPAS;
-
 	for (i = 0; i < NPPAS; i++) {
 		struct NVM_ADDR ppa;
 
@@ -141,6 +136,12 @@ ssize_t nvm_vblock_read(struct nvm_vblock *vblock, void *buf, size_t count,
 
 		ppas[i] = ppa;
 	}
+
+	memset(&ctl, 0, sizeof(ctl));
+	ctl.opcode = 0x92;	/* MAGIC NUMBER -- NVM_OP_PREAD */
+	ctl.flags = 0x2;	/* MAGIC NUMBER -- NVM_IO_QUAD_ACCESS */
+	ctl.nppas = NPPAS;
+
 	ctl.ppas = (uint64_t)ppas;
 	ctl.addr = (uint64_t)buf;
 	ctl.data_len = vblock->tgt->dev->info.pln_pg_size;
@@ -149,6 +150,11 @@ ssize_t nvm_vblock_read(struct nvm_vblock *vblock, void *buf, size_t count,
 	if (ret) {
 		NVM_DEBUG("failed ret(%d)\n", ret);
 		return 0;
+	}
+
+	if (ctl.result) {
+		NVM_DEBUG("result(%u)\n", ctl.result);
+		NVM_DEBUG("status(%llu)\n", (unsigned long long)ctl.status);
 	}
 
 	return count;
@@ -161,11 +167,6 @@ ssize_t nvm_vblock_write(struct nvm_vblock *vblock, const void *buf,
 	struct nvm_ioctl_io ctl;
 	int i, ret;
 
-	memset(&ctl, 0, sizeof(ctl));
-	ctl.opcode = 1;
-	ctl.flags = 0x2;
-	ctl.nppas = NPPAS;
-
 	for (i = 0; i < NPPAS; i++) {
 		struct NVM_ADDR ppa;
 
@@ -175,6 +176,12 @@ ssize_t nvm_vblock_write(struct nvm_vblock *vblock, const void *buf,
 
 		ppas[i] = ppa;
 	}
+
+	memset(&ctl, 0, sizeof(ctl));
+	ctl.opcode = 0x91;	/* MAGIC NUMBER -- NVM_OP_PWRITE */
+	ctl.flags = 0x2;	/* MAGIC NUMBER -- NVM_IO_QUAD_ACCESS */
+	ctl.nppas = NPPAS;
+
 	ctl.ppas = (uint64_t)ppas;
 	ctl.addr = (uint64_t)buf;
 	ctl.data_len = vblock->tgt->dev->info.pln_pg_size;
@@ -183,6 +190,11 @@ ssize_t nvm_vblock_write(struct nvm_vblock *vblock, const void *buf,
 	if (ret) {
 		NVM_DEBUG("failed ret(%d)\n", ret);
 		return 0;
+	}
+
+	if (ctl.result) {
+		NVM_DEBUG("result(%u)\n", ctl.result);
+		NVM_DEBUG("status(%llu)\n", (unsigned long long)ctl.status);
 	}
 
 	return count;
