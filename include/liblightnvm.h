@@ -58,7 +58,7 @@ extern "C" {
 #define NVM_LUN_BITS (8)
 #define NVM_CH_BITS  (7)
 
-struct NVM_ADDR {
+typedef struct NVM_ADDR {
 	union {
 		/* General address format */
 		struct {
@@ -73,74 +73,85 @@ struct NVM_ADDR {
 
 		uint64_t ppa;
 	};
-};
+} NVM_ADDR;
 
-typedef struct nvm_vblock *NVM_VBLOCK;
-typedef struct nvm_dev_info *NVM_DEV_INFO;
+typedef struct nvm_geo {
+	/* Values queried from device */
+	size_t nchannels;	// # of channels on device
+	size_t nluns;		// # of luns per channel
+	size_t nplanes;		// # of planes for lun
+	size_t nblocks;		// # of blocks per plane
+	size_t npages;		// # of pages per block
+	size_t nsectors;	// # of sectors per page
+	size_t nbytes;		// # of bytes per sector
+
+	/* Values derived from above */
+	size_t tbytes;		// Total # of bytes on device
+	size_t vblock_nbytes;	// # of bytes per vblock
+	size_t io_nbytes_max;	// # upper bound on _nvm_vblock_[read|write]
+} NVM_GEO;
+
 typedef struct nvm_dev *NVM_DEV;
-typedef struct nvm_tgt_info *NVM_TGT_INFO;
 typedef struct nvm_tgt *NVM_TGT;
+typedef struct nvm_vblock *NVM_VBLOCK;
 
-void nvm_addr_pr(struct NVM_ADDR);
-
-/* TODO: Deprecate this... users should not allocate NVM_DEV and NVM_TGT structures */
-NVM_DEV nvm_dev_new(void);
-void nvm_dev_free(NVM_DEV *dev);
+void nvm_addr_pr(NVM_ADDR addr);
+void nvm_geo_pr(NVM_GEO geo);
 
 NVM_DEV nvm_dev_open(const char *dev_name);
 void nvm_dev_close(NVM_DEV dev);
 void nvm_dev_pr(NVM_DEV dev);
 
-NVM_DEV_INFO nvm_dev_get_info(NVM_DEV dev);
-void nvm_dev_info_pr(NVM_DEV_INFO info);
-
-NVM_DEV_INFO nvm_dev_info_new(void);
-void nvm_dev_info_free(NVM_DEV_INFO *info);
-int nvm_dev_info_fill(NVM_DEV_INFO info, const char *dev_name);
-
 /**
  * @return Number of channels on given device
  */
-int nvm_dev_get_nchannels(NVM_DEV);
+int nvm_dev_get_nchannels(NVM_DEV dev);
 
 /**
- * @return Number of NAND dies / luns on given device
+ * @return Number of luns (NAND dies) on given device
  */
-int nvm_dev_get_nluns(NVM_DEV);
+int nvm_dev_get_nluns(NVM_DEV dev);
 
 /**
  * @return Number of planes in a lun on given device
  */
-int nvm_dev_get_nplanes(NVM_DEV);
+int nvm_dev_get_nplanes(NVM_DEV dev);
 
 /**
  * @return Number of blocks per plane on given device
 
  */
-int nvm_dev_get_nblocks(NVM_DEV);
+int nvm_dev_get_nblocks(NVM_DEV dev);
 
 /**
  * @return Number of pages per block on given device
 
  */
-int nvm_dev_get_npages(NVM_DEV);
+int nvm_dev_get_npages(NVM_DEV dev);
 
 /**
  * @return Number of sectors per page on given device
 
  */
-int nvm_dev_get_nsectors(NVM_DEV);
+int nvm_dev_get_nsectors(NVM_DEV dev);
 
 /**
  * @return Number of bytes per sector on given device
 
  */
-int nvm_dev_get_nbytes(NVM_DEV);
+int nvm_dev_get_nbytes(NVM_DEV dev);
 
+/**
+ * Returns of the geometry related device information including derived
+ * information such as total number of bytes etc. See NVM_GEO for the specifics.
+ *
+ * @return NVM_GEO of given dev
+ */
+NVM_GEO nvm_dev_get_geo(NVM_DEV dev);
 
-
-int nvm_dev_get_pln_pg_size(NVM_DEV);
-int nvm_dev_get_sec_size(NVM_DEV);
+/* TODO: Deprecate these */
+int nvm_dev_get_pln_pg_size(NVM_DEV dev);
+int nvm_dev_get_sec_size(NVM_DEV dev);
 
 /**
  * Open a target file descriptor for the target named tgt.
@@ -156,17 +167,11 @@ int nvm_dev_get_sec_size(NVM_DEV);
  * in which case errno is set to indicate the error.
  */
 NVM_TGT nvm_tgt_open(const char *tgt_name, int flags);
-
-/**
- * Close a target file descriptor.
- */
 void nvm_tgt_close(NVM_TGT tgt);
-int nvm_tgt_get_fd(NVM_TGT tgt);
+void nvm_tgt_pr(NVM_TGT tgt);
 
-NVM_TGT_INFO nvm_tgt_info_new(void);
-void nvm_tgt_info_free(NVM_TGT_INFO *info);
-int nvm_tgt_info_fill(NVM_TGT_INFO info, const char *tgt_name);
-void nvm_tgt_info_pr(NVM_TGT_INFO info);
+int nvm_tgt_get_fd(NVM_TGT tgt);
+NVM_DEV nvm_tgt_get_dev(NVM_TGT tgt);
 
 NVM_VBLOCK nvm_vblock_new(void);
 void nvm_vblock_free(NVM_VBLOCK *vblock);
@@ -236,7 +241,6 @@ ssize_t nvm_vblock_write(NVM_VBLOCK vblock, const void *buf, size_t count,
  * @returns 0 on success, some error code otherwise.
  */
 int nvm_vblock_erase(NVM_VBLOCK vblock);
-
 
 /**
  * Instantiates a target with a given target type on top of an nvme device

@@ -330,6 +330,42 @@ int nvm_dev_get_nbytes(struct nvm_dev *dev)
 	return dev->info.hw_sector_size;
 }
 
+struct nvm_geo nvm_dev_get_geo(struct nvm_dev *dev)
+{
+	struct nvm_geo geo;
+
+	geo.nchannels = nvm_dev_get_nchannels(dev);
+	geo.nluns = nvm_dev_get_nluns(dev);
+	geo.nplanes = nvm_dev_get_nplanes(dev);
+	geo.nblocks = nvm_dev_get_nblocks(dev);
+	geo.npages = nvm_dev_get_npages(dev);
+	geo.nsectors = nvm_dev_get_nsectors(dev);
+	geo.nbytes = nvm_dev_get_nbytes(dev);
+
+	geo.tbytes = geo.nluns * geo.nplanes * geo.nblocks * \
+			geo.npages * geo.nsectors * geo.nbytes;
+	geo.vblock_nbytes = geo.nplanes * geo.npages * \
+				 geo.nsectors * geo.nbytes;
+	geo.io_nbytes_max = geo.nplanes * geo.nsectors * geo.nbytes;
+
+	return geo;
+}
+
+void nvm_geo_pr(struct nvm_geo geo)
+{
+	printf("#ch(%lu), #ln(%lu), #pl(%lu), #bl(%lu), "
+		"#pg(%lu), #sc(%lu), #bt(%lu)\n",
+		geo.nchannels, geo.nluns, geo.nplanes, geo.nblocks,
+		geo.npages, geo.nsectors, geo.nbytes);
+
+	printf("io_nbytes_max(%lub:%luKb)\n",
+		geo.io_nbytes_max, geo.io_nbytes_max >> 10);
+	printf("total_nbytes(%lub:%luMb)\n",
+		geo.tbytes, geo.tbytes >> 20);
+	printf("vblock_nbytes(%lub:%luMb)\n",
+		geo.vblock_nbytes, geo.vblock_nbytes >> 20);
+}
+
 struct nvm_dev* nvm_dev_open(const char *dev_name)
 {
 	struct nvm_dev *dev;

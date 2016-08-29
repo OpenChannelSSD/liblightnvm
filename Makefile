@@ -59,7 +59,7 @@ test_tgt_remove:
 
 test_concur:
 	@make test_tgt_create || true
-	sudo nvm_test_concur nvme0n1 nvm_tst_tgt dflash
+	sudo nvm_test_concur nvm_tst_tgt dflash
 	@make test_tgt_remove || true
 
 test_mgmt:

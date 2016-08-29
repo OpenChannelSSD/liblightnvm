@@ -144,6 +144,16 @@ int nvm_tgt_get_fd(struct nvm_tgt *tgt)
 	return tgt->fd;
 }
 
+NVM_DEV nvm_tgt_get_dev(struct nvm_tgt *tgt)
+{
+	return tgt->dev;
+}
+
+void nvm_tgt_pr(struct nvm_tgt *tgt)
+{
+	nvm_tgt_info_pr(&tgt->info);
+}
+
 void nvm_tgt_close(struct nvm_tgt *tgt)
 {
 	NVM_DEBUG("tgt(%p), tgt->fd(%d)\n", tgt, tgt->fd);
