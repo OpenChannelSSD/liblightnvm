@@ -68,9 +68,6 @@ test_mgmt:
 test_dev:
 	sudo nvm_test_dev
 
-test_tgt:
-	sudo nvm_test_tgt
-
 test_vblock:
 	sudo nvm_test_vblock nvme0n1
 
