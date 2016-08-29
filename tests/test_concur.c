@@ -26,7 +26,7 @@ struct context {
 	char *buf;
 };
 
-#define NUM_PAGES (64)
+#define NUM_PAGES (256)
 static void *write_thread(void *priv)
 {
 	struct context *ctx = priv;
