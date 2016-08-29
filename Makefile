@@ -51,11 +51,19 @@ tags:
 	cscope -b `find . -name '*.c'` `find . -name '*.h'`
 
 # Invoking tests ...
+test_tgt_create:
+	@sudo lnvm create -d nvme0n1 -n nvm_tst_tgt -t dflash || true
+
+test_tgt_remove:
+	@sudo lnvm remove -n nvm_tst_tgt || true
+
 test_concur:
-	sudo nvm_test_concur nvme0n1 test_target dflash
+	@make test_tgt_create || true
+	sudo nvm_test_concur nvme0n1 nvm_tst_tgt dflash
+	@make test_tgt_remove || true
 
 test_mgmt:
-	sudo nvm_test_mgmt nvme0n1 test_target dflash
+	sudo nvm_test_mgmt nvme0n1 nvm_tst_tgt dflash
 
 test_dev:
 	sudo nvm_test_dev
