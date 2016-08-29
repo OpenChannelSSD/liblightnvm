@@ -19,10 +19,13 @@ int main(int argc, char **argv)
 
 	NVM_TGT tgt = nvm_tgt_open(argv[1], 0x0);
 
+	printf("** Target information **\n");
 	nvm_tgt_pr(tgt);
 
+	printf("** Associated device information **\n");
 	nvm_dev_pr(nvm_tgt_get_dev(tgt));
 
+	printf("** Associated device geometry **\n");
 	nvm_geo_pr(nvm_dev_get_geo(nvm_tgt_get_dev(tgt)));
 
 	return 0;

@@ -4,60 +4,10 @@
 #include <string.h>
 #include <liblightnvm.h>
 
-struct geometry {
-	/* Values queried from device */
-	size_t nchannels;	// # of channels on device
-	size_t nluns;		// # of luns per channel
-	size_t nplanes;		// # of planes for lun
-	size_t nblocks;		// # of blocks per plane
-	size_t npages;		// # of pages per block
-	size_t nsectors;	// # of sectors per page
-	size_t nbytes;		// # of bytes per sector
-
-	/* Values derived from above */
-	size_t tbytes;			// Total # of bytes on device
-	size_t vblock_nbytes;	// # of bytes per vblock
-	size_t io_nbytes_max;	// # upper bound on _nvm_vblock_[read|write]
-
-};
-
-void geo_fill(struct geometry* geo, NVM_DEV dev)
-{
-	geo->nchannels = nvm_dev_get_nchannels(dev);
-	geo->nluns = nvm_dev_get_nluns(dev);
-	geo->nplanes = nvm_dev_get_nplanes(dev);
-	geo->nblocks = nvm_dev_get_nblocks(dev);
-	geo->npages = nvm_dev_get_npages(dev);
-	geo->nsectors = nvm_dev_get_nsectors(dev);
-	geo->nbytes = nvm_dev_get_nbytes(dev);
-
-	geo->tbytes = geo->nluns * geo->nplanes * geo->nblocks * \
-			geo->npages * geo->nsectors * geo->nbytes;
-	geo->vblock_nbytes = geo->nplanes * geo->npages * \
-				 geo->nsectors * geo->nbytes;
-	geo->io_nbytes_max = geo->nplanes * geo->nsectors * geo->nbytes;
-}
-
-void geo_pr(struct geometry* geo)
-{
-	printf("#ch(%lu), #ln(%lu), #pl(%lu), #bl(%lu), "
-		"#pg(%lu), #sc(%lu), #bt(%lu)\n",
-		geo->nchannels, geo->nluns, geo->nplanes, geo->nblocks,
-		geo->npages, geo->nsectors, geo->nbytes);
-
-	printf("io_nbytes_max(%lub:%luKb)\n",
-		geo->io_nbytes_max, geo->io_nbytes_max >> 10);
-	printf("total_nbytes(%lub:%luMb)\n",
-		geo->tbytes, geo->tbytes >> 20);
-	printf("vblock_nbytes(%lub:%luMb)\n",
-		geo->vblock_nbytes, geo->vblock_nbytes >> 20);
-}
-
 void ex_vblock_rw_all(const char* dev_name, const char* tgt_name)
 {
-	NVM_DEV dev;
 	NVM_TGT tgt;
-	struct geometry geo;
+	NVM_GEO geo;
 
 	NVM_VBLOCK *vblks = NULL;
 	int vblks_nalloc, vblks_nres;
@@ -66,13 +16,14 @@ void ex_vblock_rw_all(const char* dev_name, const char* tgt_name)
 	char *wbuf;
 	char *rbuf;
 
-	dev = nvm_dev_open(dev_name);
-	if (!dev) {
-		printf("Failed opening device(%s)\n", dev_name);
+	tgt = nvm_tgt_open(tgt_name, 0x0);
+	if (!tgt) {
+		printf("Failed opening target, does it exist? Create with e.g."
+		       "'nvme lnvm -d nvme0n1 -n test_target -t dflash'\n");
 		return;
 	}
-	geo_fill(&geo, dev);
-	geo_pr(&geo);
+
+	geo = nvm_dev_get_geo(nvm_tgt_get_dev(tgt));
 
 	ret = posix_memalign((void**)&wbuf, geo.nbytes, geo.io_nbytes_max);
 	if (ret) {
@@ -90,12 +41,6 @@ void ex_vblock_rw_all(const char* dev_name, const char* tgt_name)
 	memset(wbuf, 0, geo.io_nbytes_max);
 	strcpy(wbuf, "Hello world of NVM");
 
-	tgt = nvm_tgt_open(tgt_name, 0x0);
-	if (!tgt) {
-		printf("Failed opening target, does it exist? Create with e.g."
-		       "'nvme lnvm -d nvme0n1 -n test_target -t dflash'\n");
-		return;
-	}
 
 	/* Allocate nblocks * nluns amount of vblocks. */
 	vblks_nalloc = geo.nblocks * geo.nluns;

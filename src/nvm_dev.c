@@ -277,7 +277,7 @@ void nvm_dev_free(struct nvm_dev **dev)
 
 void nvm_dev_pr(struct nvm_dev* dev)
 {
-	printf("nvm_dev {}\n");
+	nvm_dev_info_pr(&dev->info);
 }
 
 struct nvm_dev_info* nvm_dev_get_info(struct nvm_dev *dev)

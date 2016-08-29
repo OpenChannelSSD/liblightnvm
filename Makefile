@@ -100,6 +100,14 @@ ex_nvmfs:
 	@sudo umount /tmp/nvmfs || true
 	@make ex_tgt_remove || true
 
+ex_devinfo:
+	@sudo nvm_ex_devinfo nvme0n1 || true
+
+ex_tgtinfo:
+	@make ex_tgt_create
+	@sudo nvm_ex_tgtinfo nvm_ex_tgt || true
+	@make ex_tgt_remove
+
 ex_vblock:
 	@make ex_tgt_create
 	@sudo nvm_ex_vblock nvm_ex_tgt || true
