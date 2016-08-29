@@ -8,9 +8,7 @@
 
 #include <CUnit/Basic.h>
 
-static char nvm_dev_name[DISK_NAME_LEN] = "nvme0n1";
-static char nvm_tgt_type[NVM_TTYPE_NAME_MAX] = "dflash";
-static char nvm_tgt_name[DISK_NAME_LEN] = "nvm_vblock_tst";
+static char nvm_tgt_name[DISK_NAME_LEN] = "test0";
 
 int init_suite1(void)
 {
@@ -41,8 +39,18 @@ static void *write_thread(void *priv)
 	pthread_exit(NULL);
 }
 
-static void *erase_thread(void *ctx)
+static void *erase_thread(void *priv)
 {
+	struct context *ctx = priv;
+	int i;
+
+	for (i = 0; i < 4; i++)
+	{
+		usleep(2000);
+		nvm_vblock_erase(ctx->blk);/* ERASE */
+		printf("i(%d), erase\n", i);
+
+	}
 
 	pthread_exit(NULL);
 }
@@ -58,10 +66,6 @@ void test_VBLOCK_CONCUR(void)
 	struct context ctx[2];
 	char *wbuf;
 	pthread_t wr_th, er_th;
-
-	ret = nvm_mgmt_tgt_remove(nvm_tgt_name);
-	ret = nvm_mgmt_tgt_create(nvm_tgt_name, nvm_tgt_type, nvm_dev_name, 0, 0);
-	CU_ASSERT(!ret);
 
 	tgt = nvm_tgt_open(nvm_tgt_name, 0x0);
 	CU_ASSERT(tgt > 0);
@@ -114,20 +118,10 @@ void test_VBLOCK_CONCUR(void)
 	}
 
 	nvm_tgt_close(tgt);
-	ret = nvm_mgmt_tgt_remove(nvm_tgt_name);
-	CU_ASSERT(!ret);
 }
 
 int main(int argc, char **argv)
 {
-	if (argc > 1) {
-		if (strlen(argv[1]) > DISK_NAME_LEN) {
-			printf("Argument nvm_dev can be maximum %d characters\n",
-				DISK_NAME_LEN - 1);
-		}
-		strcpy(nvm_dev_name, argv[1]);
-	}
-
 	CU_pSuite pSuite = NULL;
 
 	if (CUE_SUCCESS != CU_initialize_registry())
