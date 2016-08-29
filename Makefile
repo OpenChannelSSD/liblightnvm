@@ -80,6 +80,18 @@ ex_tgt_create:
 ex_tgt_remove:
 	@sudo lnvm remove -n nvm_ex_tgt || true
 
+ex_nvmfs:
+	@make ex_tgt_create || true
+	@sudo mkdir -p /tmp/nvmfs:w || true
+	@sudo umount /tmp/nvmfs || true
+	@mkdir /tmp/nvmfs || true
+	@sudo nvmfs /tmp/nvmfs || true
+	@sudo ls -lah /tmp/nvmfs || true
+	@sudo sh -c "cat /tmp/nvmfs/hello" || true
+	@sudo sh -c "touch /tmp/nvmfs/file0" || true
+	@sudo umount /tmp/nvmfs || true
+	@make ex_tgt_remove || true
+
 ex_vblock:
 	@make ex_tgt_create
 	@sudo nvm_ex_vblock nvm_ex_tgt || true
@@ -110,7 +122,7 @@ ex_vblock_rw_all:
 	sudo nvm_ex_vblock_rw_all nvme0n1 nvm_ex_tgt || true
 	@make ex_tgt_remove
 
-example: ex_vblock  ex_vblock_reserve_n ex_vblock_rw ex_vblock_rw_all 
+example: ex_vblock ex_vblock_reserve_n ex_vblock_rw ex_vblock_rw_all 
 
 # ... all of them
 
