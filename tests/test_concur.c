@@ -122,6 +122,14 @@ void test_VBLOCK_CONCUR(void)
 
 int main(int argc, char **argv)
 {
+	if (argc > 1) {
+		if (strlen(argv[1]) > DISK_NAME_LEN) {
+			printf("Argument nvm_tgt can be maximum %d characters\n",
+				DISK_NAME_LEN - 1);
+		}
+		strcpy(nvm_tgt_name, argv[1]);
+	}
+
 	CU_pSuite pSuite = NULL;
 
 	if (CUE_SUCCESS != CU_initialize_registry())

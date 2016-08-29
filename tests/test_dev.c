@@ -21,43 +21,6 @@ int clean_suite1(void)
 	return 0;
 }
 
-void test_DEV_INFO_NEW_FREE(void)
-{
-	NVM_DEV_INFO info;
-	
-	info = nvm_dev_info_new();
-	CU_ASSERT_PTR_NOT_NULL(info);
-
-	nvm_dev_info_free(&info);
-	CU_ASSERT_PTR_NULL(info);
-}
-
-void test_DEV_INFO_FILL(void)
-{
-	NVM_DEV_INFO info;
-	int ret;
-
-	info = nvm_dev_info_new();
-	CU_ASSERT_PTR_NOT_NULL(info);
-
-	ret = nvm_dev_info_fill(info, nvm_dev_name);
-	CU_ASSERT(0 == ret);
-
-	nvm_dev_info_free(&info);
-	CU_ASSERT_PTR_NULL(info);
-}
-
-void test_DEV_NEW_FREE(void)
-{
-	NVM_DEV dev;
-	
-	dev = nvm_dev_new();
-	CU_ASSERT_PTR_NOT_NULL(dev);
-
-	nvm_dev_free(&dev);
-	CU_ASSERT_PTR_NULL(dev);
-}
-
 void test_DEV_OPEN_CLOSE(void)
 {
 	NVM_DEV dev;
@@ -113,9 +76,6 @@ int main(int argc, char **argv)
 
 	/* add the tests to the suite */
 	if (
-	(NULL == CU_add_test(pSuite, "nvm_dev_info_[new|free]", test_DEV_INFO_NEW_FREE)) ||
-	(NULL == CU_add_test(pSuite, "nvm_dev_info_fill", test_DEV_INFO_FILL)) ||
-	(NULL == CU_add_test(pSuite, "nvm_dev_[new|free]", test_DEV_NEW_FREE)) ||
 	(NULL == CU_add_test(pSuite, "nvm_dev_[open|close]", test_DEV_OPEN_CLOSE)) ||
 	(NULL == CU_add_test(pSuite, "nvm_dev_[open|close] n", test_DEV_OPEN_CLOSE_N)) ||
 	0

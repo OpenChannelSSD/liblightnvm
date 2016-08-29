@@ -18,10 +18,12 @@ int main(int argc, char **argv)
 		printf("len(device_name) > %d\n", DISK_NAME_LEN - 1);
 	}
 
-	NVM_DEV_INFO info = nvm_dev_info_new();
-	nvm_dev_info_fill(info, argv[1]);
-	nvm_dev_info_pr(info);
-	nvm_dev_info_free(&info);
+	NVM_DEV dev = nvm_dev_open(argv[1]);
+	NVM_GEO geo = nvm_dev_get_geo(dev);
+
+	nvm_geo_pr(geo);
+
+	nvm_dev_close(dev);
 
 	return 0;
 }

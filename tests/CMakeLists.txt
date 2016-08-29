@@ -25,11 +25,6 @@ add_executable(nvm_test_dev
 target_link_libraries(nvm_test_dev lightnvm pthread udev cunit)
 install(TARGETS nvm_test_dev DESTINATION bin)
 
-add_executable(nvm_test_tgt
-	${PROJECT_SOURCE_DIR}/test_tgt.c)
-target_link_libraries(nvm_test_tgt lightnvm pthread udev cunit)
-install(TARGETS nvm_test_tgt DESTINATION bin)
-
 add_executable(nvm_test_vblock
 	${PROJECT_SOURCE_DIR}/test_vblock.c)
 target_link_libraries(nvm_test_vblock lightnvm pthread udev cunit)
