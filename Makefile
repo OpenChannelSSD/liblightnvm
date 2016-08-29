@@ -78,7 +78,7 @@ test_beam:
 	sudo nvm_test_beam nvme0n1
 
 # ... all of them
-test: test_mgmt test_dev test_tgt test_vblock test_vblock_rw test_beam
+test: test_concur test_mgmt test_dev test_vblock test_vblock_rw test_beam
 
 # Invoking examples ...
 
