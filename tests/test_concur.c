@@ -34,14 +34,10 @@ static void *write_thread(void *priv)
 	struct context *ctx = priv;
 	int i, w_nbytes;
 
-	printf("RUN WRITE fdsfdsfsd\n");
 	for (i = 0; i < NUM_PAGES; i++) {
-		printf("larlarlarlarlalalrrarllarla\n");
 		w_nbytes = nvm_vblock_write(ctx->blk, ctx->buf, 1, i);/* WRITE */
 		printf("i(%d), written(%d), wbuf(%s)\n", i, w_nbytes, ctx->buf);
 	}
-
-	printf(" I AM DONE\n");
 	pthread_exit(NULL);
 }
 
