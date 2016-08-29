@@ -208,3 +208,50 @@ ssize_t nvm_vblock_write(struct nvm_vblock *vblock, const void *buf, size_t coun
 	return count;
 }
 
+int nvm_vblock_erase(struct nvm_vblock *vblock)
+{
+	struct nvm_dev *dev = vblock->tgt->dev;
+	const int NPLANES = nvm_dev_get_nplanes(dev);
+	const int NPAGES = nvm_dev_get_npages(dev);
+	const int NPPAS_MAX = NPLANES * nvm_dev_get_nsectors(dev);
+
+	int pg_off;
+
+	for (pg_off = 0; pg_off < NPAGES; ++pg_off) {
+		struct NVM_ADDR ppas[NPPAS_MAX];
+		struct nvm_ioctl_io ctl;
+		int i, ret;
+
+		for (i = 0; i < NPPAS_MAX; i++) {
+			struct NVM_ADDR ppa;
+
+			ppa.ppa = vblock->ppa;
+			ppa.g.pg = pg_off;
+			ppa.g.sec = i % NPLANES;
+			ppa.g.pl = i / NPLANES;
+
+			ppas[i] = ppa;
+		}
+
+		memset(&ctl, 0, sizeof(ctl));
+		ctl.opcode = 0x90;	/* MAGIC NUMBER -- NVM_OP_PERASE */
+		ctl.flags = 0x2;	/* MAGIC NUMBER -- NVM_IO_QUAD_ACCESS */
+		ctl.nppas = NPPAS_MAX;
+
+		ctl.ppas = (uint64_t)ppas;
+
+		ret = ioctl(vblock->tgt->fd, NVM_PIO, &ctl);
+		if (ret) {
+			NVM_DEBUG("failed ret(%d)\n", ret);
+			return ret;
+		}
+
+		if (ctl.result) {
+			NVM_DEBUG("result(%u)\n", ctl.result);
+			NVM_DEBUG("status(%llu)\n", (unsigned long long)ctl.status);
+		}
+	}
+
+	return 0;
+}
+
