@@ -49,3 +49,8 @@ add_executable(nvm_test_beam
 	${PROJECT_SOURCE_DIR}/test_beam.c)
 target_link_libraries(nvm_test_beam lightnvm pthread udev cunit)
 install(TARGETS nvm_test_beam DESTINATION bin)
+
+add_executable(nvm_test_concur
+	${PROJECT_SOURCE_DIR}/test_concur.c)
+target_link_libraries(nvm_test_concur lightnvm pthread udev cunit)
+install(TARGETS nvm_test_concur DESTINATION bin)

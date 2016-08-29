@@ -51,6 +51,9 @@ tags:
 	cscope -b `find . -name '*.c'` `find . -name '*.h'`
 
 # Invoking tests ...
+test_concur:
+	sudo nvm_test_concur nvme0n1 test_target dflash
+
 test_mgmt:
 	sudo nvm_test_mgmt nvme0n1 test_target dflash
 
