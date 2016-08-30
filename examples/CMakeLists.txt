@@ -6,41 +6,27 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 
 include_directories("${PROJECT_SOURCE_DIR}/../include")
 
-link_directories("/tmp/nvm_install/lib")
+set(SOURCE_FILES
+	${PROJECT_SOURCE_DIR}/devinfo.c
+	${PROJECT_SOURCE_DIR}/tgtinfo.c
+	${PROJECT_SOURCE_DIR}/vblock.c
+	${PROJECT_SOURCE_DIR}/vblock_rw.c
+	${PROJECT_SOURCE_DIR}/vblock_wr.c
+	${PROJECT_SOURCE_DIR}/vblock_rw_multilun.c
+	${PROJECT_SOURCE_DIR}/vblock_rw_all.c
+	${PROJECT_SOURCE_DIR}/vblock_reserve_n.c)
 
-add_executable(nvm_ex_devinfo ${PROJECT_SOURCE_DIR}/devinfo.c)
-target_link_libraries(nvm_ex_devinfo lightnvm pthread udev)
-install(TARGETS nvm_ex_devinfo DESTINATION bin)
+foreach(SRC_FN ${SOURCE_FILES})
+	get_filename_component(SRC_FN_WE ${SRC_FN} NAME_WE)
+	set(EXE_FN "nvm_ex_${SRC_FN_WE}")
+	add_executable(${EXE_FN} ${SRC_FN})
+	target_link_libraries(${EXE_FN} lightnvm pthread udev)
+	install(TARGETS ${EXE_FN}  DESTINATION bin)
+endforeach()
 
-add_executable(nvm_ex_tgtinfo ${PROJECT_SOURCE_DIR}/tgtinfo.c)
-target_link_libraries(nvm_ex_tgtinfo lightnvm pthread udev)
-install(TARGETS nvm_ex_tgtinfo DESTINATION bin)
-
-add_executable(nvm_ex_vblock ${PROJECT_SOURCE_DIR}/vblock.c)
-target_link_libraries(nvm_ex_vblock lightnvm pthread udev)
-install(TARGETS nvm_ex_vblock DESTINATION bin)
-
-add_executable(nvm_ex_vblock_rw ${PROJECT_SOURCE_DIR}/vblock_rw.c)
-target_link_libraries(nvm_ex_vblock_rw lightnvm pthread udev)
-install(TARGETS nvm_ex_vblock_rw DESTINATION bin)
-
-add_executable(nvm_ex_vblock_wr ${PROJECT_SOURCE_DIR}/vblock_wr.c)
-target_link_libraries(nvm_ex_vblock_wr lightnvm pthread udev)
-install(TARGETS nvm_ex_vblock_wr DESTINATION bin)
-
-add_executable(nvm_ex_vblock_rw_multilun ${PROJECT_SOURCE_DIR}/vblock_rw_multilun.c)
-target_link_libraries(nvm_ex_vblock_rw_multilun lightnvm pthread udev)
-install(TARGETS nvm_ex_vblock_rw_multilun DESTINATION bin)
-
-add_executable(nvm_ex_vblock_rw_all ${PROJECT_SOURCE_DIR}/vblock_rw_all.c)
-target_link_libraries(nvm_ex_vblock_rw_all lightnvm pthread udev)
-install(TARGETS nvm_ex_vblock_rw_all DESTINATION bin)
-
-add_executable(nvm_ex_vblock_reserve_n ${PROJECT_SOURCE_DIR}/vblock_reserve_n.c)
-target_link_libraries(nvm_ex_vblock_reserve_n lightnvm pthread udev)
-install(TARGETS nvm_ex_vblock_reserve_n DESTINATION bin)
-
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_FILE_OFFSET_BITS=64") 
+# This one is special... using different flags and libraries
+#set(SOURCE_FILES ${PROJECT_SOURCE_DIR}/nvmfs.c)
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_FILE_OFFSET_BITS=64")
 #add_executable(nvmfs ${PROJECT_SOURCE_DIR}/nvmfs.c)
 #target_link_libraries(nvmfs lightnvm pthread udev fuse)
 #install(TARGETS nvmfs DESTINATION bin)

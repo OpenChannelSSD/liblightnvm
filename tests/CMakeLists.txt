@@ -1,12 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 project(liblightnvm_tests C)
-include(FeatureSummary)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/../cmake")
 
-find_package(cunit REQUIRED liblightnvm_tests)
-set_package_properties(cunit PROPERTIES DESCRIPTION "libcunit")
-set_package_properties(cunit PROPERTIES TYPE REQUIRED PURPOSE "Tests depends on libcunit")
-
-if ( NOT ${CUNIT_FOUND} )
+find_library (CUNIT cunit)
+if ( "${CUNIT}" STREQUAL "CUNIT-NOTFOUND" )
 	message(FATAL_ERROR
 		"Please install libcunit (e.g. 'libcunit1-dev' on Ubuntu 16.04)")
 endif()
@@ -14,38 +11,21 @@ endif()
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DNVM_DEBUG_ENABLED")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 
-include_directories("${CUNIT_INCLUDE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/../include")
 include_directories("${PROJECT_SOURCE_DIR}/../include/linux/uapi")
 
-link_directories("/tmp/nvm_install/lib")
-
-add_executable(nvm_test_dev
-	${PROJECT_SOURCE_DIR}/test_dev.c)
-target_link_libraries(nvm_test_dev lightnvm pthread udev cunit)
-install(TARGETS nvm_test_dev DESTINATION bin)
-
-add_executable(nvm_test_vblock
-	${PROJECT_SOURCE_DIR}/test_vblock.c)
-target_link_libraries(nvm_test_vblock lightnvm pthread udev cunit)
-install(TARGETS nvm_test_vblock DESTINATION bin)
-
-add_executable(nvm_test_vblock_rw
-	${PROJECT_SOURCE_DIR}/test_vblock_rw.c)
-target_link_libraries(nvm_test_vblock_rw lightnvm pthread udev cunit)
-install(TARGETS nvm_test_vblock_rw DESTINATION bin)
-
-add_executable(nvm_test_mgmt
-	${PROJECT_SOURCE_DIR}/test_mgmt.c)
-target_link_libraries(nvm_test_mgmt lightnvm pthread udev cunit)
-install(TARGETS nvm_test_mgmt DESTINATION bin)
-
-add_executable(nvm_test_beam
-	${PROJECT_SOURCE_DIR}/test_beam.c)
-target_link_libraries(nvm_test_beam lightnvm pthread udev cunit)
-install(TARGETS nvm_test_beam DESTINATION bin)
-
-add_executable(nvm_test_concur
+set(SOURCE_FILES
+	${PROJECT_SOURCE_DIR}/test_dev.c
+	${PROJECT_SOURCE_DIR}/test_vblock.c
+	${PROJECT_SOURCE_DIR}/test_vblock_rw.c
+	${PROJECT_SOURCE_DIR}/test_mgmt.c
+	${PROJECT_SOURCE_DIR}/test_beam.c
 	${PROJECT_SOURCE_DIR}/test_concur.c)
-target_link_libraries(nvm_test_concur lightnvm pthread udev cunit)
-install(TARGETS nvm_test_concur DESTINATION bin)
+
+foreach(SRC_FN ${SOURCE_FILES})
+	get_filename_component(SRC_FN_WE ${SRC_FN} NAME_WE)
+	set(EXE_FN "nvm_${SRC_FN_WE}")
+	add_executable(${EXE_FN} ${SRC_FN})
+	target_link_libraries(${EXE_FN} lightnvm pthread udev cunit)
+	install(TARGETS ${EXE_FN} DESTINATION bin)
+endforeach()
