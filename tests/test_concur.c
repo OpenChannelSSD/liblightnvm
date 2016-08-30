@@ -78,13 +78,13 @@ void test_VBLOCK_CONCUR(void)
 		//nvm_vblock_pr(vblock[i]);
 	}
 
-	ret = posix_memalign((void**)&wbuf, geo.nbytes, geo.io_nbytes_max);
+	ret = posix_memalign((void**)&wbuf, geo.nbytes, geo.vpage_nbytes);
 	CU_ASSERT(!ret);
 	if (ret) {
 		printf("Failed allocating write buffer(%p)\n", wbuf);
 		return;
 	}
-	memset(wbuf, 0, geo.io_nbytes_max);
+	memset(wbuf, 0, geo.vpage_nbytes);
 
 	ctx[0].blk = vblock[0];
 	ctx[0].tgt = tgt;

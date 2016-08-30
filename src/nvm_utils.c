@@ -113,3 +113,29 @@ struct udev_device* udev_dev_find(struct udev *udev, const char *subsystem,
 	return dev;
 }
 
+void* nvm_vpage_buf_alloc(NVM_GEO geo)
+{
+	char *buf;
+	int ret;
+
+	ret = posix_memalign((void**)&buf, geo.nbytes, geo.vpage_nbytes);
+	if (ret) {
+		return NULL;
+	}
+
+	return buf;
+}
+
+void* nvm_vblock_buf_alloc(NVM_GEO geo)
+{
+	char *buf;
+	int ret;
+
+	ret = posix_memalign((void**)&buf, geo.nbytes, geo.vblock_nbytes);
+	if (ret) {
+		return NULL;
+	}
+
+	return buf;
+}
+

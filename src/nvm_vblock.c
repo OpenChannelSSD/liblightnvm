@@ -209,6 +209,42 @@ ssize_t nvm_vblock_pwrite(struct nvm_vblock *vblock, const void *buf,
 	return count;
 }
 
+int nvm_vblock_write(struct nvm_vblock *vblock, const void *buf)
+{
+	const struct nvm_geo geo = nvm_dev_get_geo(nvm_tgt_get_dev(vblock->tgt));
+	
+	int buf_off = 0;
+	int pg;
+
+	for(pg=0; pg<geo.npages; ++pg) {
+		int ret = nvm_vblock_pwrite(vblock, buf+buf_off, 1, pg);
+		if (!ret) {
+			return -(pg+1);
+		}
+		buf_off += geo.vpage_nbytes;
+	}
+
+	return 0;
+}
+
+int nvm_vblock_read(struct nvm_vblock *vblock, void *buf)
+{
+	const struct nvm_geo geo = nvm_dev_get_geo(nvm_tgt_get_dev(vblock->tgt));
+	
+	int buf_off = 0;
+	int pg;
+
+	for(pg=0; pg<geo.npages; ++pg) {
+		int ret = nvm_vblock_pread(vblock, buf+buf_off, 1, pg);
+		if (!ret) {
+			return -(pg+1);
+		}
+		buf_off += geo.vpage_nbytes;
+	}
+
+	return 0;
+}
+
 int nvm_vblock_erase(struct nvm_vblock *vblock)
 {
 	struct nvm_dev *dev = vblock->tgt->dev;

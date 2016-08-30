@@ -88,7 +88,7 @@ typedef struct nvm_geo {
 	/* Values derived from above */
 	size_t tbytes;		// Total # of bytes on device
 	size_t vblock_nbytes;	// # of bytes per vblock
-	size_t io_nbytes_max;	// # upper bound on _nvm_vblock_[read|write]
+	size_t vpage_nbytes;	// # upper bound on _nvm_vblock_[read|write]
 } NVM_GEO;
 
 typedef struct nvm_dev *NVM_DEV;
@@ -153,25 +153,15 @@ NVM_GEO nvm_dev_get_geo(NVM_DEV dev);
 int nvm_dev_get_pln_pg_size(NVM_DEV dev);
 int nvm_dev_get_sec_size(NVM_DEV dev);
 
-/**
- * Open a target file descriptor for the target named tgt.
- *
- * Descriptor is passed to the nvm_vblock_get / nvm_vblock_put interface.
- * Descriptor is passed to the nvm_vblock_read / nvm_vblock_write interface.
- *
- * By using nvm_tgt_open instead of directly opening a file descriptor to the
- * target path, liblightnvm can keep track of which targets are being used and
- * manage memory accordingly.
- *
- * Returns: A file descriptor to the target named tgt. On error, -1 is returned,
- * in which case errno is set to indicate the error.
- */
 NVM_TGT nvm_tgt_open(const char *tgt_name, int flags);
 void nvm_tgt_close(NVM_TGT tgt);
 void nvm_tgt_pr(NVM_TGT tgt);
 
 int nvm_tgt_get_fd(NVM_TGT tgt);
 NVM_DEV nvm_tgt_get_dev(NVM_TGT tgt);
+
+void* nvm_vblock_buf_alloc(NVM_GEO geo);
+void* nvm_vpage_buf_alloc(NVM_GEO geo);
 
 NVM_VBLOCK nvm_vblock_new(void);
 void nvm_vblock_free(NVM_VBLOCK *vblock);
@@ -236,7 +226,21 @@ ssize_t nvm_vblock_pwrite(NVM_VBLOCK vblock, const void *buf, size_t count,
                           size_t ppa_off);
 
 /**
- * Erase a block
+ * Read the entire vblock, storing it into buf.
+ *
+ * @returns 0 on success, some error code otherwise.
+ */
+int nvm_vblock_read(NVM_VBLOCK vblock, void *buf);
+
+/**
+ * Write the entire vblock, filling it with data from buf.
+ *
+ * @returns 0 on success, some error code otherwise.
+ */
+int nvm_vblock_write(NVM_VBLOCK vblock, const void *buf);
+
+/**
+ * Erase an entire vblock
  *
  * @returns 0 on success, some error code otherwise.
  */

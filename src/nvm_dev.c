@@ -346,24 +346,24 @@ struct nvm_geo nvm_dev_get_geo(struct nvm_dev *dev)
 			geo.npages * geo.nsectors * geo.nbytes;
 	geo.vblock_nbytes = geo.nplanes * geo.npages * \
 				 geo.nsectors * geo.nbytes;
-	geo.io_nbytes_max = geo.nplanes * geo.nsectors * geo.nbytes;
+	geo.vpage_nbytes = geo.nplanes * geo.nsectors * geo.nbytes;
 
 	return geo;
 }
 
 void nvm_geo_pr(struct nvm_geo geo)
 {
-	printf("#ch(%lu), #ln(%lu), #pl(%lu), #bl(%lu), "
-		"#pg(%lu), #sc(%lu), #bt(%lu)\n",
+	printf("nchannels(%lu), nluns(%lu), nplanes(%lu), nblocks(%lu), "
+		"npages(%lu), nsectors(%lu), nbytes(%lu)\n",
 		geo.nchannels, geo.nluns, geo.nplanes, geo.nblocks,
 		geo.npages, geo.nsectors, geo.nbytes);
 
-	printf("io_nbytes_max(%lub:%luKb)\n",
-		geo.io_nbytes_max, geo.io_nbytes_max >> 10);
 	printf("total_nbytes(%lub:%luMb)\n",
 		geo.tbytes, geo.tbytes >> 20);
 	printf("vblock_nbytes(%lub:%luMb)\n",
 		geo.vblock_nbytes, geo.vblock_nbytes >> 20);
+	printf("vpage_nbytes(%lub:%luKb)\n",
+		geo.vpage_nbytes, geo.vpage_nbytes >> 10);
 }
 
 struct nvm_dev* nvm_dev_open(const char *dev_name)

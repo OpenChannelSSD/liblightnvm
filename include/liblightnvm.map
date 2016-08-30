@@ -9,6 +9,9 @@ LIBLIGHTNVM_0.2 {
 		nvm_tgt_get_dev,
 		nvm_tgt_get_fd,
 
+		nvm_vblock_buf_alloc,
+		nvm_vpage_buf_alloc,
+
 		nvm_vblock_new,
 		nvm_vblock_free,
 		nvm_vblock_get_flags,
