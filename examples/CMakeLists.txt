@@ -7,14 +7,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 include_directories("${PROJECT_SOURCE_DIR}/../include")
 
 set(SOURCE_FILES
-	${PROJECT_SOURCE_DIR}/devinfo.c
-	${PROJECT_SOURCE_DIR}/tgtinfo.c
-	${PROJECT_SOURCE_DIR}/vblock.c
-	${PROJECT_SOURCE_DIR}/vblock_rw.c
-	${PROJECT_SOURCE_DIR}/vblock_wr.c
-	${PROJECT_SOURCE_DIR}/vblock_rw_multilun.c
-	${PROJECT_SOURCE_DIR}/vblock_rw_all.c
-	${PROJECT_SOURCE_DIR}/vblock_reserve_n.c)
+	${PROJECT_SOURCE_DIR}/info.c
+	${PROJECT_SOURCE_DIR}/vblock_pio_1.c
+	${PROJECT_SOURCE_DIR}/vblock_pio_n.c)
 
 foreach(SRC_FN ${SOURCE_FILES})
 	get_filename_component(SRC_FN_WE ${SRC_FN} NAME_WE)

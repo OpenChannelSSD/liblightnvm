@@ -100,45 +100,22 @@ ex_nvmfs:
 	@sudo umount /tmp/nvmfs || true
 	@make ex_tgt_remove || true
 
-ex_devinfo:
-	@sudo nvm_ex_devinfo nvme0n1 || true
-
-ex_tgtinfo:
+ex_info:
 	@make ex_tgt_create
-	@sudo nvm_ex_tgtinfo nvm_ex_tgt || true
+	@sudo nvm_ex_info nvm_ex_tgt || true
 	@make ex_tgt_remove
 
-ex_vblock:
+ex_vblock_pio_1:
 	@make ex_tgt_create
-	@sudo nvm_ex_vblock nvm_ex_tgt || true
+	@sudo nvm_ex_vblock_pio_1 nvm_ex_tgt || true
 	@make ex_tgt_remove
 
-ex_vblock_reserve_n:
+ex_vblock_pio_n:
 	@make ex_tgt_create
-	@sudo nvm_ex_vblock_reserve_n nvme0n1 nvm_ex_tgt 8 || true
+	@sudo nvm_ex_vblock_pio_n nvm_ex_tgt || true
 	@make ex_tgt_remove
 
-ex_vblock_rw:
-	@make ex_tgt_create
-	@sudo nvm_ex_vblock_rw nvme0n1 nvm_ex_tgt || true
-	@make ex_tgt_remove
-
-ex_vblock_wr:
-	@make ex_tgt_create
-	@sudo nvm_ex_vblock_wr nvme0n1 nvm_ex_tgt || true
-	@make ex_tgt_remove
-
-ex_vblock_rw_multilun:
-	@make ex_tgt_create
-	sudo nvm_ex_vblock_rw_multilun nvme0n1 nvm_ex_tgt || true
-	@make ex_tgt_remove
-
-ex_vblock_rw_all:
-	@make ex_tgt_create
-	sudo nvm_ex_vblock_rw_all nvme0n1 nvm_ex_tgt || true
-	@make ex_tgt_remove
-
-example: ex_vblock ex_vblock_reserve_n ex_vblock_rw ex_vblock_rw_all 
+example: ex_info ex_vblock_pio_1 ex_vblock_pio_n
 
 # ... all of them
 

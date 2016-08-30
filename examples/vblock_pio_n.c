@@ -4,7 +4,7 @@
 #include <string.h>
 #include <liblightnvm.h>
 
-void ex_vblock_rw_all(const char* dev_name, const char* tgt_name)
+void ex_block_pio_n(const char* tgt_name)
 {
 	NVM_TGT tgt;
 	NVM_GEO geo;
@@ -25,28 +25,29 @@ void ex_vblock_rw_all(const char* dev_name, const char* tgt_name)
 
 	geo = nvm_dev_get_geo(nvm_tgt_get_dev(tgt));
 
-	ret = posix_memalign((void**)&wbuf, geo.nbytes, geo.io_nbytes_max);
-	if (ret) {
-		printf("Failed allocating write buffer(%p)\n", wbuf);
+	wbuf = nvm_vpage_buf_alloc(geo);
+	if (!wbuf) {
+		printf("Failed allocating nbytes(%lu) for write buffer\n",
+			geo.vpage_nbytes);
 		return;
 	}
-	memset(wbuf, 0, geo.io_nbytes_max);
+	memset(wbuf, 0, geo.vpage_nbytes);
 	strcpy(wbuf, "Hello World of NVM");
 
-	ret = posix_memalign((void**)&rbuf, geo.nbytes, geo.io_nbytes_max);
-	if (ret) {
-		printf("Failed allocating read buffer(%p)\n", wbuf);
+	rbuf = nvm_vpage_buf_alloc(geo);
+	if (!rbuf) {
+		printf("Failed allocating nbytes(%lu) for read buffer\n",
+			geo.vpage_nbytes);
 		return;
-		}
-	memset(wbuf, 0, geo.io_nbytes_max);
+	}
+	memset(wbuf, 0, geo.vpage_nbytes);
 	strcpy(wbuf, "Hello world of NVM");
-
 
 	/* Allocate nblocks * nluns amount of vblocks. */
 	vblks_nalloc = geo.nblocks * geo.nluns;
 	vblks = malloc(sizeof(NVM_VBLOCK) * vblks_nalloc);
 	for(i=0; i<vblks_nalloc; ++i) {
-		vblks[i] = nvm_vblock_new();		
+		vblks[i] = nvm_vblock_new();
 		if (!vblks[i]) {
 			printf("Failed allocating vblks[%d]\n", i);
 			return;
@@ -78,21 +79,25 @@ void ex_vblock_rw_all(const char* dev_name, const char* tgt_name)
 	       vblks_nalloc - vblks_nres,
 	       ((vblks_nalloc - vblks_nres) * geo.vblock_nbytes) >> 20);
 
-	for(i=0; i<vblks_nres; ++i) {
-							/* Write to media */
-		int page_offset;
-		for(page_offset=0; page_offset<geo.npages; ++page_offset) {
+	for(i=0; i<vblks_nres; ++i) {	/* Write all pages then read them */
+		int pg;
+
+		for(pg=0; pg<geo.npages; ++pg) {	/* write */
 			int written;
-			written = nvm_vblock_pwrite(vblks[i], wbuf, 1, page_offset);
+
+			written = nvm_vblock_pwrite(vblks[i], wbuf, 1, pg);
 			if (!written)
-				printf("_write failed page_offset(%d)\n", page_offset);
+				printf("_write failed pg(%d)\n", pg);
 		}
-		for(page_offset=0; page_offset<geo.npages; ++page_offset) {
+
+		for(pg=0; pg<geo.npages; ++pg) {	/* read */
 			int read;
-			strcpy(rbuf, "");			/* Read from media */
+
+			strcpy(rbuf, "");
+
 			read = nvm_vblock_pread(vblks[i], rbuf, 1, 0);
 			if (!read)
-				printf("_read failed page_offset(%d)\n", page_offset);
+				printf("_read failed pg(%d)\n", pg);
 		}
 	}
 
@@ -107,14 +112,15 @@ void ex_vblock_rw_all(const char* dev_name, const char* tgt_name)
 		nvm_vblock_free(&vblks[i]);		/* De-allocate vblock */
 	}
 	free(vblks);
-	nvm_tgt_close(tgt);			/* Close the target */
+	nvm_tgt_close(tgt);				/* Close the target */
+	free(wbuf);
+	free(rbuf);
 }
 
 int main(int argc, char **argv)
 {
-	if (argc != 3) {
-		printf("Usage: %s dev_name tgt_name "
-		       "e.g. '%s nvme0n1 ex_target'\n", argv[0], argv[0]);
+	if (argc != 2) {
+		printf("Usage: %s tgt_name ", argv[0]);
 		return -1;
 	}
 
@@ -122,7 +128,7 @@ int main(int argc, char **argv)
 		printf("len(device_name) > %d\n", DISK_NAME_LEN - 1);
 	}
 
-	ex_vblock_rw_all(argv[1], argv[2]);
+	ex_block_pio_n(argv[1]);
 
 	return 0;
 }
