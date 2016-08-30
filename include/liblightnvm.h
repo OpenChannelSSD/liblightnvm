@@ -223,8 +223,8 @@ int nvm_vblock_put(NVM_VBLOCK vblock);
  * XXX(1): For now, we assume that the device supports reading at a sector
  * granurality; we will take this information from the device in the future.
  */
-ssize_t nvm_vblock_read(NVM_VBLOCK vblock, void *buf, size_t count,
-                        size_t ppa_off);
+ssize_t nvm_vblock_pread(NVM_VBLOCK vblock, void *buf, size_t count,
+			 size_t ppa_off);
 
 /**
  * Write count flash pages of size fpage_size.
@@ -232,8 +232,8 @@ ssize_t nvm_vblock_read(NVM_VBLOCK vblock, void *buf, size_t count,
  * fpage_size is the flash page write size. That is, the size of a virtual flash
  * pages, i.e., spanning flash planes.
  */
-ssize_t nvm_vblock_write(NVM_VBLOCK vblock, const void *buf, size_t count,
-                         size_t ppa_off);
+ssize_t nvm_vblock_pwrite(NVM_VBLOCK vblock, const void *buf, size_t count,
+                          size_t ppa_off);
 
 /**
  * Erase a block

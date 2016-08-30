@@ -214,8 +214,8 @@ static int beam_sync(struct beam *beam, int flags)
 	}
 
 	/* write data to media */
-	synced_pages = nvm_vblock_write(beam->current_w_vblock,
-                                        beam->w_buffer.sync, npages, ppa_off);
+	synced_pages = nvm_vblock_pwrite(beam->current_w_vblock,
+                                         beam->w_buffer.sync, npages, ppa_off);
 
 	if (synced_pages != npages) {
 		//NVM_DEBUG("FAILED: synced_pages != npages\n");
@@ -452,8 +452,8 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 		assert(left_bytes <= left_pages * sec_size);
 
 		/* TODO: Send bigger I/Os if we have enough data */
-		read_pages = nvm_vblock_read(current_r_vblock, reader,
-					     pages_to_read, ppa_off);
+		read_pages = nvm_vblock_pread(current_r_vblock, reader,
+                                              pages_to_read, ppa_off);
 		if (read_pages != pages_to_read) {
 			//NVM_DEBUG("FAILED: read_pages != pages_to_read\n");
 			return -1;

@@ -33,7 +33,7 @@ static void *write_thread(void *priv)
 	int i;
 
 	for (i = 0; i < ctx->geo.npages; i++) {
-		size_t count = nvm_vblock_write(ctx->blk, ctx->buf, 1, i);
+		size_t count = nvm_vblock_pwrite(ctx->blk, ctx->buf, 1, i);
 		CU_ASSERT(count);
 	}
 	pthread_exit(NULL);
@@ -110,7 +110,7 @@ void test_VBLOCK_CONCUR(void)
 	pthread_join(er_th, NULL);
 
 	for (i = 0; i < geo.npages; i++) {
-		int count = nvm_vblock_read(vblock[0], wbuf, 1, i);	/* READ */
+		int count = nvm_vblock_pread(vblock[0], wbuf, 1, i);	/* READ */
 		CU_ASSERT(count);
 		if (!count)
 			printf("FAILED count(%d) i(%d), wbuf(%s)\n",

@@ -18,8 +18,8 @@ LIBLIGHTNVM_0.2 {
 		nvm_vblock_get,
 		nvm_vblock_gets,
 		nvm_vblock_put,
-		nvm_vblock_read,
-		nvm_vblock_write,
+		nvm_vblock_pread,
+		nvm_vblock_pwrite,
 		nvm_vblock_erase,
 
 		nvm_dev_open,

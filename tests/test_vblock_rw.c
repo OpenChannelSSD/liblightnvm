@@ -20,7 +20,8 @@ int clean_suite1(void)
 {
 	return 0;
 }
-void __test_VBLOCK_WRITE_READ_N(int iterations, int npage_io)
+
+void __TEST_VBLOCK_PWRITE_READ_N(int iterations, int npage_io)
 {
 	NVM_DEV dev;
 	uint32_t sec_size, pln_pg_size;
@@ -59,10 +60,10 @@ void __test_VBLOCK_WRITE_READ_N(int iterations, int npage_io)
 		ret = nvm_vblock_get(vblock, tgt);
 		CU_ASSERT(0==ret);
 		for(j=0; j<npage_io; ++j) {
-			written = nvm_vblock_write(vblock, wbuf, 1, 0);
+			written = nvm_vblock_pwrite(vblock, wbuf, 1, 0);
 			CU_ASSERT(1==written);
 
-			read = nvm_vblock_read(vblock, rbuf, 1, 0);
+			read = nvm_vblock_pread(vblock, rbuf, 1, 0);
 			CU_ASSERT(1==read);
 
 			CU_ASSERT_STRING_EQUAL(wbuf, rbuf);
@@ -83,19 +84,19 @@ void __test_VBLOCK_WRITE_READ_N(int iterations, int npage_io)
 	CU_ASSERT(0==ret);
 }
 
-void test_VBLOCK_WRITE_READ_01(void)
+void test_vblock_pwrite_READ_01(void)
 {
-	__test_VBLOCK_WRITE_READ_N(1, 1);
+	__TEST_VBLOCK_PWRITE_READ_N(1, 1);
 }
 
-void test_VBLOCK_WRITE_READ_02(void)
+void test_vblock_pwrite_READ_02(void)
 {
-	__test_VBLOCK_WRITE_READ_N(1000, 1);
+	__TEST_VBLOCK_PWRITE_READ_N(1000, 1);
 }
 
-void test_VBLOCK_WRITE_READ_03(void)
+void test_vblock_pwrite_READ_03(void)
 {
-	__test_VBLOCK_WRITE_READ_N(1, 1000);
+	__TEST_VBLOCK_PWRITE_READ_N(1, 1000);
 }
 
 int main(int argc, char **argv)
@@ -120,9 +121,9 @@ int main(int argc, char **argv)
 	}
 
 	if (
-	(NULL == CU_add_test(pSuite, "nvm_vblock_[write|read] 1", test_VBLOCK_WRITE_READ_01)) ||
-	(NULL == CU_add_test(pSuite, "nvm_vblock_[write|read] 2", test_VBLOCK_WRITE_READ_02)) ||
-	(NULL == CU_add_test(pSuite, "nvm_vblock_[write|read] 3", test_VBLOCK_WRITE_READ_03)) ||
+	(NULL == CU_add_test(pSuite, "nvm_vblock_[write|read] 1", test_vblock_pwrite_READ_01)) ||
+	(NULL == CU_add_test(pSuite, "nvm_vblock_[write|read] 2", test_vblock_pwrite_READ_02)) ||
+	(NULL == CU_add_test(pSuite, "nvm_vblock_[write|read] 3", test_vblock_pwrite_READ_03)) ||
 	0)
 	{
 		CU_cleanup_registry();

@@ -54,10 +54,10 @@ void ex_vblock_wr(const char* dev_name, const char* tgt_name)
 	nvm_vblock_pr(vblock);
 
 	for(i=0; i<geo.npages; i++) {
-		w_npages = nvm_vblock_write(vblock, wbuf, 1, i);/* WRITE */
+		w_npages = nvm_vblock_pwrite(vblock, wbuf, 1, i);/* WRITE */
 		printf("i(%d), written(%d), wbuf(%s)\n", i, w_npages, wbuf);
 
-		r_npages = nvm_vblock_read(vblock, rbuf, 1, i);	/* READ */
+		r_npages = nvm_vblock_pread(vblock, rbuf, 1, i);/* READ */
 		printf("i(%d), read(%d), rbuf(%s)\n", i, r_npages, rbuf);
 	}
 

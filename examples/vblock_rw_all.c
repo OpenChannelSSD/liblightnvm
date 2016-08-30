@@ -83,14 +83,14 @@ void ex_vblock_rw_all(const char* dev_name, const char* tgt_name)
 		int page_offset;
 		for(page_offset=0; page_offset<geo.npages; ++page_offset) {
 			int written;
-			written = nvm_vblock_write(vblks[i], wbuf, 1, page_offset);
+			written = nvm_vblock_pwrite(vblks[i], wbuf, 1, page_offset);
 			if (!written)
 				printf("_write failed page_offset(%d)\n", page_offset);
 		}
 		for(page_offset=0; page_offset<geo.npages; ++page_offset) {
 			int read;
 			strcpy(rbuf, "");			/* Read from media */
-			read = nvm_vblock_read(vblks[i], rbuf, 1, 0);
+			read = nvm_vblock_pread(vblks[i], rbuf, 1, 0);
 			if (!read)
 				printf("_read failed page_offset(%d)\n", page_offset);
 		}

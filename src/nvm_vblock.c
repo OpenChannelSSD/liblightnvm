@@ -118,8 +118,8 @@ int nvm_vblock_put(struct nvm_vblock *vblock)
 	return ret;
 }
 
-ssize_t nvm_vblock_read(struct nvm_vblock *vblock, void *buf, size_t count,
-			size_t ppa_off)
+ssize_t nvm_vblock_pread(struct nvm_vblock *vblock, void *buf, size_t count,
+                         size_t ppa_off)
 {
 	struct nvm_dev *dev = vblock->tgt->dev;
 	const int NPLANES = nvm_dev_get_nplanes(dev);
@@ -163,8 +163,9 @@ ssize_t nvm_vblock_read(struct nvm_vblock *vblock, void *buf, size_t count,
 	return count;
 }
 
-ssize_t nvm_vblock_write(struct nvm_vblock *vblock, const void *buf, size_t count,
-			 size_t ppa_off)
+ssize_t nvm_vblock_pwrite(struct nvm_vblock *vblock, const void *buf,
+			  size_t count,
+			  size_t ppa_off)
 {
 	struct nvm_dev *dev = vblock->tgt->dev;
 	const int NPLANES = nvm_dev_get_nplanes(dev);
