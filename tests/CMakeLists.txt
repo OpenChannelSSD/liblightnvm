@@ -18,6 +18,7 @@ set(SOURCE_FILES
 	${PROJECT_SOURCE_DIR}/test_dev.c
 	${PROJECT_SOURCE_DIR}/test_vblock.c
 	${PROJECT_SOURCE_DIR}/test_vblock_rw.c
+	${PROJECT_SOURCE_DIR}/test_vblock_gp_n.c
 	${PROJECT_SOURCE_DIR}/test_mgmt.c
 	${PROJECT_SOURCE_DIR}/test_beam.c
 	${PROJECT_SOURCE_DIR}/test_concur.c)

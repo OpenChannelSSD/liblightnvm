@@ -62,6 +62,11 @@ test_concur:
 	sudo nvm_test_concur nvm_tst_tgt dflash
 	@make test_tgt_remove || true
 
+test_vblock_gp_n:
+	@make test_tgt_create || true
+	sudo nvm_test_vblock_gp_n nvm_tst_tgt
+	@make test_tgt_remove || true
+
 test_mgmt:
 	sudo nvm_test_mgmt nvme0n1 nvm_tst_tgt dflash
 
