@@ -49,13 +49,14 @@ set_target_properties(lightnvm PROPERTIES
 	)
 target_link_libraries(lightnvm udev ${CMAKE_THREAD_LIBS_INIT})
 
-install(TARGETS lightnvm DESTINATION lib)
-install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm.h" DESTINATION include)
+install(TARGETS lightnvm
+	DESTINATION lib)
+install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm.h"
+	DESTINATION include)
 
 add_subdirectory(examples)
 add_subdirectory(tests)
 
-# For building debian packages
 set(CPACK_GENERATOR "DEB" "TGZ")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Javier González")
 include(CPack)

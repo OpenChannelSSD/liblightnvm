@@ -1,5 +1,7 @@
 BUILD_TYPE?=Release
 BUILD_DIR?=build
+BUILD_TESTS?=ON
+BUILD_EXAMPLES?=ON
 
 #
 # Traditional build commands
@@ -15,7 +17,7 @@ cmake_check:
 
 configure: cmake_check
 	mkdir -p $(BUILD_DIR)
-	cd $(BUILD_DIR) && cmake -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) ../
+	cd $(BUILD_DIR) && cmake -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DTESTS=$(BUILD_TESTS) -DEXAMPLES=$(BUILD_EXAMPLES) ../
 	@echo "Modify build configuration in '$(BUILD_DIR)'"
 
 make:

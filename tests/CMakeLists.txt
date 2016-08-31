@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
-project(liblightnvm_tests C)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/../cmake")
+set(TESTS true CACHE BOOL "Tests: Include test programs in build")
+if (NOT TESTS)
+	return()
+endif()
 
 find_library (CUNIT cunit)
 if ( "${CUNIT}" STREQUAL "CUNIT-NOTFOUND" )
@@ -11,17 +13,17 @@ endif()
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DNVM_DEBUG_ENABLED")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 
-include_directories("${PROJECT_SOURCE_DIR}/../include")
-include_directories("${PROJECT_SOURCE_DIR}/../include/linux/uapi")
+include_directories("${CMAKE_SOURCE_DIR}/include")
+include_directories("${CMAKE_SOURCE_DIR}/include/linux/uapi")
 
 set(SOURCE_FILES
-	${PROJECT_SOURCE_DIR}/test_dev.c
-	${PROJECT_SOURCE_DIR}/test_vblock.c
-	${PROJECT_SOURCE_DIR}/test_vblock_rw.c
-	${PROJECT_SOURCE_DIR}/test_vblock_gp_n.c
-	${PROJECT_SOURCE_DIR}/test_mgmt.c
-	${PROJECT_SOURCE_DIR}/test_beam.c
-	${PROJECT_SOURCE_DIR}/test_concur.c)
+	${CMAKE_CURRENT_SOURCE_DIR}/test_dev.c
+	${CMAKE_CURRENT_SOURCE_DIR}/test_vblock.c
+	${CMAKE_CURRENT_SOURCE_DIR}/test_vblock_rw.c
+	${CMAKE_CURRENT_SOURCE_DIR}/test_vblock_gp_n.c
+	${CMAKE_CURRENT_SOURCE_DIR}/test_mgmt.c
+	${CMAKE_CURRENT_SOURCE_DIR}/test_beam.c
+	${CMAKE_CURRENT_SOURCE_DIR}/test_concur.c)
 
 foreach(SRC_FN ${SOURCE_FILES})
 	get_filename_component(SRC_FN_WE ${SRC_FN} NAME_WE)
