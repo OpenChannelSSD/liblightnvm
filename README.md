@@ -227,6 +227,33 @@ To be filled in
 
 liblightnvm is in active development and pull requests are very welcome.
 
+# NAND flash -- 101 -- bottom up
+
+NAND is based on cells, typically called memory cells since these are the units
+used to store information. The amount of information that can be stored in a
+cell varies based on the NAND type.
+
+Widely available NAND include SLC, MLC, and TLC. An SLC cell can be in two
+states high or low, representing one bit of information. An MLC cell typically
+has four states
+
+Key characteristic is that each
+type stores one, two or three bits of information per cell respectfully.
+
+With higher density comes lower endurance.
+
+When NAND flash is erased, gates are set high, when they are programmed they
+are set low. Erasing a NAND flash block means setting all gates to high, the
+amount of times this can be done varies based on the type of NAND media.
+Here are some vague numbers.
+
+Type - Erases per block
+
+SLC | 100000
+MLC | 1000 - 10.000
+TLC | 1000
+
+
 # References
 
    1. https://github.com/OpenChannelSSD/linux/tree/liblnvm 
