@@ -1,3 +1,18 @@
+/*
+ * This test attempts to allocate all blocks on the device on which the target
+ * is running. Allocating all blocks will fail at least for two reasons:
+ *
+ * - vblocks might be reserved by others
+ * - vblocks might be bad
+ *
+ * The test therefore only fails when the amount of successfully allocated
+ * vblocks is below threshold TOTAL_NUMBER_OF_VBLOCK - k. Where k is some
+ * arbitrarily chosen number defaulting to 8 failed gets.
+ *
+ * NOTE: Be wary about running this test on actual hardware since it might
+ *	 wear out an MLC device after about 1000-3000 runs. This is currently
+ *	 true since 'dflash' erases a block when responding to an _GET.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -8,6 +23,7 @@
 #include <CUnit/Basic.h>
 
 static char nvm_tgt_name[DISK_NAME_LEN] = "nvm_vblock_tst";
+int k = 8;	// Total number of nvm_vblock_gets allowed to fail
 
 int init_suite1(void)
 {
@@ -24,9 +40,14 @@ void TEST_VBLOCK_GP_N(void)
 	NVM_TGT tgt;
 	NVM_GEO geo;
 
-	NVM_VBLOCK *vblocks;
-	int vblocks_total;
-	int vblocks_reserved;
+	NVM_VBLOCK *vblocks;	/* Array of vblocks */
+	int vblocks_total;	/* Number of vblocks on device / allocated */
+	int vblocks_reserved;	/* Number of vblocks successfully reserved */
+
+	int ngets;		/* Total number of ngets */
+	int ngets_failed;	/* Total number of failed ngets */
+	int *ngets_lun;		/* Number of gets per lun */
+	int *ngets_lun_failed;	/* Number of failed gets per lun */
 
 	int i;
 
@@ -34,6 +55,14 @@ void TEST_VBLOCK_GP_N(void)
 	CU_ASSERT_PTR_NOT_NULL(tgt);
 
 	geo = nvm_dev_get_geo(nvm_tgt_get_dev(tgt));
+
+	ngets = 0;
+	ngets_lun = malloc(sizeof(ngets_lun)*geo.nluns);
+	memset(ngets_lun, 0, sizeof(ngets_lun)*geo.nluns);
+
+	ngets_failed = 0;
+	ngets_lun_failed = malloc(sizeof(ngets_lun_failed)*geo.nluns);
+	memset(ngets_lun_failed, 0, sizeof(ngets_lun_failed)*geo.nluns);
 
 	vblocks_total = geo.nluns * geo.nblocks;	/* Allocate vblocks */
 	vblocks = malloc(sizeof(NVM_VBLOCK) * vblocks_total);
@@ -45,35 +74,40 @@ void TEST_VBLOCK_GP_N(void)
 	}
 
 	vblocks_reserved = 0;
-	int lun_gets_n[4] = {0, 0, 0, 0};
-	int lun_gets_nbad[4] = {0, 0, 0, 0};
 	for (i=0; i < vblocks_total; i++) {		/* Reserve vblocks */
-		int err, ch, lun, blk;
+		int err, ch, lun;
 
-		blk = i % geo.nblocks;
 		ch = i % geo.nchannels;
 		lun = i % geo.nluns;
 		err = nvm_vblock_gets(vblocks[vblocks_reserved], tgt, ch, lun);
-		lun_gets_n[lun]++;
-		CU_ASSERT(!err);
+		ngets++;
+		ngets_lun[lun]++;
 		if (err) {
-			printf("ch(%02d), lun(%02d), blk(%02d), i(%03d), BAD\n",
-				ch, lun, blk, i);
-			lun_gets_nbad[lun]++;
+			ngets_failed++;
+			ngets_lun_failed[lun]++;
 			continue;
 		}
-
-		printf("ch(%02d), lun(%02d), blk(%02d), i(%03d), GOOD\n",
-			ch, lun, blk, i);
 
 		vblocks_reserved++;
 	}
 
-	for(i=0; i < geo.nluns; i++) {
-		printf("on lun(%d) of #gets(%d) #gets_bad(%d)\n",
-			i, lun_gets_n[i], lun_gets_nbad[i]);
-	}
+	/* Check that we did as much as we expected */
+	CU_ASSERT(ngets == vblocks_total);
+
+	/* Check that we got a sufficient amount of vblocks */
+	CU_ASSERT(vblocks_total - vblocks_reserved < k)
+
+	/* That is... no more than k failures */
+	CU_ASSERT(ngets_failed <= k);
+
+	/* For debugging */
+	printf("vblocks_total(%d)\n", vblocks_total);
 	printf("vblocks_reserved(%d)\n", vblocks_reserved);
+	printf("ngets(%d), ngets_failed(%d)\n", ngets, ngets_failed);
+	for(i=0; i < geo.nluns; i++) {
+		printf("i(%d), ngets_lun(%d) / ngets_lun_failed(%d)\n",
+			i, ngets_lun[i], ngets_lun_failed[i]);
+	}
 
 	for (i=0; i < vblocks_reserved; i++) {		/* Release vblocks */
 		int err = nvm_vblock_put(vblocks[i]);
@@ -105,21 +139,18 @@ int main(int argc, char **argv)
 	if (CUE_SUCCESS != CU_initialize_registry())
 		return CU_get_error();
 
-	pSuite = CU_add_suite("nvm_vblock_[get|put] n", init_suite1, clean_suite1);
+	pSuite = CU_add_suite("_vblock_[gets|put] n", init_suite1, clean_suite1);
 	if (NULL == pSuite) {
 		CU_cleanup_registry();
 		return CU_get_error();
 	}
 
-	if (NULL == CU_add_test(pSuite,
-				"nvm_vblock_[get|put] n",
-				TEST_VBLOCK_GP_N))
+	if (NULL == CU_add_test(pSuite, "_vblock_[gets|put] n", TEST_VBLOCK_GP_N))
 	{
 		CU_cleanup_registry();
 		return CU_get_error();
 	}
 
-	/* Run all tests using the CUnit Basic interface */
 	CU_basic_set_mode(CU_BRM_VERBOSE);
 	CU_basic_run_tests();
 	CU_cleanup_registry();
