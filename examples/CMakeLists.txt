@@ -22,9 +22,3 @@ foreach(SRC_FN ${SOURCE_FILES})
 	install(TARGETS ${EXE_FN} DESTINATION bin)
 endforeach()
 
-# This one is special... using different flags and libraries
-#set(SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/nvmfs.c)
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_FILE_OFFSET_BITS=64")
-#add_executable(nvmfs ${CMAKE_CURRENT_SOURCE_DIR}/nvmfs.c)
-#target_link_libraries(nvmfs lightnvm pthread udev fuse)
-#install(TARGETS nvmfs DESTINATION bin)
