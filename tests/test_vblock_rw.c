@@ -8,8 +8,6 @@
 #include <CUnit/Basic.h>
 
 static char nvm_dev_name[DISK_NAME_LEN] = "nvme0n1";
-static char nvm_tgt_type[NVM_TTYPE_NAME_MAX] = "dflash";
-static char nvm_tgt_name[DISK_NAME_LEN] = "nvm_vblock_tst";
 
 int init_suite1(void)
 {
@@ -24,40 +22,33 @@ int clean_suite1(void)
 void __TEST_VBLOCK_PWRITE_READ_N(int iterations, int npage_io)
 {
 	NVM_DEV dev;
-	uint32_t sec_size, pln_pg_size;
+	uint32_t sector_nbytes, vpage_nbytes;
 
-	NVM_TGT tgt;
 	NVM_VBLOCK vblock;
 	int i, j, ret;
-						/* Create target */
-	ret = nvm_mgmt_tgt_create(nvm_tgt_name, nvm_tgt_type, nvm_dev_name, 0, 0);
-	CU_ASSERT(0==ret);
 
-	dev = nvm_dev_open(nvm_dev_name);		/* Open device */
+	dev = nvm_dev_open(nvm_dev_name);	/* Open device */
 	CU_ASSERT_PTR_NOT_NULL(dev);
 
-	sec_size = nvm_dev_get_sec_size(dev);
-	pln_pg_size = nvm_dev_get_pln_pg_size(dev);
-
-	tgt = nvm_tgt_open(nvm_tgt_name, 0x0);	/* Open target */
-	CU_ASSERT_PTR_NOT_NULL(tgt);
+	sector_nbytes = nvm_dev_get_nbytes(dev);
+	vpage_nbytes = nvm_dev_get_vpage_nbytes(dev);
 
 	for(i=0; i<iterations; ++i) {
 		int read, written;
 		char *wbuf = NULL;
 		char *rbuf = NULL;
-							/* Allocate buffers */
-		ret = posix_memalign((void**)&wbuf, sec_size, pln_pg_size);
+						/* Allocate buffers */
+		ret = posix_memalign((void**)&wbuf, sector_nbytes, vpage_nbytes);
 		CU_ASSERT(0==ret);
 		strcpy(wbuf, "Hello World of NVM");
 
-		ret = posix_memalign((void**)&rbuf, sec_size, pln_pg_size);
+		ret = posix_memalign((void**)&rbuf, sector_nbytes, vpage_nbytes);
 		CU_ASSERT(0==ret);
 
-		vblock = nvm_vblock_new();		/* Allocate vblock */
+		vblock = nvm_vblock_new();	/* Allocate vblock */
 		CU_ASSERT_PTR_NOT_NULL(vblock);
 
-		ret = nvm_vblock_get(vblock, tgt);
+		ret = nvm_vblock_get(vblock, dev);
 		CU_ASSERT(0==ret);
 		for(j=0; j<npage_io; ++j) {
 			written = nvm_vblock_pwrite(vblock, wbuf, 1, 0);
@@ -69,19 +60,16 @@ void __TEST_VBLOCK_PWRITE_READ_N(int iterations, int npage_io)
 			CU_ASSERT_STRING_EQUAL(wbuf, rbuf);
 		}
 
-		ret = nvm_vblock_put(vblock);	/* Release vblock from tgt */
+		ret = nvm_vblock_put(vblock);	/* Release vblock from dev */
 		CU_ASSERT(0==ret);
 
 		free(wbuf);
 		free(rbuf);
 
-		nvm_vblock_free(&vblock);		/* De-allocate vblock */
+		nvm_vblock_free(&vblock);	/* De-allocate vblock */
 	}
 
-	nvm_tgt_close(tgt);				/* Close the target */
-
-	ret = nvm_mgmt_tgt_remove(nvm_tgt_name);
-	CU_ASSERT(0==ret);
+	nvm_dev_close(dev);			/* Close the device */
 }
 
 void test_vblock_pwrite_READ_01(void)

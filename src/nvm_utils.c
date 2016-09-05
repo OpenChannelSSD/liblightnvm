@@ -32,6 +32,7 @@
 #include <liblightnvm.h>
 #include <nvm.h>
 #include <nvm_utils.h>
+#include <nvm_debug.h>
 
 int nvm_execute_ioctl(int opcode, void *u)
 {
@@ -59,8 +60,9 @@ void nvm_addr_pr(struct NVM_ADDR addr)
 void nvm_misc_pr(void)
 {
 	printf("_GET(%lu:0x%lx), _PUT(%lu:0x%lx), _PIO(%lu:0x%lx)\n",
-	       NVM_BLOCK_GET, NVM_BLOCK_GET, NVM_BLOCK_PUT, NVM_BLOCK_PUT,
-	       NVM_PIO, NVM_PIO);
+	       NVM_DEV_BLOCK_GET, NVM_DEV_BLOCK_GET,
+	       NVM_DEV_BLOCK_PUT, NVM_DEV_BLOCK_PUT,
+	       NVM_DEV_PIO, NVM_DEV_PIO);
 }
 
 /*
@@ -69,45 +71,81 @@ void nvm_misc_pr(void)
  * NOTE: Caller is responsible for calling `udev_device_unref` on the returned
  * udev_device
  *
- * @returns device matching criteria
+ * @returns First device in 'subsystem' of given 'devtype' with given 'dev_name'
  */
 struct udev_device* udev_dev_find(struct udev *udev, const char *subsystem,
 				  const char *devtype, const char *dev_name)
 {
+	struct udev_device *dev = NULL;
+
 	struct udev_enumerate *enumerate;
 	struct udev_list_entry *devices, *dev_list_entry;
 
-	struct udev_device *dev = NULL;
-
-	int dev_name_len = strlen(dev_name);
-
-	enumerate = udev_enumerate_new(udev);
+	enumerate = udev_enumerate_new(udev);	/* Search 'subsystem' */
 	udev_enumerate_add_match_subsystem(enumerate, subsystem);
 	udev_enumerate_scan_devices(enumerate);
 	devices = udev_enumerate_get_list_entry(enumerate);
 	udev_list_entry_foreach(dev_list_entry, devices) {
-		const char *path = udev_list_entry_get_name(dev_list_entry);
-		int path_len = strlen(path);
-
-		int match = strcmp(dev_name, path + path_len-dev_name_len);
-		if (0!=match) {
+		const char *path;
+		int path_len;
+		
+		path = udev_list_entry_get_name(dev_list_entry);
+		if (!path) {
+			NVM_DEBUG("Failed retrieving path from entry\n");
 			continue;
 		}
-		
+		path_len = strlen(path);
+
+		if (dev_name) {			/* Compare name */
+			int dev_name_len = strlen(dev_name);
+			int match = strcmp(dev_name,
+					   path + path_len-dev_name_len);
+			if (0 != match) {
+				NVM_DEBUG("Name comparison failed\n");
+				continue;
+			}
+		}
+						/* Get the udev object */
 		dev = udev_device_new_from_syspath(udev, path);
 		if (!dev) {
+			NVM_DEBUG("Failed retrieving device from path\n");
 			continue;
 		}
 
-		const char* sys_devtype = udev_device_get_devtype(dev);
-		int sys_devtype_match = strcmp(devtype, sys_devtype);
-		if (0!=sys_devtype_match) {
-			udev_device_unref(dev);
-			dev = NULL;
-			continue;
+		if (devtype) {			/* Compare device type */
+			const char* sys_devtype;
+			int sys_devtype_match;
+			
+			sys_devtype = udev_device_get_devtype(dev);
+			if (!sys_devtype) {
+				NVM_DEBUG("sys_devtype(%s)", sys_devtype);
+				udev_device_unref(dev);
+				dev = NULL;
+				continue;
+			}
+
+			sys_devtype_match = strcmp(devtype, sys_devtype);
+			if (0 != sys_devtype_match) {
+				NVM_DEBUG("%s != %s\n", devtype, sys_devtype);
+				udev_device_unref(dev);
+				dev = NULL;
+				continue;
+			}
 		}
 
 		break;
+	}
+
+	return dev;
+}
+
+struct udev_device* udev_nvmdev_find(struct udev *udev, const char *dev_name)
+{
+	struct udev_device* dev = udev_dev_find(udev, "gennvm", NULL, dev_name);
+
+	if (!dev) {
+		NVM_DEBUG("NOTHING FOUND\n");
+		return dev;
 	}
 
 	return dev;

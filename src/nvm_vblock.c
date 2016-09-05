@@ -77,9 +77,9 @@ uint16_t nvm_vblock_get_flags(struct nvm_vblock *vblock)
 	return vblock->flags;
 }
 
-int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_TGT tgt, uint32_t ch, uint32_t lun)
+int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_DEV dev, uint32_t ch, uint32_t lun)
 {
-	struct nvm_ioctl_vblock ctl;
+	struct nvm_ioctl_dev_vblk ctl;
 	struct NVM_ADDR addr;
 	int err;
 
@@ -89,31 +89,33 @@ int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_TGT tgt, uint32_t ch, uint32_t lun)
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.ppa = addr.ppa;
 
-	err = ioctl(tgt->fd, NVM_BLOCK_GET, &ctl);
+	// TODO: fix this -- get the gennvm chardev from device
+	err = ioctl(dev->fd, NVM_DEV_BLOCK_GET, &ctl);
 	if (err) {
 		return err;
 	}
 
 	vblock->ppa = ctl.ppa;
-	vblock->tgt = tgt;
+	vblock->dev = dev;
 
 	return 0;
 }
 
-int nvm_vblock_get(struct nvm_vblock *vblock, struct nvm_tgt *tgt)
+int nvm_vblock_get(struct nvm_vblock *vblock, NVM_DEV dev)
 {
-	return nvm_vblock_gets(vblock, tgt, 0, 0);
+	return nvm_vblock_gets(vblock, dev, 0, 0);
 }
 
 int nvm_vblock_put(struct nvm_vblock *vblock)
 {
-	struct nvm_ioctl_vblock ctl;
+	struct nvm_ioctl_dev_vblk ctl;
 	int ret;
 
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.ppa = vblock->ppa;
 	
-	ret = ioctl(vblock->tgt->fd, NVM_BLOCK_PUT, &ctl);
+	// TODO: fix this -- get the gennvm chardev from device
+	ret = ioctl(vblock->dev->fd, NVM_DEV_BLOCK_PUT, &ctl);
 
 	return ret;
 }
@@ -121,12 +123,12 @@ int nvm_vblock_put(struct nvm_vblock *vblock)
 ssize_t nvm_vblock_pread(struct nvm_vblock *vblock, void *buf, size_t count,
                          size_t ppa_off)
 {
-	struct nvm_dev *dev = vblock->tgt->dev;
+	struct nvm_dev *dev = vblock->dev;
 	const int NPLANES = nvm_dev_get_nplanes(dev);
 	const int NPPAS_MAX = NPLANES * nvm_dev_get_nsectors(dev);
 
 	struct NVM_ADDR ppas[NPPAS_MAX];
-	struct nvm_ioctl_io ctl;
+	struct nvm_ioctl_dev_pio ctl;
 	int i, ret;
 
 	for (i = 0; i < NPPAS_MAX; i++) {
@@ -147,9 +149,10 @@ ssize_t nvm_vblock_pread(struct nvm_vblock *vblock, void *buf, size_t count,
 
 	ctl.ppas = (uint64_t)ppas;
 	ctl.addr = (uint64_t)buf;
-	ctl.data_len = vblock->tgt->dev->info.pln_pg_size;
+	ctl.data_len = vblock->dev->geo.vpage_nbytes;
 
-	ret = ioctl(vblock->tgt->fd, NVM_PIO, &ctl);
+	// TODO: fix this -- get the gennvm chardev from device
+	ret = ioctl(vblock->dev->fd, NVM_DEV_PIO, &ctl);
 	if (ret) {
 		NVM_DEBUG("failed ret(%d)\n", ret);
 		return 0;
@@ -167,12 +170,12 @@ ssize_t nvm_vblock_pwrite(struct nvm_vblock *vblock, const void *buf,
 			  size_t count,
 			  size_t ppa_off)
 {
-	struct nvm_dev *dev = vblock->tgt->dev;
+	struct nvm_dev *dev = vblock->dev;
 	const int NPLANES = nvm_dev_get_nplanes(dev);
 	const int NPPAS_MAX = NPLANES * nvm_dev_get_nsectors(dev);
 
 	struct NVM_ADDR ppas[NPPAS_MAX];
-	struct nvm_ioctl_io ctl;
+	struct nvm_ioctl_dev_pio ctl;
 	int i, ret;
 
 	for (i = 0; i < NPPAS_MAX; i++) {
@@ -193,9 +196,10 @@ ssize_t nvm_vblock_pwrite(struct nvm_vblock *vblock, const void *buf,
 
 	ctl.ppas = (uint64_t)ppas;
 	ctl.addr = (uint64_t)buf;
-	ctl.data_len = vblock->tgt->dev->info.pln_pg_size;
+	ctl.data_len = vblock->dev->geo.vpage_nbytes;
 
-	ret = ioctl(vblock->tgt->fd, NVM_PIO, &ctl);
+	// TODO: fix this -- get the gennvm chardev from device
+	ret = ioctl(vblock->dev->fd, NVM_DEV_PIO, &ctl);
 	if (ret) {
 		NVM_DEBUG("failed ret(%d)\n", ret);
 		return 0;
@@ -211,7 +215,7 @@ ssize_t nvm_vblock_pwrite(struct nvm_vblock *vblock, const void *buf,
 
 int nvm_vblock_write(struct nvm_vblock *vblock, const void *buf)
 {
-	const struct nvm_geo geo = nvm_dev_get_geo(nvm_tgt_get_dev(vblock->tgt));
+	const struct nvm_geo geo = nvm_dev_get_geo(vblock->dev);
 	
 	int buf_off = 0;
 	int pg;
@@ -229,7 +233,7 @@ int nvm_vblock_write(struct nvm_vblock *vblock, const void *buf)
 
 int nvm_vblock_read(struct nvm_vblock *vblock, void *buf)
 {
-	const struct nvm_geo geo = nvm_dev_get_geo(nvm_tgt_get_dev(vblock->tgt));
+	const struct nvm_geo geo = nvm_dev_get_geo(vblock->dev);
 	
 	int buf_off = 0;
 	int pg;
@@ -247,11 +251,11 @@ int nvm_vblock_read(struct nvm_vblock *vblock, void *buf)
 
 int nvm_vblock_erase(struct nvm_vblock *vblock)
 {
-	struct nvm_dev *dev = vblock->tgt->dev;
+	struct nvm_dev *dev = vblock->dev;
 	const int NPLANES = nvm_dev_get_nplanes(dev);
 
 	struct NVM_ADDR ppas[NPLANES];
-	struct nvm_ioctl_io ctl;
+	struct nvm_ioctl_dev_pio ctl;
 	int i, ret;
 
 	for (i = 0; i < NPLANES; i++) {
@@ -270,7 +274,8 @@ int nvm_vblock_erase(struct nvm_vblock *vblock)
 
 	ctl.ppas = (uint64_t)ppas;
 
-	ret = ioctl(vblock->tgt->fd, NVM_PIO, &ctl);
+	// TODO: fix this -- get the gennvm chardev from device
+	ret = ioctl(vblock->dev->fd, NVM_DEV_PIO, &ctl);
 	if (ret) {
 		NVM_DEBUG("failed ret(%d)\n", ret);
 		return ret;

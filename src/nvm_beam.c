@@ -73,31 +73,23 @@ static void beam_free(struct beam *beam)
 	free(beam);
 }
 
-static inline int get_vblock_nbytes(struct nvm_dev* dev)
-{
-	return dev->info.num_planes * dev->info.num_blocks * \
-		dev->info.num_pages * dev->info.sec_per_pg * \
-		dev->info.sec_size;
-}
-
 /* XXX: All block functions assume that block allocation is thread safe */
 /* TODO: Allocate blocks dynamically */
 static int switch_block(struct beam **beam)
 {
 	size_t buf_size;
-	int sec_size = (*beam)->tgt->dev->info.hw_sector_size;
 	int ret;
 
+	NVM_GEO geo = nvm_dev_get_geo((*beam)->dev);
+
 	/* Write buffer for small writes */
-	buf_size = get_vblock_nbytes((*beam)->tgt->dev);
+	buf_size = nvm_dev_get_geo((*beam)->dev).vblock_nbytes;
 	if (buf_size != (*beam)->w_buffer.buf_limit) {
-		//NVM_DEBUG("Allocating write buffer, buf_size(%lu)\n", buf_size);
 		free((*beam)->w_buffer.buf);
-		ret = posix_memalign(&(*beam)->w_buffer.buf, sec_size,
+		ret = posix_memalign(&(*beam)->w_buffer.buf, geo.nbytes,
 				     buf_size);
 		if (ret) {
-			/*NVM_DEBUG("FAILED: buf_size(%lu), sec_size(%d)\n",
-				  buf_size, sec_size);*/
+
 			return ret;
 		}
 		(*beam)->w_buffer.buf_limit = buf_size;
@@ -110,12 +102,6 @@ static int switch_block(struct beam **beam)
 
 	(*beam)->current_w_vblock = &(*beam)->vblocks[(*beam)->nvblocks - 1];
 
-	/*NVM_DEBUG("SWITCHED: ppa(%lu:0x%lx), flags(%d), nvblocks(%d)\n",
-		  (*beam)->current_w_vblock->ppa,
-		  (*beam)->current_w_vblock->ppa,
-		  (*beam)->current_w_vblock->flags,
-		  (*beam)->nvblocks);*/
-
 	return 0;
 }
 
@@ -124,16 +110,10 @@ static int preallocate_block(struct beam *beam)
 	struct nvm_vblock *vblock = &beam->vblocks[beam->nvblocks];
 	int ret;
 
-	ret = nvm_vblock_gets(vblock, beam->tgt, 0, beam->lun);
+	ret = nvm_vblock_gets(vblock, beam->dev, 0, beam->lun);
 	if (ret) {
-		//NVM_DEBUG("FAILED: gid(%d)\n", beam->gid);
 		return ret;
 	}
-
-	/*NVM_DEBUG("SUCCESS: nvblocks(%d), gid(%d), ppa(%lu)\n",
-		  beam->nvblocks,
-		  beam->gid,
-		  beam->vblocks[beam->nvblocks].ppa);*/
 
 	beam->nvblocks++;
 
@@ -154,15 +134,14 @@ static int allocate_block(struct beam *beam)
 	return ret;
 }
 
-static int beam_init(struct beam *beam, int lun, struct nvm_tgt *tgt)
+static int beam_init(struct beam *beam, int lun, struct nvm_dev *dev)
 {
 	atomic_assign_inc(&beam_guid, &beam->gid);
 	beam->lun = lun;
 	beam->nvblocks = 0;
 	beam->bytes = 0;
-	beam->tgt = tgt;
-	if (!beam->tgt) {
-		//NVM_DEBUG("FAILED: !beam->tgt\n");
+	beam->dev = dev;
+	if (!beam->dev) {
 		return -EINVAL;
 	}
 
@@ -179,17 +158,16 @@ static int beam_init(struct beam *beam, int lun, struct nvm_tgt *tgt)
  */
 static int beam_sync(struct beam *beam, int flags)
 {
-	size_t pln_pg_size = nvm_dev_get_pln_pg_size(beam->tgt->dev);
+	size_t vpage_nbytes = nvm_dev_get_vpage_nbytes(beam->dev);
 	size_t sync_len = beam->w_buffer.cursize - beam->w_buffer.cursync;
-	size_t disaligned_data = sync_len % pln_pg_size;
-	size_t ppa_off = calculate_ppa_off(beam->w_buffer.cursync, pln_pg_size);
-	int npages = sync_len / pln_pg_size;
+	size_t disaligned_data = sync_len % vpage_nbytes;
+	size_t ppa_off = calculate_ppa_off(beam->w_buffer.cursync, vpage_nbytes);
+	int npages = sync_len / vpage_nbytes;
 	int synced_pages;
 	size_t synced_bytes;
 
-	//NVM_DEBUG("called with beam(%p), flags(%d)\n", beam, flags);
 
-	if (((flags & OPTIONAL_SYNC) && (sync_len < pln_pg_size)) ||
+	if (((flags & OPTIONAL_SYNC) && (sync_len < vpage_nbytes)) ||
 		(sync_len == 0))
 		return 0;
 
@@ -201,7 +179,7 @@ static int beam_sync(struct beam *beam, int flags)
 
 		if (disaligned_data > 0) {
 			/* Add padding to current page */
-			int padding = pln_pg_size - disaligned_data;
+			int padding = vpage_nbytes - disaligned_data;
 
 			memset(beam->w_buffer.mem, '\0', padding);
 			beam->w_buffer.cursize += padding;
@@ -218,18 +196,14 @@ static int beam_sync(struct beam *beam, int flags)
                                          beam->w_buffer.sync, npages, ppa_off);
 
 	if (synced_pages != npages) {
-		//NVM_DEBUG("FAILED: synced_pages != npages\n");
 		return -1;
 	}
 
 	/* We might need to take a lock here */
-	synced_bytes = synced_pages * pln_pg_size;
+	synced_bytes = synced_pages * vpage_nbytes;
 	beam->bytes += synced_bytes;
 	beam->w_buffer.cursync += synced_bytes;
 	beam->w_buffer.sync += synced_bytes;
-
-	/*NVM_DEBUG("synced_bytes(%lu), synced_pages(%d)\n",
-		  synced_bytes, synced_pages);*/
 
 	return 0;
 }
@@ -240,41 +214,36 @@ static void clean_all(void)
 
 	HASH_ITER(hh, beamt, b, b_tmp) {
 		HASH_DEL(beamt, b);
-		nvm_tgt_close(b->tgt);
+		nvm_dev_close(b->dev);
 		beam_free(b);
 	}
 }
 
-int nvm_beam_create(const char *tgt_name, int lun, int flags)
+int nvm_beam_create(const char *dev_name, int lun, int flags)
 {
-	struct nvm_tgt *tgt;
+	struct nvm_dev *dev;
 	struct beam *beam;
 	int ret;
 
-	tgt = nvm_tgt_open(tgt_name, flags);
-	if (!tgt) {
-		//NVM_DEBUG("FAILED: opening target\n");
+	dev = nvm_dev_open(dev_name);
+	if (!dev) {
 		return -1;
 	}
 
 	beam = malloc(sizeof(struct beam));
 	if (!beam) {
-		//NVM_DEBUG("FAILED: allocating beam\n");
-		nvm_tgt_close(tgt);
+		nvm_dev_close(dev);
 		return -ENOMEM;
 	}
 
-	ret = beam_init(beam, lun, tgt);
+	ret = beam_init(beam, lun, dev);
 	if (ret) {
-		//NVM_DEBUG("FAILED: initializing beam\n");
-		nvm_tgt_close(tgt);
+		nvm_dev_close(dev);
 		free(beam);
 		return ret;
         }
 
 	HASH_ADD_INT(beamt, gid, beam);
-	/*NVM_DEBUG("beam(%p), beam->gid(%d), tgt(%p), tgt->fd(%d)\n",
-		  beam, beam->gid, tgt, tgt->fd);*/
 
 	return beam->gid;
 }
@@ -282,16 +251,14 @@ int nvm_beam_create(const char *tgt_name, int lun, int flags)
 void nvm_beam_destroy(int beam, int flags)
 {
 	struct beam *b;
-	struct nvm_tgt *tgt;
-
-	//NVM_DEBUG("beam(%d)\n", beam);
+	struct nvm_dev *dev;
 
 	HASH_FIND_INT(beamt, &beam, b);
 	HASH_DEL(beamt, b);
 
-	tgt = b->tgt;
+	dev = b->dev;
 	beam_free(b);
-	nvm_tgt_close(tgt);
+	nvm_dev_close(dev);
 }
 
 /* TODO: Implement a pool of available blocks to support double buffering */
@@ -308,31 +275,15 @@ ssize_t nvm_beam_append(int beam, const void *buf, size_t count)
 
 	HASH_FIND_INT(beamt, &beam, b);
 	if (!b) {
-		//NVM_DEBUG("FAILED: beam(%d) does not exist\n", beam);
 		return -EINVAL;
 	}
 
-	/*NVM_DEBUG("count(%lu), gid(%d), b(%p), beam(%d), cursize(%lu), "
-		  "cursync(%lu), buf_limit(%lu)\n",
-		  count,
-		  b->gid, b,
-		  beam,
-		  b->w_buffer.cursize,
-		  b->w_buffer.cursync,
-		  b->w_buffer.buf_limit);*/
-
 	while (b->w_buffer.cursize + left > b->w_buffer.buf_limit) {
-		/*NVM_DEBUG("Block overflow: cursize(%lu), cursync(%lu)"
-			  ", buf_limit(%lu), left(%lu)\n",
-			  b->w_buffer.cursize,
-			  b->w_buffer.cursync,
-			  b->w_buffer.buf_limit,
-			  left);*/
+
 		size_t fits_buf = b->w_buffer.buf_limit - b->w_buffer.cursize;
 
 		ret = preallocate_block(b);
 		if (ret) {
-			//NVM_DEBUG("FAILED: preallocate_block - ret(%d)", ret);
 			return ret;
 		}
 
@@ -340,7 +291,6 @@ ssize_t nvm_beam_append(int beam, const void *buf, size_t count)
 		b->w_buffer.mem += fits_buf;
 		b->w_buffer.cursize += fits_buf;
 		if (beam_sync(b, FORCE_SYNC)) {
-			//NVM_DEBUG("FAILED: beam_sync gid(%d)\n", b->gid);
 			return -ENOSPC;
 		}
 
@@ -363,7 +313,6 @@ int nvm_beam_sync(int beam, int flags)
 
 	HASH_FIND_INT(beamt, &beam, b);
 	if (!b) {
-		//NVM_DEBUG("FAILED: Beam %d does not exits\n", beam);
 		return -EINVAL;
 	}
 
@@ -393,40 +342,33 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 	int read_pages;
 	int ret;
 
-	size_t sec_size;
+	NVM_GEO geo;
 
 	HASH_FIND_INT(beamt, &beam, b);
 	if (!b) {
-		//NVM_DEBUG("FAILED: Beam %d does not exits\n", beam);
 		return -EINVAL;
 	}
 
-	sec_size = b->tgt->dev->info.hw_sector_size; 
+	geo = nvm_dev_get_geo(b->dev);
 
 	/* TODO: Improve calculations */
-	left_pages = ((count + offset % sec_size) / sec_size) +
-		((((count) % sec_size) > 0) ? 1 : 0);
-
-	/*NVM_DEBUG("count(%lu), left_pages(%lu), gid(%d), b(%p), beam(%d)"
-		  ", offset(%lu)\n",
-		  count, left_pages, b->gid, b, beam, offset);*/
+	left_pages = ((count + offset % geo.nbytes) / geo.nbytes) +
+		((((count) % geo.nbytes) > 0) ? 1 : 0);
 
 	/* Assume that all blocks forming the beam have same size */
-	nppas = get_vblock_nbytes(b->tgt->dev);
+	nppas = geo.vblock_nbytes;
 
-	ppa_count = offset / sec_size;
+	ppa_count = offset / geo.nbytes;
 	block_off = ppa_count / nppas;
 	ppa_off = ppa_count % nppas;
-	page_off = offset % sec_size;
+	page_off = offset % geo.nbytes;
 
 	current_r_vblock = &b->vblocks[block_off];
 
 	pages_to_read = (nppas > left_pages) ? left_pages : nppas;
-	ret = posix_memalign(&read_buf, sec_size,
-			     pages_to_read * sec_size);
+	ret = posix_memalign(&read_buf, geo.nbytes,
+			     pages_to_read * geo.nbytes);
 	if (ret) {
-		/*NVM_DEBUG("FAILED: left_pages * sec_size(%lu), sec_size(%lu)\n",
-			  left_pages * sec_size, sec_size);*/
 		return ret;
 	}
 	reader = read_buf;
@@ -437,7 +379,7 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 	 * kernel.
 	 */
 	while (left_bytes) {
-		bytes_to_read = pages_to_read * sec_size;
+		bytes_to_read = pages_to_read * geo.nbytes;
 		valid_bytes = (left_bytes > bytes_to_read) ?
 						bytes_to_read : left_bytes;
 
@@ -445,17 +387,16 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 			while (pages_to_read + ppa_off > nppas)
 				pages_to_read--;
 
-			valid_bytes = (nppas * sec_size) -
-					(ppa_off * sec_size) - page_off;
+			valid_bytes = (nppas * geo.nbytes) -
+					(ppa_off * geo.nbytes) - page_off;
 		}
 
-		assert(left_bytes <= left_pages * sec_size);
+		assert(left_bytes <= left_pages * geo.nbytes);
 
 		/* TODO: Send bigger I/Os if we have enough data */
 		read_pages = nvm_vblock_pread(current_r_vblock, reader,
                                               pages_to_read, ppa_off);
 		if (read_pages != pages_to_read) {
-			//NVM_DEBUG("FAILED: read_pages != pages_to_read\n");
 			return -1;
 		}
 

@@ -55,7 +55,7 @@ struct w_buffer {
 struct beam {
 	int gid;				/* internal global identifier */
 	int lun;				/* virtual lun mapped to beam*/
-	struct nvm_tgt *tgt;			/* LightNVM target */
+	struct nvm_dev *dev;			/* LightNVM target */
 	struct nvm_vblock *current_w_vblock;	/* current block in use */
 	struct nvm_vblock vblocks[MAX_BLOCKS];	/* vblocks forming the beam */
 	int nvblocks;				/* number of vblocks */

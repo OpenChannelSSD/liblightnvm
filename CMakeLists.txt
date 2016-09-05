@@ -23,7 +23,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 set(HEADER_FILES
 	include/liblightnvm.h
 	include/likely.h
-	include/dflash_ioctl.h
 	include/nvm.h
 	include/nvm_atomic.h
 	include/nvm_beam.h
@@ -34,8 +33,6 @@ set(HEADER_FILES
 set(SOURCE_FILES
 	src/nvm_beam.c
 	src/nvm_dev.c
-	src/nvm_mgmt.c
-	src/nvm_tgt.c
 	src/nvm_utils.c
 	src/nvm_vblock.c)
 

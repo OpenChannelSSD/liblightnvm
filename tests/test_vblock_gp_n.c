@@ -1,6 +1,6 @@
 /*
- * This test attempts to allocate all blocks on the device on which the target
- * is running. Allocating all blocks will fail at least for two reasons:
+ * This test attempts to allocate all blocks on the given device.
+ * Allocating all blocks will fail at least for two reasons:
  *
  * - vblocks might be reserved by others
  * - vblocks might be bad
@@ -11,19 +11,17 @@
  *
  * NOTE: Be wary about running this test on actual hardware since it might
  *	 wear out an MLC device after about 1000-3000 runs. This is currently
- *	 true since 'dflash' erases a block when responding to an _GET.
+ *	 true since 'vblock_get' erases a block when responding to an _GET.
  */
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <string.h>
-#include <unistd.h>
 #include <liblightnvm.h>
 
 #include <CUnit/Basic.h>
 
-static char nvm_tgt_name[DISK_NAME_LEN] = "nvm_vblock_tst";
-int k = 8;	// Total number of nvm_vblock_gets allowed to fail
+static char nvm_dev_name[DISK_NAME_LEN] = "nvm_vblock_tst";
+int k = 10;	// Total number of nvm_vblock_gets allowed to fail
 
 int init_suite1(void)
 {
@@ -37,7 +35,7 @@ int clean_suite1(void)
 
 void TEST_VBLOCK_GP_N(void)
 {
-	NVM_TGT tgt;
+	NVM_DEV dev;
 	NVM_GEO geo;
 
 	NVM_VBLOCK *vblocks;	/* Array of vblocks */
@@ -51,10 +49,10 @@ void TEST_VBLOCK_GP_N(void)
 
 	int i;
 
-	tgt = nvm_tgt_open(nvm_tgt_name, 0x0);
-	CU_ASSERT_PTR_NOT_NULL(tgt);
+	dev = nvm_dev_open(nvm_dev_name);
+	CU_ASSERT_PTR_NOT_NULL(dev);
 
-	geo = nvm_dev_get_geo(nvm_tgt_get_dev(tgt));
+	geo = nvm_dev_get_geo(dev);
 
 	ngets = 0;
 	ngets_lun = malloc(sizeof(ngets_lun)*geo.nluns);
@@ -79,7 +77,7 @@ void TEST_VBLOCK_GP_N(void)
 
 		ch = i % geo.nchannels;
 		lun = i % geo.nluns;
-		err = nvm_vblock_gets(vblocks[vblocks_reserved], tgt, ch, lun);
+		err = nvm_vblock_gets(vblocks[vblocks_reserved], dev, ch, lun);
 		ngets++;
 		ngets_lun[lun]++;
 		if (err) {
@@ -100,7 +98,7 @@ void TEST_VBLOCK_GP_N(void)
 	/* That is... no more than k failures */
 	CU_ASSERT(ngets_failed <= k);
 
-	/* For debugging */
+	/* Print counters / totals
 	printf("vblocks_total(%d)\n", vblocks_total);
 	printf("vblocks_reserved(%d)\n", vblocks_reserved);
 	printf("ngets(%d), ngets_failed(%d)\n", ngets, ngets_failed);
@@ -108,6 +106,7 @@ void TEST_VBLOCK_GP_N(void)
 		printf("i(%d), ngets_lun(%d) / ngets_lun_failed(%d)\n",
 			i, ngets_lun[i], ngets_lun_failed[i]);
 	}
+	*/
 
 	for (i=0; i < vblocks_reserved; i++) {		/* Release vblocks */
 		int err = nvm_vblock_put(vblocks[i]);
@@ -126,13 +125,13 @@ void TEST_VBLOCK_GP_N(void)
 int main(int argc, char **argv)
 {
 	if (argc != 2) {
-		printf("Usage: %s tgt_name\n", argv[0]);
+		printf("Usage: %s dev_name\n", argv[0]);
 		return -1;
 	}
 	if (strlen(argv[1]) > DISK_NAME_LEN) {
 		printf("len(device_name) > %d\n", DISK_NAME_LEN - 1);
 	}
-	strcpy(nvm_tgt_name, argv[1]);
+	strcpy(nvm_dev_name, argv[1]);
 
 	CU_pSuite pSuite = NULL;
 

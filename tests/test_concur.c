@@ -8,7 +8,7 @@
 
 #include <CUnit/Basic.h>
 
-static char nvm_tgt_name[DISK_NAME_LEN] = "test0";
+static char nvm_dev_name[DISK_NAME_LEN] = "nvme0n1";
 
 int init_suite1(void)
 {
@@ -23,7 +23,7 @@ int clean_suite1(void)
 struct context {
 	NVM_VBLOCK blk;
 	NVM_GEO geo;
-	NVM_TGT tgt;
+	NVM_DEV dev;
 	char *buf;
 };
 
@@ -59,21 +59,21 @@ static void *erase_thread(void *priv)
 void test_VBLOCK_CONCUR(void)
 {
 	NVM_VBLOCK vblock[2];
-	NVM_TGT tgt;
+	NVM_DEV dev;
 	NVM_GEO geo;
 	int ret, i;
 	struct context ctx[2];
 	char *wbuf;
 	pthread_t wr_th, er_th;
 
-	tgt = nvm_tgt_open(nvm_tgt_name, 0x0);
-	CU_ASSERT(tgt > 0);
+	dev = nvm_dev_open(nvm_dev_name);
+	CU_ASSERT(dev > 0);
 
-	geo = nvm_dev_get_geo(nvm_tgt_get_dev(tgt));
+	geo = nvm_dev_get_geo(dev);
 
 	for (i = 0; i < NUM_BLOCKS; i++) {
 		vblock[i] = nvm_vblock_new();
-		ret = nvm_vblock_gets(vblock[i], tgt, 0, 0);
+		ret = nvm_vblock_gets(vblock[i], dev, 0, 0);
 		CU_ASSERT(!ret);
 		//nvm_vblock_pr(vblock[i]);
 	}
@@ -87,12 +87,12 @@ void test_VBLOCK_CONCUR(void)
 	memset(wbuf, 0, geo.vpage_nbytes);
 
 	ctx[0].blk = vblock[0];
-	ctx[0].tgt = tgt;
+	ctx[0].dev = dev;
 	ctx[0].buf = wbuf;
 	ctx[0].geo = geo;
 
 	ctx[1].blk = vblock[1];
-	ctx[1].tgt = tgt;
+	ctx[1].dev = dev;
 	ctx[1].buf = wbuf;
 	ctx[1].geo = geo;
 
@@ -124,17 +124,17 @@ void test_VBLOCK_CONCUR(void)
 		nvm_vblock_free(&vblock[i]);
 	}
 
-	nvm_tgt_close(tgt);
+	nvm_dev_close(dev);
 }
 
 int main(int argc, char **argv)
 {
 	if (argc > 1) {
 		if (strlen(argv[1]) > DISK_NAME_LEN) {
-			printf("Argument nvm_tgt can be maximum %d characters\n",
+			printf("Argument nvm_dev can be maximum %d characters\n",
 				DISK_NAME_LEN - 1);
 		}
-		strcpy(nvm_tgt_name, argv[1]);
+		strcpy(nvm_dev_name, argv[1]);
 	}
 
 	CU_pSuite pSuite = NULL;

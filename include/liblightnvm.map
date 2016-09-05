@@ -3,12 +3,6 @@ LIBLIGHTNVM_0.2 {
 		nvm_addr_pr,
 		nvm_geo_pr,
 
-		nvm_tgt_open,
-		nvm_tgt_close,
-		nvm_tgt_pr,
-		nvm_tgt_get_dev,
-		nvm_tgt_get_fd,
-
 		nvm_vblock_buf_alloc,
 		nvm_vpage_buf_alloc,
 
@@ -38,9 +32,6 @@ LIBLIGHTNVM_0.2 {
 		nvm_dev_get_pln_pg_size,
 		nvm_dev_get_sec_size,
 		nvm_dev_pr,
-
-		nvm_mgmt_tgt_create,
-		nvm_mgmt_tgt_remove,
 
 		nvm_beam_append,
 		nvm_beam_create,

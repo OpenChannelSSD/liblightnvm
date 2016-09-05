@@ -25,8 +25,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <libudev.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <stdio.h>
+#include <libudev.h>
 #include <liblightnvm.h>
 #include <nvm.h>
 #include <nvm_utils.h>
@@ -34,218 +36,41 @@
 
 static struct nvm_dev *devices = NULL;
 
-struct nvm_dev_info* nvm_dev_info_new(void)
+int nvm_dev_geo_fill(struct nvm_geo *geo, const char *dev_name)
 {
-	struct nvm_dev_info *info = malloc(sizeof(*info));
-	memset(info, 0, sizeof(*info));
-
-	return info;
-}
-
-void nvm_dev_info_free(struct nvm_dev_info **info)
-{
-	if (!info || !*info)
-		return;
-
-	free(*info);
-	*info = NULL;
-}
-
-void nvm_dev_info_pr(struct nvm_dev_info *info)
-{
-	printf("dev_info {\n"
-		"  dev_name(%s),\n"
-		"  version(%u),\n"
-		"  vendor_opcode(%u),\n"
-		"  capabilities(%u),\n"
-		"  device_mode(%u),\n"
-		"  media_manager(%s),\n"
-		"  ppaf(\n"
-		"    ch_offset(%u, 0x%02x),\n"
-		"    ch_len(%u, 0x%02x),\n"
-		"    lun_offset(%u, 0x%02x),\n"
-		"    lun_len(%u, 0x%02x),\n"
-		"    pln_offset(%u, 0x%02x),\n"
-		"    pln_len(%u, 0x%02x),\n"
-		"    blk_offset(%u, 0x%02x),\n"
-		"    blk_len(%u, 0x%02x),\n"
-		"    pg_offset(%u, 0x%02x),\n"
-		"    pg_len(%u, 0x%02x),\n"
-		"    sect_offset(%u, 0x%02x),\n"
-		"    sect_len(%u, 0x%02x)\n"
-		"  ),\n"
-		"  fpg_size(%d)\n"
-		"  sec_size(%d),\n"
-		"  sec_per_pg(%d),\n"
-		"  media_type(%u),\n"
-		"  flash_media_type(%u),\n"
-		"  num_channels(%u),\n"
-		"  num_luns(%u),\n"
-		"  num_planes(%u),\n"
-		"  num_blocks(%u),\n"
-		"  page_size(%u),\n"
-		"  hw_sector_size(%u),\n"
-		"  oob_sector_size(%u),\n"
-		"  read_typ(%u),\n"
-		"  read_max(%u),\n"
-		"  prog_typ(%u),\n"
-		"  prog_max(%u),\n"
-		"  erase_typ(%u),\n"
-		"  erase_max(%u),\n"
-		"  multiplane_modes(%u, 0x%08x),\n"
-		"  media_capabilities(%u, 0x%08x),\n"
-		"  channel_parallelism(%u)\n"
-		"  max_phys_sect(%u)\n"
-		"}\n",
-		info->dev_name,
-		info->version,
-		info->vendor_opcode,
-		info->capabilities,
-		info->device_mode,
-		info->media_manager,
-
-		info->ch_offset,
-		info->ch_offset,
-		info->ch_len,
-		info->ch_len,
-		info->lun_offset,
-		info->lun_offset,
-		info->lun_len,
-		info->lun_len,
-		info->pln_offset,
-		info->pln_offset,
-		info->pln_len,
-		info->pln_len,
-		info->blk_offset,
-		info->blk_offset,
-		info->blk_len,
-		info->blk_len,
-		info->pg_offset,
-		info->pg_offset,
-		info->pg_len,
-		info->pg_len,
-		info->sect_offset,
-		info->sect_offset,
-		info->sect_len,
-		info->sect_len,
-
-		info->fpg_size,
-		info->sec_size,
-		info->sec_per_pg,
-
-		info->media_type,
-		info->flash_media_type,
-		info->num_channels,
-		info->num_luns,
-		info->num_planes,
-		info->num_blocks,
-		info->page_size,
-		info->hw_sector_size,
-		info->oob_sector_size,
-		info->read_typ,
-		info->read_max,
-		info->prog_typ,
-		info->prog_max,
-		info->erase_typ,
-		info->erase_max,
-
-		info->multiplane_modes,
-		info->multiplane_modes,
-		info->media_capabilities,
-		info->media_capabilities,
-		info->channel_parallelism,
-		info->max_phys_sect
-		);
-}
-
-int nvm_dev_info_fill(struct nvm_dev_info *info, const char *dev_name)
-{
-	/* libudev implementation */
 	struct udev *udev;
 	struct udev_device *dev;
 
 	udev = udev_new();
 	if (!udev) {
-		printf("dev_info_fill: Failed creating udev.\n");
+		NVM_DEBUG("Failed creating udev for dev_name(%s)\n", dev_name);
 		return -1;
 	}
 
-	dev = udev_dev_find(udev, "nvme", "lightnvm", dev_name);
+	/* Extract geometry from sysfs via libudev*/
+	dev = udev_nvmdev_find(udev, dev_name);
 	if (!dev) {
-		printf("CANNOT FIND DEVICE\n");
+		NVM_DEBUG("Cannot find dev_name(%s)\n", dev_name);
 		udev_unref(udev);
 		return -1;
 	}
 
-	strncpy(info->dev_name, dev_name, DISK_NAME_LEN);
-	info->version = atoi(udev_device_get_sysattr_value(dev, "lightnvm/version"));
-	info->vendor_opcode = atoi(udev_device_get_sysattr_value(dev, "lightnvm/vendor_opcode"));
-	info->capabilities = atoi(udev_device_get_sysattr_value(dev, "lightnvm/capabilities"));
-	info->device_mode = atoi(udev_device_get_sysattr_value(dev, "lightnvm/device_mode"));
-	strncpy(info->media_manager, udev_device_get_sysattr_value(dev, "lightnvm/media_manager"), NVM_TTYPE_NAME_MAX);
+	geo->nchannels = atoi(udev_device_get_sysattr_value(dev, "device/lightnvm/num_channels"));
+	geo->nluns = atoi(udev_device_get_sysattr_value(dev, "device/lightnvm/num_luns"));
+	geo->nplanes = atoi(udev_device_get_sysattr_value(dev, "device/lightnvm/num_planes"));
+	geo->nblocks = atoi(udev_device_get_sysattr_value(dev, "device/lightnvm/num_blocks"));
+	geo->npages = atoi(udev_device_get_sysattr_value(dev, "device/lightnvm/num_pages"));
+	geo->nsectors = atoi(udev_device_get_sysattr_value(dev, "device/lightnvm/sec_per_pg"));
+	geo->nbytes = atoi(udev_device_get_sysattr_value(dev, "device/lightnvm/hw_sector_size"));
 
-	const char *ppaf_hex = udev_device_get_sysattr_value(dev, "lightnvm/ppa_format");
-	char buf[3] = { 0 };
-
-	memcpy(buf, ppaf_hex+2, 2);
-	info->ch_offset = strtol(buf, NULL, 16);
-	memcpy(buf, ppaf_hex+4, 2);
-	info->ch_len = strtol(buf, NULL, 16);
-	memcpy(buf, ppaf_hex+6, 2);
-	info->lun_offset = strtol(buf, NULL, 16);
-	memcpy(buf, ppaf_hex+8, 2);
-	info->lun_len = strtol(buf, NULL, 16);
-	memcpy(buf, ppaf_hex+10, 2);
-	info->pln_offset = strtol(buf, NULL, 16);
-	memcpy(buf, ppaf_hex+12, 2);
-	info->pln_len = strtol(buf, NULL, 16);
-	memcpy(buf, ppaf_hex+14, 2);
-	info->blk_offset = strtol(buf, NULL, 16);
-	memcpy(buf, ppaf_hex+16, 2);
-	info->blk_len = strtol(buf, NULL, 16);
-	memcpy(buf, ppaf_hex+18, 2);
-	info->pg_offset = strtol(buf, NULL, 16);
-	memcpy(buf, ppaf_hex+20, 2);
-	info->pg_len = strtol(buf, NULL, 16);
-	memcpy(buf, ppaf_hex+22, 2);
-	info->sect_offset = strtol(buf, NULL, 16);
-	memcpy(buf, ppaf_hex+24, 2);
-	info->sect_len = strtol(buf, NULL, 16);
-
-	info->fpg_size = atoi(udev_device_get_sysattr_value(dev, "lightnvm/fpg_size"));
-	info->sec_size = atoi(udev_device_get_sysattr_value(dev, "lightnvm/sec_size"));
-	info->sec_per_pg = atoi(udev_device_get_sysattr_value(dev, "lightnvm/sec_per_pg"));
-	
-	info->media_type = atoi(udev_device_get_sysattr_value(dev, "lightnvm/media_type"));
-	info->flash_media_type = atoi(udev_device_get_sysattr_value(dev, "lightnvm/flash_media_type"));
-	info->num_channels = atoi(udev_device_get_sysattr_value(dev, "lightnvm/num_channels"));
-	info->num_luns = atoi(udev_device_get_sysattr_value(dev, "lightnvm/num_luns"));
-	info->num_planes = atoi(udev_device_get_sysattr_value(dev, "lightnvm/num_planes"));
-
-	info->num_blocks = atoi(udev_device_get_sysattr_value(dev, "lightnvm/num_blocks"));
-	info->num_pages = atoi(udev_device_get_sysattr_value(dev, "lightnvm/num_pages"));
-	info->page_size = atoi(udev_device_get_sysattr_value(dev, "lightnvm/page_size"));
-	info->hw_sector_size = atoi(udev_device_get_sysattr_value(dev, "lightnvm/hw_sector_size"));
-	info->oob_sector_size = atoi(udev_device_get_sysattr_value(dev, "lightnvm/oob_sector_size"));
-
-	info->read_typ = atoi(udev_device_get_sysattr_value(dev, "lightnvm/read_typ"));
-	info->read_max = atoi(udev_device_get_sysattr_value(dev, "lightnvm/read_max"));
-	info->prog_typ = atoi(udev_device_get_sysattr_value(dev, "lightnvm/prog_typ"));
-	info->prog_max = atoi(udev_device_get_sysattr_value(dev, "lightnvm/prog_max"));
-	info->erase_typ = atoi(udev_device_get_sysattr_value(dev, "lightnvm/erase_typ"));
-	info->erase_max = atoi(udev_device_get_sysattr_value(dev, "lightnvm/erase_max"));
-
-	info->multiplane_modes = strtol(udev_device_get_sysattr_value(dev, "lightnvm/multiplane_modes"), NULL, 0);
-	info->media_capabilities = strtol(udev_device_get_sysattr_value(dev, "lightnvm/media_capabilities"), NULL, 0);
-	info->channel_parallelism = atoi(udev_device_get_sysattr_value(dev, "lightnvm/channel_parallelism"));
-	
-	info->max_phys_sect = atoi(udev_device_get_sysattr_value(dev, "lightnvm/max_phys_sect"));
+	/* Derive number of bytes occupied by a virtual block/page */
+	geo->tbytes = geo->nluns * geo->nplanes * geo->nblocks * geo->npages * \
+			geo->nsectors * geo->nbytes;
+	geo->vblock_nbytes = geo->nplanes * geo->npages * geo->nsectors * geo->nbytes;
+	geo->vpage_nbytes = geo->nplanes * geo->nsectors * geo->nbytes;
 
 	udev_device_unref(dev);
 	udev_unref(udev);
-
-	/* Calculate magic value */
-	info->pln_pg_size = info->fpg_size * info->num_planes;
 
 	return 0;
 }
@@ -277,97 +102,78 @@ void nvm_dev_free(struct nvm_dev **dev)
 
 void nvm_dev_pr(struct nvm_dev* dev)
 {
-	nvm_dev_info_pr(&dev->info);
-}
-
-struct nvm_dev_info* nvm_dev_get_info(struct nvm_dev *dev)
-{
-	return &dev->info;
-}
-
-int nvm_dev_get_pln_pg_size(struct nvm_dev *dev)
-{
-	return dev->info.pln_pg_size;
-}
-
-int nvm_dev_get_sec_size(struct nvm_dev *dev)
-{
-	return dev->info.hw_sector_size;
+	printf("dev { name(%s), fd(%d) }\n", dev->name, dev->fd);
 }
 
 int nvm_dev_get_nchannels(struct nvm_dev *dev)
 {
-	return dev->info.num_channels;
+	return dev->geo.nchannels;
 }
 
 int nvm_dev_get_nluns(struct nvm_dev *dev)
 {
-	return dev->info.num_luns;
+	return dev->geo.nluns;
 }
 
 int nvm_dev_get_nplanes(struct nvm_dev *dev)
 {
-	return dev->info.num_planes;
+	return dev->geo.nplanes;
 }
 
 int nvm_dev_get_nblocks(struct nvm_dev *dev)
 {
-	return dev->info.num_blocks;
+	return dev->geo.nblocks;
 }
 
 int nvm_dev_get_npages(struct nvm_dev *dev)
 {
-	return dev->info.num_pages;
+	return dev->geo.npages;
 }
 
 int nvm_dev_get_nsectors(struct nvm_dev *dev)
 {
-	return dev->info.sec_per_pg;
+	return dev->geo.nsectors;
 }
 
 int nvm_dev_get_nbytes(struct nvm_dev *dev)
 {
-	return dev->info.hw_sector_size;
+	return dev->geo.nbytes;
+}
+
+int nvm_dev_get_vblock_nbytes(struct nvm_dev *dev)
+{
+	return dev->geo.vblock_nbytes;
+}
+
+int nvm_dev_get_vpage_nbytes(struct nvm_dev *dev)
+{
+	return dev->geo.vpage_nbytes;
 }
 
 struct nvm_geo nvm_dev_get_geo(struct nvm_dev *dev)
 {
-	struct nvm_geo geo;
-
-	geo.nchannels = nvm_dev_get_nchannels(dev);
-	geo.nluns = nvm_dev_get_nluns(dev);
-	geo.nplanes = nvm_dev_get_nplanes(dev);
-	geo.nblocks = nvm_dev_get_nblocks(dev);
-	geo.npages = nvm_dev_get_npages(dev);
-	geo.nsectors = nvm_dev_get_nsectors(dev);
-	geo.nbytes = nvm_dev_get_nbytes(dev);
-
-	geo.tbytes = geo.nluns * geo.nplanes * geo.nblocks * \
-			geo.npages * geo.nsectors * geo.nbytes;
-	geo.vblock_nbytes = geo.nplanes * geo.npages * \
-				 geo.nsectors * geo.nbytes;
-	geo.vpage_nbytes = geo.nplanes * geo.nsectors * geo.nbytes;
-
-	return geo;
+	return dev->geo;
 }
 
 void nvm_geo_pr(struct nvm_geo geo)
 {
-	printf("nchannels(%lu), nluns(%lu), nplanes(%lu), nblocks(%lu), "
-		"npages(%lu), nsectors(%lu), nbytes(%lu)\n",
-		geo.nchannels, geo.nluns, geo.nplanes, geo.nblocks,
+	printf("geo {\n");
+	printf(" nchannels(%lu), nluns(%lu), nplanes(%lu), nblocks(%lu),\n",
+		geo.nchannels, geo.nluns, geo.nplanes, geo.nblocks);
+	printf(" npages(%lu), nsectors(%lu), nbytes(%lu), \n",
 		geo.npages, geo.nsectors, geo.nbytes);
-
-	printf("total_nbytes(%lub:%luMb)\n",
+	printf(" total_nbytes(%lub:%luMb)\n",
 		geo.tbytes, geo.tbytes >> 20);
-	printf("vblock_nbytes(%lub:%luMb)\n",
+	printf(" vblock_nbytes(%lub:%luMb)\n",
 		geo.vblock_nbytes, geo.vblock_nbytes >> 20);
-	printf("vpage_nbytes(%lub:%luKb)\n",
+	printf(" vpage_nbytes(%lub:%luKb)\n",
 		geo.vpage_nbytes, geo.vpage_nbytes >> 10);
+	printf("}\n");
 }
 
 struct nvm_dev* nvm_dev_open(const char *dev_name)
 {
+	char dev_path[NVM_DISK_NAME_LEN];
 	struct nvm_dev *dev;
 	int err;
 
@@ -382,16 +188,30 @@ struct nvm_dev* nvm_dev_open(const char *dev_name)
 		NVM_DEBUG("nvm_dev_open: nvm_dev_new failed.\n");
 		return NULL;
 	}
+
+	strncpy(dev->name, dev_name, DISK_NAME_LEN);
 	
-	err = nvm_dev_info_fill(&dev->info, dev_name);
+	err = nvm_dev_geo_fill(&dev->geo, dev_name);
 	if (err) {
 		NVM_DEBUG("nvm_dev_open: _fill failed(%d)\n", err);
 		nvm_dev_free(&dev);
 		return NULL;
 	}
-	
+
+	sprintf(dev_path, "/dev/%s", dev_name);
+	dev->fd = open(dev_path, O_RDWR);
+	if (dev->fd < 0) {
+		NVM_DEBUG("FAILED: open - dev->fd(%d), dev_path(%s)\n",
+			  dev->fd, dev_path);
+
+		nvm_dev_close(dev);
+		free(dev);
+
+		return NULL;
+	}
+
 	atomic_inc(&dev->ref_cnt);
-	HASH_ADD_STR(devices, info.dev_name, dev);
+	HASH_ADD_STR(devices, name, dev);
 
 	return dev;
 }
@@ -401,6 +221,7 @@ void nvm_dev_close(struct nvm_dev *dev)
 	NVM_DEBUG("called\n");
 	if (atomic_dec_and_test(&(dev)->ref_cnt)) {
 		HASH_DEL(devices, dev);
+		close(dev->fd);
 		nvm_dev_free(&dev);
 	}
 }

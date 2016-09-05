@@ -8,8 +8,6 @@
 #include <CUnit/Basic.h>
 
 static char nvm_dev_name[DISK_NAME_LEN] = "nvme0n1";
-static char nvm_tgt_type[NVM_TTYPE_NAME_MAX] = "dflash";
-static char nvm_tgt_name[DISK_NAME_LEN] = "nvm_vblock_tst";
 
 int init_suite1(void)
 {
@@ -35,19 +33,16 @@ void test_VBLOCK_NEW_FREE(void)
 void test_VBLOCK_GET_PUT_01(void)
 {
 	NVM_VBLOCK vblock;
-	NVM_TGT tgt;
+	NVM_DEV dev;
 	int ret;
 
-	ret = nvm_mgmt_tgt_create(nvm_tgt_name, nvm_tgt_type, nvm_dev_name, 0, 0);
-	CU_ASSERT(0==ret);
-
-	tgt = nvm_tgt_open(nvm_tgt_name, 0x0);
-	CU_ASSERT(tgt > 0);
+	dev = nvm_dev_open(nvm_dev_name);
+	CU_ASSERT(dev > 0);
 
 	vblock = nvm_vblock_new();	/* get block from arbitrary lun */
 	CU_ASSERT_PTR_NOT_NULL(vblock);
 	
-	ret = nvm_vblock_get(vblock, tgt);
+	ret = nvm_vblock_get(vblock, dev);
 	CU_ASSERT(0==ret);
 
 	ret = nvm_vblock_put(vblock);
@@ -56,34 +51,28 @@ void test_VBLOCK_GET_PUT_01(void)
 	nvm_vblock_free(&vblock);
 	CU_ASSERT_PTR_NULL(vblock);
 
-	nvm_tgt_close(tgt);
-	ret = nvm_mgmt_tgt_remove(nvm_tgt_name);
+	nvm_dev_close(dev);
 	CU_ASSERT(0==ret);
 }
 
 void test_VBLOCK_GETS_PUT_01(void)
 {
 	NVM_VBLOCK vblock;
-	NVM_TGT tgt;
+	NVM_DEV dev;
 	int ret;
 
-	ret = nvm_mgmt_tgt_create(nvm_tgt_name, nvm_tgt_type, nvm_dev_name, 0, 0);
-	CU_ASSERT(0==ret);
-
-	tgt = nvm_tgt_open(nvm_tgt_name, 0x0);
-	CU_ASSERT_PTR_NOT_NULL(tgt > 0);
+	dev = nvm_dev_open(nvm_dev_name);
+	CU_ASSERT_PTR_NOT_NULL(dev > 0);
 
 	vblock = nvm_vblock_new();
 	CU_ASSERT_PTR_NOT_NULL(vblock);		/* get block from lun 0 */
 	
-	ret = nvm_vblock_gets(vblock, tgt, 0, 0);
+	ret = nvm_vblock_gets(vblock, dev, 0, 0);
 	CU_ASSERT(0==ret);
 
 	ret = nvm_vblock_put(vblock);
 
-	nvm_tgt_close(tgt);
-	ret = nvm_mgmt_tgt_remove(nvm_tgt_name);
-	CU_ASSERT(0==ret);
+	nvm_dev_close(dev);
 }
 
 int main(int argc, char **argv)

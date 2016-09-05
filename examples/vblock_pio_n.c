@@ -4,9 +4,9 @@
 #include <string.h>
 #include <liblightnvm.h>
 
-void ex_block_pio_n(const char* tgt_name)
+void ex_block_pio_n(const char* dev_name)
 {
-	NVM_TGT tgt;
+	NVM_DEV dev;
 	NVM_GEO geo;
 
 	NVM_VBLOCK *vblks = NULL;
@@ -16,14 +16,13 @@ void ex_block_pio_n(const char* tgt_name)
 	char *wbuf;
 	char *rbuf;
 
-	tgt = nvm_tgt_open(tgt_name, 0x0);
-	if (!tgt) {
-		printf("Failed opening target, does it exist? Create with e.g."
-		       "'nvme lnvm -d nvme0n1 -n test_target -t dflash'\n");
+	dev = nvm_dev_open(dev_name);
+	if (!dev) {
+		printf("Failed opening device, does it exist / initialized?\n");
 		return;
 	}
 
-	geo = nvm_dev_get_geo(nvm_tgt_get_dev(tgt));
+	geo = nvm_dev_get_geo(dev);
 
 	wbuf = nvm_vpage_buf_alloc(geo);
 	if (!wbuf) {
@@ -54,17 +53,17 @@ void ex_block_pio_n(const char* tgt_name)
 		}
 	}
 	
-	/* Reserve via tgt in round-robin fashion across channels and luns. */
+	/* Reserve via dev in round-robin fashion across channels and luns. */
 	printf("Attempting to reserve %d\n", vblks_nalloc);
 	vblks_nres = 0;
 	for(i=0; i<vblks_nalloc; ++i) {
 		ret = nvm_vblock_gets(vblks[vblks_nres],
-				      tgt,
+				      dev,
 				      i % geo.nchannels,
 				      i % geo.nluns);
 		if (ret) {
-			printf("F: _gets i(%d), ch(%lu), lun(%lu), tgt(%p)\n",
-				i, i % geo.nchannels, i % geo.nluns, tgt);
+			printf("F: _gets i(%d), ch(%lu), lun(%lu), dev(%p)\n",
+				i, i % geo.nchannels, i % geo.nluns, dev);
 			continue;
 		}
 		nvm_vblock_pr(vblks[vblks_nres]);
@@ -102,9 +101,9 @@ void ex_block_pio_n(const char* tgt_name)
 	}
 
 	for(i=0; i<vblks_nres; ++i) {
-		ret = nvm_vblock_put(vblks[i]);	/* Release vblock from tgt */
+		ret = nvm_vblock_put(vblks[i]);	/* Release vblock from dev */
 		if (ret) {
-			printf("Failed putting block via tgt(%p)\n", tgt);
+			printf("Failed putting block via dev(%p)\n", dev);
 		}
 	}
 
@@ -112,7 +111,7 @@ void ex_block_pio_n(const char* tgt_name)
 		nvm_vblock_free(&vblks[i]);		/* De-allocate vblock */
 	}
 	free(vblks);
-	nvm_tgt_close(tgt);				/* Close the target */
+	nvm_dev_close(dev);				/* Close the device */
 	free(wbuf);
 	free(rbuf);
 }
@@ -120,7 +119,7 @@ void ex_block_pio_n(const char* tgt_name)
 int main(int argc, char **argv)
 {
 	if (argc != 2) {
-		printf("Usage: %s tgt_name ", argv[0]);
+		printf("Usage: %s dev_name ", argv[0]);
 		return -1;
 	}
 

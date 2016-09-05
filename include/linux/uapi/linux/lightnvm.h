@@ -122,6 +122,28 @@ struct nvm_ioctl_dev_factory {
 	__u32 flags;
 };
 
+struct nvm_ioctl_dev_pio
+{
+	__u8 opcode;
+	__u8 flags;
+	__u16 nppas;
+	__u32 rsvd2;
+	__u64 metadata;
+	__u64 addr;
+	__u64 ppas;
+	__u32 metadata_len;
+	__u32 data_len;
+	__u64 status;
+	__u32 result;
+	__u32 rsvd3[3];
+};
+
+struct nvm_ioctl_dev_vblk {
+	__u64 ppa;
+	__u16 flags;
+	__u16 rsvd[3];
+};
+
 /* The ioctl type, 'L', 0x20 - 0x2F documented in ioctl-number.txt */
 enum {
 	/* top level cmds */
@@ -137,6 +159,13 @@ enum {
 
 	/* Factory reset device */
 	NVM_DEV_FACTORY_CMD,
+
+	/* gennvm */
+	NVM_DEV_PIO_CMD = 0x40,
+
+	/* Provisioning interface */
+	NVM_DEV_BLOCK_GET_CMD,
+	NVM_DEV_BLOCK_PUT_CMD,
 };
 
 #define NVM_IOCTL 'L' /* 0x4c */
@@ -153,6 +182,13 @@ enum {
 						struct nvm_ioctl_dev_init)
 #define NVM_DEV_FACTORY		_IOW(NVM_IOCTL, NVM_DEV_FACTORY_CMD, \
 						struct nvm_ioctl_dev_factory)
+
+#define NVM_DEV_PIO		_IOWR(NVM_IOCTL, NVM_DEV_PIO_CMD, \
+						struct nvm_ioctl_dev_pio)
+#define NVM_DEV_BLOCK_GET	_IOWR(NVM_IOCTL, NVM_DEV_BLOCK_GET_CMD, \
+						struct nvm_ioctl_dev_vblk)
+#define NVM_DEV_BLOCK_PUT	_IOWR(NVM_IOCTL, NVM_DEV_BLOCK_PUT_CMD, \
+						struct nvm_ioctl_dev_vblk)
 
 #define NVM_VERSION_MAJOR	1
 #define NVM_VERSION_MINOR	0

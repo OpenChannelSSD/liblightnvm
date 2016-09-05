@@ -39,16 +39,6 @@ extern "C" {
 #ifndef NVM_DISK_NAME_LEN
 #define NVM_DISK_NAME_LEN 32
 #endif
-#ifndef NVM_TTYPE_NAME_MAX
-#define NVM_TTYPE_NAME_MAX 48
-#endif
-#ifndef NVM_TTYPE_MAX
-#define NVM_TTYPE_MAX 63
-#endif
-
-#ifndef NVM_TGT_NAME_MAX
-#define NVM_TGT_NAME_MAX (DISK_NAME_LEN + 5)	/* 5 = strlen(/dev/) */
-#endif
 
 /* BITS ALLOCATED FOR THE GENERAL ADDRESS FORMAT */
 #define NVM_BLK_BITS (16)
@@ -92,7 +82,6 @@ typedef struct nvm_geo {
 } NVM_GEO;
 
 typedef struct nvm_dev *NVM_DEV;
-typedef struct nvm_tgt *NVM_TGT;
 typedef struct nvm_vblock *NVM_VBLOCK;
 
 void nvm_addr_pr(NVM_ADDR addr);
@@ -142,23 +131,24 @@ int nvm_dev_get_nsectors(NVM_DEV dev);
 int nvm_dev_get_nbytes(NVM_DEV dev);
 
 /**
+ * @return Number of bytes occupied by a vpage
+
+ */
+int nvm_dev_get_vpage_nbytes(NVM_DEV dev);
+
+/**
+ * @return Number of bytes occupied by a vblock
+
+ */
+int nvm_dev_get_vblock_nbytes(NVM_DEV dev);
+
+/**
  * Returns of the geometry related device information including derived
  * information such as total number of bytes etc. See NVM_GEO for the specifics.
  *
  * @return NVM_GEO of given dev
  */
 NVM_GEO nvm_dev_get_geo(NVM_DEV dev);
-
-/* TODO: Deprecate these */
-int nvm_dev_get_pln_pg_size(NVM_DEV dev);
-int nvm_dev_get_sec_size(NVM_DEV dev);
-
-NVM_TGT nvm_tgt_open(const char *tgt_name, int flags);
-void nvm_tgt_close(NVM_TGT tgt);
-void nvm_tgt_pr(NVM_TGT tgt);
-
-int nvm_tgt_get_fd(NVM_TGT tgt);
-NVM_DEV nvm_tgt_get_dev(NVM_TGT tgt);
 
 void* nvm_vblock_buf_alloc(NVM_GEO geo);
 void* nvm_vpage_buf_alloc(NVM_GEO geo);
@@ -171,27 +161,27 @@ uint64_t nvm_vblock_get_ppa(NVM_VBLOCK vblock);
 uint16_t nvm_vblock_get_flags(NVM_VBLOCK vblock);
 
 /**
- * Get ownership of an arbitrary flash block from via the given target.
+ * Get ownership of an arbitrary flash block from the given device.
  *
  * Returns: On success, a flash block is allocated in LightNVM's media manager
  * and vblock is filled up accordingly. On error, -1 is returned, in which case
  * errno is set to indicate the error.
  */
-int nvm_vblock_get(NVM_VBLOCK vblock, NVM_TGT tgt);
+int nvm_vblock_get(NVM_VBLOCK vblock, NVM_DEV dev);
 
 /**
- * Reserves a block on given target using a specific lun.
+ * Reserves a block on given device using a specific lun.
  *
  * @param vblock Block created with nvm_vblock_new
- * @param tgt Handle obtained with nvm_tgt_open
+ * @param dev Handle obtained with nvm_dev_open
  * @param ch Channel from which to reserve via
  * @param lun Lun from which to reserve via
  * @return -1 on error and *errno* set, zero otherwise.
  */
-int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_TGT tgt, uint32_t ch, uint32_t lun);
+int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_DEV dev, uint32_t ch, uint32_t lun);
 
 /**
- * Put flash block(s) represented by vblock back to tgt.
+ * Put flash block(s) represented by vblock back to dev.
  *
  * This action implies that the owner of the flash block previous to this
  * function call no longer owns the flash block, and therefor can no longer
@@ -203,7 +193,7 @@ int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_TGT tgt, uint32_t ch, uint32_t lun);
 int nvm_vblock_put(NVM_VBLOCK vblock);
 
 /**
- * Read count pages starting at ppa_off from tgt into buf using flags
+ * Read count pages starting at ppa_off from dev into buf using flags
  *
  * fpage_size is the flash page *read* size, which might be smaller than the
  * flash page write size; some controllers support reading at sector granularity
@@ -247,87 +237,15 @@ int nvm_vblock_write(NVM_VBLOCK vblock, const void *buf);
 int nvm_vblock_erase(NVM_VBLOCK vblock);
 
 /**
- * Instantiates a target with a given target type on top of an nvme device
- * reserving a range of luns.
- *
- * Equivalent of cli: nvme lnvm create  -d <dev_name>
- *                                      -n <tgt_name>
- *                                      -t <tgt_type_name>
- *                                      -O<lun_begin>:<lun_end>
- *
- * @param dev_name Name of the nvme device e.g. nvme0n1
- * @param tgt_name Name of target e.g. nvm0
- * @param tgt_type_name Name of target e.g. dflash, pblk, rrpc
- * @param lun_begin First lun in range
- * @param lun_end Last lun in range
- * @return Error code ?
- */
-int nvm_mgmt_tgt_create(const char *tgt_name, const char *tgt_type_name,
-			const char *dev_name, int lun_begin, int lun_end);
-
-/**
- * Removes an instantiated target.
- *
- * Equivalent of cli: nvme lnvm remove -n tgt-name
- *
- * @param tgt_name Name of target instance to remove
- * @return ?
- */
-int nvm_mgmt_tgt_remove(const char *tgt_name);
-
-/**
- * Initialize structures for beams
+ * Beam interface
  */
 int nvm_beam_init(void);
-
-/*
- * Tear down structures for beams.
- */
 void nvm_beam_exit(void);
-
-/**
- *
- * @param tgt_name
- * @param lun
- * @param flags
- * @return
- */
-int nvm_beam_create(const char *tgt_name, int lun, int flags);
-
-/**
- *
- * @param beam
- * @param flags
- */
+int nvm_beam_create(const char *dev_name, int lun, int flags);
 void nvm_beam_destroy(int beam, int flags);
-
-/**
- *
- * @param beam
- * @param buf
- * @param count
- * @return
- */
 ssize_t nvm_beam_append(int beam, const void *buf, size_t count);
-
-/**
- *
- * @param beam
- * @param buf
- * @param count
- * @param offset
- * @param flags
- * @return
- */
 ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 		      int flags);
-
-/**
- *
- * @param beam
- * @param flags
- * @return
- */
 int nvm_beam_sync(int beam, int flags);
 
 #ifdef __cplusplus
