@@ -23,16 +23,6 @@
 static char nvm_dev_name[DISK_NAME_LEN] = "nvm_vblock_tst";
 int k = 10;	// Total number of nvm_vblock_gets allowed to fail
 
-int init_suite1(void)
-{
-	return 0;
-}
-
-int clean_suite1(void)
-{
-	return 0;
-}
-
 void TEST_VBLOCK_GP_N(void)
 {
 	NVM_DEV dev;
@@ -138,7 +128,7 @@ int main(int argc, char **argv)
 	if (CUE_SUCCESS != CU_initialize_registry())
 		return CU_get_error();
 
-	pSuite = CU_add_suite("_vblock_[gets|put] n", init_suite1, clean_suite1);
+	pSuite = CU_add_suite("_vblock_[gets|put] n", NULL, NULL);
 	if (NULL == pSuite) {
 		CU_cleanup_registry();
 		return CU_get_error();
@@ -150,7 +140,7 @@ int main(int argc, char **argv)
 		return CU_get_error();
 	}
 
-	CU_basic_set_mode(CU_BRM_VERBOSE);
+	CU_basic_set_mode(CU_BRM_SILENT);
 	CU_basic_run_tests();
 	CU_cleanup_registry();
 

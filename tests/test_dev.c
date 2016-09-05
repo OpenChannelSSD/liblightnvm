@@ -1,7 +1,3 @@
-/* Management tests */
-
-#define _GNU_SOURCE
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -10,16 +6,6 @@
 #include <CUnit/Basic.h>
 
 static char nvm_dev_name[DISK_NAME_LEN] = "nvme0n1";
-
-int init_suite1(void)
-{
-	return 0;
-}
-
-int clean_suite1(void)
-{
-	return 0;
-}
 
 void test_DEV_OPEN_CLOSE(void)
 {
@@ -68,7 +54,7 @@ int main(int argc, char **argv)
 		return CU_get_error();
 
 	/* add a suite to the registry */
-	pSuite = CU_add_suite("nvm_dev*", init_suite1, clean_suite1);
+	pSuite = CU_add_suite("nvm_dev*", NULL, NULL);
 	if (NULL == pSuite) {
 		CU_cleanup_registry();
 		return CU_get_error();
@@ -86,7 +72,7 @@ int main(int argc, char **argv)
 	}
 
 	/* Run all tests using the CUnit Basic interface */
-	CU_basic_set_mode(CU_BRM_VERBOSE);
+	CU_basic_set_mode(CU_BRM_SILENT);
 	CU_basic_run_tests();
 	CU_cleanup_registry();
 
