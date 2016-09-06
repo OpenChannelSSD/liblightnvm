@@ -55,7 +55,7 @@ void nvm_vblock_free(struct nvm_vblock **vblock)
 
 void nvm_vblock_pr(struct nvm_vblock *vblock)
 {
-	struct NVM_ADDR addr;
+	struct nvm_addr addr;
 
 	addr.ppa = vblock->ppa;
 
@@ -79,7 +79,7 @@ uint16_t nvm_vblock_get_flags(struct nvm_vblock *vblock)
 int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_DEV dev, uint32_t ch, uint32_t lun)
 {
 	struct nvm_ioctl_dev_vblk ctl;
-	struct NVM_ADDR addr;
+	struct nvm_addr addr;
 	int err;
 
 	addr.ppa = 0;
@@ -126,12 +126,12 @@ ssize_t nvm_vblock_pread(struct nvm_vblock *vblock, void *buf, size_t count,
 	const int NPLANES = nvm_dev_get_nplanes(dev);
 	const int NPPAS_MAX = NPLANES * nvm_dev_get_nsectors(dev);
 
-	struct NVM_ADDR ppas[NPPAS_MAX];
+	struct nvm_addr ppas[NPPAS_MAX];
 	struct nvm_ioctl_dev_pio ctl;
 	int i, ret;
 
 	for (i = 0; i < NPPAS_MAX; i++) {
-		struct NVM_ADDR ppa;
+		struct nvm_addr ppa;
 
 		ppa.ppa = vblock->ppa;
 		ppa.g.pg = ppa_off;
@@ -173,12 +173,12 @@ ssize_t nvm_vblock_pwrite(struct nvm_vblock *vblock, const void *buf,
 	const int NPLANES = nvm_dev_get_nplanes(dev);
 	const int NPPAS_MAX = NPLANES * nvm_dev_get_nsectors(dev);
 
-	struct NVM_ADDR ppas[NPPAS_MAX];
+	struct nvm_addr ppas[NPPAS_MAX];
 	struct nvm_ioctl_dev_pio ctl;
 	int i, ret;
 
 	for (i = 0; i < NPPAS_MAX; i++) {
-		struct NVM_ADDR ppa;
+		struct nvm_addr ppa;
 
 		ppa.ppa = vblock->ppa;
 		ppa.g.pg = ppa_off;
@@ -253,12 +253,12 @@ int nvm_vblock_erase(struct nvm_vblock *vblock)
 	struct nvm_dev *dev = vblock->dev;
 	const int NPLANES = nvm_dev_get_nplanes(dev);
 
-	struct NVM_ADDR ppas[NPLANES];
+	struct nvm_addr ppas[NPLANES];
 	struct nvm_ioctl_dev_pio ctl;
 	int i, ret;
 
 	for (i = 0; i < NPLANES; i++) {
-		struct NVM_ADDR ppa;
+		struct nvm_addr ppa;
 
 		ppa.ppa = vblock->ppa;
 		ppa.g.pl = i;
@@ -287,4 +287,6 @@ int nvm_vblock_erase(struct nvm_vblock *vblock)
 
 	return 0;
 }
+
+
 

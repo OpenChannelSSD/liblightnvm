@@ -18,6 +18,7 @@ include_directories("${CMAKE_SOURCE_DIR}/include/linux/uapi")
 
 set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/test_dev.c
+	${CMAKE_CURRENT_SOURCE_DIR}/test_mbad.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_vblock.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_vblock_rw.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_vblock_gp_n.c

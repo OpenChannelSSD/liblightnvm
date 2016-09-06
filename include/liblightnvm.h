@@ -48,7 +48,7 @@ extern "C" {
 #define NVM_LUN_BITS (8)
 #define NVM_CH_BITS  (7)
 
-typedef struct NVM_ADDR {
+typedef struct nvm_addr {
 	union {
 		/* General address format */
 		struct {
@@ -90,6 +90,15 @@ void nvm_geo_pr(NVM_GEO geo);
 NVM_DEV nvm_dev_open(const char *dev_name);
 void nvm_dev_close(NVM_DEV dev);
 void nvm_dev_pr(NVM_DEV dev);
+
+/**
+ * Mark the given block address as being 'bad'.
+ *
+ * @param addr The address to mark.
+ * @returns 0 on success, some error code otherwise.
+ *
+ */
+int nvm_dev_mbad(NVM_DEV dev, NVM_ADDR addr, int type);
 
 /**
  * @return Number of channels on given device
@@ -144,7 +153,9 @@ int nvm_dev_get_vblock_nbytes(NVM_DEV dev);
 
 /**
  * Returns of the geometry related device information including derived
- * information such as total number of bytes etc. See NVM_GEO for the specifics.
+ * information such as total number of bytes etc.
+ *
+ * NOTE: See NVM_GEO for the specifics.
  *
  * @return NVM_GEO of given dev
  */
@@ -235,6 +246,7 @@ int nvm_vblock_write(NVM_VBLOCK vblock, const void *buf);
  * @returns 0 on success, some error code otherwise.
  */
 int nvm_vblock_erase(NVM_VBLOCK vblock);
+
 
 /**
  * Beam interface

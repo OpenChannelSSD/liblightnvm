@@ -28,7 +28,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <errno.h>
 #include <libudev.h>
+#include <linux/lightnvm.h>
 #include <liblightnvm.h>
 #include <nvm.h>
 #include <nvm_utils.h>
@@ -91,11 +93,9 @@ struct nvm_dev* nvm_dev_new(void)
 
 void nvm_dev_free(struct nvm_dev **dev)
 {
-	NVM_DEBUG("called\n");
 	if (!dev)
 		return;
 
-	NVM_DEBUG("Freeing\n");
 	free(*dev);
 	*dev = NULL;
 }
@@ -193,7 +193,7 @@ struct nvm_dev* nvm_dev_open(const char *dev_name)
 	
 	err = nvm_dev_geo_fill(&dev->geo, dev_name);
 	if (err) {
-		NVM_DEBUG("nvm_dev_open: _fill failed(%d)\n", err);
+		NVM_DEBUG("Failed nvm_dev_geo_fill err(%d)\n", err);
 		nvm_dev_free(&dev);
 		return NULL;
 	}
@@ -201,7 +201,7 @@ struct nvm_dev* nvm_dev_open(const char *dev_name)
 	sprintf(dev_path, "/dev/%s", dev_name);
 	dev->fd = open(dev_path, O_RDWR);
 	if (dev->fd < 0) {
-		NVM_DEBUG("FAILED: open - dev->fd(%d), dev_path(%s)\n",
+		NVM_DEBUG("Failed open dev_path(%s) dev->fd(%d)\n",
 			  dev->fd, dev_path);
 
 		nvm_dev_close(dev);
@@ -218,10 +218,57 @@ struct nvm_dev* nvm_dev_open(const char *dev_name)
 
 void nvm_dev_close(struct nvm_dev *dev)
 {
-	NVM_DEBUG("called\n");
 	if (atomic_dec_and_test(&(dev)->ref_cnt)) {
 		HASH_DEL(devices, dev);
 		close(dev->fd);
 		nvm_dev_free(&dev);
 	}
 }
+
+int nvm_dev_mbad(struct nvm_dev *dev, struct nvm_addr addr, int type)
+{
+	const int NPLANES = nvm_dev_get_nplanes(dev);
+
+	struct nvm_addr ppas[NPLANES];
+	struct nvm_ioctl_dev_pio ctl;
+	int i, ret;
+
+	switch (type) {
+		case 0x1:	/* MAGIC -- NVM_BLK_T_BAD */
+		case 0x2:	/* MAGIC -- NVM_BLK_T_GRWN_BAD */
+			break;
+		default:
+			return -EINVAL;
+	}
+
+	for (i = 0; i < NPLANES; i++) {	/* Unroll over nplanes */
+		struct nvm_addr ppa;
+
+		ppa.ppa = addr.ppa;
+		ppa.g.pg = 0;
+		ppa.g.sec = 0;
+		ppa.g.pl = i;
+
+		ppas[i] = ppa;
+	}
+
+	memset(&ctl, 0, sizeof(ctl));
+	ctl.opcode = 0xf1;	/* MAGIC -- NVM_OP_PWRITE */
+	ctl.flags = type;	/* MAGIC -- encoding bad-block type in flags */
+	ctl.nppas = NPLANES;
+	ctl.ppas = (uint64_t)ppas;
+
+	ret = ioctl(dev->fd, NVM_DEV_PIO, &ctl);
+	if (ret) {
+		NVM_DEBUG("failed ret(%d)\n", ret);
+		return 0;
+	}
+
+	if (ctl.result) {
+		NVM_DEBUG("result(%u)\n", ctl.result);
+		NVM_DEBUG("status(%llu)\n", (unsigned long long)ctl.status);
+	}
+
+	return ret;
+}
+

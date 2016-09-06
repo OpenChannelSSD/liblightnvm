@@ -56,6 +56,9 @@ tags:
 test_dev:
 	sudo nvm_test_dev nvme0n1
 
+test_mbad:
+	sudo nvm_test_mbad nvme0n1
+
 test_vblock:
 	sudo nvm_test_vblock nvme0n1
 

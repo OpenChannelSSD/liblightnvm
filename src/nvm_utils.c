@@ -51,7 +51,7 @@ int nvm_execute_ioctl(int opcode, void *u)
 	return 0;
 }
 
-void nvm_addr_pr(struct NVM_ADDR addr)
+void nvm_addr_pr(struct nvm_addr addr)
 {
 	printf("ch(%d), lun(%d), pl(%d), blk(%d), pg(%d), sec(%d)\n",
 		addr.g.ch, addr.g.lun, addr.g.pl, addr.g.blk, addr.g.pg, addr.g.sec);
