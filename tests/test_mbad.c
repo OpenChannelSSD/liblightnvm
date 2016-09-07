@@ -72,8 +72,11 @@ void TEST_DEV_MARK(void)
 				printf("What? No error?\n");
 				nvm_vblock_pr(vblk);
 			}
+			nvm_vblock_put(vblk);
 		}
 	}
+
+	nvm_dev_close(dev);
 }
 
 int main(int argc, char **argv)
