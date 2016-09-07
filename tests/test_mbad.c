@@ -1,5 +1,5 @@
 /**
- * This tests attempts to determine whether or not the nvm_dev_mbad function
+ * This tests attempts to determine whether or not the nvm_dev_mark function
  * works as expected. It does so by marking all blocks bad, then tries to _get
  * one. Which is then expected to fail, since all blocks are bad.
  */
@@ -12,7 +12,7 @@
 
 static char nvm_dev_name[DISK_NAME_LEN] = "nvme0n1";
 
-void TEST_DEV_MBAD(void)
+void TEST_DEV_MARK(void)
 {
 	NVM_DEV dev;
 	NVM_GEO geo;
@@ -21,8 +21,8 @@ void TEST_DEV_MBAD(void)
 	int vblocks_total;			/* Total number of vblocks  */
 	int i, ch, lun;
 
-	int mbad_total;				/* Calls to mbad */
-	int mbad_failed;			/* Failed calls to mbad */
+	int mark_total;				/* Calls to mark */
+	int mark_failed;			/* Failed calls to mark */
 	
 	vblk = nvm_vblock_new();		/* Allocate a vblock */
 	if (!vblk) {
@@ -41,8 +41,8 @@ void TEST_DEV_MBAD(void)
 
 	vblocks_total = geo.nluns * geo.nblocks;
 
-	mbad_total = 0;
-	mbad_failed = 0;
+	mark_total = 0;
+	mark_failed = 0;
 	for (i = 0; i < vblocks_total; ++i) {
 		NVM_ADDR addr;
 		int err;
@@ -53,16 +53,16 @@ void TEST_DEV_MBAD(void)
 
 		nvm_addr_pr(addr);
 
-		err = nvm_dev_mbad(dev, addr, 0x1);
-		mbad_total++;
+		err = nvm_dev_mark(dev, addr, 0x1);
+		mark_total++;
 		if (err) {
-			mbad_failed++;
+			mark_failed++;
 		}
 	}
 
 	nvm_geo_pr(geo);
-	printf("vblocks_total(%d), mbad_total(%d) / mbad_failed(%d)\n",
-		vblocks_total, mbad_total, mbad_failed);
+	printf("vblocks_total(%d), mark_total(%d) / mark_failed(%d)\n",
+		vblocks_total, mark_total, mark_failed);
 
 	// Now try to get a block via each channel/lun, they should all fail
 	for (ch = 0; ch < geo.nchannels; ch++) {
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
 
 	/* add the tests to the suite */
 	if (
-	(NULL == CU_add_test(pSuite, "nvm_dev_mbad", TEST_DEV_MBAD)) ||
+	(NULL == CU_add_test(pSuite, "nvm_dev_mark", TEST_DEV_MARK)) ||
 	0
 	)
 	{

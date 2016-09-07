@@ -92,13 +92,15 @@ void nvm_dev_close(NVM_DEV dev);
 void nvm_dev_pr(NVM_DEV dev);
 
 /**
- * Mark the given block address as being 'bad'.
+ * Mark the given block address as being of state 'type'
  *
- * @param addr The address to mark.
+ * @param dev The device on which the block lives
+ * @param addr The address of the block
+ * @param type 0=Free/Good?, 1=BAD, 2=Grown bad
  * @returns 0 on success, some error code otherwise.
  *
  */
-int nvm_dev_mbad(NVM_DEV dev, NVM_ADDR addr, int type);
+int nvm_dev_mark(NVM_DEV dev, NVM_ADDR addr, int type);
 
 /**
  * @return Number of channels on given device

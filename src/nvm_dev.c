@@ -225,7 +225,7 @@ void nvm_dev_close(struct nvm_dev *dev)
 	}
 }
 
-int nvm_dev_mbad(struct nvm_dev *dev, struct nvm_addr addr, int type)
+int nvm_dev_mark(struct nvm_dev *dev, struct nvm_addr addr, int type)
 {
 	const int NPLANES = nvm_dev_get_nplanes(dev);
 
@@ -234,6 +234,7 @@ int nvm_dev_mbad(struct nvm_dev *dev, struct nvm_addr addr, int type)
 	int i, ret;
 
 	switch (type) {
+		case 0x0:	/* MAGIC -- NVM_BLK_T_FREE aka "good" */
 		case 0x1:	/* MAGIC -- NVM_BLK_T_BAD */
 		case 0x2:	/* MAGIC -- NVM_BLK_T_GRWN_BAD */
 			break;

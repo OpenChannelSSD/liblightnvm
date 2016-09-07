@@ -5,14 +5,14 @@
 #include <errno.h>
 #include <liblightnvm.h>
 
-int mbad(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk, uint16_t type)
+int mark(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk, uint16_t type)
 {
 	NVM_DEV dev;
 	NVM_GEO geo;
 	NVM_ADDR addr;
 	int err = 0;
 
-	printf("mbad{ dev_name(%s), ch(%d), lun(%d), blk(%d), type(%d) }\n",
+	printf("mark{ dev_name(%s), ch(%d), lun(%d), blk(%d), type(%d) }\n",
 		dev_name, ch, lun, blk, type);
 
 	dev = nvm_dev_open(dev_name);
@@ -39,6 +39,7 @@ int mbad(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk, uint16_t
 		return -EINVAL;
 	}
 	switch (type) {
+		case 0:
 		case 1:
 		case 2:
 			break;
@@ -50,9 +51,9 @@ int mbad(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk, uint16_t
 	addr.g.lun = lun;
 	addr.g.blk = blk;
 
-	err = nvm_dev_mbad(dev, addr, type);
+	err = nvm_dev_mark(dev, addr, type);
 	if (err) {
-		printf("nvm_dev_mbad failed err(%d)\n", err);
+		printf("nvm_dev_mark failed err(%d)\n", err);
 	} else {
 		printf("no errors detected when marking block bad.\n");
 	}
@@ -84,5 +85,5 @@ int main(int argc, char **argv)
 	blk = atoi(argv[4]);
 	type = atoi(argv[5]);
 
-	return mbad(dev_name, ch, lun, blk, type);
+	return mark(dev_name, ch, lun, blk, type);
 }
