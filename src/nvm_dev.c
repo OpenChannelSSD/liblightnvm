@@ -262,7 +262,7 @@ int nvm_dev_mark(struct nvm_dev *dev, struct nvm_addr addr, int type)
 	ret = ioctl(dev->fd, NVM_DEV_PIO, &ctl);
 	if (ret) {
 		NVM_DEBUG("failed ret(%d)\n", ret);
-		return 0;
+		return ret;
 	}
 
 	if (ctl.result) {
