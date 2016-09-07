@@ -44,7 +44,8 @@ int gblk(const char *dev_name, uint16_t ch, uint16_t lun)
 		} else {
 			printf("** Got the following vblock **\n");
 			nvm_vblock_pr(vblk);
-			printf("NOTE: Block was released (nvm_vblock_put)\n");
+			printf("NOTE: Block was NOT released..\n");
+			printf(".. that is `nvm_vblock_put` was not called.\n");
 		}
 	}
 
@@ -56,7 +57,7 @@ int gblk(const char *dev_name, uint16_t ch, uint16_t lun)
 int main(int argc, char **argv)
 {
 	char dev_name[DISK_NAME_LEN+1];
-	unsigned int ch, lun, blk, type;
+	uint16_t ch, lun;
 
 	if (argc != 4) {
 		printf("Usage: sudo %s dev_name ch lun\n", argv[0]);
