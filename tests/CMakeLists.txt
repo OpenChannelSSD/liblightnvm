@@ -10,8 +10,6 @@ if ( "${CUNIT}" STREQUAL "CUNIT-NOTFOUND" )
 		"Please install libcunit (e.g. 'libcunit1-dev' on Ubuntu 16.04)")
 endif()
 
-message(WARNING "WOOO(${CUNIT})")
-
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DNVM_DEBUG_ENABLED")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 

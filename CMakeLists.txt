@@ -39,33 +39,40 @@ set(SOURCE_FILES
 include_directories("${PROJECT_SOURCE_DIR}/include")
 include_directories("${PROJECT_SOURCE_DIR}/include/linux/uapi")
 
-# NOTE: We build lightnvm as both a static and shared library
+#
+# NOTE: We build lightnvm as both a SHARED and a STATIC library
+#
+# We compile it twice since the nice cmake feature of "objlib" is not supported
+# until cmake 2.8.8 and we would like to compile out of the box with cmake 2.8.7
+# which ships with Ubuntu 12.04 and other old distributions
+#
+# The good part is that the static lib with not use the -fPIC flag, which it
+# would otherwise do with re-using the object-files for both a shared and a
+# static library
+#
 
-# Create an object target, this will compile the library object files once
-# for both the static and the shared library
-add_library(LIGHTNVM_OBJECTS OBJECT ${HEADER_FILES} ${SOURCE_FILES})
-set_target_properties(LIGHTNVM_OBJECTS PROPERTIES POSITION_INDEPENDENT_CODE 1)
-
+#
 # SHARED: Here we define the shared library with versioning and all that jazz
-add_library(lightnvm SHARED $<TARGET_OBJECTS:LIGHTNVM_OBJECTS>)
+#
+add_library(lightnvm SHARED ${HEADER_FILES} ${SOURCE_FILES})
 set_target_properties(lightnvm PROPERTIES
 	VERSION ${NVM_VERSION}
 	SOVERSION ${NVM_VERSION_MAJOR}
 	)
 target_link_libraries(lightnvm udev ${CMAKE_THREAD_LIBS_INIT})
 
-install(TARGETS lightnvm
-	DESTINATION lib)
+install(TARGETS lightnvm DESTINATION lib)
 install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm.h"
 	DESTINATION include)
 
+#
 # STATIC: Here we define the static library
-add_library(lightnvm_a STATIC $<TARGET_OBJECTS:LIGHTNVM_OBJECTS>)
+#
+add_library(lightnvm_a STATIC ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(lightnvm_a udev ${CMAKE_THREAD_LIBS_INIT})
 set_target_properties(lightnvm_a PROPERTIES OUTPUT_NAME lightnvm)
 
-install(TARGETS lightnvm_a
-	DESTINATION lib)
+install(TARGETS lightnvm_a DESTINATION lib)
 
 # EXAMPLES
 add_subdirectory(examples)
