@@ -39,7 +39,15 @@ set(SOURCE_FILES
 include_directories("${PROJECT_SOURCE_DIR}/include")
 include_directories("${PROJECT_SOURCE_DIR}/include/linux/uapi")
 
-add_library(lightnvm SHARED ${HEADER_FILES} ${SOURCE_FILES})
+# NOTE: We build lightnvm as both a static and shared library
+
+# Create an object target, this will compile the library object files once
+# for both the static and the shared library
+add_library(LIGHTNVM_OBJECTS OBJECT ${HEADER_FILES} ${SOURCE_FILES})
+set_target_properties(LIGHTNVM_OBJECTS PROPERTIES POSITION_INDEPENDENT_CODE 1)
+
+# SHARED: Here we define the shared library with versioning and all that jazz
+add_library(lightnvm SHARED $<TARGET_OBJECTS:LIGHTNVM_OBJECTS>)
 set_target_properties(lightnvm PROPERTIES
 	VERSION ${NVM_VERSION}
 	SOVERSION ${NVM_VERSION_MAJOR}
@@ -51,9 +59,23 @@ install(TARGETS lightnvm
 install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm.h"
 	DESTINATION include)
 
+# STATIC: Here we define the static library
+add_library(lightnvm_a STATIC $<TARGET_OBJECTS:LIGHTNVM_OBJECTS>)
+target_link_libraries(lightnvm_a udev ${CMAKE_THREAD_LIBS_INIT})
+set_target_properties(lightnvm_a PROPERTIES OUTPUT_NAME lightnvm)
+
+install(TARGETS lightnvm_a
+	DESTINATION lib)
+
+# EXAMPLES
 add_subdirectory(examples)
+
+# TESTS
 add_subdirectory(tests)
 
+# Packages
 set(CPACK_GENERATOR "DEB" "TGZ")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Javier González")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libudev-dev")
+
 include(CPack)
