@@ -11,6 +11,7 @@ include_directories("${CMAKE_SOURCE}/include")
 
 set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/info.c
+	${CMAKE_CURRENT_SOURCE_DIR}/mbad.c
 	${CMAKE_CURRENT_SOURCE_DIR}/vblock_pio_1.c
 	${CMAKE_CURRENT_SOURCE_DIR}/vblock_pio_n.c)
 
