@@ -9,14 +9,6 @@ env:
     DIST_CODE: xenial
     TAG: liblightnvm
   - DIST_NAME: ubuntu
-    DIST_VERS: 15.10
-    DIST_CODE: wily
-    TAG: liblightnvm
-  - DIST_NAME: ubuntu
-    DIST_VERS: 15.04
-    DIST_CODE: vivid
-    TAG: liblightnvm
-  - DIST_NAME: ubuntu
     DIST_VERS: 14.04
     DIST_CODE: trusty
     TAG: liblightnvm

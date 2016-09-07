@@ -83,6 +83,8 @@ add_subdirectory(tests)
 # Packages
 set(CPACK_GENERATOR "DEB" "TGZ")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Javier González")
+if ("${CMAKE_VERSION}" VERSION_GREATER "2.8.7")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+endif()
 
 include(CPack)
