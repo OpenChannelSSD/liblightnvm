@@ -76,7 +76,8 @@ uint16_t nvm_vblock_get_flags(struct nvm_vblock *vblock)
 	return vblock->flags;
 }
 
-int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_DEV dev, uint32_t ch, uint32_t lun)
+int nvm_vblock_gets(struct nvm_vblock *vblock, struct nvm_dev *dev, uint32_t ch,
+		    uint32_t lun)
 {
 	struct nvm_ioctl_dev_vblk ctl;
 	struct nvm_addr addr;
@@ -88,7 +89,6 @@ int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_DEV dev, uint32_t ch, uint32_t lun)
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.ppa = addr.ppa;
 
-	// TODO: fix this -- get the gennvm chardev from device
 	err = ioctl(dev->fd, NVM_DEV_BLOCK_GET, &ctl);
 	if (err) {
 		return err;
@@ -100,7 +100,7 @@ int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_DEV dev, uint32_t ch, uint32_t lun)
 	return 0;
 }
 
-int nvm_vblock_get(struct nvm_vblock *vblock, NVM_DEV dev)
+int nvm_vblock_get(struct nvm_vblock *vblock, struct nvm_dev *dev)
 {
 	return nvm_vblock_gets(vblock, dev, 0, 0);
 }
@@ -113,14 +113,13 @@ int nvm_vblock_put(struct nvm_vblock *vblock)
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.ppa = vblock->ppa;
 	
-	// TODO: fix this -- get the gennvm chardev from device
 	ret = ioctl(vblock->dev->fd, NVM_DEV_BLOCK_PUT, &ctl);
 
 	return ret;
 }
 
 ssize_t nvm_vblock_pread(struct nvm_vblock *vblock, void *buf, size_t count,
-                         size_t ppa_off)
+			 size_t ppa_off)
 {
 	struct nvm_dev *dev = vblock->dev;
 	const int NPLANES = nvm_dev_get_nplanes(dev);
@@ -150,7 +149,6 @@ ssize_t nvm_vblock_pread(struct nvm_vblock *vblock, void *buf, size_t count,
 	ctl.addr = (uint64_t)buf;
 	ctl.data_len = vblock->dev->geo.vpage_nbytes;
 
-	// TODO: fix this -- get the gennvm chardev from device
 	ret = ioctl(vblock->dev->fd, NVM_DEV_PIO, &ctl);
 	if (ret) {
 		NVM_DEBUG("failed ret(%d)\n", ret);
@@ -197,7 +195,6 @@ ssize_t nvm_vblock_pwrite(struct nvm_vblock *vblock, const void *buf,
 	ctl.addr = (uint64_t)buf;
 	ctl.data_len = vblock->dev->geo.vpage_nbytes;
 
-	// TODO: fix this -- get the gennvm chardev from device
 	ret = ioctl(vblock->dev->fd, NVM_DEV_PIO, &ctl);
 	if (ret) {
 		NVM_DEBUG("failed ret(%d)\n", ret);
@@ -273,7 +270,6 @@ int nvm_vblock_erase(struct nvm_vblock *vblock)
 
 	ctl.ppas = (uint64_t)ppas;
 
-	// TODO: fix this -- get the gennvm chardev from device
 	ret = ioctl(vblock->dev->fd, NVM_DEV_PIO, &ctl);
 	if (ret) {
 		NVM_DEBUG("failed ret(%d)\n", ret);

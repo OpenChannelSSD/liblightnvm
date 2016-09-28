@@ -202,7 +202,7 @@ struct nvm_dev* nvm_dev_open(const char *dev_name)
 	dev->fd = open(dev_path, O_RDWR);
 	if (dev->fd < 0) {
 		NVM_DEBUG("Failed open dev_path(%s) dev->fd(%d)\n",
-			  dev->fd, dev_path);
+			  dev_path, dev->fd);
 
 		nvm_dev_close(dev);
 		free(dev);
