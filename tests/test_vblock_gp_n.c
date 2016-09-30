@@ -42,7 +42,7 @@ void TEST_VBLOCK_GP_N(void)
 	dev = nvm_dev_open(nvm_dev_name);
 	CU_ASSERT_PTR_NOT_NULL(dev);
 
-	geo = nvm_dev_get_geo(dev);
+	geo = nvm_dev_attr_geo(dev);
 
 	ngets = 0;
 	ngets_lun = malloc(sizeof(ngets_lun)*geo.nluns);

@@ -19,7 +19,7 @@ void ex_vblock_pio_1(const char* dev_name)
 		return;
 	}
 
-	geo = nvm_dev_get_geo(dev);			/* Get dev geometry */
+	geo = nvm_dev_attr_geo(dev);			/* Get dev geometry */
 
 	wbuf = nvm_vpage_buf_alloc(geo);		/* Setup buffers */
 	if (!wbuf) {

@@ -105,52 +105,52 @@ void nvm_dev_pr(struct nvm_dev* dev)
 	printf("dev { name(%s), fd(%d) }\n", dev->name, dev->fd);
 }
 
-int nvm_dev_get_nchannels(struct nvm_dev *dev)
+int nvm_dev_attr_nchannels(struct nvm_dev *dev)
 {
 	return dev->geo.nchannels;
 }
 
-int nvm_dev_get_nluns(struct nvm_dev *dev)
+int nvm_dev_attr_nluns(struct nvm_dev *dev)
 {
 	return dev->geo.nluns;
 }
 
-int nvm_dev_get_nplanes(struct nvm_dev *dev)
+int nvm_dev_attr_nplanes(struct nvm_dev *dev)
 {
 	return dev->geo.nplanes;
 }
 
-int nvm_dev_get_nblocks(struct nvm_dev *dev)
+int nvm_dev_attr_nblocks(struct nvm_dev *dev)
 {
 	return dev->geo.nblocks;
 }
 
-int nvm_dev_get_npages(struct nvm_dev *dev)
+int nvm_dev_attr_npages(struct nvm_dev *dev)
 {
 	return dev->geo.npages;
 }
 
-int nvm_dev_get_nsectors(struct nvm_dev *dev)
+int nvm_dev_attr_nsectors(struct nvm_dev *dev)
 {
 	return dev->geo.nsectors;
 }
 
-int nvm_dev_get_nbytes(struct nvm_dev *dev)
+int nvm_dev_attr_nbytes(struct nvm_dev *dev)
 {
 	return dev->geo.nbytes;
 }
 
-int nvm_dev_get_vblock_nbytes(struct nvm_dev *dev)
+int nvm_dev_attr_vblock_nbytes(struct nvm_dev *dev)
 {
 	return dev->geo.vblock_nbytes;
 }
 
-int nvm_dev_get_vpage_nbytes(struct nvm_dev *dev)
+int nvm_dev_attr_vpage_nbytes(struct nvm_dev *dev)
 {
 	return dev->geo.vpage_nbytes;
 }
 
-struct nvm_geo nvm_dev_get_geo(struct nvm_dev *dev)
+struct nvm_geo nvm_dev_attr_geo(struct nvm_dev *dev)
 {
 	return dev->geo;
 }
@@ -227,7 +227,7 @@ void nvm_dev_close(struct nvm_dev *dev)
 
 int nvm_dev_mark(struct nvm_dev *dev, struct nvm_addr addr, int type)
 {
-	const int NPLANES = nvm_dev_get_nplanes(dev);
+	const int NPLANES = nvm_dev_attr_nplanes(dev);
 
 	struct nvm_addr ppas[NPLANES];
 	struct nvm_ioctl_dev_pio ctl;
@@ -272,4 +272,3 @@ int nvm_dev_mark(struct nvm_dev *dev, struct nvm_addr addr, int type)
 
 	return ret;
 }
-

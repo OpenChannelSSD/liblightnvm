@@ -20,8 +20,8 @@ void __TEST_VBLOCK_PWRITE_READ_N(int iterations, int npage_io)
 	dev = nvm_dev_open(nvm_dev_name);	/* Open device */
 	CU_ASSERT_PTR_NOT_NULL(dev);
 
-	sector_nbytes = nvm_dev_get_nbytes(dev);
-	vpage_nbytes = nvm_dev_get_vpage_nbytes(dev);
+	sector_nbytes = nvm_dev_attr_nbytes(dev);
+	vpage_nbytes = nvm_dev_attr_vpage_nbytes(dev);
 
 	for(i=0; i<iterations; ++i) {
 		int read, written;

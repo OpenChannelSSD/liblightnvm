@@ -39,7 +39,20 @@
 struct nvm_vblock* nvm_vblock_new(void)
 {
 	struct nvm_vblock *vblock = malloc(sizeof(*vblock));
-	memset(vblock, 0, sizeof(*vblock));
+	vblock->dev = 0;
+	vblock->ppa = 0;
+	vblock->flags = 0;
+
+	return vblock;
+}
+
+struct nvm_vblock* nvm_vblock_new_on_dev(NVM_DEV dev, uint64_t ppa)
+{
+	struct nvm_vblock *vblock = malloc(sizeof(*vblock));
+
+	vblock->dev = dev;
+	vblock->ppa = ppa;
+	vblock->flags = 0;
 
 	return vblock;
 }
@@ -66,12 +79,12 @@ void nvm_vblock_pr(struct nvm_vblock *vblock)
 	       addr.g.sec);
 }
 
-uint64_t nvm_vblock_get_ppa(struct nvm_vblock *vblock)
+uint64_t nvm_vblock_attr_ppa(struct nvm_vblock *vblock)
 {
 	return vblock->ppa;
 }
 
-uint16_t nvm_vblock_get_flags(struct nvm_vblock *vblock)
+uint16_t nvm_vblock_attr_flags(struct nvm_vblock *vblock)
 {
 	return vblock->flags;
 }
@@ -122,8 +135,8 @@ ssize_t nvm_vblock_pread(struct nvm_vblock *vblock, void *buf, size_t count,
 			 size_t ppa_off)
 {
 	struct nvm_dev *dev = vblock->dev;
-	const int NPLANES = nvm_dev_get_nplanes(dev);
-	const int NPPAS_MAX = NPLANES * nvm_dev_get_nsectors(dev);
+	const int NPLANES = nvm_dev_attr_nplanes(dev);
+	const int NPPAS_MAX = NPLANES * nvm_dev_attr_nsectors(dev);
 
 	struct nvm_addr ppas[NPPAS_MAX];
 	struct nvm_ioctl_dev_pio ctl;
@@ -168,8 +181,8 @@ ssize_t nvm_vblock_pwrite(struct nvm_vblock *vblock, const void *buf,
 			  size_t ppa_off)
 {
 	struct nvm_dev *dev = vblock->dev;
-	const int NPLANES = nvm_dev_get_nplanes(dev);
-	const int NPPAS_MAX = NPLANES * nvm_dev_get_nsectors(dev);
+	const int NPLANES = nvm_dev_attr_nplanes(dev);
+	const int NPPAS_MAX = NPLANES * nvm_dev_attr_nsectors(dev);
 
 	struct nvm_addr ppas[NPPAS_MAX];
 	struct nvm_ioctl_dev_pio ctl;
@@ -211,7 +224,7 @@ ssize_t nvm_vblock_pwrite(struct nvm_vblock *vblock, const void *buf,
 
 int nvm_vblock_write(struct nvm_vblock *vblock, const void *buf)
 {
-	const struct nvm_geo geo = nvm_dev_get_geo(vblock->dev);
+	const struct nvm_geo geo = nvm_dev_attr_geo(vblock->dev);
 	
 	int buf_off = 0;
 	int pg;
@@ -229,7 +242,7 @@ int nvm_vblock_write(struct nvm_vblock *vblock, const void *buf)
 
 int nvm_vblock_read(struct nvm_vblock *vblock, void *buf)
 {
-	const struct nvm_geo geo = nvm_dev_get_geo(vblock->dev);
+	const struct nvm_geo geo = nvm_dev_attr_geo(vblock->dev);
 	
 	int buf_off = 0;
 	int pg;
@@ -248,7 +261,7 @@ int nvm_vblock_read(struct nvm_vblock *vblock, void *buf)
 int nvm_vblock_erase(struct nvm_vblock *vblock)
 {
 	struct nvm_dev *dev = vblock->dev;
-	const int NPLANES = nvm_dev_get_nplanes(dev);
+	const int NPLANES = nvm_dev_attr_nplanes(dev);
 
 	struct nvm_addr ppas[NPLANES];
 	struct nvm_ioctl_dev_pio ctl;
@@ -283,6 +296,3 @@ int nvm_vblock_erase(struct nvm_vblock *vblock)
 
 	return 0;
 }
-
-
-

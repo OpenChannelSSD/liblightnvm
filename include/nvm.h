@@ -40,9 +40,9 @@ struct nvm_dev {
 };
 
 struct nvm_vblock {
+	struct nvm_dev *dev;
 	uint64_t ppa;
 	uint16_t flags;
-	struct nvm_dev *dev;
 };
 
 #endif /* __NVM_H */

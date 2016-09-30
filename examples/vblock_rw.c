@@ -27,7 +27,7 @@ int ex_vblock_rw(const char* dev_name)
 		return -EFAULT;
 	}
 
-	geo = nvm_dev_get_geo(dev);			/* Get dev geometry */
+	geo = nvm_dev_attr_geo(dev);			/* Get dev geometry */
 
 	rbuf = nvm_vblock_buf_alloc(geo);		/* Setup buffers */
 	if (!rbuf)

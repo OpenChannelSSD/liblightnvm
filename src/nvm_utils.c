@@ -176,4 +176,3 @@ void* nvm_vblock_buf_alloc(NVM_GEO geo)
 
 	return buf;
 }
-

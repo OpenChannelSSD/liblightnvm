@@ -21,7 +21,7 @@ void ex_block_pio_n(const char* dev_name)
 		return;
 	}
 
-	geo = nvm_dev_get_geo(dev);
+	geo = nvm_dev_attr_geo(dev);
 
 	wbuf = nvm_vpage_buf_alloc(geo);
 	if (!wbuf) {

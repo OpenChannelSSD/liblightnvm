@@ -59,7 +59,7 @@ void test_VBLOCK_CONCUR(void)
 	dev = nvm_dev_open(nvm_dev_name);
 	CU_ASSERT(dev > 0);
 
-	geo = nvm_dev_get_geo(dev);
+	geo = nvm_dev_attr_geo(dev);
 
 	for (i = 0; i < NUM_BLOCKS; i++) {
 		vblock[i] = nvm_vblock_new();

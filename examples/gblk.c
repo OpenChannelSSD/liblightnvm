@@ -19,7 +19,7 @@ int gblk(const char *dev_name, uint16_t ch, uint16_t lun)
 		printf("Failed opening device, dev_name(%s)\n", dev_name);
 		return -EINVAL;
 	}
-	geo = nvm_dev_get_geo(dev);
+	geo = nvm_dev_attr_geo(dev);
 
 	printf("** Device information **\n");
 	nvm_dev_pr(dev);

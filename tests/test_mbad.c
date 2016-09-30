@@ -37,7 +37,7 @@ void TEST_DEV_MARK(void)
 		return;
 	}
 
-	geo = nvm_dev_get_geo(dev);		/* Get geometry */
+	geo = nvm_dev_attr_geo(dev);		/* Get geometry */
 
 	vblocks_total = geo.nluns * geo.nblocks;
 

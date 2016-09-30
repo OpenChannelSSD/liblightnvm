@@ -80,10 +80,10 @@ static int switch_block(struct beam **beam)
 	size_t buf_size;
 	int ret;
 
-	NVM_GEO geo = nvm_dev_get_geo((*beam)->dev);
+	NVM_GEO geo = nvm_dev_attr_geo((*beam)->dev);
 
 	/* Write buffer for small writes */
-	buf_size = nvm_dev_get_geo((*beam)->dev).vblock_nbytes;
+	buf_size = nvm_dev_attr_geo((*beam)->dev).vblock_nbytes;
 	if (buf_size != (*beam)->w_buffer.buf_limit) {
 		free((*beam)->w_buffer.buf);
 		ret = posix_memalign(&(*beam)->w_buffer.buf, geo.nbytes,
@@ -158,7 +158,7 @@ static int beam_init(struct beam *beam, int lun, struct nvm_dev *dev)
  */
 static int beam_sync(struct beam *beam, int flags)
 {
-	size_t vpage_nbytes = nvm_dev_get_vpage_nbytes(beam->dev);
+	size_t vpage_nbytes = nvm_dev_attr_vpage_nbytes(beam->dev);
 	size_t sync_len = beam->w_buffer.cursize - beam->w_buffer.cursync;
 	size_t disaligned_data = sync_len % vpage_nbytes;
 	size_t ppa_off = calculate_ppa_off(beam->w_buffer.cursync, vpage_nbytes);
@@ -349,7 +349,7 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 		return -EINVAL;
 	}
 
-	geo = nvm_dev_get_geo(b->dev);
+	geo = nvm_dev_attr_geo(b->dev);
 
 	/* TODO: Improve calculations */
 	left_pages = ((count + offset % geo.nbytes) / geo.nbytes) +

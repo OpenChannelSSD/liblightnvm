@@ -105,53 +105,53 @@ int nvm_dev_mark(NVM_DEV dev, NVM_ADDR addr, int type);
 /**
  * @return Number of channels on given device
  */
-int nvm_dev_get_nchannels(NVM_DEV dev);
+int nvm_dev_attr_nchannels(NVM_DEV dev);
 
 /**
  * @return Number of luns (NAND dies) on given device
  */
-int nvm_dev_get_nluns(NVM_DEV dev);
+int nvm_dev_attr_nluns(NVM_DEV dev);
 
 /**
  * @return Number of planes in a lun on given device
  */
-int nvm_dev_get_nplanes(NVM_DEV dev);
+int nvm_dev_attr_nplanes(NVM_DEV dev);
 
 /**
  * @return Number of blocks per plane on given device
 
  */
-int nvm_dev_get_nblocks(NVM_DEV dev);
+int nvm_dev_attr_nblocks(NVM_DEV dev);
 
 /**
  * @return Number of pages per block on given device
 
  */
-int nvm_dev_get_npages(NVM_DEV dev);
+int nvm_dev_attr_npages(NVM_DEV dev);
 
 /**
  * @return Number of sectors per page on given device
 
  */
-int nvm_dev_get_nsectors(NVM_DEV dev);
+int nvm_dev_attr_nsectors(NVM_DEV dev);
 
 /**
  * @return Number of bytes per sector on given device
 
  */
-int nvm_dev_get_nbytes(NVM_DEV dev);
+int nvm_dev_attr_nbytes(NVM_DEV dev);
 
 /**
  * @return Number of bytes occupied by a vpage
 
  */
-int nvm_dev_get_vpage_nbytes(NVM_DEV dev);
+int nvm_dev_attr_vpage_nbytes(NVM_DEV dev);
 
 /**
  * @return Number of bytes occupied by a vblock
 
  */
-int nvm_dev_get_vblock_nbytes(NVM_DEV dev);
+int nvm_dev_attr_vblock_nbytes(NVM_DEV dev);
 
 /**
  * Returns of the geometry related device information including derived
@@ -161,17 +161,18 @@ int nvm_dev_get_vblock_nbytes(NVM_DEV dev);
  *
  * @return NVM_GEO of given dev
  */
-NVM_GEO nvm_dev_get_geo(NVM_DEV dev);
+NVM_GEO nvm_dev_attr_geo(NVM_DEV dev);
 
 void* nvm_vblock_buf_alloc(NVM_GEO geo);
 void* nvm_vpage_buf_alloc(NVM_GEO geo);
 
 NVM_VBLOCK nvm_vblock_new(void);
+NVM_VBLOCK nvm_vblock_new_on_dev(NVM_DEV dev, uint64_t ppa);
 void nvm_vblock_free(NVM_VBLOCK *vblock);
 void nvm_vblock_pr(NVM_VBLOCK vblock);
 
-uint64_t nvm_vblock_get_ppa(NVM_VBLOCK vblock);
-uint16_t nvm_vblock_get_flags(NVM_VBLOCK vblock);
+uint64_t nvm_vblock_attr_ppa(NVM_VBLOCK vblock);
+uint16_t nvm_vblock_attr_flags(NVM_VBLOCK vblock);
 
 /**
  * Get ownership of an arbitrary flash block from the given device.
