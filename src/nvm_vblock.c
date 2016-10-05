@@ -135,6 +135,7 @@ ssize_t nvm_vblock_pread(struct nvm_vblock *vblock, void *buf, size_t count,
 			 size_t ppa_off)
 {
 	struct nvm_dev *dev = vblock->dev;
+	const int NSECTORS = nvm_dev_attr_nsectors(dev);
 	const int NPLANES = nvm_dev_attr_nplanes(dev);
 	const int NPPAS_MAX = NPLANES * nvm_dev_attr_nsectors(dev);
 
@@ -147,8 +148,8 @@ ssize_t nvm_vblock_pread(struct nvm_vblock *vblock, void *buf, size_t count,
 
 		ppa.ppa = vblock->ppa;
 		ppa.g.pg = ppa_off;
-		ppa.g.sec = i % NPLANES;
-		ppa.g.pl = i / NPLANES;
+		ppa.g.pl = (i / NSECTORS) % NPLANES;
+		ppa.g.sec = i % NSECTORS;
 
 		ppas[i] = ppa;
 	}
@@ -182,6 +183,7 @@ ssize_t nvm_vblock_pwrite(struct nvm_vblock *vblock, const void *buf,
 			  size_t ppa_off)
 {
 	struct nvm_dev *dev = vblock->dev;
+	const int NSECTORS = nvm_dev_attr_nsectors(dev);
 	const int NPLANES = nvm_dev_attr_nplanes(dev);
 	const int NPPAS_MAX = NPLANES * nvm_dev_attr_nsectors(dev);
 
@@ -194,8 +196,8 @@ ssize_t nvm_vblock_pwrite(struct nvm_vblock *vblock, const void *buf,
 
 		ppa.ppa = vblock->ppa;
 		ppa.g.pg = ppa_off;
-		ppa.g.sec = i % NPLANES;
-		ppa.g.pl = i / NPLANES;
+		ppa.g.pl = (i / NSECTORS) % NPLANES;
+		ppa.g.sec = i % NSECTORS;
 
 		ppas[i] = ppa;
 	}
