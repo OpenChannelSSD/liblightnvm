@@ -155,7 +155,8 @@ ssize_t nvm_vblock_pread(struct nvm_vblock *vblock, void *buf, size_t count,
 
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.opcode = 0x92;	/* MAGIC NUMBER -- NVM_OP_PREAD */
-	ctl.flags = 0x2;	/* MAGIC NUMBER -- NVM_IO_QUAD_ACCESS */
+	ctl.flags = 0x1;	/* MAGIC NUMBER -- NVM_IO_DUAL_ACCESS */
+	//ctl.flags = 0x2;	/* MAGIC NUMBER -- NVM_IO_QUAD_ACCESS */
 	ctl.nppas = NPPAS_MAX;
 
 	ctl.ppas = (uint64_t)ppas;
@@ -201,7 +202,8 @@ ssize_t nvm_vblock_pwrite(struct nvm_vblock *vblock, const void *buf,
 
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.opcode = 0x91;	/* MAGIC NUMBER -- NVM_OP_PWRITE */
-	ctl.flags = 0x2;	/* MAGIC NUMBER -- NVM_IO_QUAD_ACCESS */
+	ctl.flags = 0x1;	/* MAGIC NUMBER -- NVM_IO_DUAL_ACCESS */
+	//ctl.flags = 0x2;	/* MAGIC NUMBER -- NVM_IO_QUAD_ACCESS */
 	ctl.nppas = NPPAS_MAX;
 
 	ctl.ppas = (uint64_t)ppas;
@@ -278,7 +280,8 @@ int nvm_vblock_erase(struct nvm_vblock *vblock)
 
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.opcode = 0x90;	/* MAGIC NUMBER -- NVM_OP_PERASE */
-	ctl.flags = 0x2;	/* MAGIC NUMBER -- NVM_IO_QUAD_ACCESS */
+	ctl.flags = 0x1;	/* MAGIC NUMBER -- NVM_IO_DUAL_ACCESS */
+	//ctl.flags = 0x2;	/* MAGIC NUMBER -- NVM_IO_QUAD_ACCESS */
 	ctl.nppas = NPLANES;
 
 	ctl.ppas = (uint64_t)ppas;
