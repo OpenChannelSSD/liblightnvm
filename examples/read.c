@@ -87,7 +87,9 @@ int read(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk,
 	}
 	if (page_err) {
 		for (page = 0; page < geo.npages; ++page) {
-			printf("page(%d), err(%ld)\n", page, page_err[page]);
+			if (page_err[page])
+				printf("page(%d), err(%ld)\n",
+				       page, page_err[page]);
 		}
 	}
 
