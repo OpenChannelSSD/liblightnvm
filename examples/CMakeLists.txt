@@ -12,6 +12,8 @@ include_directories("${CMAKE_SOURCE}/include")
 set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/info.c
 	${CMAKE_CURRENT_SOURCE_DIR}/gblk.c
+	${CMAKE_CURRENT_SOURCE_DIR}/pblk.c
+	${CMAKE_CURRENT_SOURCE_DIR}/eblk.c
 	${CMAKE_CURRENT_SOURCE_DIR}/mark.c
 	${CMAKE_CURRENT_SOURCE_DIR}/dump.c
 	${CMAKE_CURRENT_SOURCE_DIR}/vblock_rw.c
@@ -24,7 +26,7 @@ set(SOURCE_FILES
 #
 foreach(SRC_FN ${SOURCE_FILES})
 	get_filename_component(SRC_FN_WE ${SRC_FN} NAME_WE)
-	set(EXE_FN "nvm_ex_${SRC_FN_WE}")
+	set(EXE_FN "nvm_${SRC_FN_WE}")
 	add_executable(${EXE_FN} ${SRC_FN})
 	target_link_libraries(${EXE_FN} pthread udev lightnvm_a)
 	install(TARGETS ${EXE_FN} DESTINATION bin)
