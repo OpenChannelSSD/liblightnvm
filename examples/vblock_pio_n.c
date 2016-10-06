@@ -10,7 +10,7 @@ void ex_block_pio_n(const char* dev_name)
 
 	NVM_VBLOCK *vblks = NULL;
 	int vblks_nalloc, vblks_nres;
-	int i, ret;
+	int i, err;
 
 	char *wbuf;
 	char *rbuf;
@@ -56,11 +56,11 @@ void ex_block_pio_n(const char* dev_name)
 	printf("Attempting to reserve %d\n", vblks_nalloc);
 	vblks_nres = 0;
 	for(i=0; i<vblks_nalloc; ++i) {
-		ret = nvm_vblock_gets(vblks[vblks_nres],
+		err = nvm_vblock_gets(vblks[vblks_nres],
 				      dev,
 				      i % geo.nchannels,
 				      i % geo.nluns);
-		if (ret) {
+		if (err) {
 			printf("F: _gets i(%d), ch(%lu), lun(%lu), dev(%p)\n",
 				i, i % geo.nchannels, i % geo.nluns, dev);
 			continue;
@@ -81,27 +81,23 @@ void ex_block_pio_n(const char* dev_name)
 		int pg;
 
 		for(pg=0; pg<geo.npages; ++pg) {	/* write */
-			int written;
-
-			written = nvm_vblock_pwrite(vblks[i], wbuf, 1, pg);
-			if (!written)
+			err = nvm_vblock_pwrite(vblks[i], wbuf, pg);
+			if (err)
 				printf("_write failed pg(%d)\n", pg);
 		}
 
 		for(pg=0; pg<geo.npages; ++pg) {	/* read */
-			int read;
-
 			strcpy(rbuf, "");
 
-			read = nvm_vblock_pread(vblks[i], rbuf, 1, 0);
-			if (!read)
+			err = nvm_vblock_pread(vblks[i], rbuf, 0);
+			if (err)
 				printf("_read failed pg(%d)\n", pg);
 		}
 	}
 
 	for(i=0; i<vblks_nres; ++i) {
-		ret = nvm_vblock_put(vblks[i]);	/* Release vblock from dev */
-		if (ret) {
+		err = nvm_vblock_put(vblks[i]);	/* Release vblock from dev */
+		if (err) {
 			printf("Failed putting block via dev(%p)\n", dev);
 		}
 	}

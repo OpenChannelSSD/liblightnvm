@@ -8,7 +8,7 @@ void ex_vblock_pio_1(const char* dev_name)
 	NVM_DEV dev;
 	NVM_GEO geo;
 	NVM_VBLOCK vblock;
-	int pg, ret, read, written;
+	int pg, err, read, written;
 
 	char *wbuf;
 	char *rbuf;
@@ -46,24 +46,24 @@ void ex_vblock_pio_1(const char* dev_name)
 		return;
 	}
 
-	ret = nvm_vblock_gets(vblock, dev, 0, 0);	/* Reserve vblock */
-	if (ret) {
+	err = nvm_vblock_gets(vblock, dev, 0, 0);	/* Reserve vblock */
+	if (err) {
 		printf("Failed getting block on dev(%p)\n", dev);
 		return;
 	}
 	nvm_vblock_pr(vblock);
 
 	for(pg=0; pg<geo.npages; ++pg) {		/* Write ALL pages */
-		written = nvm_vblock_pwrite(vblock, wbuf, 1, pg);
+		written = nvm_vblock_pwrite(vblock, wbuf, pg);
 		if (!written)
 			printf("FAILED: page(%d) buf(%s)\n", pg, wbuf);
 	}
 
-	read = nvm_vblock_pread(vblock, rbuf, 1, 0);	/* Read a SINGLE page */
+	read = nvm_vblock_pread(vblock, rbuf, 0);	/* Read a SINGLE page */
 	printf("read(%d), rbuf(%s)\n", read, rbuf);
 
-	ret = nvm_vblock_put(vblock);		/* Release vblock */
-	if (ret) {
+	err = nvm_vblock_put(vblock);		/* Release vblock */
+	if (err) {
 		printf("Failed putting block on dev(%p)\n", dev);
 	}
 

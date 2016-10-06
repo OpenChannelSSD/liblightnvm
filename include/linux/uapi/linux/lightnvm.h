@@ -134,7 +134,7 @@ struct nvm_ioctl_dev_pio
 	__u32 metadata_len;
 	__u32 data_len;
 	__u64 status;
-	__u32 result;
+	__s32 result;
 	__u32 rsvd3[3];
 };
 

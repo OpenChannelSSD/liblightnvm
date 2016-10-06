@@ -131,8 +131,7 @@ int nvm_vblock_put(struct nvm_vblock *vblock)
 	return ret;
 }
 
-ssize_t nvm_vblock_pread(struct nvm_vblock *vblock, void *buf, size_t count,
-			 size_t ppa_off)
+ssize_t nvm_vblock_pread(struct nvm_vblock *vblock, void *buf, size_t ppa_off)
 {
 	struct nvm_dev *dev = vblock->dev;
 	const int NSECTORS = nvm_dev_attr_nsectors(dev);
@@ -165,21 +164,22 @@ ssize_t nvm_vblock_pread(struct nvm_vblock *vblock, void *buf, size_t count,
 	ctl.data_len = vblock->dev->geo.vpage_nbytes;
 
 	ret = ioctl(vblock->dev->fd, NVM_DEV_PIO, &ctl);
+	if (ret || ctl.result || ctl.status) {
+		NVM_DEBUG("ret(%d)\n", ret);
+		NVM_DEBUG("result(%d)\n", ctl.result);
+		NVM_DEBUG("status(%llu)\n", ctl.status);
+	}
 	if (ret) {
-		NVM_DEBUG("failed ret(%d)\n", ret);
-		return 0;
+		return ret;
 	}
-
 	if (ctl.result) {
-		NVM_DEBUG("result(%u)\n", ctl.result);
-		NVM_DEBUG("status(%llu)\n", (unsigned long long)ctl.status);
+		return ctl.result;
 	}
 
-	return count;
+	return ctl.status;
 }
 
 ssize_t nvm_vblock_pwrite(struct nvm_vblock *vblock, const void *buf,
-			  size_t count,
 			  size_t ppa_off)
 {
 	struct nvm_dev *dev = vblock->dev;
@@ -213,20 +213,22 @@ ssize_t nvm_vblock_pwrite(struct nvm_vblock *vblock, const void *buf,
 	ctl.data_len = vblock->dev->geo.vpage_nbytes;
 
 	ret = ioctl(vblock->dev->fd, NVM_DEV_PIO, &ctl);
+	if (ret || ctl.result || ctl.status) {
+		NVM_DEBUG("ret(%d)\n", ret);
+		NVM_DEBUG("result(%d)\n", ctl.result);
+		NVM_DEBUG("status(%llu)\n", ctl.status);
+	}
 	if (ret) {
-		NVM_DEBUG("failed ret(%d)\n", ret);
-		return 0;
+		return ret;
 	}
-
 	if (ctl.result) {
-		NVM_DEBUG("result(%u)\n", ctl.result);
-		NVM_DEBUG("status(%llu)\n", (unsigned long long)ctl.status);
+		return ctl.result;
 	}
 
-	return count;
+	return ctl.status;
 }
 
-int nvm_vblock_write(struct nvm_vblock *vblock, const void *buf)
+ssize_t nvm_vblock_write(struct nvm_vblock *vblock, const void *buf)
 {
 	const struct nvm_geo geo = nvm_dev_attr_geo(vblock->dev);
 	
@@ -234,8 +236,8 @@ int nvm_vblock_write(struct nvm_vblock *vblock, const void *buf)
 	int pg;
 
 	for(pg=0; pg<geo.npages; ++pg) {
-		int ret = nvm_vblock_pwrite(vblock, buf+buf_off, 1, pg);
-		if (!ret) {
+		int err = nvm_vblock_pwrite(vblock, buf+buf_off, pg);
+		if (err) {
 			return -(pg+1);
 		}
 		buf_off += geo.vpage_nbytes;
@@ -244,7 +246,7 @@ int nvm_vblock_write(struct nvm_vblock *vblock, const void *buf)
 	return 0;
 }
 
-int nvm_vblock_read(struct nvm_vblock *vblock, void *buf)
+ssize_t nvm_vblock_read(struct nvm_vblock *vblock, void *buf)
 {
 	const struct nvm_geo geo = nvm_dev_attr_geo(vblock->dev);
 	
@@ -252,8 +254,8 @@ int nvm_vblock_read(struct nvm_vblock *vblock, void *buf)
 	int pg;
 
 	for(pg=0; pg<geo.npages; ++pg) {
-		int ret = nvm_vblock_pread(vblock, buf+buf_off, 1, pg);
-		if (!ret) {
+		int err = nvm_vblock_pread(vblock, buf+buf_off, pg);
+		if (err) {
 			return -(pg+1);
 		}
 		buf_off += geo.vpage_nbytes;
@@ -262,7 +264,7 @@ int nvm_vblock_read(struct nvm_vblock *vblock, void *buf)
 	return 0;
 }
 
-int nvm_vblock_erase(struct nvm_vblock *vblock)
+ssize_t nvm_vblock_erase(struct nvm_vblock *vblock)
 {
 	struct nvm_dev *dev = vblock->dev;
 	const int NPLANES = nvm_dev_attr_nplanes(dev);
@@ -289,15 +291,18 @@ int nvm_vblock_erase(struct nvm_vblock *vblock)
 	ctl.ppas = (uint64_t)ppas;
 
 	ret = ioctl(vblock->dev->fd, NVM_DEV_PIO, &ctl);
+	if (ret || ctl.result || ctl.status) {
+		NVM_DEBUG("ret(%d)\n", ret);
+		NVM_DEBUG("result(%d)\n", ctl.result);
+		NVM_DEBUG("status(%llu)\n", ctl.status);
+	}
 	if (ret) {
-		NVM_DEBUG("failed ret(%d)\n", ret);
 		return ret;
 	}
-
 	if (ctl.result) {
-		NVM_DEBUG("result(%u)\n", ctl.result);
-		NVM_DEBUG("status(%llu)\n", (unsigned long long)ctl.status);
+		return ctl.result;
 	}
 
-	return 0;
+	return ctl.status;
 }
+

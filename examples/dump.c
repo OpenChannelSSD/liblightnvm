@@ -14,7 +14,7 @@ int dump(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk,
 	NVM_ADDR addr;
 	void *buf;
 	int buf_len;
-	int ret = 0;
+	int err = 0;
 	uint64_t i;
 
 	printf("dump{ dev_name(%s), ch(%d), lun(%d), blk(%d), page(%d) }\n",
@@ -60,17 +60,17 @@ int dump(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk,
 		if (!buf)
 			goto done;
 		
-		ret = !nvm_vblock_read(vblock, buf);
+		err = nvm_vblock_read(vblock, buf);
 	} else {
 		buf = nvm_vpage_buf_alloc(geo);
 		buf_len = nvm_dev_attr_vpage_nbytes(dev);
 		if (!buf)
 			goto done;
 		
-		ret = nvm_vblock_pread(vblock, buf, 1, page);
+		err = nvm_vblock_pread(vblock, buf, page);
 	}
 
-	if (!ret) {
+	if (err) {
 		printf("FAILED nvm_vblock_[p]read(...)\n");
 		goto done;
 	}
@@ -86,7 +86,7 @@ done:
 	nvm_vblock_free(&vblock);
 	nvm_dev_close(dev);
 
-	return !ret;
+	return err;
 }
 
 int main(int argc, char **argv)

@@ -207,49 +207,39 @@ int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_DEV dev, uint32_t ch, uint32_t lun);
 int nvm_vblock_put(NVM_VBLOCK vblock);
 
 /**
- * Read count pages starting at ppa_off from dev into buf using flags
- *
- * fpage_size is the flash page *read* size, which might be smaller than the
- * flash page write size; some controllers support reading at sector granularity
- * (typically 4KB), instead of reading the whole virtual flash page (across
- * planes).
- *
- * XXX(1): For now, we assume that the device supports reading at a sector
- * granurality; we will take this information from the device in the future.
- */
-ssize_t nvm_vblock_pread(NVM_VBLOCK vblock, void *buf, size_t count,
-			 size_t ppa_off);
-
-/**
- * Write count flash pages of size fpage_size.
- *
- * fpage_size is the flash page write size. That is, the size of a virtual flash
- * pages, i.e., spanning flash planes.
- */
-ssize_t nvm_vblock_pwrite(NVM_VBLOCK vblock, const void *buf, size_t count,
-                          size_t ppa_off);
-
-/**
- * Read the entire vblock, storing it into buf.
+ * Read the flash page at 'ppa_off' in 'vblock' into 'buf'
  *
  * @returns 0 on success, some error code otherwise.
  */
-int nvm_vblock_read(NVM_VBLOCK vblock, void *buf);
+ssize_t nvm_vblock_pread(NVM_VBLOCK vblock, void *buf, size_t ppa_off);
+
+/**
+ * Write 'buf' to the flash page at 'ppa_off' in 'vblock'
+ *
+ * @returns 0 on success, some error code otherwise.
+ */
+ssize_t nvm_vblock_pwrite(NVM_VBLOCK vblock, const void *buf, size_t ppa_off);
+
+/**
+ * Read the entire vblock, storing it into buf
+ *
+ * @returns 0 on success, some error code otherwise.
+ */
+ssize_t nvm_vblock_read(NVM_VBLOCK vblock, void *buf);
 
 /**
  * Write the entire vblock, filling it with data from buf.
  *
  * @returns 0 on success, some error code otherwise.
  */
-int nvm_vblock_write(NVM_VBLOCK vblock, const void *buf);
+ssize_t nvm_vblock_write(NVM_VBLOCK vblock, const void *buf);
 
 /**
  * Erase an entire vblock
  *
  * @returns 0 on success, some error code otherwise.
  */
-int nvm_vblock_erase(NVM_VBLOCK vblock);
-
+ssize_t nvm_vblock_erase(NVM_VBLOCK vblock);
 
 /**
  * Beam interface

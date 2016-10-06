@@ -163,9 +163,10 @@ static int beam_sync(struct beam *beam, int flags)
 	size_t disaligned_data = sync_len % vpage_nbytes;
 	size_t ppa_off = calculate_ppa_off(beam->w_buffer.cursync, vpage_nbytes);
 	int npages = sync_len / vpage_nbytes;
-	int synced_pages;
 	size_t synced_bytes;
+	size_t err;
 
+	int synced_pages = 0;
 
 	if (((flags & OPTIONAL_SYNC) && (sync_len < vpage_nbytes)) ||
 		(sync_len == 0))
@@ -192,12 +193,13 @@ static int beam_sync(struct beam *beam, int flags)
 	}
 
 	/* write data to media */
-	synced_pages = nvm_vblock_pwrite(beam->current_w_vblock,
-                                         beam->w_buffer.sync, npages, ppa_off);
-
-	if (synced_pages != npages) {
+	err = nvm_vblock_pwrite(beam->current_w_vblock,
+				beam->w_buffer.sync,
+				ppa_off);
+	if (err) {
 		return -1;
 	}
+	++synced_pages;
 
 	/* We might need to take a lock here */
 	synced_bytes = synced_pages * vpage_nbytes;
@@ -379,6 +381,8 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 	 * kernel.
 	 */
 	while (left_bytes) {
+		size_t err;
+
 		bytes_to_read = pages_to_read * geo.nbytes;
 		valid_bytes = (left_bytes > bytes_to_read) ?
 						bytes_to_read : left_bytes;
@@ -394,11 +398,11 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 		assert(left_bytes <= left_pages * geo.nbytes);
 
 		/* TODO: Send bigger I/Os if we have enough data */
-		read_pages = nvm_vblock_pread(current_r_vblock, reader,
-                                              pages_to_read, ppa_off);
-		if (read_pages != pages_to_read) {
+		err = nvm_vblock_pread(current_r_vblock, reader, ppa_off);
+		if (err) {
 			return -1;
 		}
+		++read_pages;
 
 		/* TODO: Optional - Flag for aligned memory */
 		memcpy(writer, reader + page_off, valid_bytes);

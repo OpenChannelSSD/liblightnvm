@@ -23,8 +23,8 @@ static void *write_thread(void *priv)
 	int i;
 
 	for (i = 0; i < ctx->geo.npages; i++) {
-		size_t count = nvm_vblock_pwrite(ctx->blk, ctx->buf, 1, i);
-		CU_ASSERT(count);
+		ssize_t err = nvm_vblock_pwrite(ctx->blk, ctx->buf, i);
+		CU_ASSERT(!err);
 	}
 	pthread_exit(NULL);
 }
@@ -35,10 +35,9 @@ static void *erase_thread(void *priv)
 	int i;
 
 	for (i = 0; i < 4; i++) {
-		int err;
+		ssize_t err;
 		usleep(2000);
-		err = nvm_vblock_erase(ctx->blk);/* ERASE */
-
+		err = nvm_vblock_erase(ctx->blk);	/* ERASE */
 		CU_ASSERT(!err);
 	}
 
@@ -51,7 +50,8 @@ void test_VBLOCK_CONCUR(void)
 	NVM_VBLOCK vblock[2];
 	NVM_DEV dev;
 	NVM_GEO geo;
-	int ret, i;
+	int i;
+	ssize_t err;
 	struct context ctx[2];
 	char *wbuf;
 	pthread_t wr_th, er_th;
@@ -63,14 +63,14 @@ void test_VBLOCK_CONCUR(void)
 
 	for (i = 0; i < NUM_BLOCKS; i++) {
 		vblock[i] = nvm_vblock_new();
-		ret = nvm_vblock_gets(vblock[i], dev, 0, 0);
-		CU_ASSERT(!ret);
+		err = nvm_vblock_gets(vblock[i], dev, 0, 0);
+		CU_ASSERT(!err);
 		//nvm_vblock_pr(vblock[i]);
 	}
 
-	ret = posix_memalign((void**)&wbuf, geo.nbytes, geo.vpage_nbytes);
-	CU_ASSERT(!ret);
-	if (ret) {
+	err = posix_memalign((void**)&wbuf, geo.nbytes, geo.vpage_nbytes);
+	CU_ASSERT(!err);
+	if (err) {
 		printf("Failed allocating write buffer(%p)\n", wbuf);
 		return;
 	}
@@ -100,16 +100,16 @@ void test_VBLOCK_CONCUR(void)
 	pthread_join(er_th, NULL);
 
 	for (i = 0; i < geo.npages; i++) {
-		int count = nvm_vblock_pread(vblock[0], wbuf, 1, i);	/* READ */
-		CU_ASSERT(count);
-		if (!count)
-			printf("FAILED count(%d) i(%d), wbuf(%s)\n",
-				count, i, wbuf);
+		err = nvm_vblock_pread(vblock[0], wbuf, i); /* READ */
+		CU_ASSERT(!err);
+		if (err)
+			printf("FAILED err(%ld) i(%d), wbuf(%s)\n",
+				err, i, wbuf);
 	}
 
 	for (i = 0; i < NUM_BLOCKS; i++) {
-		ret = nvm_vblock_put(vblock[i]);
-		CU_ASSERT(!ret);
+		err = nvm_vblock_put(vblock[i]);
+		CU_ASSERT(!err);
 
 		nvm_vblock_free(&vblock[i]);
 	}

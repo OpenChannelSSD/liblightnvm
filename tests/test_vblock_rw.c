@@ -15,7 +15,8 @@ void __TEST_VBLOCK_PWRITE_READ_N(int iterations, int npage_io)
 	uint32_t sector_nbytes, vpage_nbytes;
 
 	NVM_VBLOCK vblock;
-	int i, j, ret;
+	int i, j;
+	ssize_t err;
 
 	dev = nvm_dev_open(nvm_dev_name);	/* Open device */
 	CU_ASSERT_PTR_NOT_NULL(dev);
@@ -24,34 +25,33 @@ void __TEST_VBLOCK_PWRITE_READ_N(int iterations, int npage_io)
 	vpage_nbytes = nvm_dev_attr_vpage_nbytes(dev);
 
 	for(i=0; i<iterations; ++i) {
-		int read, written;
 		char *wbuf = NULL;
 		char *rbuf = NULL;
 						/* Allocate buffers */
-		ret = posix_memalign((void**)&wbuf, sector_nbytes, vpage_nbytes);
-		CU_ASSERT(0==ret);
+		err = posix_memalign((void**)&wbuf, sector_nbytes, vpage_nbytes);
+		CU_ASSERT(!err);
 		strcpy(wbuf, "Hello World of NVM");
 
-		ret = posix_memalign((void**)&rbuf, sector_nbytes, vpage_nbytes);
-		CU_ASSERT(0==ret);
+		err = posix_memalign((void**)&rbuf, sector_nbytes, vpage_nbytes);
+		CU_ASSERT(!err);
 
 		vblock = nvm_vblock_new();	/* Allocate vblock */
 		CU_ASSERT_PTR_NOT_NULL(vblock);
 
-		ret = nvm_vblock_get(vblock, dev);
-		CU_ASSERT(0==ret);
-		for(j=0; j<npage_io; ++j) {
-			written = nvm_vblock_pwrite(vblock, wbuf, 1, 0);
-			CU_ASSERT(1==written);
+		err = nvm_vblock_get(vblock, dev);
+		CU_ASSERT(!err);
+		for(j=0; j < npage_io; ++j) {
+			err = nvm_vblock_pwrite(vblock, wbuf, 0);
+			CU_ASSERT(!err);
 
-			read = nvm_vblock_pread(vblock, rbuf, 1, 0);
-			CU_ASSERT(1==read);
+			err = nvm_vblock_pread(vblock, rbuf, 0);
+			CU_ASSERT(!err);
 
 			CU_ASSERT_STRING_EQUAL(wbuf, rbuf);
 		}
 
-		ret = nvm_vblock_put(vblock);	/* Release vblock from dev */
-		CU_ASSERT(0==ret);
+		err = nvm_vblock_put(vblock);	/* Release vblock from dev */
+		CU_ASSERT(!err);
 
 		free(wbuf);
 		free(rbuf);
