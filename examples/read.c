@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <liblightnvm.h>
 
-int dump(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk,
+int read(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk,
 	 int16_t page)
 {
 	NVM_DEV dev;
@@ -14,10 +14,10 @@ int dump(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk,
 	NVM_ADDR addr;
 	void *buf;
 	int buf_len;
-	int err = 0;
+	ssize_t err = 0;
 	uint64_t i;
 
-	printf("dump{ dev_name(%s), ch(%d), lun(%d), blk(%d), page(%d) }\n",
+	printf("read{ dev_name(%s), ch(%d), lun(%d), blk(%d), page(%d) }\n",
 		dev_name, ch, lun, blk, page);
 
 	dev = nvm_dev_open(dev_name);
@@ -70,16 +70,15 @@ int dump(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk,
 		err = nvm_vblock_pread(vblock, buf, page);
 	}
 
-	if (err) {
-		printf("FAILED nvm_vblock_[p]read(...)\n");
-		goto done;
-	}
-
 	printf("** DUMPING - BEGIN **\n");
 	for(i = 0; i < buf_len; ++i) {
 		printf("%lu:%c\n", i, ((char*)buf)[i]);
 	}
 	printf("** DUMPING - END **\n");
+
+	if (err) {
+		printf("ERRORED: nvm_vblock_[p]read(...), err(%lld)\n", err);
+	}
 
 done:
 	free(buf);
@@ -116,5 +115,5 @@ int main(int argc, char **argv)
 		page = -1;
 	}
 
-	return dump(dev_name, ch, lun, blk, page);
+	return read(dev_name, ch, lun, blk, page);
 }
