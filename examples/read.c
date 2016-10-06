@@ -77,7 +77,7 @@ int read(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk,
 	printf("** DUMPING - END **\n");
 
 	if (err) {
-		printf("ERRORED: nvm_vblock_[p]read(...), err(%lld)\n", err);
+		printf("ERRORED: nvm_vblock_[p]read(...), err(%ld)\n", err);
 	}
 
 done:

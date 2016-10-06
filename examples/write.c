@@ -69,7 +69,7 @@ int write(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk,
 	}
 
 	if (err) {
-		printf("ERRORED: nvm_vblock_[p]write(...), err(%lld)\n", err);
+		printf("ERRORED: nvm_vblock_[p]write(...), err(%ld)\n", err);
 	}
 
 done:
