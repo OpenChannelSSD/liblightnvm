@@ -14,8 +14,9 @@ int read(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk,
 	NVM_ADDR addr;
 	void *buf;
 	int buf_len;
-	ssize_t err = 0;
 	uint64_t i;
+	ssize_t *page_err = NULL;
+	ssize_t err = 0;
 
 	printf("read{ dev_name(%s), ch(%d), lun(%d), blk(%d), page(%d) }\n",
 		dev_name, ch, lun, blk, page);
@@ -59,8 +60,13 @@ int read(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk,
 		buf_len = nvm_dev_attr_vblock_nbytes(dev);
 		if (!buf)
 			goto done;
-		
-		err = nvm_vblock_read(vblock, buf);
+		int buf_off = 0;	
+		page_err = malloc(sizeof(*page_err) * geo.npages);
+		for (page = 0; page < geo.npages; ++page) {
+			page_err[page] = nvm_vblock_pread(vblock, buf+buf_off,
+									page);
+			buf_off += geo.vpage_nbytes;
+		}
 	} else {
 		buf = nvm_vpage_buf_alloc(geo);
 		buf_len = nvm_dev_attr_vpage_nbytes(dev);
@@ -78,6 +84,11 @@ int read(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk,
 
 	if (err) {
 		printf("ERRORED: nvm_vblock_[p]read(...), err(%ld)\n", err);
+	}
+	if (page_err) {
+		for (page = 0; page < geo.npages; ++page) {
+			printf("page(%d), err(%ld)\n", page, page_err[page]);
+		}
 	}
 
 done:
