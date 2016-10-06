@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <liblightnvm.h>
 
-int pblk(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk)
+int erase(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk)
 {
 	NVM_DEV dev;
 	NVM_GEO geo;
@@ -13,7 +13,7 @@ int pblk(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk)
 	NVM_ADDR addr;
 	int err = 0;
 
-	printf("pblk{ dev_name(%s), ch(%d), lun(%d), blk(%d) }\n",
+	printf("erase{ dev_name(%s), ch(%d), lun(%d), blk(%d) }\n",
 	       dev_name, ch, lun, blk);
 
 	dev = nvm_dev_open(dev_name);
@@ -44,11 +44,11 @@ int pblk(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk)
 	if (!vblk) {
 		printf("Failed allocating vblk\n");
 	} else {
-		err = nvm_vblock_put(vblk);
+		err = nvm_vblock_erase(vblk);
 		if (err) {
-			printf("nvm_vblock_put: failed, err(%d)\n", err);
+			printf("nvm_vblock_erase: failed, err(%d)\n", err);
 		} else {
-			printf("nvm_vblock_put: no errors detected\n");
+			printf("nvm_vblock_erase: no errors detected\n");
 		}
 		nvm_vblock_free(&vblk);
 	}
@@ -79,5 +79,5 @@ int main(int argc, char **argv)
 	lun = atoi(argv[3]);
 	blk = atoi(argv[4]);
 
-	return pblk(dev_name, ch, lun, blk);
+	return erase(dev_name, ch, lun, blk);
 }

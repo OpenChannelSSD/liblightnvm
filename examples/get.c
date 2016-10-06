@@ -5,16 +5,14 @@
 #include <errno.h>
 #include <liblightnvm.h>
 
-int eblk(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk)
+int get(const char *dev_name, uint16_t ch, uint16_t lun)
 {
 	NVM_DEV dev;
 	NVM_GEO geo;
 	NVM_VBLOCK vblk;
-	NVM_ADDR addr;
 	int err = 0;
 
-	printf("eblk{ dev_name(%s), ch(%d), lun(%d), blk(%d) }\n",
-	       dev_name, ch, lun, blk);
+	printf("get{ dev_name(%s), ch(%d), lun(%d) }\n", dev_name, ch, lun);
 
 	dev = nvm_dev_open(dev_name);
 	if (!dev) {
@@ -31,24 +29,17 @@ int eblk(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk)
 		printf("lun(%u) too large\n", lun);
 		return -EINVAL;
 	}
-	if (blk >= geo.nblocks) {
-		printf("blk(%u) too large\n", blk);
-		return -EINVAL;
-	}
 
-	addr.g.ch = ch;
-	addr.g.lun = lun;
-	addr.g.blk = blk;
-
-	vblk = nvm_vblock_new_on_dev(dev, addr.ppa);
+	vblk = nvm_vblock_new();
 	if (!vblk) {
 		printf("Failed allocating vblk\n");
 	} else {
-		err = nvm_vblock_erase(vblk);
+		err = nvm_vblock_gets(vblk, dev, ch, lun);
 		if (err) {
-			printf("nvm_vblock_erase: failed, err(%d)\n", err);
+			printf("nvm_vblock_gets failed err(%d)\n", err);
 		} else {
-			printf("nvm_vblock_erase: no errors detected\n");
+			printf("** Got the following vblock **\n");
+			nvm_vblock_pr(vblk);
 		}
 		nvm_vblock_free(&vblk);
 	}
@@ -61,10 +52,10 @@ int eblk(const char *dev_name, uint16_t ch, uint16_t lun, uint16_t blk)
 int main(int argc, char **argv)
 {
 	char dev_name[DISK_NAME_LEN+1];
-	uint16_t ch, lun, blk;
+	uint16_t ch, lun;
 
-	if (argc != 5) {
-		printf("Usage: sudo %s dev_name ch lun blk\n", argv[0]);
+	if (argc != 4) {
+		printf("Usage: sudo %s dev_name ch lun\n", argv[0]);
 		return -1;
 	}
 
@@ -77,7 +68,6 @@ int main(int argc, char **argv)
 
 	ch = atoi(argv[2]);
 	lun = atoi(argv[3]);
-	blk = atoi(argv[4]);
 
-	return eblk(dev_name, ch, lun, blk);
+	return get(dev_name, ch, lun);
 }
