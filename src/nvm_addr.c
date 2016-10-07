@@ -38,7 +38,7 @@
 
 void nvm_addr_pr(struct nvm_addr addr)
 {
-	printf("ppa(%lu){ ch(%d), lun(%d), pl(%d), blk(%d), pg(%d), sec(%d)}\n",
+	printf("(%lu){ ch(%d), lun(%d), pl(%d), blk(%d), pg(%d), sec(%d) }\n",
 	       addr.ppa, addr.g.ch, addr.g.lun, addr.g.pl, addr.g.blk,
 	       addr.g.pg, addr.g.sec);
 }
