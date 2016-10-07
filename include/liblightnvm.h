@@ -84,7 +84,6 @@ typedef struct nvm_geo {
 typedef struct nvm_dev *NVM_DEV;
 typedef struct nvm_vblock *NVM_VBLOCK;
 
-void nvm_addr_pr(NVM_ADDR addr);
 void nvm_geo_pr(NVM_GEO geo);
 
 NVM_DEV nvm_dev_open(const char *dev_name);
@@ -165,6 +164,10 @@ NVM_GEO nvm_dev_attr_geo(NVM_DEV dev);
 
 void* nvm_vblock_buf_alloc(NVM_GEO geo);
 void* nvm_vpage_buf_alloc(NVM_GEO geo);
+
+void nvm_addr_pr(NVM_ADDR addr);
+ssize_t nvm_addr_write(NVM_DEV dev, NVM_ADDR list[], int len, const void* buf);
+ssize_t nvm_addr_read(NVM_DEV dev, NVM_ADDR list[], int len, void* buf);
 
 NVM_VBLOCK nvm_vblock_new(void);
 NVM_VBLOCK nvm_vblock_new_on_dev(NVM_DEV dev, uint64_t ppa);

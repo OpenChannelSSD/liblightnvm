@@ -34,7 +34,8 @@ set(SOURCE_FILES
 	src/nvm_beam.c
 	src/nvm_dev.c
 	src/nvm_utils.c
-	src/nvm_vblock.c)
+	src/nvm_vblock.c
+	src/nvm_addr.c)
 
 include_directories("${PROJECT_SOURCE_DIR}/include")
 include_directories("${PROJECT_SOURCE_DIR}/include/linux/uapi")

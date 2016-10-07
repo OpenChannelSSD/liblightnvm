@@ -139,8 +139,7 @@ ssize_t nvm_vblock_pread(struct nvm_vblock *vblock, void *buf, size_t ppa_off)
 	const int NPPAS_MAX = NPLANES * nvm_dev_attr_nsectors(dev);
 
 	struct nvm_addr ppas[NPPAS_MAX];
-	struct nvm_ioctl_dev_pio ctl;
-	int i, ret;
+	int i;
 
 	for (i = 0; i < NPPAS_MAX; i++) {
 		struct nvm_addr ppa;
@@ -153,30 +152,7 @@ ssize_t nvm_vblock_pread(struct nvm_vblock *vblock, void *buf, size_t ppa_off)
 		ppas[i] = ppa;
 	}
 
-	memset(&ctl, 0, sizeof(ctl));
-	ctl.opcode = 0x92;	/* MAGIC NUMBER -- NVM_OP_PREAD */
-	ctl.flags = 0x1;	/* MAGIC NUMBER -- NVM_IO_DUAL_ACCESS */
-	//ctl.flags = 0x2;	/* MAGIC NUMBER -- NVM_IO_QUAD_ACCESS */
-	ctl.nppas = NPPAS_MAX;
-
-	ctl.ppas = (uint64_t)ppas;
-	ctl.addr = (uint64_t)buf;
-	ctl.data_len = vblock->dev->geo.vpage_nbytes;
-
-	ret = ioctl(vblock->dev->fd, NVM_DEV_PIO, &ctl);
-	if (ret || ctl.result || ctl.status) {
-		NVM_DEBUG("ret(%d)\n", ret);
-		NVM_DEBUG("result(%d)\n", ctl.result);
-		NVM_DEBUG("status(%llu)\n", ctl.status);
-	}
-	if (ret) {
-		return ret;
-	}
-	if (ctl.result) {
-		return ctl.result;
-	}
-
-	return ctl.status;
+	return nvm_addr_read(dev, ppas, NPPAS_MAX, buf);
 }
 
 ssize_t nvm_vblock_pwrite(struct nvm_vblock *vblock, const void *buf,
@@ -188,8 +164,7 @@ ssize_t nvm_vblock_pwrite(struct nvm_vblock *vblock, const void *buf,
 	const int NPPAS_MAX = NPLANES * nvm_dev_attr_nsectors(dev);
 
 	struct nvm_addr ppas[NPPAS_MAX];
-	struct nvm_ioctl_dev_pio ctl;
-	int i, ret;
+	int i;
 
 	for (i = 0; i < NPPAS_MAX; i++) {
 		struct nvm_addr ppa;
@@ -202,30 +177,7 @@ ssize_t nvm_vblock_pwrite(struct nvm_vblock *vblock, const void *buf,
 		ppas[i] = ppa;
 	}
 
-	memset(&ctl, 0, sizeof(ctl));
-	ctl.opcode = 0x91;	/* MAGIC NUMBER -- NVM_OP_PWRITE */
-	ctl.flags = 0x1;	/* MAGIC NUMBER -- NVM_IO_DUAL_ACCESS */
-	//ctl.flags = 0x2;	/* MAGIC NUMBER -- NVM_IO_QUAD_ACCESS */
-	ctl.nppas = NPPAS_MAX;
-
-	ctl.ppas = (uint64_t)ppas;
-	ctl.addr = (uint64_t)buf;
-	ctl.data_len = vblock->dev->geo.vpage_nbytes;
-
-	ret = ioctl(vblock->dev->fd, NVM_DEV_PIO, &ctl);
-	if (ret || ctl.result || ctl.status) {
-		NVM_DEBUG("ret(%d)\n", ret);
-		NVM_DEBUG("result(%d)\n", ctl.result);
-		NVM_DEBUG("status(%llu)\n", ctl.status);
-	}
-	if (ret) {
-		return ret;
-	}
-	if (ctl.result) {
-		return ctl.result;
-	}
-
-	return ctl.status;
+	return nvm_addr_write(dev, ppas, NPPAS_MAX, buf);
 }
 
 ssize_t nvm_vblock_write(struct nvm_vblock *vblock, const void *buf)
@@ -283,9 +235,8 @@ ssize_t nvm_vblock_erase(struct nvm_vblock *vblock)
 	}
 
 	memset(&ctl, 0, sizeof(ctl));
-	ctl.opcode = 0x90;	/* MAGIC NUMBER -- NVM_OP_PERASE */
-	ctl.flags = 0x1;	/* MAGIC NUMBER -- NVM_IO_DUAL_ACCESS */
-	//ctl.flags = 0x2;	/* MAGIC NUMBER -- NVM_IO_QUAD_ACCESS */
+	ctl.opcode = NVM_MAGIC_OPCODE_ERASE;
+	ctl.flags = NVM_MAGIC_FLAG_ACCESS;
 	ctl.nppas = NPLANES;
 
 	ctl.ppas = (uint64_t)ppas;
