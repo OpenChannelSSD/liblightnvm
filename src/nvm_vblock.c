@@ -238,7 +238,6 @@ ssize_t nvm_vblock_erase(struct nvm_vblock *vblock)
 	ctl.opcode = NVM_MAGIC_OPCODE_ERASE;
 	ctl.flags = NVM_MAGIC_FLAG_ACCESS;
 	ctl.nppas = NPLANES;
-
 	ctl.ppas = (uint64_t)ppas;
 
 	ret = ioctl(vblock->dev->fd, NVM_DEV_PIO, &ctl);
