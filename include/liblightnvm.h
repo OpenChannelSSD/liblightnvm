@@ -162,6 +162,7 @@ int nvm_dev_attr_vblock_nbytes(NVM_DEV dev);
  */
 NVM_GEO nvm_dev_attr_geo(NVM_DEV dev);
 
+void* nvm_buf_alloc(NVM_GEO geo, size_t nbytes);
 void* nvm_vblock_buf_alloc(NVM_GEO geo);
 void* nvm_vpage_buf_alloc(NVM_GEO geo);
 

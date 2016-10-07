@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <liblightnvm.h>
 
-int addr_read(const char *dev_name, NVM_ADDR list[], int len)
+int addr_write(const char *dev_name, NVM_ADDR list[], int len)
 {
 	NVM_DEV dev;
 	NVM_GEO geo;
@@ -21,26 +21,21 @@ int addr_read(const char *dev_name, NVM_ADDR list[], int len)
 	}
 	geo = nvm_dev_attr_geo(dev);
 
-	buf_len = len * geo.nbytes;
+	buf_len = len * geo.nbytes;		// Construct buffer
 	buf = nvm_buf_alloc(geo, buf_len);
 	if (!buf) {
 		printf("Failed allocating buf\n");
 		goto done;
 	}
+	for(i = 0; i < buf_len; ++i)
+		((char*)buf)[i] = (i % 28) + 65;
 
-	printf("Reading the following addresses from dev_name(%s)\n", dev_name);
+	printf("Writing the following addresses to dev_name(%s)\n", dev_name);
 	for (i = 0; i < len; ++i) {
 		nvm_addr_pr(list[i]);
 	}
 
-	err = nvm_addr_read(dev, list, len, buf);
-
-	printf("** DUMPING - BEGIN **\n");
-	for(i = 0; i < buf_len; ++i) {
-		printf("%lu:%c\n", i, ((char*)buf)[i]);
-	}
-	printf("** DUMPING - END **\n");
-
+	err = nvm_addr_write(dev, list, len, buf);
 	if (err) {
 		printf("Detected err(%ld)\n", err);
 	}
@@ -55,7 +50,7 @@ done:
 int main(int argc, char **argv)
 {
 	char dev_name[DISK_NAME_LEN+1];
-	NVM_ADDR list[256];
+	NVM_ADDR list[1024];
 	int i, len;
 
 	if (argc < 3) {
@@ -75,5 +70,5 @@ int main(int argc, char **argv)
 		list[i].ppa = atol(argv[i+2]);
 	}
 
-	return addr_read(dev_name, list, len);
+	return addr_write(dev_name, list, len);
 }

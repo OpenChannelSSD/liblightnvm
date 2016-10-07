@@ -23,7 +23,7 @@ int main(int argc, char **argv)
 			break;
 		default:
 			printf("Usage: %s ppa\n", argv[0]);
-			printf("or\n", argv[0]);
+			printf(" OR");
 			printf("Usage: %s ch lun pl blk pg sec\n", argv[0]);
 			return -1;
 	}
