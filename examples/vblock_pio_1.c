@@ -53,7 +53,7 @@ void ex_vblock_pio_1(const char* dev_name)
 	}
 	nvm_vblock_pr(vblock);
 
-	for(pg=0; pg<geo.npages; ++pg) {		/* Write ALL pages */
+	for (pg=0; pg < geo.npages; ++pg) {		/* Write ALL pages */
 		written = nvm_vblock_pwrite(vblock, wbuf, pg);
 		if (!written)
 			printf("FAILED: page(%d) buf(%s)\n", pg, wbuf);
