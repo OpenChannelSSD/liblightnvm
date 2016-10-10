@@ -72,11 +72,12 @@ void nvm_vblock_pr(struct nvm_vblock *vblock)
 
 	addr.ppa = vblock->ppa;
 
-	printf("vblock: ppa(%lu:0x%lx), flags(%u)\n", vblock->ppa, vblock->ppa,
-	       vblock->flags);
-	printf("\t{ch(%d), lun(%d), pl(%d), blk(%d), pg(%d), sec(%d)}\n",
-	       addr.g.ch, addr.g.lun, addr.g.pl, addr.g.blk, addr.g.pg,
-	       addr.g.sec);
+	printf("vblock {");
+	printf("\n  dev(%p),", vblock->dev);
+	printf("\n  flags(%u),", vblock->flags);
+	printf("\n  ");
+	nvm_addr_pr(addr);
+	printf("}\n");
 }
 
 uint64_t nvm_vblock_attr_ppa(struct nvm_vblock *vblock)

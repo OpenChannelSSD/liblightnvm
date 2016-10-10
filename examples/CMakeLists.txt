@@ -11,18 +11,10 @@ include_directories("${CMAKE_SOURCE}/include")
 
 set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/info.c
-	${CMAKE_CURRENT_SOURCE_DIR}/get.c
-	${CMAKE_CURRENT_SOURCE_DIR}/put.c
-	${CMAKE_CURRENT_SOURCE_DIR}/erase.c
-	${CMAKE_CURRENT_SOURCE_DIR}/read.c
+	${CMAKE_CURRENT_SOURCE_DIR}/vblk.c
 	${CMAKE_CURRENT_SOURCE_DIR}/addr_read.c
 	${CMAKE_CURRENT_SOURCE_DIR}/addr_write.c
-	${CMAKE_CURRENT_SOURCE_DIR}/addr.c
-	${CMAKE_CURRENT_SOURCE_DIR}/write.c
-	${CMAKE_CURRENT_SOURCE_DIR}/mark.c
-	${CMAKE_CURRENT_SOURCE_DIR}/vblock_rw.c
-	${CMAKE_CURRENT_SOURCE_DIR}/vblock_pio_1.c
-	${CMAKE_CURRENT_SOURCE_DIR}/vblock_pio_n.c)
+	${CMAKE_CURRENT_SOURCE_DIR}/addr.c)
 
 #
 # We link against the lightnvm_a to avoid the runtime dependency on liblightnvm.

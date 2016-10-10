@@ -38,9 +38,10 @@
 
 void nvm_addr_pr(struct nvm_addr addr)
 {
-	printf("(%lu){ ch(%d), lun(%d), pl(%d), blk(%d), pg(%d), sec(%d) }\n",
-	       addr.ppa, addr.g.ch, addr.g.lun, addr.g.pl, addr.g.blk,
-	       addr.g.pg, addr.g.sec);
+	printf("(%016lu){ ch(%02d), lun(%02d), pl(%d), "
+	       "blk(%04d), pg(%03d), sec(%d) }\n",
+	       addr.ppa, addr.g.ch, addr.g.lun, addr.g.pl,
+	       addr.g.blk, addr.g.pg, addr.g.sec);
 }
 
 ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr list[], int len,
