@@ -33,16 +33,16 @@ void _fill_buf(char **buf, int buf_len)
 void _pr_usage(char *arg)
 {
 	printf("Usage(s):\n"
-		" %s get dev_name ch lun\n"
-		" %s put dev_name ch lun blk\n"
-		" %s read dev_name ch lun blk\n"
-		" %s write dev_name ch lun blk\n"
-		" %s erase dev_name ch lun blk\n"
-		" %s mark_b dev_name ch lun blk\n"
-		" %s mark_g dev_name ch lun blk\n"
-		" %s mark_h dev_name ch lun blk\n"
-		" %s pread dev_name ch lun blk pg\n"
-		" %s pwrite dev_name ch lun blk pg\n",
+		" %s       get dev_name ch lun\n"
+		" %s       put dev_name ch lun blk\n"
+		" %s      read dev_name ch lun blk\n"
+		" %s     write dev_name ch lun blk\n"
+		" %s     erase dev_name ch lun blk\n"
+		" %s mark_good dev_name ch lun blk\n"
+		" %s  mark_bad dev_name ch lun blk\n"
+		" %s mark_gbad dev_name ch lun blk\n"
+		" %s     pread dev_name ch lun blk pg\n"
+		" %s    pwrite dev_name ch lun blk pg\n",
 		arg, arg, arg, arg, arg, arg, arg, arg, arg, arg);
 }
 
@@ -278,9 +278,9 @@ int mark(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 	nvm_addr_pr(addr);
 
 	switch(flags) {
-		case 0:
-		case 1:
-		case 2:
+		case 0x0:	// free
+		case 0x1:	// bad
+		case 0x2:	// grown bad
 			break;
 		default:
 			return -EINVAL;
@@ -339,15 +339,15 @@ int main(int argc, char **argv)
 	} else if (strcmp(cmd_name, "pwrite") == 0) {
 		cmd = &pwrite;
 		cmd_argc = 6;
-	} else if (strcmp(cmd_name, "mark_b") == 0) {
+	} else if (strcmp(cmd_name, "mark_good") == 0) {
 		cmd = &mark;
 		cmd_argc = 6;
 		cmd_flags = 0;
-	} else if (strcmp(cmd_name, "mark_g") == 0) {
+	} else if (strcmp(cmd_name, "mark_bad") == 0) {
 		cmd = &mark;
 		cmd_argc = 6;
 		cmd_flags = 1;
-	} else if (strcmp(cmd_name, "mark_h") == 0) {
+	} else if (strcmp(cmd_name, "mark_gbad") == 0) {
 		cmd = &mark;
 		cmd_argc = 6;
 		cmd_flags = 2;
