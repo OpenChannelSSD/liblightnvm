@@ -26,7 +26,7 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len)
 	err = nvm_addr_read(dev, list, len, buf);
 
 	printf("** DUMPING - BEGIN **\n");
-	for(i = 0; i < buf_len; ++i) {
+	for (i = 0; i < buf_len; ++i) {
 		printf("%d:%c\n", i, buf[i]);
 	}
 	printf("** DUMPING - END **\n");
@@ -53,7 +53,7 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len)
 		printf("Failed allocating buf\n");
 		return -ENOMEM;
 	}
-	for(i = 0; i < buf_len; ++i)
+	for (i = 0; i < buf_len; ++i)
 		buf[i] = (i % 28) + 65;
 
 	printf("** nvm_addr_write(...):\n");
@@ -109,6 +109,7 @@ static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
 void _usage_pr(char *cli_name)
 {
 	int cmd;
+
 	printf("Usage:\n");
 	for (cmd = 0; cmd < ncmds; ++cmd) {
 		if (cmds[cmd].argc < 0) {
@@ -147,7 +148,7 @@ int main(int argc, char **argv)
 	memset(cmd_name, 0, sizeof(cmd_name));
 	strcpy(cmd_name, argv[1]);
 
-	for(int i = 0; i < ncmds; ++i) {		// Get `cmd`
+	for (i = 0; i < ncmds; ++i) {			// Get `cmd`
 		if (strcmp(cmd_name, cmds[i].name) == 0) {
 			cmd = &cmds[i];
 			break;
@@ -196,8 +197,8 @@ int main(int argc, char **argv)
 	}
 	geo = nvm_dev_attr_geo(dev);
 
-	int has_invalid = 0;
-	for (int i = 0; i < len; ++i) {			// Check `addr`
+	int ninvalid = 0;
+	for (i = 0; i < len; ++i) {			// Check `addr`
 		int invalid_addr = 0;
 		if (list[i].g.ch >= geo.nchannels) {
 			printf("ERR: ppa(%lu), ch(%u) out of bounds\n",
@@ -229,11 +230,12 @@ int main(int argc, char **argv)
 				list[i].ppa, list[i].g.sec);
 			invalid_addr = 1;
 		}
-		has_invalid |= invalid_addr;
+		ninvalid = invalid_addr ? ninvalid + 1 : ninvalid;
 	}
 
-	if (has_invalid) {
-		printf("One of more addresses exceeds device boundaries\n");
+	if (ninvalid) {
+		printf("ninvalid(%d) addresses exceeds device boundaries\n",
+			ninvalid);
 		nvm_geo_pr(geo);
 		ret = -EINVAL;
 	} else {
