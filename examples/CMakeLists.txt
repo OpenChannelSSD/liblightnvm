@@ -10,11 +10,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 include_directories("${CMAKE_SOURCE}/include")
 
 set(SOURCE_FILES
+	${CMAKE_CURRENT_SOURCE_DIR}/addr.c
 	${CMAKE_CURRENT_SOURCE_DIR}/info.c
-	${CMAKE_CURRENT_SOURCE_DIR}/vblk.c
-	${CMAKE_CURRENT_SOURCE_DIR}/addr_read.c
-	${CMAKE_CURRENT_SOURCE_DIR}/addr_write.c
-	${CMAKE_CURRENT_SOURCE_DIR}/addr.c)
+	${CMAKE_CURRENT_SOURCE_DIR}/vblk.c)
 
 #
 # We link against the lightnvm_a to avoid the runtime dependency on liblightnvm.

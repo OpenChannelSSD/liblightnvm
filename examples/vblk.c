@@ -4,10 +4,6 @@
 #include <errno.h>
 #include <liblightnvm.h>
 
-#define NVM_CLI_CMD_LEN 50
-
-typedef int (*cmd_fp)(NVM_DEV, NVM_GEO, NVM_ADDR, int);
-
 // Dump content of buf to stdout
 void _dump_buf(char *buf, int buf_len)
 {
@@ -28,22 +24,6 @@ void _fill_buf(char **buf, int buf_len)
 
 	for(i = 0; i < buf_len; ++i)
 		(*buf)[i] = (i % 28) + 65;
-}
-
-void _pr_usage(char *arg)
-{
-	printf("Usage(s):\n"
-		" %s       get dev_name ch lun\n"
-		" %s       put dev_name ch lun blk\n"
-		" %s      read dev_name ch lun blk\n"
-		" %s     write dev_name ch lun blk\n"
-		" %s     erase dev_name ch lun blk\n"
-		" %s mark_good dev_name ch lun blk\n"
-		" %s  mark_bad dev_name ch lun blk\n"
-		" %s mark_gbad dev_name ch lun blk\n"
-		" %s     pread dev_name ch lun blk pg\n"
-		" %s    pwrite dev_name ch lun blk pg\n",
-		arg, arg, arg, arg, arg, arg, arg, arg, arg, arg);
 }
 
 int get(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
@@ -278,7 +258,7 @@ int mark(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 	nvm_addr_pr(addr);
 
 	switch(flags) {
-		case 0x0:	// free
+		case 0x0:	// free / good
 		case 0x1:	// bad
 		case 0x2:	// grown bad
 			break;
@@ -294,73 +274,101 @@ int mark(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 	return err;
 }
 
+// From hereon out the code is mostly boiler-plate for command-line parsing,
+// there is a bit of useful code exemplifying:
+//
+//  * nvm_dev_open
+//  * nvm_dev_close
+//  * nvm_dev_attr_geo
+//
+// as well as using the NVM_ADDR data structure.
+
+#define NVM_CLI_CMD_LEN 50
+
+typedef struct {
+	char name[NVM_CLI_CMD_LEN];
+	int (*func)(NVM_DEV, NVM_GEO, NVM_ADDR, int);
+	int argc;
+	int flags;
+} NVM_CLI_VBLK_CMD;
+
+static NVM_CLI_VBLK_CMD cmds[] = {
+	{"get", get, 5, 0},
+	{"put", put, 6, 0},
+	{"read", read, 6, 0},
+	{"write", write, 6, 0},
+	{"erase", erase, 6, 0},
+	{"pread", pread, 7, 0},
+	{"pwrite", pwrite, 7, 0},
+	{"mark_f", mark, 6, 0x0},
+	{"mark_b", mark, 6, 0x1},
+	{"mark_g", mark, 6, 0x2},
+};
+
+static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
+static char *args[] = {"dev_name", "ch", "lun", "blk", "pg"};
+
+void _usage_pr(char *cli_name)
+{
+	int cmd;
+	printf("Usage:\n");
+	for(cmd = 0; cmd < ncmds; cmd++) {
+		int arg;
+		printf(" %s %6s", cli_name, cmds[cmd].name);
+		for (arg = 0; arg < cmds[cmd].argc-2; ++arg) {
+			printf(" %s", args[arg]);
+		}
+		printf("\n");
+	}
+
+	printf("OR using PPA (parts as above are extracted from address):\n");
+	for(cmd = 0; cmd < ncmds; cmd++) {
+		printf(" %s %6s dev_name ppa\n", cli_name, cmds[cmd].name);
+	}
+}
+
 int main(int argc, char **argv)
 {
 	char cmd_name[NVM_CLI_CMD_LEN];
 	char dev_name[DISK_NAME_LEN+1];
 	int ret;
 
-	cmd_fp cmd;
-	int cmd_argc, cmd_flags = 0;
-
+	NVM_CLI_VBLK_CMD *cmd = NULL;
+	
 	NVM_DEV dev;
 	NVM_GEO geo;
 	NVM_ADDR addr;
 
 	if (argc < 4) {
-		_pr_usage(argv[0]);
+		_usage_pr(argv[0]);
 		return -1;
 	}
 
-	if (strlen(argv[1]) > (NVM_CLI_CMD_LEN-1)) {	// Get `cmd_name`
-		printf("len(cmd_name) > %d\n", (NVM_CLI_CMD_LEN-1));
+							// Get `cmd_name`
+	if (strlen(argv[1]) < 1 || strlen(argv[1]) > (NVM_CLI_CMD_LEN-1)) {
+		printf("Invalid cmd\n");
+		_usage_pr(argv[0]);
+		return -EINVAL;
 	}
 	memset(cmd_name, 0, sizeof(cmd_name));
 	strcpy(cmd_name, argv[1]);
 
-	if (strcmp(cmd_name, "get") == 0) {
-		cmd = &get;
-		cmd_argc = 5;
-	} else if (strcmp(cmd_name, "put") == 0) {
-		cmd = &put;
-		cmd_argc = 6;
-	} else if (strcmp(cmd_name, "read") == 0) {
-		cmd = &read;
-		cmd_argc = 6;
-	} else if (strcmp(cmd_name, "write") == 0) {
-		cmd = &write;
-		cmd_argc = 6;
-	} else if (strcmp(cmd_name, "erase") == 0) {
-		cmd = &erase;
-		cmd_argc = 7;
-	} else if (strcmp(cmd_name, "pread") == 0) {
-		cmd = &pread;
-		cmd_argc = 7;
-	} else if (strcmp(cmd_name, "pwrite") == 0) {
-		cmd = &pwrite;
-		cmd_argc = 6;
-	} else if (strcmp(cmd_name, "mark_good") == 0) {
-		cmd = &mark;
-		cmd_argc = 6;
-		cmd_flags = 0;
-	} else if (strcmp(cmd_name, "mark_bad") == 0) {
-		cmd = &mark;
-		cmd_argc = 6;
-		cmd_flags = 1;
-	} else if (strcmp(cmd_name, "mark_gbad") == 0) {
-		cmd = &mark;
-		cmd_argc = 6;
-		cmd_flags = 2;
-	} else {
+	for(int i = 0; i < ncmds; ++i) {		// Get `cmd`
+		if (strcmp(cmd_name, cmds[i].name) == 0) {
+			cmd = &cmds[i];
+			break;
+		}
+	}
+	if (!cmd) {
 		printf("Invalid cmd(%s)\n", cmd_name);
-		_pr_usage(argv[0]);
-		return -1;
+		_usage_pr(argv[0]);
+		return -EINVAL;
 	}
 
-	if ((argc != cmd_argc) && (argc != 4)) {
+	if ((argc != cmd->argc) && (argc != 4)) {	// Check argument count
 		printf("Invalid cmd(%s) argc(%d) != %d\n",
-			cmd_name, argc, cmd_argc);
-		_pr_usage(argv[0]);
+			cmd_name, argc, cmd->argc);
+		_usage_pr(argv[0]);
 		return -1;
 	}
 
@@ -388,7 +396,7 @@ int main(int argc, char **argv)
 			break;
 
 		default:
-			_pr_usage(argv[0]);
+			_usage_pr(argv[0]);
 			return -1;
 	}
 
@@ -419,7 +427,7 @@ int main(int argc, char **argv)
 		addr.g.sec = 0;
 	}
 
-	ret = cmd(dev, geo, addr, cmd_flags);
+	ret = cmd->func(dev, geo, addr, cmd->flags);
 
 	nvm_dev_close(dev);				// close `dev`
 
