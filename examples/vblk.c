@@ -10,7 +10,7 @@ void _dump_buf(char *buf, int buf_len)
 	int i;
 
 	printf("** DUMPING - BEGIN **\n");
-	for(i = 0; i < buf_len; i++) {
+	for (i = 0; i < buf_len; i++) {
 		printf("byte_offset(%d), ", i);
 		printf("val(%c)\n", buf[i]);
 	}
@@ -22,7 +22,7 @@ void _fill_buf(char **buf, int buf_len)
 {
 	int i;
 
-	for(i = 0; i < buf_len; ++i)
+	for (i = 0; i < buf_len; ++i)
 		(*buf)[i] = (i % 28) + 65;
 }
 
@@ -311,8 +311,9 @@ static char *args[] = {"dev_name", "ch", "lun", "blk", "pg"};
 void _usage_pr(char *cli_name)
 {
 	int cmd;
+
 	printf("Usage:\n");
-	for(cmd = 0; cmd < ncmds; cmd++) {
+	for (cmd = 0; cmd < ncmds; cmd++) {
 		int arg;
 		printf(" %s %6s", cli_name, cmds[cmd].name);
 		for (arg = 0; arg < cmds[cmd].argc-2; ++arg) {
@@ -322,7 +323,7 @@ void _usage_pr(char *cli_name)
 	}
 
 	printf("OR using PPA (parts as above are extracted from address):\n");
-	for(cmd = 0; cmd < ncmds; cmd++) {
+	for (cmd = 0; cmd < ncmds; cmd++) {
 		printf(" %s %6s dev_name ppa\n", cli_name, cmds[cmd].name);
 	}
 }
@@ -331,7 +332,7 @@ int main(int argc, char **argv)
 {
 	char cmd_name[NVM_CLI_CMD_LEN];
 	char dev_name[DISK_NAME_LEN+1];
-	int ret;
+	int ret, i;
 
 	NVM_CLI_VBLK_CMD *cmd = NULL;
 	
@@ -353,7 +354,7 @@ int main(int argc, char **argv)
 	memset(cmd_name, 0, sizeof(cmd_name));
 	strcpy(cmd_name, argv[1]);
 
-	for(int i = 0; i < ncmds; ++i) {		// Get `cmd`
+	for (i = 0; i < ncmds; ++i) {		// Get `cmd`
 		if (strcmp(cmd_name, cmds[i].name) == 0) {
 			cmd = &cmds[i];
 			break;
