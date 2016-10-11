@@ -1,6 +1,7 @@
 # liblightnvm - Userspace I/O library for LightNVM
 
 [![Build Status](https://travis-ci.org/OpenChannelSSD/liblightnvm.svg?branch=master)](https://travis-ci.org/OpenChannelSSD/liblightnvm)
+[![Download](https://api.bintray.com/packages/openchannelssd/binaries/liblightnvm/images/download.svg) ](https://bintray.com/openchannelssd/binaries/liblightnvm/_latestVersion)
 
 liblightnvm is a user space library that manages provisioning of and I/O
 submission to physical flash. The motivation is to enable I/O-intensive
@@ -252,7 +253,6 @@ Type - Erases per block
 SLC | 100000
 MLC | 1000 - 10.000
 TLC | 1000
-
 
 # References
 

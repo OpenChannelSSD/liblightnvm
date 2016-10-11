@@ -4,21 +4,16 @@ services:
   - docker
 
 env:
-  - DIST_NAME: ubuntu
-    DIST_VERS: 16.04
-    DIST_CODE: xenial
-    TAG: liblightnvm
-  - DIST_NAME: ubuntu
-    DIST_VERS: 14.04
-    DIST_CODE: trusty
-    TAG: liblightnvm
-  - DIST_NAME: ubuntu
-    DIST_VERS: 12.04
-    DIST_CODE: precise
-    TAG: liblightnvm
+  global:
+    - TAG=liblightnvm
+    - NVM_VERSION="0.0.1"
+    - DIST_NAME=ubuntu 
+  matrix:
+    - DIST_VERS=16.04 DIST_CODE=xenial
+    - DIST_VERS=14.04 DIST_CODE=trusty
+    - DIST_VERS=12.04 DIST_CODE=precise
 
 before_install:
-  - gem install package_cloud
   - docker pull ${DIST_NAME}:${DIST_VERS}
   - docker build --rm=true --file=ci/DockerFile.${DIST_NAME}-${DIST_VERS} --tag=${DIST_NAME}-${DIST_VERS}:${TAG} .
   - docker run --name ${TAG} -d -t ${DIST_NAME}-${DIST_VERS}:${TAG} /bin/bash > container.id
@@ -34,13 +29,31 @@ before_script:
   - ./checkpatch.pl --no-tree -f include/*nvm.h --terse || true
   - ./checkpatch.pl --no-tree -f include/nvm_*.h --terse || true
   - ./checkpatch.pl --no-tree -f src/*.c --terse || true
+  - ./checkpatch.pl --no-tree -f examples/*.c --terse || true
+  - ./checkpatch.pl --no-tree -f tests/*.c --terse || true
 
 script:
   - CONTAINER_ID=$(cat container.id)
   - docker ps -a
-  - docker exec -t ${TAG} make
-  - docker exec -t ${TAG} make pkg
-  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm-0.1.1-Linux.deb .
+  - docker exec -t ${TAG} make tests_off configure make pkg
+  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm-${NVM_VERSION}.deb .
+  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm-${NVM_VERSION}.tar.gz .
   - docker stop "${CONTAINER_ID}"
-  - package_cloud yank slund/liblightnvm/ubuntu/$DIST_CODE liblightnvm_0.1.1_amd64.deb || true
-  - package_cloud push slund/liblightnvm/ubuntu/$DIST_CODE liblightnvm-0.1.1-Linux.deb || true
+
+before_deploy:
+  - python ci/bintray_descriptor.py --repos debs --dist_code $DIST_CODE --version ${NVM_VERSION} --branch ${TRAVIS_BRANCH} --commit ${TRAVIS_COMMIT} > ci/bintray_debs.json
+  - python ci/bintray_descriptor.py --repos binaries --dist_code $DIST_CODE --version ${NVM_VERSION} --branch ${TRAVIS_BRANCH} --commit ${TRAVIS_COMMIT} > ci/bintray_binaries.json
+
+deploy:
+  - provider: bintray
+    dry-run: false
+    file: ci/bintray_debs.json
+    user: safl
+    key:
+      secure: "HD1LvR4KL84u6BPQncH5brE8Ng7iBvsREaOra492AEMx4sL2F1ucMIXkvNE86tfBF0Q8b2Axz9PUuktqB8hwfE4Mj/NZcHQHlWrJ/vO4zMhY79K7tujZAQ9THH/IFmktE2gjQYr7FraTlwdIws2VGJj7jlCY9s0E/vmF/euwAHkmfuTpdLv0T2IrCkrt64EBsIFAmfjoSpuFJtNiJqDxtL9rtke6Voo+yvsrQmGgkaFQLM+bhIiOC8YVw/UaZPYFjAQPl2pFGI+pJGs8A+p1b6YD+/UJdzHj1C9QaSTg6orqQCw4iSK3IA1WpZt3+/K9p0fwqNp3KO2ituuw53xBPI2jc2EfI76vMi+RVjHSlMUmsfjU6W0SFTYxSX7PNablzvIYE+FpKyE3u3sMyTIjkc3jZFtuhZSpZ4b6NEtaV59NYknbFxny3xPZa8rEiZgQkle0zwTOnxDLTX0QD/BbMfciTMW3BhQKBT6X7UqfSMUhs8zA1ydluRYSiiSllYK7+JP2kmMKs9wBRQp/djx/ATRnv+p2Vw4RVJe5zqFWniqwFnqqt6xixd0X69OWx7VKoar4iBs1f7czvhXMzKtHrYJKYBRnFCEdB2jCHTHlqc/9D1PLbP56io8yF6O0kvhI0zF8SqFEzsZbyrZGrxjzAxy6JXv8DQ3lZnTbrvBuDR0="
+  - provider: bintray
+    dry-run: false
+    file: ci/bintray_binaries.json
+    user: safl
+    key:
+      secure: "HD1LvR4KL84u6BPQncH5brE8Ng7iBvsREaOra492AEMx4sL2F1ucMIXkvNE86tfBF0Q8b2Axz9PUuktqB8hwfE4Mj/NZcHQHlWrJ/vO4zMhY79K7tujZAQ9THH/IFmktE2gjQYr7FraTlwdIws2VGJj7jlCY9s0E/vmF/euwAHkmfuTpdLv0T2IrCkrt64EBsIFAmfjoSpuFJtNiJqDxtL9rtke6Voo+yvsrQmGgkaFQLM+bhIiOC8YVw/UaZPYFjAQPl2pFGI+pJGs8A+p1b6YD+/UJdzHj1C9QaSTg6orqQCw4iSK3IA1WpZt3+/K9p0fwqNp3KO2ituuw53xBPI2jc2EfI76vMi+RVjHSlMUmsfjU6W0SFTYxSX7PNablzvIYE+FpKyE3u3sMyTIjkc3jZFtuhZSpZ4b6NEtaV59NYknbFxny3xPZa8rEiZgQkle0zwTOnxDLTX0QD/BbMfciTMW3BhQKBT6X7UqfSMUhs8zA1ydluRYSiiSllYK7+JP2kmMKs9wBRQp/djx/ATRnv+p2Vw4RVJe5zqFWniqwFnqqt6xixd0X69OWx7VKoar4iBs1f7czvhXMzKtHrYJKYBRnFCEdB2jCHTHlqc/9D1PLbP56io8yF6O0kvhI0zF8SqFEzsZbyrZGrxjzAxy6JXv8DQ3lZnTbrvBuDR0="
