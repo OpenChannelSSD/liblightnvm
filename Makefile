@@ -12,6 +12,12 @@ default: configure make
 debug:
 	$(eval BUILD_TYPE := Debug)
 
+tests_off:
+	$(eval BUILD_TESTS := OFF)
+
+examples_off:
+	$(eval BUILD_EXAMPLES := OFF)
+
 cmake_check:
 	@cmake --version || (echo "\n** Please install 'cmake' **\n" && exit 1)
 
