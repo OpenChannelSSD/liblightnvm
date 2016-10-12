@@ -1,22 +1,23 @@
 # liblightnvm - Userspace I/O library for LightNVM
 
 [![Build Status](https://travis-ci.org/OpenChannelSSD/liblightnvm.svg?branch=master)](https://travis-ci.org/OpenChannelSSD/liblightnvm)
-[![Download](https://api.bintray.com/packages/openchannelssd/binaries/liblightnvm/images/download.svg) ](https://bintray.com/openchannelssd/binaries/liblightnvm/_latestVersion)
+[![Download tgz](https://api.bintray.com/packages/openchannelssd/binaries/liblightnvm/images/download.svg) ](https://bintray.com/openchannelssd/binaries/liblightnvm/_latestVersion)
+[![Download deb](https://api.bintray.com/packages/openchannelssd/debs/liblightnvm/images/download.svg) ](https://bintray.com/openchannelssd/debs/liblightnvm/_latestVersion)
 
 liblightnvm is a user space library that manages provisioning of and I/O
 submission to physical flash. The motivation is to enable I/O-intensive
-applications to implement their own Flash Translation Layer (FTLs) using
-the internal application data structures.  The design is based on the principle that high-performance
-I/O applications often use structures that assimilates structures found within a 
-Flash translation layer. This include log-structured data structures that provides their
-own mechanisms for data placement, garbage collection, and I/O scheduling
-strategies.  
+applications to implement their own Flash Translation Layer (FTLs) using the
+internal application data structures.  The design is based on the principle that
+high-performance I/O applications often use structures that assimilates
+structures found within a Flash translation layer. This include log-structured
+data structures that provides their own mechanisms for data placement, garbage
+collection, and I/O scheduling strategies.  
 
-For example, popular key-value stores often use a form of Log Structured Merge Trees (LSMs) as
-their base data structure (including RocksDB, MongoDB, Apache Cassandra). The LSM
-is in itself a form of FTL, which manages data placement and garbage
-collection.  This class of applications can benefit from a direct path to
-physical flash to take full advantage of the optimizations they do and spend
+For example, popular key-value stores often use a form of Log Structured Merge
+Trees (LSMs) as their base data structure (including RocksDB, MongoDB, Apache
+Cassandra). The LSM is in itself a form of FTL, which manages data placement and
+garbage collection.  This class of applications can benefit from a direct path
+to physical flash to take full advantage of the optimizations they do and spend
 host resources on, instead of missing them through the several levels of
 indirection that the traditional I/O stack imposes to enable genericity: page
 cache, VFS, file system, and device physical - logical translation table.
