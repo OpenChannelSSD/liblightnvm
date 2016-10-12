@@ -169,9 +169,9 @@ int main(int argc, char **argv)
 
 	switch(cmd->argc) {				// Get `list` and `len`
 		case -1:				// ppa [ppa..]
-			len = argc - 2;
+			len = argc - 3;
 			for (i = 0; i < len; ++i) {
-				list[i].ppa = atol(argv[i+2]);
+				list[i].ppa = atol(argv[i+3]);
 			}
 			break;
 		case 9:					// ch lun pl blk pg sec
