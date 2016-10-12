@@ -56,7 +56,7 @@ def main(args):
             {
                 "includePattern": "./(liblightnvm)-(.*).tar.gz",
                 "uploadPattern": "%s/$1-$2-%s-%s.tar.gz" % (
-                    args.dist_code, args.branch, args.commit
+                    args.dist_code, args.branch, args.commit_short
                 ),
                 "matrixParams": {
                     "override": 1
@@ -69,7 +69,7 @@ def main(args):
             {
                 "includePattern": "./(liblightnvm)-(.*).deb",
                 "uploadPattern": "%s/$1-$2-%s-%s.deb" % (
-                    args.dist_code, args.branch, args.commit
+                    args.dist_code, args.branch, args.commit_short
                 ),
                 "matrixParams": {
                     "override": 1,
