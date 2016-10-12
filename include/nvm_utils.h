@@ -29,6 +29,6 @@
 
 int nvm_execute_ioctl(int opcode, void *u);
 void nvm_misc_pr(void);
-struct udev_device* udev_dev_find(struct udev *udev, const char *subsystem,
+struct udev_device *udev_dev_find(struct udev *udev, const char *subsystem,
 				  const char *devtype, const char *dev_name);
-struct udev_device* udev_nvmdev_find(struct udev *udev, const char *dev_name);
+struct udev_device *udev_nvmdev_find(struct udev *udev, const char *dev_name);

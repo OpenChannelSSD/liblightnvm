@@ -162,13 +162,13 @@ int nvm_dev_attr_vblock_nbytes(NVM_DEV dev);
  */
 NVM_GEO nvm_dev_attr_geo(NVM_DEV dev);
 
-void* nvm_buf_alloc(NVM_GEO geo, size_t nbytes);
-void* nvm_vblock_buf_alloc(NVM_GEO geo);
-void* nvm_vpage_buf_alloc(NVM_GEO geo);
+void *nvm_buf_alloc(NVM_GEO geo, size_t nbytes);
+void *nvm_vblock_buf_alloc(NVM_GEO geo);
+void *nvm_vpage_buf_alloc(NVM_GEO geo);
 
 void nvm_addr_pr(NVM_ADDR addr);
-ssize_t nvm_addr_write(NVM_DEV dev, NVM_ADDR list[], int len, const void* buf);
-ssize_t nvm_addr_read(NVM_DEV dev, NVM_ADDR list[], int len, void* buf);
+ssize_t nvm_addr_write(NVM_DEV dev, NVM_ADDR list[], int len, const void *buf);
+ssize_t nvm_addr_read(NVM_DEV dev, NVM_ADDR list[], int len, void *buf);
 
 NVM_VBLOCK nvm_vblock_new(void);
 NVM_VBLOCK nvm_vblock_new_on_dev(NVM_DEV dev, uint64_t ppa);
