@@ -40,11 +40,6 @@ def main(args):
                     "values": [args.branch],
                     "type": "string"
                 },
-                {
-                    "name": "commit",
-                    "values": [args.commit],
-                    "type": "string"
-                },
             ],
             "gpgSign": False,
         },
@@ -56,7 +51,7 @@ def main(args):
             {
                 "includePattern": "./(liblightnvm)-(.*).tar.gz",
                 "uploadPattern": "%s/$1-$2-%s-%s.tar.gz" % (
-                    args.dist_code, args.branch, args.commit_short
+                    args.dist_code, args.branch, commit_short
                 ),
                 "matrixParams": {
                     "override": 1
@@ -69,7 +64,7 @@ def main(args):
             {
                 "includePattern": "./(liblightnvm)-(.*).deb",
                 "uploadPattern": "%s/$1-$2-%s-%s.deb" % (
-                    args.dist_code, args.branch, args.commit_short
+                    args.dist_code, args.branch, commit_short
                 ),
                 "matrixParams": {
                     "override": 1,
