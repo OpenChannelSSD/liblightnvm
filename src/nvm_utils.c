@@ -183,3 +183,25 @@ void* nvm_vblock_buf_alloc(NVM_GEO geo)
 
 	return buf;
 }
+
+void nvm_buf_pr(char *buf, int buf_len)
+{
+	const int width = 32;
+	int i;
+	printf("** NVM_BUF_PR - BEGIN **");
+	for (i = 0; i < buf_len; i++) {
+		if (!(i % width))
+			printf("\ni[%d,%d]: ", i, i+(width-1));
+		printf(" %c", buf[i]);
+	}
+	printf("\n** NVM_BUF_PR - END **\n");
+}
+
+void nvm_buf_fill(char *buf, int buf_len)
+{
+	int i;
+
+	for (i = 0; i < buf_len; ++i)
+		buf[i] = (i % 26) + 65;
+}
+

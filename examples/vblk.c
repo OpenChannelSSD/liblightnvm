@@ -4,28 +4,6 @@
 #include <errno.h>
 #include <liblightnvm.h>
 
-// Dump content of buf to stdout
-void _dump_buf(char *buf, int buf_len)
-{
-	int i;
-
-	printf("** DUMPING - BEGIN **\n");
-	for (i = 0; i < buf_len; i++) {
-		printf("byte_offset(%d), ", i);
-		printf("val(%c)\n", buf[i]);
-	}
-	printf("** DUMPING - END **\n");
-}
-
-// Fill buf with pseudo-data
-void _fill_buf(char **buf, int buf_len)
-{
-	int i;
-
-	for (i = 0; i < buf_len; ++i)
-		(*buf)[i] = (i % 28) + 65;
-}
-
 int get(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 {
 	NVM_VBLOCK vblk;
@@ -102,9 +80,10 @@ int pread(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 	}
 
 	err = nvm_vblock_pread(vblk, buf, addr.g.pg);
-	_dump_buf(buf, buf_len);
+	if (getenv("NVM_BUF_PR"))
+		nvm_buf_pr(buf, buf_len);
 	if (err) {
-		printf("FAILED: nvm_vblock_pread err(%ld)", err);
+		printf("FAILED: nvm_vblock_pread err(%ld)\n", err);
 	}
 
 	nvm_vblock_free(&vblk);
@@ -139,9 +118,10 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 	}
 
 	err = nvm_vblock_read(vblk, buf);
-	_dump_buf(buf, buf_len);
+	if (getenv("NVM_BUF_PR"))
+		nvm_buf_pr(buf, buf_len);
 	if (err) {
-		printf("FAILED: nvm_vblock_read err(%ld)", err);
+		printf("FAILED: nvm_vblock_read err(%ld);", err);
 	}
 
 	nvm_vblock_free(&vblk);
@@ -175,7 +155,7 @@ int pwrite(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 		return -ENOMEM;
 	}
 
-	_fill_buf(&buf, buf_len);
+	nvm_buf_fill(buf, buf_len);
 
 	err = nvm_vblock_pwrite(vblk, buf, addr.g.pg);
 	if (err) {
@@ -213,7 +193,7 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 		return -ENOMEM;
 	}
 
-	_fill_buf(&buf, buf_len);
+	nvm_buf_fill(buf, buf_len);
 
 	err = nvm_vblock_write(vblk, buf);
 	if (err) {

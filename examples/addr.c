@@ -24,13 +24,8 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len)
 	}
 
 	err = nvm_addr_read(dev, list, len, buf);
-
-	printf("** DUMPING - BEGIN **\n");
-	for (i = 0; i < buf_len; ++i) {
-		printf("%d:%c\n", i, buf[i]);
-	}
-	printf("** DUMPING - END **\n");
-
+	if (getenv("NVM_BUF_PR"))
+		nvm_buf_pr(buf, buf_len);
 	if (err) {
 		printf("ERR: nvm_addr_read err(%ld)\n", err);
 	}
@@ -53,8 +48,7 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len)
 		printf("Failed allocating buf\n");
 		return -ENOMEM;
 	}
-	for (i = 0; i < buf_len; ++i)
-		buf[i] = (i % 28) + 65;
+	nvm_buf_fill(buf, buf_len);
 
 	printf("** nvm_addr_write(...):\n");
 	for (i = 0; i < len; ++i) {
