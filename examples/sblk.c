@@ -5,9 +5,100 @@
 #include <omp.h>
 #include <liblightnvm.h>
 
+#include <sys/time.h>
+
+size_t start, stop;
+
+size_t wclock_sample(void)
+{
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return tv.tv_usec + tv.tv_sec * 1000000;
+}
+
+size_t timer_start(void)
+{
+    start = wclock_sample();
+    return start;
+}
+
+size_t timer_stop(void)
+{
+    stop = wclock_sample();
+    return stop;
+}
+
+double timer_elapsed(void)
+{
+    return (stop-start)/(double)1000000.0;
+}
+
+void timer_pr(const char* tool)
+{
+    printf("Ran %s, elapsed wall-clock: %lf\n", tool, timer_elapsed());
+}
+
 int read(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 {
+	char *bufs[geo.nchannels];
+
+	const int chk_nbytes = geo.vpage_nbytes * geo.nluns;
+	char *chk = nvm_buf_alloc(geo, chk_nbytes);
+	nvm_buf_fill(chk, chk_nbytes);
+
+	#pragma omp parallel for schedule(static) num_threads(geo.nchannels)
+	for(int ch = 0; ch < geo.nchannels; ++ch) {
+		const int buf_nbytes = geo.vpage_nbytes * geo.nluns;
+		bufs[ch] = nvm_buf_alloc(geo, buf_nbytes);
+		nvm_buf_fill(bufs[ch], buf_nbytes);
+	}
+
+	timer_start();
+	#pragma omp parallel for schedule(static) num_threads(geo.nchannels)
+	for(int ch = 0; ch < geo.nchannels; ++ch) {
+		const size_t list_len = geo.nluns * geo.nplanes * geo.nsectors;
+
+		for (size_t pg = 0; pg < geo.npages; ++pg) {
+
+			NVM_ADDR list[list_len];
+
+			for (size_t idx = 0; idx < list_len; ++idx) {
+				uint64_t sec = idx % geo.nsectors;
+				uint64_t pl = (idx / geo.nsectors) % geo.nplanes;
+				uint64_t lun = ((idx / geo.nsectors) / geo.nplanes) % geo.nluns;
+
+				list[idx].g.sec = sec;
+				list[idx].g.pg = pg;
+				list[idx].g.blk = blk_idx;
+				list[idx].g.pl = pl;
+				list[idx].g.lun = lun;
+				list[idx].g.ch = ch;
+			}
+
+			ssize_t err = nvm_addr_read(dev, list, list_len, bufs[ch]);
+			if (err) {
+				printf("err(%ld)\n", err);
+			}
+		}
+	}
+	timer_stop();
+	timer_pr("sblk_read");
+	for(int ch = 0; ch < geo.nchannels; ++ch) {
+		for (int off = 0; off < chk_nbytes; ++off) {
+			if (chk[off] != bufs[ch][off]) {
+				printf("mismatch: ch(%d), off(%d), %c != %c\n",
+					ch, off, chk[off], bufs[ch][off]);
+			}
+		}
+	}
+
+	#pragma omp parallel for schedule(static) num_threads(geo.nchannels)
+	for(int ch = 0; ch < geo.nchannels; ++ch) {
+		free(bufs[ch]);
+	}
+
 	return 0;
+
 }
 
 int write(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
@@ -21,6 +112,7 @@ int write(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 		nvm_buf_fill(bufs[ch], buf_nbytes);
 	}
 
+	timer_start();
 	#pragma omp parallel for schedule(static) num_threads(geo.nchannels)
 	for(int ch = 0; ch < geo.nchannels; ++ch) {
 		const size_t list_len = geo.nluns * geo.nplanes * geo.nsectors;
@@ -48,6 +140,8 @@ int write(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 			}
 		}
 	}
+	timer_stop();
+	timer_pr("sblk_write");
 
 	#pragma omp parallel for schedule(static) num_threads(geo.nchannels)
 	for(int ch = 0; ch < geo.nchannels; ++ch) {
