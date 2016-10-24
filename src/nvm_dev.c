@@ -65,9 +65,11 @@ int nvm_dev_geo_fill(struct nvm_geo *geo, const char *dev_name)
 	geo->nsectors = atoi(udev_device_get_sysattr_value(dev, "device/lightnvm/sec_per_pg"));
 	geo->nbytes = atoi(udev_device_get_sysattr_value(dev, "device/lightnvm/hw_sector_size"));
 
+	/* Derive total number of bytes on device */
+	geo->tbytes = geo->nchannels * geo->nluns * geo->nplanes * \
+		      geo->nblocks * geo->npages * geo->nsectors * geo->nbytes;
+
 	/* Derive number of bytes occupied by a virtual block/page */
-	geo->tbytes = geo->nluns * geo->nplanes * geo->nblocks * geo->npages * \
-			geo->nsectors * geo->nbytes;
 	geo->vblock_nbytes = geo->nplanes * geo->npages * geo->nsectors * geo->nbytes;
 	geo->vpage_nbytes = geo->nplanes * geo->nsectors * geo->nbytes;
 
