@@ -40,11 +40,12 @@ void timer_pr(const char* tool)
 
 int io(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 {
-	int nerr = 0, ch = 0, lun = 0;
+	int nerr = 0;
 
 	int nchannels = 1;
 	int nluns = 1;
 
+	int ch;
 	for (ch = 0; ch < nchannels; ++ch) {
 		int lun;
 		for (lun = 0; lun < nluns; ++lun) {
