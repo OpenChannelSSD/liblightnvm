@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 set(EXAMPLES true CACHE BOOL "Examples: Include example programs in build")
+set(EXAMPLES_SBLK_PAR true CACHE BOOL "Examples-sblk: Enable parallel implementation of sblk")
 if (NOT EXAMPLES)
 	return()
 endif()
@@ -16,8 +17,8 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/sblk.c)
 
 #
-# We link against the lightnvm_a to avoid the runtime dependency on liblightnvm.
-# Do note that the dependency on libudev is carried on from liblightnvm.
+# We link against the lightnvm_a to avoid the runtime dependency on liblightnvm
+# NOTE: The dependency on libudev is carried on from liblightnvm
 #
 foreach(SRC_FN ${SOURCE_FILES})
 	get_filename_component(SRC_FN_WE ${SRC_FN} NAME_WE)
@@ -25,7 +26,8 @@ foreach(SRC_FN ${SOURCE_FILES})
 	add_executable(${EXE_FN} ${SRC_FN})
 	target_link_libraries(${EXE_FN} pthread udev lightnvm_a)
 
-	if (SRC_FN_WE STREQUAL "sblk")	# sblk uses OpenMP
+	# Enable OpenMP for sblk
+	if (${EXAMPLES_SBLK_PAR} AND ${SRC_FN_WE} STREQUAL "sblk")
 		find_package(OpenMP)
 		if (OPENMP_FOUND)
 			set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
