@@ -41,14 +41,15 @@ void timer_pr(const char* tool)
 int read(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 {
 	char *bufs[geo.nchannels];
-
+	/*
 	const int chk_nbytes = geo.vpage_nbytes * geo.nluns;
 	char *chk = nvm_buf_alloc(geo, chk_nbytes);
 	nvm_buf_fill(chk, chk_nbytes);
+	*/
 
 	#pragma omp parallel for schedule(static) num_threads(geo.nchannels)
 	for(int ch = 0; ch < geo.nchannels; ++ch) {
-		const int buf_nbytes = geo.vpage_nbytes * geo.nluns;
+		const int buf_nbytes = geo.nplanes * geo.nsectors * geo.nbytes;
 		bufs[ch] = nvm_buf_alloc(geo, buf_nbytes);
 		nvm_buf_fill(bufs[ch], buf_nbytes);
 	}
@@ -56,7 +57,8 @@ int read(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 	timer_start();
 	#pragma omp parallel for schedule(static) num_threads(geo.nchannels)
 	for(int ch = 0; ch < geo.nchannels; ++ch) {
-		const size_t list_len = geo.nluns * geo.nplanes * geo.nsectors;
+		const size_t list_len = geo.nplanes * geo.nsectors;
+		//const size_t list_len = geo.nluns * geo.nplanes * geo.nsectors;
 
 		for (size_t pg = 0; pg < geo.npages; ++pg) {
 
@@ -65,7 +67,8 @@ int read(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 			for (size_t idx = 0; idx < list_len; ++idx) {
 				uint64_t sec = idx % geo.nsectors;
 				uint64_t pl = (idx / geo.nsectors) % geo.nplanes;
-				uint64_t lun = ((idx / geo.nsectors) / geo.nplanes) % geo.nluns;
+				uint64_t lun = 0;
+				//uint64_t lun = ((idx / geo.nsectors) / geo.nplanes) % geo.nluns;
 
 				list[idx].g.sec = sec;
 				list[idx].g.pg = pg;
@@ -83,6 +86,7 @@ int read(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 	}
 	timer_stop();
 	timer_pr("sblk_read");
+	/*
 	for(int ch = 0; ch < geo.nchannels; ++ch) {
 		for (int off = 0; off < chk_nbytes; ++off) {
 			if (chk[off] != bufs[ch][off]) {
@@ -90,7 +94,7 @@ int read(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 					ch, off, chk[off], bufs[ch][off]);
 			}
 		}
-	}
+	}*/
 
 	#pragma omp parallel for schedule(static) num_threads(geo.nchannels)
 	for(int ch = 0; ch < geo.nchannels; ++ch) {
@@ -98,7 +102,6 @@ int read(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 	}
 
 	return 0;
-
 }
 
 int write(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
@@ -107,7 +110,7 @@ int write(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 
 	#pragma omp parallel for schedule(static) num_threads(geo.nchannels)
 	for(int ch = 0; ch < geo.nchannels; ++ch) {
-		const int buf_nbytes = geo.vpage_nbytes * geo.nluns;
+		const int buf_nbytes = geo.nplanes * geo.nsectors * geo.nbytes;
 		bufs[ch] = nvm_buf_alloc(geo, buf_nbytes);
 		nvm_buf_fill(bufs[ch], buf_nbytes);
 	}
@@ -115,7 +118,8 @@ int write(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 	timer_start();
 	#pragma omp parallel for schedule(static) num_threads(geo.nchannels)
 	for(int ch = 0; ch < geo.nchannels; ++ch) {
-		const size_t list_len = geo.nluns * geo.nplanes * geo.nsectors;
+		const size_t list_len = geo.nplanes * geo.nsectors;
+		//const size_t list_len = geo.nluns * geo.nplanes * geo.nsectors;
 
 		for (size_t pg = 0; pg < geo.npages; ++pg) {
 
@@ -124,7 +128,8 @@ int write(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 			for (size_t idx = 0; idx < list_len; ++idx) {
 				uint64_t sec = idx % geo.nsectors;
 				uint64_t pl = (idx / geo.nsectors) % geo.nplanes;
-				uint64_t lun = ((idx / geo.nsectors) / geo.nplanes) % geo.nluns;
+				uint64_t lun = 0;
+				//uint64_t lun = ((idx / geo.nsectors) / geo.nplanes) % geo.nluns;
 
 				list[idx].g.sec = sec;
 				list[idx].g.pg = pg;
