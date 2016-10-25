@@ -68,14 +68,14 @@ int io(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 				ssize_t err;
 				switch (flags) {
 					case 0x1:
-						nvm_vblock_pwrite(vblk, buf, pg);
+						err = nvm_vblock_pwrite(vblk, buf, pg);
 						if (err) {
 							++nerr;
 							printf("write err(%ld)\n", err);
 						}
 						break;
 					case 0x2:
-						nvm_vblock_pread(vblk, buf, pg);
+						err = nvm_vblock_pread(vblk, buf, pg);
 						if (err) {
 							++nerr;
 							printf("read err(%ld)\n", err);
