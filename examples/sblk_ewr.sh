@@ -31,9 +31,11 @@ done
 echo "** Writing spanned blk_idx($BLK) on $LNVM_DEV"
 if [ $DRY -ne "1" ]; then
 	nvm_sblk write $LNVM_DEV $BLK
+	echo "nerr($?)"
 fi
 
 echo "** Reading spanned blk_idx($BLK) on $LNVM_DEV"
 if [ $DRY -ne "1" ]; then
 	nvm_sblk read $LNVM_DEV $BLK
+	echo "nerr($?)"
 fi
