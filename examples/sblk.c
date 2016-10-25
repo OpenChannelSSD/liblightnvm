@@ -38,17 +38,21 @@ void timer_pr(const char* tool)
     printf("Ran %s, elapsed wall-clock: %lf\n", tool, timer_elapsed());
 }
 
-int read(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
+int io(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 {
-	int nerr = 0;
+	int nerr = 0, ch = 0, lun = 0;
 
-	int ch;
-	for (ch = 0; ch < geo.nchannels; ++ch) {
-		int buf_nbytes = geo.vpage_nbytes;
-		char *buf = nvm_buf_alloc(geo, buf_nbytes);
+	int nchannels = 1;
+	int nluns = 1;
 
+	for (ch = 0; ch < nchannels; ++ch) {
 		int lun;
-		for (lun = 0; lun < geo.nluns; ++lun) {
+		for (lun = 0; lun < nluns; ++lun) {
+
+			int buf_nbytes = geo.vpage_nbytes;
+			char *buf = nvm_buf_alloc(geo, buf_nbytes);
+			nvm_buf_fill(buf, buf_nbytes);
+
 			NVM_VBLOCK vblk;
 			NVM_ADDR addr;
 
@@ -61,52 +65,30 @@ int read(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 
 			int pg;
 			for (pg = 0; pg < geo.npages; ++pg) {
-				ssize_t err = nvm_vblock_pread(vblk, buf, pg);
-				if (err) {
-					++nerr;
-					printf("read err(%ld)\n", err);
+				ssize_t err;
+				switch (flags) {
+					case 0x1:
+						nvm_vblock_pwrite(vblk, buf, pg);
+						if (err) {
+							++nerr;
+							printf("write err(%ld)\n", err);
+						}
+						break;
+					case 0x2:
+						nvm_vblock_pread(vblk, buf, pg);
+						if (err) {
+							++nerr;
+							printf("read err(%ld)\n", err);
+						}
+						break;
+					default:
+						printf("invalid IO!");
+						break;
 				}
 			}
 			nvm_vblock_free(&vblk);
+			free(buf);
 		}
-		free(buf);
-	}
-
-	return nerr;
-}
-
-int write(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
-{
-	int nerr = 0;
-
-	int ch;
-	for (ch = 0; ch < geo.nchannels; ++ch) {
-		int buf_nbytes = geo.vpage_nbytes;
-		char *buf = nvm_buf_alloc(geo, buf_nbytes);
-
-		int lun;
-		for (lun = 0; lun < geo.nluns; ++lun) {
-			NVM_VBLOCK vblk;
-			NVM_ADDR addr;
-
-			addr.ppa = 0;
-			addr.g.ch = ch;
-			addr.g.lun = lun;
-			addr.g.blk = blk_idx;
-
-			vblk = nvm_vblock_new_on_dev(dev, addr.ppa);
-
-			int pg;
-			for (pg = 0; pg < geo.npages; ++pg) {
-				ssize_t err = nvm_vblock_pwrite(vblk, buf, pg);
-				if (err) {
-					++nerr;
-					printf("write err(%ld)\n", err);
-				}
-			}
-			nvm_vblock_free(&vblk);
-		}
-		free(buf);
 	}
 
 	return nerr;
@@ -131,8 +113,8 @@ typedef struct {
 } NVM_CLI_VBLK_CMD;
 
 static NVM_CLI_VBLK_CMD cmds[] = {
-	{"read", read, 4, 0},
-	{"write", write, 4, 0},
+	{"write", io, 4, 0x1},
+	{"read", io, 4, 0x2},
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
