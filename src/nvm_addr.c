@@ -52,7 +52,7 @@ ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr list[], int len,
 
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.opcode = NVM_MAGIC_OPCODE_READ;
-	ctl.flags = NVM_MAGIC_FLAG_ACCESS;
+	ctl.flags = NVM_MAGIC_FLAG_ACCESS | NVM_MAGIC_FLAG_SCRAMBLER;
 	ctl.nppas = len;
 	ctl.ppas = (uint64_t)list;
 	ctl.addr = (uint64_t)buf;
@@ -82,7 +82,7 @@ ssize_t nvm_addr_write(struct nvm_dev *dev, struct nvm_addr list[], int len,
 
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.opcode = NVM_MAGIC_OPCODE_WRITE;
-	ctl.flags = NVM_MAGIC_FLAG_ACCESS;
+	ctl.flags = NVM_MAGIC_FLAG_ACCESS | NVM_MAGIC_FLAG_SCRAMBLER;
 	ctl.nppas = len;
 	ctl.ppas = (uint64_t)list;
 	ctl.addr = (uint64_t)buf;
