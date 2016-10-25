@@ -28,14 +28,10 @@ for CH in $(seq $CH_BEGIN $CH_END); do
 	done
 done
 
-sleep 5
-
 echo "** Writing spanned blk_idx($BLK) on $LNVM_DEV"
 if [ $DRY -ne "1" ]; then
 	nvm_sblk write $LNVM_DEV $BLK
 fi
-
-sleep 5
 
 echo "** Reading spanned blk_idx($BLK) on $LNVM_DEV"
 if [ $DRY -ne "1" ]; then

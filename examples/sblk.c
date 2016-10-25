@@ -41,10 +41,10 @@ void timer_pr(const char* tool)
 int read(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 {
 	char *bufs[geo.nchannels];
+	const int buf_nbytes = nvm_dev_attr_vpage_nbytes(dev);
 
 	#pragma omp parallel for schedule(static) num_threads(geo.nchannels)
 	for(int ch = 0; ch < geo.nchannels; ++ch) {
-		const int buf_nbytes = geo.nplanes * geo.nsectors * geo.nbytes;
 		bufs[ch] = nvm_buf_alloc(geo, buf_nbytes);
 		nvm_buf_fill(bufs[ch], buf_nbytes);
 	}
@@ -52,35 +52,22 @@ int read(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 	timer_start();
 	#pragma omp parallel for schedule(static) num_threads(geo.nchannels)
 	for(int ch = 0; ch < geo.nchannels; ++ch) {
-		const size_t list_len = geo.nplanes * geo.nsectors;
+		char *buf = bufs[ch];
 
 		NVM_ADDR base;
 		base.ppa = 0;
 		base.g.ch = ch;
 		base.g.lun = 0;
 		base.g.blk = blk_idx;
-
+		
+		NVM_VBLOCK blk = nvm_vblock_new_on_dev(dev, base.ppa);
 		for (size_t pg = 0; pg < geo.npages; ++pg) {
-
-			NVM_ADDR list[list_len];
-			base.g.pg = pg;
-
-			for (size_t idx = 0; idx < list_len; ++idx) {
-				list[idx].ppa = base.ppa;
-				list[idx].g.sec = idx % geo.nsectors;
-				list[idx].g.pl = (idx / geo.nsectors) % geo.nplanes;
-			}
-
-			printf("** Reading from (%d) addresses:\n", list_len);
-			for (int i = 0; i < list_len; ++i) {
-				nvm_addr_pr(list[i]);
-			}
-
-			ssize_t err = nvm_addr_read(dev, list, list_len, bufs[ch]);
+			ssize_t err = nvm_vblock_pread(blk, buf, pg);
 			if (err) {
-				printf("err(%ld)\n", err);
+				printf("read err(%ld)\n", err);
 			}
 		}
+		nvm_vblock_free(&blk);
 	}
 	timer_stop();
 	timer_pr("sblk_read");
@@ -96,10 +83,10 @@ int read(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 int write(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 {
 	char *bufs[geo.nchannels];
+	const int buf_nbytes = nvm_dev_attr_vpage_nbytes(dev);
 
 	#pragma omp parallel for schedule(static) num_threads(geo.nchannels)
 	for(int ch = 0; ch < geo.nchannels; ++ch) {
-		const int buf_nbytes = geo.nplanes * geo.nsectors * geo.nbytes;
 		bufs[ch] = nvm_buf_alloc(geo, buf_nbytes);
 		nvm_buf_fill(bufs[ch], buf_nbytes);
 	}
@@ -107,35 +94,22 @@ int write(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 	timer_start();
 	#pragma omp parallel for schedule(static) num_threads(geo.nchannels)
 	for(int ch = 0; ch < geo.nchannels; ++ch) {
-		const size_t list_len = geo.nplanes * geo.nsectors;
+		char *buf = bufs[ch];
 
 		NVM_ADDR base;
 		base.ppa = 0;
 		base.g.ch = ch;
 		base.g.lun = 0;
 		base.g.blk = blk_idx;
-
+		
+		NVM_VBLOCK blk = nvm_vblock_new_on_dev(dev, base.ppa);
 		for (size_t pg = 0; pg < geo.npages; ++pg) {
-
-			NVM_ADDR list[list_len];
-			base.g.pg = pg;
-
-			for (size_t idx = 0; idx < list_len; ++idx) {
-				list[idx].ppa = base.ppa;
-				list[idx].g.sec = idx % geo.nsectors;
-				list[idx].g.pl = (idx / geo.nsectors) % geo.nplanes;
-			}
-
-			printf("** Writing to (%d) addresses:\n", list_len);
-			for (int i = 0; i < list_len; ++i) {
-				nvm_addr_pr(list[i]);
-			}
-
-			ssize_t err = nvm_addr_write(dev, list, list_len, bufs[ch]);
+			ssize_t err = nvm_vblock_pwrite(blk, buf, pg);
 			if (err) {
-				printf("err(%ld)\n", err);
+				printf("write err(%ld)\n", err);
 			}
 		}
+		nvm_vblock_free(&blk);
 	}
 	timer_stop();
 	timer_pr("sblk_write");
@@ -248,7 +222,6 @@ int main(int argc, char **argv)
 		return -EINVAL;
 	}
 	geo = nvm_dev_attr_geo(dev);			// Get `geo`
-
 	ret = cmd->func(dev, geo, blk_idx, cmd->flags);
 
 	nvm_dev_close(dev);				// close `dev`
