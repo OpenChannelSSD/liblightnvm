@@ -41,11 +41,6 @@ void timer_pr(const char* tool)
 int read(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 {
 	char *bufs[geo.nchannels];
-	/*
-	const int chk_nbytes = geo.vpage_nbytes * geo.nluns;
-	char *chk = nvm_buf_alloc(geo, chk_nbytes);
-	nvm_buf_fill(chk, chk_nbytes);
-	*/
 
 	#pragma omp parallel for schedule(static) num_threads(geo.nchannels)
 	for(int ch = 0; ch < geo.nchannels; ++ch) {
@@ -58,24 +53,22 @@ int read(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 	#pragma omp parallel for schedule(static) num_threads(geo.nchannels)
 	for(int ch = 0; ch < geo.nchannels; ++ch) {
 		const size_t list_len = geo.nplanes * geo.nsectors;
-		//const size_t list_len = geo.nluns * geo.nplanes * geo.nsectors;
+
+		NVM_ADDR base;
+		base.ppa = 0;
+		base.g.ch = ch;
+		base.g.lun = 0;
+		base.g.blk = blk_idx;
 
 		for (size_t pg = 0; pg < geo.npages; ++pg) {
 
 			NVM_ADDR list[list_len];
+			base.g.pg = pg;
 
 			for (size_t idx = 0; idx < list_len; ++idx) {
-				uint64_t sec = idx % geo.nsectors;
-				uint64_t pl = (idx / geo.nsectors) % geo.nplanes;
-				uint64_t lun = 0;
-				//uint64_t lun = ((idx / geo.nsectors) / geo.nplanes) % geo.nluns;
-
-				list[idx].g.sec = sec;
-				list[idx].g.pg = pg;
-				list[idx].g.blk = blk_idx;
-				list[idx].g.pl = pl;
-				list[idx].g.lun = lun;
-				list[idx].g.ch = ch;
+				list[idx].ppa = base.ppa;
+				list[idx].g.sec = idx % geo.nsectors;
+				list[idx].g.pl = (idx / geo.nsectors) % geo.nplanes;
 			}
 
 			printf("** Reading from (%d) addresses:\n", list_len);
@@ -115,24 +108,22 @@ int write(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 	#pragma omp parallel for schedule(static) num_threads(geo.nchannels)
 	for(int ch = 0; ch < geo.nchannels; ++ch) {
 		const size_t list_len = geo.nplanes * geo.nsectors;
-		//const size_t list_len = geo.nluns * geo.nplanes * geo.nsectors;
+
+		NVM_ADDR base;
+		base.ppa = 0;
+		base.g.ch = ch;
+		base.g.lun = 0;
+		base.g.blk = blk_idx;
 
 		for (size_t pg = 0; pg < geo.npages; ++pg) {
 
 			NVM_ADDR list[list_len];
+			base.g.pg = pg;
 
 			for (size_t idx = 0; idx < list_len; ++idx) {
-				uint64_t sec = idx % geo.nsectors;
-				uint64_t pl = (idx / geo.nsectors) % geo.nplanes;
-				uint64_t lun = 0;
-				//uint64_t lun = ((idx / geo.nsectors) / geo.nplanes) % geo.nluns;
-
-				list[idx].g.sec = sec;
-				list[idx].g.pg = pg;
-				list[idx].g.blk = blk_idx;
-				list[idx].g.pl = pl;
-				list[idx].g.lun = lun;
-				list[idx].g.ch = ch;
+				list[idx].ppa = base.ppa;
+				list[idx].g.sec = idx % geo.nsectors;
+				list[idx].g.pl = (idx / geo.nsectors) % geo.nplanes;
 			}
 
 			printf("** Writing to (%d) addresses:\n", list_len);

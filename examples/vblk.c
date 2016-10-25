@@ -121,7 +121,7 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 	if (getenv("NVM_BUF_PR"))
 		nvm_buf_pr(buf, buf_len);
 	if (err) {
-		printf("FAILED: nvm_vblock_read err(%ld);", err);
+		printf("FAILED: nvm_vblock_read err(%ld)\n", err);
 	}
 
 	nvm_vblock_free(&vblk);

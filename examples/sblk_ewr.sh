@@ -9,17 +9,35 @@ fi
 NVME_DEV=nvme0
 LNVM_DEV=nvme0n1
 NCHANNELS=`cat /sys/class/nvme/$NVME_DEV/$LNVM_DEV/lightnvm/num_channels`
+CH_BEGIN=0
+CH_END=$(($NCHANNELS-1))
 NLUNS=`cat /sys/class/nvme/$NVME_DEV/$LNVM_DEV/lightnvm/num_luns`
+LUN_BEGIN=0
+LUN_END=$(($NLUNS-1))
+DRY=0
 
-echo "** Erasing spanned blk_idx($BLK)"
-for CH in {0..$(($NCHANNELS-1))}; do
-	for LN in {0..$(($NLUNS-1))}; do
-		nvm_vblk erase $LNVM_DEV $CH $LN $BLK
+echo "** $LNVM_DEV with nchannels($NCHANNELS) and nluns($NLUNS)"
+
+echo "** Erasing 'spanned' block"
+for CH in $(seq $CH_BEGIN $CH_END); do
+	for LUN in $(seq $LUN_BEGIN $LUN_END); do
+		echo "*** ch($CH), lun($LUN), blk($BLK)"
+		if [ $DRY -ne "1" ]; then
+			nvm_vblk erase $LNVM_DEV $CH $LUN $BLK
+		fi
 	done
 done
 
-echo "** Writing spanned blk_idx($BLK)"
-nvm_sblk write nvme0n1 $BLK
+sleep 5
 
-echo "** Reading spanned blk_idx($BLK)"
-nvm_sblk read nvme0n1 $BLK
+echo "** Writing spanned blk_idx($BLK) on $LNVM_DEV"
+if [ $DRY -ne "1" ]; then
+	nvm_sblk write $LNVM_DEV $BLK
+fi
+
+sleep 5
+
+echo "** Reading spanned blk_idx($BLK) on $LNVM_DEV"
+if [ $DRY -ne "1" ]; then
+	nvm_sblk read $LNVM_DEV $BLK
+fi
