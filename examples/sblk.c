@@ -78,6 +78,11 @@ int read(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 				list[idx].g.ch = ch;
 			}
 
+			printf("** Reading from (%d) addresses:\n", list_len);
+			for (int i = 0; i < list_len; ++i) {
+				nvm_addr_pr(list[i]);
+			}
+
 			ssize_t err = nvm_addr_read(dev, list, list_len, bufs[ch]);
 			if (err) {
 				printf("err(%ld)\n", err);
@@ -86,15 +91,6 @@ int read(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 	}
 	timer_stop();
 	timer_pr("sblk_read");
-	/*
-	for(int ch = 0; ch < geo.nchannels; ++ch) {
-		for (int off = 0; off < chk_nbytes; ++off) {
-			if (chk[off] != bufs[ch][off]) {
-				printf("mismatch: ch(%d), off(%d), %c != %c\n",
-					ch, off, chk[off], bufs[ch][off]);
-			}
-		}
-	}*/
 
 	#pragma omp parallel for schedule(static) num_threads(geo.nchannels)
 	for(int ch = 0; ch < geo.nchannels; ++ch) {
@@ -137,6 +133,11 @@ int write(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 				list[idx].g.pl = pl;
 				list[idx].g.lun = lun;
 				list[idx].g.ch = ch;
+			}
+
+			printf("** Writing to (%d) addresses:\n", list_len);
+			for (int i = 0; i < list_len; ++i) {
+				nvm_addr_pr(list[i]);
 			}
 
 			ssize_t err = nvm_addr_write(dev, list, list_len, bufs[ch]);
