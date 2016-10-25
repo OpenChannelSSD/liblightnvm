@@ -37,7 +37,6 @@
 #define NVM_MAGIC_FLAG_DUAL 0x1         // NVM_IO_DUAL_ACCESS
 #define NVM_MAGIC_FLAG_QUAD 0x2         // NVM_IO_QUAD_ACCESS
 #define NVM_MAGIC_FLAG_ACCESS NVM_MAGIC_FLAG_DUAL
-#define NVM_MAGIC_FLAG_SCRAMBLER 0x200
 
 struct nvm_dev {
 	char name[NVM_DISK_NAME_LEN];	/* Device name e.g. nvme0n1 */
