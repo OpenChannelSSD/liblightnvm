@@ -49,20 +49,25 @@ extern "C" {
 #define NVM_CH_BITS  (7)
 
 typedef struct nvm_addr {
-	union {
-		/* General address format */
-		struct {
-			uint64_t blk		: NVM_BLK_BITS;
-			uint64_t pg		: NVM_PG_BITS;
-			uint64_t sec		: NVM_SEC_BITS;
-			uint64_t pl		: NVM_PL_BITS;
-			uint64_t lun		: NVM_LUN_BITS;
-			uint64_t ch		: NVM_CH_BITS;
-			uint64_t reserved	: 1;
-		} g;
+        /* Generic structure for all addresses */
+        union {
+                struct {
+                        uint64_t blk         : NVM_BLK_BITS;
+                        uint64_t pg          : NVM_PG_BITS;
+                        uint64_t sec         : NVM_SEC_BITS;
+                        uint64_t pl          : NVM_PL_BITS;
+                        uint64_t lun         : NVM_LUN_BITS;
+                        uint64_t ch          : NVM_CH_BITS;
+                        uint64_t reserved    : 1;
+                } g;
 
-		uint64_t ppa;
-	};
+                struct {
+                        uint64_t line        : 63;
+                        uint64_t is_cached   : 1;
+                } c;
+
+                uint64_t ppa;
+        };
 } NVM_ADDR;
 
 typedef struct nvm_geo {
