@@ -38,7 +38,7 @@ void timer_pr(const char* tool)
     printf("Ran %s, elapsed wall-clock: %lf\n", tool, timer_elapsed());
 }
 
-int io(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
+int io(NVM_DEV dev, NVM_GEO geo, size_t blk, int flags)
 {
 	int nerr = 0;
 
@@ -60,7 +60,7 @@ int io(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 			addr.ppa = 0;
 			addr.g.ch = ch;
 			addr.g.lun = lun;
-			addr.g.blk = blk_idx;
+			addr.g.blk = blk;
 
 			vblk = nvm_vblock_new_on_dev(dev, addr.ppa);
 
@@ -108,7 +108,7 @@ int io(NVM_DEV dev, NVM_GEO geo, size_t blk_idx, int flags)
 
 typedef struct {
 	char name[NVM_CLI_CMD_LEN];
-	int (*func)(NVM_DEV, NVM_GEO, size_t blk_idx, int);
+	int (*func)(NVM_DEV, NVM_GEO, size_t blk, int);
 	int argc;
 	int flags;
 } NVM_CLI_VBLK_CMD;
@@ -146,7 +146,7 @@ int main(int argc, char **argv)
 	
 	NVM_DEV dev;
 	NVM_GEO geo;
-	size_t blk_idx;
+	size_t blk;
 
 	if (argc < 3) {
 		_usage_pr(argv[0]);
@@ -187,7 +187,7 @@ int main(int argc, char **argv)
 	memset(dev_name, 0, sizeof(dev_name));
 	strcpy(dev_name, argv[2]);
 
-	blk_idx = atol(argv[3]);
+	blk = atol(argv[3]);
 
 	dev = nvm_dev_open(dev_name);			// open `dev`
 	if (!dev) {
@@ -195,7 +195,7 @@ int main(int argc, char **argv)
 		return -EINVAL;
 	}
 	geo = nvm_dev_attr_geo(dev);			// Get `geo`
-	ret = cmd->func(dev, geo, blk_idx, cmd->flags);
+	ret = cmd->func(dev, geo, blk, cmd->flags);
 
 	nvm_dev_close(dev);				// close `dev`
 
