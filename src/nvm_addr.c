@@ -54,16 +54,22 @@ ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr list[], int len,
 	ctl.opcode = NVM_MAGIC_OPCODE_READ;
 	ctl.flags = NVM_MAGIC_FLAG_ACCESS;
 	ctl.nppas = len;
-	ctl.ppas = (uint64_t)list;
+	ctl.ppas = len == 1 ? list[0].ppa : (uint64_t)list;
 	ctl.addr = (uint64_t)buf;
 	ctl.data_len = dev->geo.nbytes * len;
 
 	ret = ioctl(dev->fd, NVM_DEV_PIO, &ctl);
+#ifndef NVM_DEBUG_ENABLED
 	if (ret || ctl.result || ctl.status) {
+		int i;
 		NVM_DEBUG("ret(%d)\n", ret);
 		NVM_DEBUG("result(0x%x)\n", ctl.result);
 		NVM_DEBUG("status(%llu)\n", ctl.status);
+		for (i = 0; i < len; ++i) {
+			printf("ERR: "); nvm_addr_pr(list[i]);
+		}
 	}
+#endif
 	if (ret) {
 		return ret;
 	}
@@ -84,16 +90,22 @@ ssize_t nvm_addr_write(struct nvm_dev *dev, struct nvm_addr list[], int len,
 	ctl.opcode = NVM_MAGIC_OPCODE_WRITE;
 	ctl.flags = NVM_MAGIC_FLAG_ACCESS;
 	ctl.nppas = len;
-	ctl.ppas = (uint64_t)list;
+	ctl.ppas = len == 1 ? list[0].ppa : (uint64_t)list;
 	ctl.addr = (uint64_t)buf;
 	ctl.data_len = dev->geo.nbytes * len;
 
 	ret = ioctl(dev->fd, NVM_DEV_PIO, &ctl);
+#ifndef NVM_DEBUG_ENABLED
 	if (ret || ctl.result || ctl.status) {
+		int i;
 		NVM_DEBUG("ret(%d)\n", ret);
 		NVM_DEBUG("result(0x%x)\n", ctl.result);
 		NVM_DEBUG("status(%llu)\n", ctl.status);
+		for (i = 0; i < len; ++i) {
+			printf("ERR: "); nvm_addr_pr(list[i]);
+		}
 	}
+#endif
 	if (ret) {
 		return ret;
 	}
