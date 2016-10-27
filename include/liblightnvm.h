@@ -83,6 +83,7 @@ typedef struct nvm_geo {
 
 typedef struct nvm_dev *NVM_DEV;
 typedef struct nvm_vblock *NVM_VBLOCK;
+typedef struct nvm_sblock *NVM_SBLOCK;
 
 void nvm_geo_pr(NVM_GEO geo);
 
@@ -254,6 +255,29 @@ ssize_t nvm_vblock_write(NVM_VBLOCK vblock, const void *buf);
  * @returns 0 on success, some error code otherwise.
  */
 ssize_t nvm_vblock_erase(NVM_VBLOCK vblock);
+
+/**
+ * Spanning block interface
+ */
+
+NVM_SBLOCK nvm_sblock_new(NVM_DEV,
+                          int ch_begin, int ch_end,
+                          int ln_begin, int ln_end,
+                          int pln_begin, int pln_end);
+
+void nvm_sblock_free(NVM_SBLOCK sblk);
+
+ssize_t nvm_sblock_erase(NVM_SBLOCK sblk);
+ssize_t nvm_sblock_write(NVM_SBLOCK sblk, const void *buf, size_t pg, size_t count);
+ssize_t nvm_sblock_read(NVM_SBLOCK sblk, void *buf, size_t pg, size_t count);
+
+int nvm_sblock_attr_nchannels(NVM_SBLOCK sblk);
+int nvm_sblock_attr_nluns(NVM_SBLOCK sblk);
+int nvm_sblock_attr_nplanes(NVM_SBLOCK sblk);
+int nvm_sblock_attr_nblocks(NVM_SBLOCK sblk);
+int nvm_sblock_attr_npages(NVM_SBLOCK sblk);
+int nvm_sblock_attr_nsectors(NVM_SBLOCK sblk);
+int nvm_sblock_attr_nbytes(NVM_SBLOCK sblk);
 
 /**
  * Beam interface
