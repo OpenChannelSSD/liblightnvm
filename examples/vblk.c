@@ -113,7 +113,7 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 	buf = nvm_buf_alloc(geo, buf_len);
 	if (!buf) {
 		printf("FAILED: allocating buf\n");
-		free(vblk);
+		nvm_vblk_free(&vblk);
 		return -ENOMEM;
 	}
 

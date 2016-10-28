@@ -162,7 +162,7 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg,
 				err = nvm_addr_write(sblk->dev, list, len, buf,
 						     NVM_MAGIC_FLAG_DEFAULT);
 				if (err) {
-					NVM_DEBUG("sblk_erase err(%d)\n", err);
+					NVM_DEBUG("sblk_write err(%d)\n", err);
 					++nerr;
 				}
 			}
@@ -212,7 +212,7 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t pg,
 				err = nvm_addr_read(sblk->dev, list, len, buf,
 						     NVM_MAGIC_FLAG_DEFAULT);
 				if (err) {
-					NVM_DEBUG("sblk_erase err(%d)\n", err);
+					NVM_DEBUG("sblk_read err(%d)\n", err);
 					++nerr;
 				}
 			}
