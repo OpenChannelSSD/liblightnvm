@@ -16,7 +16,7 @@ void TEST_DEV_MARK(void)
 {
 	NVM_DEV dev;
 	NVM_GEO geo;
-	NVM_VBLOCK vblk;
+	NVM_VBLK vblk;
 
 	int vblocks_total;			/* Total number of vblocks  */
 	int i, ch, lun;
@@ -24,7 +24,7 @@ void TEST_DEV_MARK(void)
 	int mark_total;				/* Calls to mark */
 	int mark_failed;			/* Failed calls to mark */
 	
-	vblk = nvm_vblock_new();		/* Allocate a vblock */
+	vblk = nvm_vblk_new();		/* Allocate a vblock */
 	if (!vblk) {
 		CU_FAIL();
 		return;
@@ -32,7 +32,7 @@ void TEST_DEV_MARK(void)
 
 	dev = nvm_dev_open(nvm_dev_name);	/* Open device */
 	if (!dev) {
-		nvm_vblock_free(&vblk);
+		nvm_vblk_free(&vblk);
 		CU_FAIL();
 		return;
 	}
@@ -67,12 +67,12 @@ void TEST_DEV_MARK(void)
 	// Now try to get a block via each channel/lun, they should all fail
 	for (ch = 0; ch < geo.nchannels; ch++) {
 		for (lun = 0; lun < geo.nluns; ++lun) {
-			int err = nvm_vblock_gets(vblk, dev, ch, lun);
+			int err = nvm_vblk_gets(vblk, dev, ch, lun);
 			if (!err) {
 				printf("What? No error?\n");
-				nvm_vblock_pr(vblk);
+				nvm_vblk_pr(vblk);
 			}
-			nvm_vblock_put(vblk);
+			nvm_vblk_put(vblk);
 		}
 	}
 

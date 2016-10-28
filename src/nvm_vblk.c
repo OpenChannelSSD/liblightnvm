@@ -36,9 +36,9 @@
 #include <nvm.h>
 #include <nvm_debug.h>
 
-struct nvm_vblock* nvm_vblock_new(void)
+struct nvm_vblk* nvm_vblk_new(void)
 {
-	struct nvm_vblock *vblock = malloc(sizeof(*vblock));
+	struct nvm_vblk *vblock = malloc(sizeof(*vblock));
 	vblock->dev = 0;
 	vblock->ppa = 0;
 	vblock->flags = 0;
@@ -46,9 +46,9 @@ struct nvm_vblock* nvm_vblock_new(void)
 	return vblock;
 }
 
-struct nvm_vblock* nvm_vblock_new_on_dev(NVM_DEV dev, uint64_t ppa)
+struct nvm_vblk* nvm_vblk_new_on_dev(NVM_DEV dev, uint64_t ppa)
 {
-	struct nvm_vblock *vblock = malloc(sizeof(*vblock));
+	struct nvm_vblk *vblock = malloc(sizeof(*vblock));
 
 	vblock->dev = dev;
 	vblock->ppa = ppa;
@@ -57,41 +57,41 @@ struct nvm_vblock* nvm_vblock_new_on_dev(NVM_DEV dev, uint64_t ppa)
 	return vblock;
 }
 
-void nvm_vblock_free(struct nvm_vblock **vblock)
+void nvm_vblk_free(struct nvm_vblk **vblk)
 {
-	if (!vblock || !*vblock)
+	if (!vblk || !*vblk)
 		return;
 
-	free(*vblock);
-	*vblock = NULL;
+	free(*vblk);
+	*vblk = NULL;
 }
 
-void nvm_vblock_pr(struct nvm_vblock *vblock)
+void nvm_vblk_pr(struct nvm_vblk *vblk)
 {
 	struct nvm_addr addr;
 
-	addr.ppa = vblock->ppa;
+	addr.ppa = vblk->ppa;
 
-	printf("vblock {");
-	printf("\n  dev(%p),", vblock->dev);
-	printf("\n  flags(%u),", vblock->flags);
+	printf("vblk {");
+	printf("\n  dev(%p),", vblk->dev);
+	printf("\n  flags(%u),", vblk->flags);
 	printf("\n  ");
 	nvm_addr_pr(addr);
 	printf("}\n");
 }
 
-uint64_t nvm_vblock_attr_ppa(struct nvm_vblock *vblock)
+uint64_t nvm_vblk_attr_ppa(struct nvm_vblk *vblk)
 {
-	return vblock->ppa;
+	return vblk->ppa;
 }
 
-uint16_t nvm_vblock_attr_flags(struct nvm_vblock *vblock)
+uint16_t nvm_vblk_attr_flags(struct nvm_vblk *vblk)
 {
-	return vblock->flags;
+	return vblk->flags;
 }
 
-int nvm_vblock_gets(struct nvm_vblock *vblock, struct nvm_dev *dev, uint32_t ch,
-		    uint32_t lun)
+int nvm_vblk_gets(struct nvm_vblk *vblock, struct nvm_dev *dev, uint32_t ch,
+                  uint32_t lun)
 {
 	struct nvm_ioctl_dev_vblk ctl;
 	struct nvm_addr addr;
@@ -114,12 +114,12 @@ int nvm_vblock_gets(struct nvm_vblock *vblock, struct nvm_dev *dev, uint32_t ch,
 	return 0;
 }
 
-int nvm_vblock_get(struct nvm_vblock *vblock, struct nvm_dev *dev)
+int nvm_vblk_get(struct nvm_vblk *vblock, struct nvm_dev *dev)
 {
-	return nvm_vblock_gets(vblock, dev, 0, 0);
+	return nvm_vblk_gets(vblock, dev, 0, 0);
 }
 
-int nvm_vblock_put(struct nvm_vblock *vblock)
+int nvm_vblk_put(struct nvm_vblk *vblock)
 {
 	struct nvm_ioctl_dev_vblk ctl;
 	int ret;
@@ -132,92 +132,92 @@ int nvm_vblock_put(struct nvm_vblock *vblock)
 	return ret;
 }
 
-ssize_t nvm_vblock_pread(struct nvm_vblock *vblock, void *buf, size_t pg)
+ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t pg)
 {
-	const struct nvm_geo geo = nvm_dev_attr_geo(vblock->dev);
+	const struct nvm_geo geo = nvm_dev_attr_geo(vblk->dev);
 	const int len = geo.nplanes * geo.nsectors;
 
 	struct nvm_addr list[len];
 	int i;
 
 	for (i = 0; i < len; i++) {
-		list[i].ppa = vblock->ppa;
+		list[i].ppa = vblk->ppa;
 
 		list[i].g.pg = pg;
 		list[i].g.pl = (i / geo.nsectors) % geo.nplanes;
 		list[i].g.sec = i % geo.nsectors;
 	}
 
-	return nvm_addr_read(vblock->dev, list, len, buf, NVM_MAGIC_FLAG_DEFAULT);
+	return nvm_addr_read(vblk->dev, list, len, buf, NVM_MAGIC_FLAG_DEFAULT);
 }
 
-ssize_t nvm_vblock_pwrite(struct nvm_vblock *vblock, const void *buf,
-			  size_t pg)
+ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
+                        size_t pg)
 {
-	const struct nvm_geo geo = nvm_dev_attr_geo(vblock->dev);
+	const struct nvm_geo geo = nvm_dev_attr_geo(vblk->dev);
 	const int len = geo.nplanes * geo.nsectors;
 
 	struct nvm_addr list[len];
 	int i;
 
 	for (i = 0; i < len; i++) {
-		list[i].ppa = vblock->ppa;
+		list[i].ppa = vblk->ppa;
 
 		list[i].g.pg = pg;
 		list[i].g.pl = (i / geo.nsectors) % geo.nplanes;
 		list[i].g.sec = i % geo.nsectors;
 	}
 
-	return nvm_addr_write(vblock->dev, list, len, buf, NVM_MAGIC_FLAG_DEFAULT);
+	return nvm_addr_write(vblk->dev, list, len, buf, NVM_MAGIC_FLAG_DEFAULT);
 }
 
-ssize_t nvm_vblock_write(struct nvm_vblock *vblock, const void *buf)
+ssize_t nvm_vblk_write(struct nvm_vblk *vblk, const void *buf)
 {
-	const struct nvm_geo geo = nvm_dev_attr_geo(vblock->dev);
+	const struct nvm_geo geo = nvm_dev_attr_geo(vblk->dev);
 	
 	int buf_off = 0;
 	int pg;
 
 	for(pg = 0; pg < geo.npages; ++pg) {
-		int err = nvm_vblock_pwrite(vblock, buf+buf_off, pg);
+		int err = nvm_vblk_pwrite(vblk, buf + buf_off, pg);
 		if (err) {
 			return -(pg+1);
 		}
-		buf_off += geo.vpage_nbytes;
+		buf_off += geo.vpg_nbytes;
 	}
 
 	return 0;
 }
 
-ssize_t nvm_vblock_read(struct nvm_vblock *vblock, void *buf)
+ssize_t nvm_vblk_read(struct nvm_vblk *vblk, void *buf)
 {
-	const struct nvm_geo geo = nvm_dev_attr_geo(vblock->dev);
+	const struct nvm_geo geo = nvm_dev_attr_geo(vblk->dev);
 	
 	int buf_off = 0;
 	int pg;
 
 	for(pg = 0; pg < geo.npages; ++pg) {
-		int err = nvm_vblock_pread(vblock, buf+buf_off, pg);
+		int err = nvm_vblk_pread(vblk, buf + buf_off, pg);
 		if (err) {
 			return -(pg+1);
 		}
-		buf_off += geo.vpage_nbytes;
+		buf_off += geo.vpg_nbytes;
 	}
 
 	return 0;
 }
 
-ssize_t nvm_vblock_erase(struct nvm_vblock *vblock)
+ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 {
-	const int len = nvm_dev_attr_nplanes(vblock->dev);
+	const int len = nvm_dev_attr_nplanes(vblk->dev);
 	struct nvm_addr list[len];
 	int i;
 
 	for (i = 0; i < len; ++i) {
-		list[i].ppa = vblock->ppa;
+		list[i].ppa = vblk->ppa;
 		list[i].g.pl = i;
 	}
 
-	return nvm_addr_erase(vblock->dev, list, len, NVM_MAGIC_FLAG_DEFAULT);
+	return nvm_addr_erase(vblk->dev, list, len, NVM_MAGIC_FLAG_DEFAULT);
 }
 

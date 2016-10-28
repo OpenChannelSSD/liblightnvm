@@ -90,25 +90,25 @@ typedef struct nvm_geo {
 
 	/* Values derived from above */
 	size_t tbytes;		// Total # of bytes on device
-	size_t vblock_nbytes;	// # of bytes per vblock
-	size_t vpage_nbytes;	// # upper bound on _nvm_vblock_[read|write]
+	size_t vblk_nbytes;	// # of bytes per vblk
+	size_t vpg_nbytes;	// # upper bound on _nvm_vblk_[read|write]
 } NVM_GEO;
 
 typedef struct nvm_dev *NVM_DEV;
-typedef struct nvm_vblock *NVM_VBLOCK;
-typedef struct nvm_sblock *NVM_SBLOCK;
-typedef enum nvm_sblock_span NVM_SBLOCK_SPAN;
+typedef struct nvm_vblk *NVM_VBLK;
+typedef struct nvm_sblk *NVM_SBLK;
+typedef enum nvm_sblk_span NVM_SBLK_SPAN;
 
-enum nvm_sblock_span {
-  NVM_SBLOCK_SPAN_CH    = 0x1,
-  NVM_SBLOCK_SPAN_LUN   = 0x2,
+enum nvm_sblk_span {
+  NVM_SBLK_SPAN_CH    = 0x1,
+  NVM_SBLK_SPAN_LUN   = 0x2,
 };
 
-struct nvm_sblock {
+struct nvm_sblk {
   NVM_DEV dev;
   NVM_ADDR bgn;
   NVM_ADDR end;
-  NVM_SBLOCK_SPAN span;
+  NVM_SBLK_SPAN span;
 };
 
 void nvm_geo_pr(NVM_GEO geo);
@@ -174,10 +174,10 @@ int nvm_dev_attr_nbytes(NVM_DEV dev);
 int nvm_dev_attr_vpage_nbytes(NVM_DEV dev);
 
 /**
- * @return Number of bytes occupied by a vblock
+ * @return Number of bytes occupied by a vblk
 
  */
-int nvm_dev_attr_vblock_nbytes(NVM_DEV dev);
+int nvm_dev_attr_vblk_nbytes(NVM_DEV dev);
 
 /**
  * Returns of the geometry related device information including derived
@@ -190,8 +190,8 @@ int nvm_dev_attr_vblock_nbytes(NVM_DEV dev);
 NVM_GEO nvm_dev_attr_geo(NVM_DEV dev);
 
 void *nvm_buf_alloc(NVM_GEO geo, size_t nbytes);
-void *nvm_vblock_buf_alloc(NVM_GEO geo);
-void *nvm_vpage_buf_alloc(NVM_GEO geo);
+void *nvm_vblk_buf_alloc(NVM_GEO geo);
+void *nvm_vpg_buf_alloc(NVM_GEO geo);
 
 /**
  * Prints `buf` to stdout
@@ -210,36 +210,36 @@ ssize_t nvm_addr_write(NVM_DEV dev, NVM_ADDR list[], int len, const void *buf,
 ssize_t nvm_addr_read(NVM_DEV dev, NVM_ADDR list[], int len, void *buf,
                       uint16_t flags);
 
-NVM_VBLOCK nvm_vblock_new(void);
-NVM_VBLOCK nvm_vblock_new_on_dev(NVM_DEV dev, uint64_t ppa);
-void nvm_vblock_free(NVM_VBLOCK *vblock);
-void nvm_vblock_pr(NVM_VBLOCK vblock);
+NVM_VBLK nvm_vblk_new(void);
+NVM_VBLK nvm_vblk_new_on_dev(NVM_DEV dev, uint64_t ppa);
+void nvm_vblk_free(NVM_VBLK *vblk);
+void nvm_vblk_pr(NVM_VBLK vblk);
 
-uint64_t nvm_vblock_attr_ppa(NVM_VBLOCK vblock);
-uint16_t nvm_vblock_attr_flags(NVM_VBLOCK vblock);
+uint64_t nvm_vblk_attr_ppa(NVM_VBLK vblk);
+uint16_t nvm_vblk_attr_flags(NVM_VBLK vblk);
 
 /**
  * Get ownership of an arbitrary flash block from the given device.
  *
  * Returns: On success, a flash block is allocated in LightNVM's media manager
- * and vblock is filled up accordingly. On error, -1 is returned, in which case
+ * and vblk is filled up accordingly. On error, -1 is returned, in which case
  * errno is set to indicate the error.
  */
-int nvm_vblock_get(NVM_VBLOCK vblock, NVM_DEV dev);
+int nvm_vblk_get(NVM_VBLK vblk, NVM_DEV dev);
 
 /**
  * Reserves a block on given device using a specific lun.
  *
- * @param vblock Block created with nvm_vblock_new
+ * @param vblk Block created with nvm_vblk_new
  * @param dev Handle obtained with nvm_dev_open
  * @param ch Channel from which to reserve via
  * @param lun Lun from which to reserve via
  * @return -1 on error and *errno* set, zero otherwise.
  */
-int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_DEV dev, uint32_t ch, uint32_t lun);
+int nvm_vblk_gets(NVM_VBLK vblk, NVM_DEV dev, uint32_t ch, uint32_t lun);
 
 /**
- * Put flash block(s) represented by vblock back to dev.
+ * Put flash block(s) represented by vblk back to dev.
  *
  * This action implies that the owner of the flash block previous to this
  * function call no longer owns the flash block, and therefor can no longer
@@ -248,67 +248,65 @@ int nvm_vblock_gets(NVM_VBLOCK vblock, NVM_DEV dev, uint32_t ch, uint32_t lun);
  *
  * @return -1 on error and *errno* set, zero otherwise.
  */
-int nvm_vblock_put(NVM_VBLOCK vblock);
+int nvm_vblk_put(NVM_VBLK vblk);
 
 /**
- * Read the flash page at 'ppa_off' in 'vblock' into 'buf'
+ * Read the flash page at 'ppa_off' in 'vblk' into 'buf'
  *
  * @returns 0 on success, some error code otherwise.
  */
-ssize_t nvm_vblock_pread(NVM_VBLOCK vblock, void *buf, size_t ppa_off);
+ssize_t nvm_vblk_pread(NVM_VBLK vblk, void *buf, size_t ppa_off);
 
 /**
- * Write 'buf' to the flash page at 'ppa_off' in 'vblock'
+ * Write 'buf' to the flash page at 'ppa_off' in 'vblk'
  *
  * @returns 0 on success, some error code otherwise.
  */
-ssize_t nvm_vblock_pwrite(NVM_VBLOCK vblock, const void *buf, size_t ppa_off);
+ssize_t nvm_vblk_pwrite(NVM_VBLK vblk, const void *buf, size_t ppa_off);
 
 /**
- * Read the entire vblock, storing it into buf
+ * Read the entire vblk, storing it into buf
  *
  * @returns 0 on success, some error code otherwise.
  */
-ssize_t nvm_vblock_read(NVM_VBLOCK vblock, void *buf);
+ssize_t nvm_vblk_read(NVM_VBLK vblk, void *buf);
 
 /**
- * Write the entire vblock, filling it with data from buf.
+ * Write the entire vblk, filling it with data from buf.
  *
  * @returns 0 on success, some error code otherwise.
  */
-ssize_t nvm_vblock_write(NVM_VBLOCK vblock, const void *buf);
+ssize_t nvm_vblk_write(NVM_VBLK vblk, const void *buf);
 
 /**
- * Erase an entire vblock
+ * Erase an entire vblk
  *
  * @returns 0 on success, some error code otherwise.
  */
-ssize_t nvm_vblock_erase(NVM_VBLOCK vblock);
+ssize_t nvm_vblk_erase(NVM_VBLK vblk);
 
 /**
  * Spanning block interface
  */
 
-NVM_SBLOCK nvm_sblock_new(NVM_DEV dev,
-                          int ch_bgn, int ch_end,
-                          int lun_bgn, int lun_end,
-                          int blk);
+NVM_SBLK nvm_sblk_new(NVM_DEV dev, int ch_bgn, int ch_end, int lun_bgn,
+                      int lun_end, int blk);
 
-void nvm_sblock_free(NVM_SBLOCK sblk);
+void nvm_sblk_free(NVM_SBLK sblk);
 
-ssize_t nvm_sblock_erase(NVM_SBLOCK sblk);
-ssize_t nvm_sblock_write(NVM_SBLOCK sblk, const void *buf, size_t pg, size_t count);
-ssize_t nvm_sblock_read(NVM_SBLOCK sblk, void *buf, size_t pg, size_t count);
+ssize_t nvm_sblk_erase(NVM_SBLK sblk);
+ssize_t nvm_sblk_write(NVM_SBLK sblk, const void *buf, size_t pg, size_t count);
+ssize_t nvm_sblk_read(NVM_SBLK sblk, void *buf, size_t pg, size_t count);
 
-int nvm_sblock_attr_nchannels(NVM_SBLOCK sblk);
-int nvm_sblock_attr_nluns(NVM_SBLOCK sblk);
-int nvm_sblock_attr_nplanes(NVM_SBLOCK sblk);
-int nvm_sblock_attr_nblocks(NVM_SBLOCK sblk);
-int nvm_sblock_attr_npages(NVM_SBLOCK sblk);
-int nvm_sblock_attr_nsectors(NVM_SBLOCK sblk);
-int nvm_sblock_attr_nbytes(NVM_SBLOCK sblk);
+int nvm_sblk_attr_nchannels(NVM_SBLK sblk);
+int nvm_sblk_attr_nluns(NVM_SBLK sblk);
+int nvm_sblk_attr_nplanes(NVM_SBLK sblk);
+int nvm_sblk_attr_nblocks(NVM_SBLK sblk);
+int nvm_sblk_attr_npages(NVM_SBLK sblk);
+int nvm_sblk_attr_nsectors(NVM_SBLK sblk);
+int nvm_sblk_attr_nbytes(NVM_SBLK sblk);
 
-void nvm_sblock_pr(NVM_SBLOCK sblk);
+void nvm_sblk_pr(NVM_SBLK sblk);
 
 /**
  * Beam interface

@@ -6,66 +6,66 @@
 
 int get(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 {
-	NVM_VBLOCK vblk;
+	NVM_VBLK vblk;
 	ssize_t err;
 
-	printf("** nvm_vblock_gets(..., %d, %d)\n", addr.g.ch, addr.g.lun);
+	printf("** nvm_vblk_gets(..., %d, %d)\n", addr.g.ch, addr.g.lun);
 
-	vblk = nvm_vblock_new();
+	vblk = nvm_vblk_new();
 	if (!vblk) {
 		printf("FAILED: allocating vblk\n");
 		return -ENOMEM;
 	}
 
-	err = nvm_vblock_gets(vblk, dev, addr.g.ch, addr.g.lun);
+	err = nvm_vblk_gets(vblk, dev, addr.g.ch, addr.g.lun);
 	if (err) {
-		printf("FAILED: nvm_vblock_gets err(%ld)\n", err);
+		printf("FAILED: nvm_vblk_gets err(%ld)\n", err);
 	} else {
 		printf("got ");
-		nvm_vblock_pr(vblk);
+		nvm_vblk_pr(vblk);
 	}
 
-	nvm_vblock_free(&vblk);
+	nvm_vblk_free(&vblk);
 
 	return err;
 }
 
 int put(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 {
-	NVM_VBLOCK vblk;
+	NVM_VBLK vblk;
 	ssize_t err;
 
-	printf("** nvm_vblock_put(...): ");
+	printf("** nvm_vblk_put(...): ");
 	nvm_addr_pr(addr);
 
-	vblk = nvm_vblock_new_on_dev(dev, addr.ppa);
+	vblk = nvm_vblk_new_on_dev(dev, addr.ppa);
 	if (!vblk) {
 		printf("FAILED: allocating vblk\n");
 		return -ENOMEM;
 	}
 
-	err = nvm_vblock_put(vblk);
+	err = nvm_vblk_put(vblk);
 	if (err) {
-		printf("FAILED: nvm_vblock_put err(%ld)\n", err);
+		printf("FAILED: nvm_vblk_put err(%ld)\n", err);
 	}
 
-	nvm_vblock_free(&vblk);
+	nvm_vblk_free(&vblk);
 
 	return err;
 }
 
 int pread(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 {
-	NVM_VBLOCK vblk;
+	NVM_VBLK vblk;
 	ssize_t err;
 
 	void *buf;
 	int buf_len;
 
-	printf("** nvm_vblock_pread(...): ");
+	printf("** nvm_vblk_pread(...): ");
 	nvm_addr_pr(addr);
 
-	vblk = nvm_vblock_new_on_dev(dev, addr.ppa);
+	vblk = nvm_vblk_new_on_dev(dev, addr.ppa);
 	if (!vblk) {
 		printf("FAILED: allocating vblk\n");
 		return -ENOMEM;
@@ -79,14 +79,14 @@ int pread(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 		return -ENOMEM;
 	}
 
-	err = nvm_vblock_pread(vblk, buf, addr.g.pg);
+	err = nvm_vblk_pread(vblk, buf, addr.g.pg);
 	if (getenv("NVM_BUF_PR"))
 		nvm_buf_pr(buf, buf_len);
 	if (err) {
-		printf("FAILED: nvm_vblock_pread err(%ld)\n", err);
+		printf("FAILED: nvm_vblk_pread err(%ld)\n", err);
 	}
 
-	nvm_vblock_free(&vblk);
+	nvm_vblk_free(&vblk);
 	free(buf);
 
 	return err;
@@ -94,22 +94,22 @@ int pread(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 
 int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 {
-	NVM_VBLOCK vblk;
+	NVM_VBLK vblk;
 	ssize_t err;
 
 	void *buf;
 	int buf_len;
 
-	printf("** nvm_vblock_read(...): ");
+	printf("** nvm_vblk_read(...): ");
 	nvm_addr_pr(addr);
 
-	vblk = nvm_vblock_new_on_dev(dev, addr.ppa);
+	vblk = nvm_vblk_new_on_dev(dev, addr.ppa);
 	if (!vblk) {
 		printf("FAILED: allocating vblk\n");
 		return -ENOMEM;
 	}
 
-	buf_len = nvm_dev_attr_vblock_nbytes(dev);
+	buf_len = nvm_dev_attr_vblk_nbytes(dev);
 	buf = nvm_buf_alloc(geo, buf_len);
 	if (!buf) {
 		printf("FAILED: allocating buf\n");
@@ -117,14 +117,14 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 		return -ENOMEM;
 	}
 
-	err = nvm_vblock_read(vblk, buf);
+	err = nvm_vblk_read(vblk, buf);
 	if (getenv("NVM_BUF_PR"))
 		nvm_buf_pr(buf, buf_len);
 	if (err) {
-		printf("FAILED: nvm_vblock_read err(%ld)\n", err);
+		printf("FAILED: nvm_vblk_read err(%ld)\n", err);
 	}
 
-	nvm_vblock_free(&vblk);
+	nvm_vblk_free(&vblk);
 	free(buf);
 
 	return err;
@@ -132,16 +132,16 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 
 int pwrite(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 {
-	NVM_VBLOCK vblk;
+	NVM_VBLK vblk;
 	ssize_t err;
 
 	char *buf;
 	int buf_len;
 
-	printf("** nvm_vblock_pwrite(...): ");
+	printf("** nvm_vblk_pwrite(...): ");
 	nvm_addr_pr(addr);
 
-	vblk = nvm_vblock_new_on_dev(dev, addr.ppa);
+	vblk = nvm_vblk_new_on_dev(dev, addr.ppa);
 	if (!vblk) {
 		printf("FAILED: allocating vblk\n");
 		return -ENOMEM;
@@ -157,12 +157,12 @@ int pwrite(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 
 	nvm_buf_fill(buf, buf_len);
 
-	err = nvm_vblock_pwrite(vblk, buf, addr.g.pg);
+	err = nvm_vblk_pwrite(vblk, buf, addr.g.pg);
 	if (err) {
-		printf("FAILED: nvm_vblock_pwrite err(%ld)\n", err);
+		printf("FAILED: nvm_vblk_pwrite err(%ld)\n", err);
 	}
 
-	nvm_vblock_free(&vblk);
+	nvm_vblk_free(&vblk);
 	free(buf);
 
 	return err;
@@ -170,22 +170,22 @@ int pwrite(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 
 int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 {
-	NVM_VBLOCK vblk;
+	NVM_VBLK vblk;
 	ssize_t err = 0;
 
 	char *buf;
 	int buf_len;
 
-	printf("** nvm_vblock_write(...): ");
+	printf("** nvm_vblk_write(...): ");
 	nvm_addr_pr(addr);
 
-	vblk = nvm_vblock_new_on_dev(dev, addr.ppa);
+	vblk = nvm_vblk_new_on_dev(dev, addr.ppa);
 	if (!vblk) {
 		printf("FAILED: allocating vblk\n");
 		return -ENOMEM;
 	}
 
-	buf_len = nvm_dev_attr_vblock_nbytes(dev);
+	buf_len = nvm_dev_attr_vblk_nbytes(dev);
 	buf = nvm_buf_alloc(geo, buf_len);
 	if (!buf) {
 		printf("FAILED: allocating buf\n");
@@ -195,12 +195,12 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 
 	nvm_buf_fill(buf, buf_len);
 
-	err = nvm_vblock_write(vblk, buf);
+	err = nvm_vblk_write(vblk, buf);
 	if (err) {
-		printf("FAILED: nvm_vblock_write err(%ld)\n", err);
+		printf("FAILED: nvm_vblk_write err(%ld)\n", err);
 	}
 
-	nvm_vblock_free(&vblk);
+	nvm_vblk_free(&vblk);
 	free(buf);
 
 	return err;
@@ -208,24 +208,24 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 
 int erase(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 {
-	NVM_VBLOCK vblk;
+	NVM_VBLK vblk;
 	ssize_t err = 0;
 
-	printf("** nvm_vblock_erase(...): ");
+	printf("** nvm_vblk_erase(...): ");
 	nvm_addr_pr(addr);
 
-	vblk = nvm_vblock_new_on_dev(dev, addr.ppa);
+	vblk = nvm_vblk_new_on_dev(dev, addr.ppa);
 	if (!vblk) {
 		printf("FAILED: allocating vblk\n");
 		return -ENOMEM;
 	}
 
-	err = nvm_vblock_erase(vblk);
+	err = nvm_vblk_erase(vblk);
 	if (err) {
-		printf("FAILED: nvm_vblock_erase err(%ld)\n", err);
+		printf("FAILED: nvm_vblk_erase err(%ld)\n", err);
 	}
 
-	nvm_vblock_free(&vblk);
+	nvm_vblk_free(&vblk);
 
 	return err;
 }

@@ -33,7 +33,7 @@
 #include <linux/lightnvm.h>
 #include <liblightnvm.h>
 #include <nvm.h>
-#include <nvm_utils.h>
+#include <nvm_util.h>
 #include <nvm_debug.h>
 
 static struct nvm_dev *devices = NULL;
@@ -70,8 +70,8 @@ int nvm_dev_geo_fill(struct nvm_geo *geo, const char *dev_name)
 		      geo->nblocks * geo->npages * geo->nsectors * geo->nbytes;
 
 	/* Derive number of bytes occupied by a virtual block/page */
-	geo->vblock_nbytes = geo->nplanes * geo->npages * geo->nsectors * geo->nbytes;
-	geo->vpage_nbytes = geo->nplanes * geo->nsectors * geo->nbytes;
+	geo->vblk_nbytes = geo->nplanes * geo->npages * geo->nsectors * geo->nbytes;
+	geo->vpg_nbytes = geo->nplanes * geo->nsectors * geo->nbytes;
 
 	udev_device_unref(dev);
 	udev_unref(udev);
@@ -142,14 +142,14 @@ int nvm_dev_attr_nbytes(struct nvm_dev *dev)
 	return dev->geo.nbytes;
 }
 
-int nvm_dev_attr_vblock_nbytes(struct nvm_dev *dev)
+int nvm_dev_attr_vblk_nbytes(struct nvm_dev *dev)
 {
-	return dev->geo.vblock_nbytes;
+	return dev->geo.vblk_nbytes;
 }
 
 int nvm_dev_attr_vpage_nbytes(struct nvm_dev *dev)
 {
-	return dev->geo.vpage_nbytes;
+	return dev->geo.vpg_nbytes;
 }
 
 struct nvm_geo nvm_dev_attr_geo(struct nvm_dev *dev)
@@ -166,10 +166,10 @@ void nvm_geo_pr(struct nvm_geo geo)
 		geo.npages, geo.nsectors, geo.nbytes);
 	printf(" total_nbytes(%lub:%luMb)\n",
 		geo.tbytes, geo.tbytes >> 20);
-	printf(" vblock_nbytes(%lub:%luMb)\n",
-		geo.vblock_nbytes, geo.vblock_nbytes >> 20);
-	printf(" vpage_nbytes(%lub:%luKb)\n",
-		geo.vpage_nbytes, geo.vpage_nbytes >> 10);
+	printf(" vblk_nbytes(%lub:%luMb)\n",
+		geo.vblk_nbytes, geo.vblk_nbytes >> 20);
+	printf(" vpg_nbytes(%lub:%luKb)\n",
+		geo.vpg_nbytes, geo.vpg_nbytes >> 10);
 	printf("}\n");
 }
 

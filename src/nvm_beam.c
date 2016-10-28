@@ -57,12 +57,12 @@ static void beam_buf_free(struct w_buffer *buf)
 
 static void beam_put_blocks(struct beam *beam)
 {
-	struct nvm_vblock *vblock;
+	struct nvm_vblk *vblock;
 	int i;
 
 	for (i = 0; i < beam->nvblocks; i++) {
 		vblock = &beam->vblocks[i];
-		nvm_vblock_put(vblock);
+		nvm_vblk_put(vblock);
 	}
 }
 
@@ -83,7 +83,7 @@ static int switch_block(struct beam **beam)
 	NVM_GEO geo = nvm_dev_attr_geo((*beam)->dev);
 
 	/* Write buffer for small writes */
-	buf_size = nvm_dev_attr_geo((*beam)->dev).vblock_nbytes;
+	buf_size = nvm_dev_attr_geo((*beam)->dev).vblk_nbytes;
 	if (buf_size != (*beam)->w_buffer.buf_limit) {
 		free((*beam)->w_buffer.buf);
 		ret = posix_memalign(&(*beam)->w_buffer.buf, geo.nbytes,
@@ -107,10 +107,10 @@ static int switch_block(struct beam **beam)
 
 static int preallocate_block(struct beam *beam)
 {
-	struct nvm_vblock *vblock = &beam->vblocks[beam->nvblocks];
+	struct nvm_vblk *vblock = &beam->vblocks[beam->nvblocks];
 	int ret;
 
-	ret = nvm_vblock_gets(vblock, beam->dev, 0, beam->lun);
+	ret = nvm_vblk_gets(vblock, beam->dev, 0, beam->lun);
 	if (ret) {
 		return ret;
 	}
@@ -193,9 +193,9 @@ static int beam_sync(struct beam *beam, int flags)
 	}
 
 	/* write data to media */
-	err = nvm_vblock_pwrite(beam->current_w_vblock,
-				beam->w_buffer.sync,
-				ppa_off);
+	err = nvm_vblk_pwrite(beam->current_w_vblock,
+			      beam->w_buffer.sync,
+			      ppa_off);
 	if (err) {
 		return -1;
 	}
@@ -329,7 +329,7 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 		      int flags)
 {
 	struct beam *b;
-	struct nvm_vblock *current_r_vblock;
+	struct nvm_vblk *current_r_vblock;
 	size_t block_off, ppa_off, page_off;
 	size_t ppa_count;
 	size_t nppas;
@@ -358,7 +358,7 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 		((((count) % geo.nbytes) > 0) ? 1 : 0);
 
 	/* Assume that all blocks forming the beam have same size */
-	nppas = geo.vblock_nbytes;
+	nppas = geo.vblk_nbytes;
 
 	ppa_count = offset / geo.nbytes;
 	block_off = ppa_count / nppas;
@@ -398,7 +398,7 @@ ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
 		assert(left_bytes <= left_pages * geo.nbytes);
 
 		/* TODO: Send bigger I/Os if we have enough data */
-		err = nvm_vblock_pread(current_r_vblock, reader, ppa_off);
+		err = nvm_vblk_pread(current_r_vblock, reader, ppa_off);
 		if (err) {
 			return -1;
 		}

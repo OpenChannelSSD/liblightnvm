@@ -1,26 +1,6 @@
-LIBLIGHTNVM_0.2 {
+LIBLIGHTNVM_0.1 {
 	global:
 		nvm_geo_pr,
-
-		nvm_vblock_buf_alloc,
-		nvm_vpage_buf_alloc,
-
-		nvm_addr_write,
-		nvm_addr_read,
-		nvm_addr_pr,
-
-		nvm_vblock_new,
-		nvm_vblock_free,
-		nvm_vblock_attr_flags,
-		nvm_vblock_attr_ppa,
-		nvm_vblock_pr,
-
-		nvm_vblock_get,
-		nvm_vblock_gets,
-		nvm_vblock_put,
-		nvm_vblock_pread,
-		nvm_vblock_pwrite,
-		nvm_vblock_erase,
 
 		nvm_dev_open,
 		nvm_dev_close,
@@ -35,6 +15,28 @@ LIBLIGHTNVM_0.2 {
 		nvm_dev_get_pln_pg_size,
 		nvm_dev_get_sec_size,
 		nvm_dev_pr,
+
+		nvm_buf_alloc,
+
+		nvm_addr_write,
+		nvm_addr_read,
+		nvm_addr_pr,
+
+		nvm_vpg_buf_alloc,
+		nvm_vblk_buf_alloc,
+
+		nvm_vblk_new,
+		nvm_vblk_free,
+		nvm_vblk_attr_flags,
+		nvm_vblk_attr_ppa,
+		nvm_vblk_pr,
+
+		nvm_vblk_get,
+		nvm_vblk_gets,
+		nvm_vblk_put,
+		nvm_vblk_pread,
+		nvm_vblk_pwrite,
+		nvm_vblk_erase,
 
 		nvm_beam_append,
 		nvm_beam_create,

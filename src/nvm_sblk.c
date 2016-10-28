@@ -36,12 +36,12 @@
 #include <nvm.h>
 #include <nvm_debug.h>
 
-struct nvm_sblock* nvm_sblock_new(struct nvm_dev *dev,
-				  int ch_bgn, int ch_end,
-				  int lun_bgn, int lun_end,
-				  int blk)
+struct nvm_sblk* nvm_sblk_new(struct nvm_dev *dev,
+                              int ch_bgn, int ch_end,
+                              int lun_bgn, int lun_end,
+                              int blk)
 {
-	struct nvm_sblock *sblk;
+	struct nvm_sblk *sblk;
 	struct nvm_geo geo;
 
 	// TODO: verify bounds
@@ -70,26 +70,26 @@ struct nvm_sblock* nvm_sblock_new(struct nvm_dev *dev,
 	sblk->end.g.sec = geo.nsectors - 1;
 
 	if (ch_bgn != ch_end)
-		sblk->span |= NVM_SBLOCK_SPAN_CH;
+		sblk->span |= NVM_SBLK_SPAN_CH;
 
 	if (lun_bgn != lun_end)
-		sblk->span |= NVM_SBLOCK_SPAN_LUN;
+		sblk->span |= NVM_SBLK_SPAN_LUN;
 
 	return sblk;
 }
 
-void nvm_sblock_free(struct nvm_sblock *sblk)
+void nvm_sblk_free(struct nvm_sblk *sblk)
 {
 	free(sblk);
 }
 
-ssize_t nvm_sblock_erase(struct nvm_sblock *sblk)
+ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 {
 	int ch;
 	ssize_t nerr = 0;
 
-	const int nplanes = nvm_sblock_attr_nplanes(sblk);
-	const int nsectors = nvm_sblock_attr_nsectors(sblk);
+	const int nplanes = nvm_sblk_attr_nplanes(sblk);
+	const int nsectors = nvm_sblk_attr_nsectors(sblk);
 	const int len = nplanes;
 
 	for (ch = sblk->bgn.g.ch; ch <= sblk->end.g.ch; ++ch) {
@@ -130,19 +130,19 @@ ssize_t nvm_sblock_erase(struct nvm_sblock *sblk)
 	return -nerr;
 }
 
-ssize_t nvm_sblock_write(struct nvm_sblock *sblk, const void *buf, size_t pg,
-			 size_t count)
+ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg,
+		       size_t count)
 {
 	return 0;
 }
 
-ssize_t nvm_sblock_read(struct nvm_sblock *sblk, void *buf, size_t pg,
-			size_t count)
+ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t pg,
+		      size_t count)
 {
 	return 0;
 }
 
-void nvm_sblock_pr(struct nvm_sblock *sblk)
+void nvm_sblk_pr(struct nvm_sblk *sblk)
 {
 	printf("sblk {}\n");
 }

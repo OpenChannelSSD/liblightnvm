@@ -50,11 +50,11 @@ int io(NVM_DEV dev, NVM_GEO geo, size_t blk, int flags)
 		int lun;
 		for (lun = 0; lun < nluns; ++lun) {
 
-			int buf_nbytes = geo.vpage_nbytes;
+			int buf_nbytes = geo.vpg_nbytes;
 			char *buf = nvm_buf_alloc(geo, buf_nbytes);
 			nvm_buf_fill(buf, buf_nbytes);
 
-			NVM_VBLOCK vblk;
+			NVM_VBLK vblk;
 			NVM_ADDR addr;
 
 			addr.ppa = 0;
@@ -62,21 +62,23 @@ int io(NVM_DEV dev, NVM_GEO geo, size_t blk, int flags)
 			addr.g.lun = lun;
 			addr.g.blk = blk;
 
-			vblk = nvm_vblock_new_on_dev(dev, addr.ppa);
+			vblk = nvm_vblk_new_on_dev(dev, addr.ppa);
 
 			int pg;
 			for (pg = 0; pg < geo.npages; ++pg) {
 				ssize_t err;
 				switch (flags) {
 					case 0x1:
-						err = nvm_vblock_pwrite(vblk, buf, pg);
+						err = nvm_vblk_pwrite(vblk, buf,
+								      pg);
 						if (err) {
 							++nerr;
 							printf("write err(%ld)\n", err);
 						}
 						break;
 					case 0x2:
-						err = nvm_vblock_pread(vblk, buf, pg);
+						err = nvm_vblk_pread(vblk, buf,
+								     pg);
 						if (err) {
 							++nerr;
 							printf("read err(%ld)\n", err);
@@ -87,7 +89,7 @@ int io(NVM_DEV dev, NVM_GEO geo, size_t blk, int flags)
 						break;
 				}
 			}
-			nvm_vblock_free(&vblk);
+			nvm_vblk_free(&vblk);
 			free(buf);
 		}
 	}

@@ -11,7 +11,7 @@
 static char nvm_dev_name[DISK_NAME_LEN] = "nvme0n1";
 
 struct context {
-	NVM_VBLOCK blk;
+	NVM_VBLK blk;
 	NVM_GEO geo;
 	NVM_DEV dev;
 	char *buf;
@@ -23,7 +23,7 @@ static void *write_thread(void *priv)
 	int i;
 
 	for (i = 0; i < ctx->geo.npages; i++) {
-		ssize_t err = nvm_vblock_pwrite(ctx->blk, ctx->buf, i);
+		ssize_t err = nvm_vblk_pwrite(ctx->blk, ctx->buf, i);
 		CU_ASSERT(!err);
 	}
 	pthread_exit(NULL);
@@ -37,7 +37,7 @@ static void *erase_thread(void *priv)
 	for (i = 0; i < 4; i++) {
 		ssize_t err;
 		usleep(2000);
-		err = nvm_vblock_erase(ctx->blk);	/* ERASE */
+		err = nvm_vblk_erase(ctx->blk);	/* ERASE */
 		CU_ASSERT(!err);
 	}
 
@@ -47,7 +47,7 @@ static void *erase_thread(void *priv)
 #define NUM_BLOCKS (2)
 void test_VBLOCK_CONCUR(void)
 {
-	NVM_VBLOCK vblock[2];
+	NVM_VBLK vblock[2];
 	NVM_DEV dev;
 	NVM_GEO geo;
 	int i;
@@ -62,19 +62,19 @@ void test_VBLOCK_CONCUR(void)
 	geo = nvm_dev_attr_geo(dev);
 
 	for (i = 0; i < NUM_BLOCKS; i++) {
-		vblock[i] = nvm_vblock_new();
-		err = nvm_vblock_gets(vblock[i], dev, 0, 0);
+		vblock[i] = nvm_vblk_new();
+		err = nvm_vblk_gets(vblock[i], dev, 0, 0);
 		CU_ASSERT(!err);
-		//nvm_vblock_pr(vblock[i]);
+		//nvm_vblk_pr(vblock[i]);
 	}
 
-	err = posix_memalign((void**)&wbuf, geo.nbytes, geo.vpage_nbytes);
+	err = posix_memalign((void**)&wbuf, geo.nbytes, geo.vpg_nbytes);
 	CU_ASSERT(!err);
 	if (err) {
 		printf("Failed allocating write buffer(%p)\n", wbuf);
 		return;
 	}
-	memset(wbuf, 0, geo.vpage_nbytes);
+	memset(wbuf, 0, geo.vpg_nbytes);
 
 	ctx[0].blk = vblock[0];
 	ctx[0].dev = dev;
@@ -100,7 +100,7 @@ void test_VBLOCK_CONCUR(void)
 	pthread_join(er_th, NULL);
 
 	for (i = 0; i < geo.npages; i++) {
-		err = nvm_vblock_pread(vblock[0], wbuf, i); /* READ */
+		err = nvm_vblk_pread(vblock[0], wbuf, i); /* READ */
 		CU_ASSERT(!err);
 		if (err)
 			printf("FAILED err(%ld) i(%d), wbuf(%s)\n",
@@ -108,10 +108,10 @@ void test_VBLOCK_CONCUR(void)
 	}
 
 	for (i = 0; i < NUM_BLOCKS; i++) {
-		err = nvm_vblock_put(vblock[i]);
+		err = nvm_vblk_put(vblock[i]);
 		CU_ASSERT(!err);
 
-		nvm_vblock_free(&vblock[i]);
+		nvm_vblk_free(&vblock[i]);
 	}
 
 	nvm_dev_close(dev);
@@ -132,7 +132,7 @@ int main(int argc, char **argv)
 	if (CUE_SUCCESS != CU_initialize_registry())
 		return CU_get_error();
 
-	pSuite = CU_add_suite("nvm_vblock*", NULL, NULL);
+	pSuite = CU_add_suite("nvm_vblk*", NULL, NULL);
 	if (NULL == pSuite) {
 		CU_cleanup_registry();
 		return CU_get_error();

@@ -31,7 +31,7 @@
 #include <linux/lightnvm.h>
 #include <liblightnvm.h>
 #include <nvm.h>
-#include <nvm_utils.h>
+#include <nvm_util.h>
 #include <nvm_debug.h>
 
 int nvm_execute_ioctl(int opcode, void *u)
@@ -158,12 +158,12 @@ void* nvm_buf_alloc(NVM_GEO geo, size_t nbytes)
 	return buf;
 }
 
-void* nvm_vpage_buf_alloc(NVM_GEO geo)
+void* nvm_vpg_buf_alloc(NVM_GEO geo)
 {
 	char *buf;
 	int ret;
 
-	ret = posix_memalign((void**)&buf, geo.nbytes, geo.vpage_nbytes);
+	ret = posix_memalign((void**)&buf, geo.nbytes, geo.vpg_nbytes);
 	if (ret) {
 		return NULL;
 	}
@@ -171,12 +171,12 @@ void* nvm_vpage_buf_alloc(NVM_GEO geo)
 	return buf;
 }
 
-void* nvm_vblock_buf_alloc(NVM_GEO geo)
+void* nvm_vblk_buf_alloc(NVM_GEO geo)
 {
 	char *buf;
 	int ret;
 
-	ret = posix_memalign((void**)&buf, geo.nbytes, geo.vblock_nbytes);
+	ret = posix_memalign((void**)&buf, geo.nbytes, geo.vblk_nbytes);
 	if (ret) {
 		return NULL;
 	}

@@ -40,15 +40,15 @@ in the LightNVM kernel API.
 
 ## Data structures
 
-A **NVM_VBLOCK** represents a virtual flash block. We refer to it as "virtual"
+A **NVM_VBLK** represents a virtual flash block. We refer to it as "virtual"
 since it can be formed by a collection of physical blocks stripped across flash
 planes and/or LUNs, as defined by the controller on the Open-Channel SSD.
 
-NVM_VBLOCK is the unit at which LightNVM's media manager provisioning interface
+NVM_VBLK is the unit at which LightNVM's media manager provisioning interface
 operates.
 
 ```c
-NVM_VBLOCK {
+NVM_VBLK {
 	__uint64_t id;
 	__uint64_t bppa;
 	__uint32_t vlun_id;
@@ -110,17 +110,17 @@ obtain and yield ownership of physical blocks on LightNVM managed media.
  * @param lun Identifier of lun to reserve via
  * @return -1 on error and errno set, zero otherwise.
  */
-int nvm_vblock_gets(NVM_VBLOCK *vblock, NVM_TGT tgt, uint32_t lun);
+int nvm_vblk_gets(NVM_VBLK *vblock, NVM_TGT tgt, uint32_t lun);
 
 /**
  * Reserve a block on given target using an arbitrary lun
  *
- * @param vblock Block created with nvm_vblock_new
+ * @param vblock Block created with nvm_vblk_new
  * @param tgt Handle obtained with nvm_tgt_open
  * @param lun Identifier of lun to reserve via
  * @return -1 on error and errno set, zero otherwise.
  */
-int nvm_vblock_get(NVM_VBLOCK vblock, NVM_TGT tgt);
+int nvm_vblk_get(NVM_VBLK vblock, NVM_TGT tgt);
 ```
 
 ```c
@@ -135,7 +135,7 @@ int nvm_vblock_get(NVM_VBLOCK vblock, NVM_TGT tgt);
   metadata. On error, -1 is returned, in which case *errno* is set to indicate
   the error.
 */
-int nvm_vblock_put(NVM_VBLOCK vblock, NVM_TGT tgt);
+int nvm_vblk_put(NVM_VBLK vblock, NVM_TGT tgt);
 ```
 
 ### I/O Submission
@@ -146,7 +146,7 @@ int nvm_vblock_put(NVM_VBLOCK vblock, NVM_TGT tgt);
  * fpage_size is the write page size. This is, the size of a virtual flash
  * pages, i.e., across flash planes.
  */
-int nvm_vblock_pwrite(int tgt, NVM_VBLOCK *vblock, const void *buf,
+int nvm_vblk_pwrite(int tgt, NVM_VBLK *vblock, const void *buf,
 			size_t ppa_off, size_t count,
 			NVM_FLASH_PAGE *fpage, int flags);
 ```
@@ -161,7 +161,7 @@ int nvm_vblock_pwrite(int tgt, NVM_VBLOCK *vblock, const void *buf,
  * XXX(1): For now, we assume that the device supports reading at a sector
  * granurality; we will take this information from the device in the future.
  */
-int nvm_vblock_pread(int tgt, NVM_VBLOCK *vblock, void *buf, size_t ppa_off,
+int nvm_vblk_pread(int tgt, NVM_VBLK *vblock, void *buf, size_t ppa_off,
 			size_t count, NVM_FLASH_PAGE *fpage, int flags);
 ```
 

@@ -14,7 +14,7 @@ void __TEST_VBLOCK_PWRITE_READ_N(int iterations, int npage_io)
 	NVM_DEV dev;
 	uint32_t sector_nbytes, vpage_nbytes;
 
-	NVM_VBLOCK vblock;
+	NVM_VBLK vblock;
 	int i, j;
 	ssize_t err;
 
@@ -35,28 +35,28 @@ void __TEST_VBLOCK_PWRITE_READ_N(int iterations, int npage_io)
 		err = posix_memalign((void**)&rbuf, sector_nbytes, vpage_nbytes);
 		CU_ASSERT(!err);
 
-		vblock = nvm_vblock_new();	/* Allocate vblock */
+		vblock = nvm_vblk_new();	/* Allocate vblock */
 		CU_ASSERT_PTR_NOT_NULL(vblock);
 
-		err = nvm_vblock_get(vblock, dev);
+		err = nvm_vblk_get(vblock, dev);
 		CU_ASSERT(!err);
 		for(j=0; j < npage_io; ++j) {
-			err = nvm_vblock_pwrite(vblock, wbuf, 0);
+			err = nvm_vblk_pwrite(vblock, wbuf, 0);
 			CU_ASSERT(!err);
 
-			err = nvm_vblock_pread(vblock, rbuf, 0);
+			err = nvm_vblk_pread(vblock, rbuf, 0);
 			CU_ASSERT(!err);
 
 			CU_ASSERT_STRING_EQUAL(wbuf, rbuf);
 		}
 
-		err = nvm_vblock_put(vblock);	/* Release vblock from dev */
+		err = nvm_vblk_put(vblock);	/* Release vblock from dev */
 		CU_ASSERT(!err);
 
 		free(wbuf);
 		free(rbuf);
 
-		nvm_vblock_free(&vblock);	/* De-allocate vblock */
+		nvm_vblk_free(&vblock);	/* De-allocate vblock */
 	}
 
 	nvm_dev_close(dev);			/* Close the device */
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 	if (CUE_SUCCESS != CU_initialize_registry())
 		return CU_get_error();
 
-	pSuite = CU_add_suite("nvm_vblock*", NULL, NULL);
+	pSuite = CU_add_suite("nvm_vblk*", NULL, NULL);
 	if (NULL == pSuite) {
 		CU_cleanup_registry();
 		return CU_get_error();

@@ -21,14 +21,14 @@
 #include <CUnit/Basic.h>
 
 static char nvm_dev_name[DISK_NAME_LEN] = "nvm_vblock_tst";
-int k = 10;	// Total number of nvm_vblock_gets allowed to fail
+int k = 10;	// Total number of nvm_vblk_gets allowed to fail
 
 void TEST_VBLOCK_GP_N(void)
 {
 	NVM_DEV dev;
 	NVM_GEO geo;
 
-	NVM_VBLOCK *vblocks;	/* Array of vblocks */
+	NVM_VBLK *vblocks;	/* Array of vblocks */
 	int vblocks_total;	/* Number of vblocks on device / allocated */
 	int vblocks_reserved;	/* Number of vblocks successfully reserved */
 
@@ -53,11 +53,11 @@ void TEST_VBLOCK_GP_N(void)
 	memset(ngets_lun_failed, 0, sizeof(ngets_lun_failed)*geo.nluns);
 
 	vblocks_total = geo.nluns * geo.nblocks;	/* Allocate vblocks */
-	vblocks = malloc(sizeof(NVM_VBLOCK) * vblocks_total);
+	vblocks = malloc(sizeof(NVM_VBLK) * vblocks_total);
 	CU_ASSERT_PTR_NOT_NULL(vblocks);
 
 	for (i=0; i < vblocks_total; i++) {
-		vblocks[i] = nvm_vblock_new();
+		vblocks[i] = nvm_vblk_new();
 		CU_ASSERT_PTR_NOT_NULL(vblocks[i]);
 	}
 
@@ -67,7 +67,7 @@ void TEST_VBLOCK_GP_N(void)
 
 		ch = i % geo.nchannels;
 		lun = i % geo.nluns;
-		err = nvm_vblock_gets(vblocks[vblocks_reserved], dev, ch, lun);
+		err = nvm_vblk_gets(vblocks[vblocks_reserved], dev, ch, lun);
 		ngets++;
 		ngets_lun[lun]++;
 		if (err) {
@@ -99,7 +99,7 @@ void TEST_VBLOCK_GP_N(void)
 	*/
 
 	for (i=0; i < vblocks_reserved; i++) {		/* Release vblocks */
-		int err = nvm_vblock_put(vblocks[i]);
+		int err = nvm_vblk_put(vblocks[i]);
 		CU_ASSERT(!err);
 		if (err) {
 			continue;
@@ -107,7 +107,7 @@ void TEST_VBLOCK_GP_N(void)
 	}
 
 	for (i=0; i < vblocks_total; i++) {		/* Deallocate vblocks */
-		nvm_vblock_free(&vblocks[i]);
+		nvm_vblk_free(&vblocks[i]);
 	}
 	free(vblocks);
 }

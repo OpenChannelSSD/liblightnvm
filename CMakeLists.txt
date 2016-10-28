@@ -27,15 +27,15 @@ set(HEADER_FILES
 	include/nvm_atomic.h
 	include/nvm_beam.h
 	include/nvm_debug.h
-	include/nvm_utils.h
+	include/nvm_util.h
 	include/uthash.h)
 
 set(SOURCE_FILES
 	src/nvm_beam.c
 	src/nvm_dev.c
-	src/nvm_utils.c
+	src/nvm_util.c
 	src/nvm_sblk.c
-	src/nvm_vblock.c
+	src/nvm_vblk.c
 	src/nvm_addr.c)
 
 include_directories("${PROJECT_SOURCE_DIR}/include")
