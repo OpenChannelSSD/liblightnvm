@@ -19,14 +19,10 @@ DRY=0
 echo "** $LNVM_DEV with nchannels($NCHANNELS) and nluns($NLUNS)"
 
 echo "** E 'spanned' block"
-for CH in $(seq $CH_BEGIN $CH_END); do
-	for LUN in $(seq $LUN_BEGIN $LUN_END); do
-		echo "*** ch($CH), lun($LUN), blk($BLK)"
-		if [ $DRY -ne "1" ]; then
-			nvm_vblk erase $LNVM_DEV $CH $LUN $BLK
-		fi
-	done
-done
+if [ $DRY -ne "1" ]; then
+	nvm_sblk erase $LNVM_DEV $BLK
+	echo "nerr($?)"
+fi
 
 echo "** W 'spanned' blk_idx($BLK) on $LNVM_DEV"
 if [ $DRY -ne "1" ]; then
@@ -34,8 +30,8 @@ if [ $DRY -ne "1" ]; then
 	echo "nerr($?)"
 fi
 
-#echo "** Reading spanned blk_idx($BLK) on $LNVM_DEV"
-#if [ $DRY -ne "1" ]; then
-#	nvm_sblk read $LNVM_DEV $BLK
-#	echo "nerr($?)"
-#fi
+echo "** Reading spanned blk_idx($BLK) on $LNVM_DEV"
+if [ $DRY -ne "1" ]; then
+	nvm_sblk read $LNVM_DEV $BLK
+	echo "nerr($?)"
+fi
