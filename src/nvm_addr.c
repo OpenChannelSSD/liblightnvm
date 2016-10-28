@@ -51,7 +51,7 @@ static ssize_t nvm_addr_io(struct nvm_dev *dev, struct nvm_addr list[], int len,
 	ctl.data_len = buf ? dev->geo.nbytes * len : 0;
 
 	ret = ioctl(dev->fd, NVM_DEV_PIO, &ctl);
-#ifndef NVM_DEBUG_ENABLED
+#ifdef NVM_DEBUG_ENABLED
 	if (ret || ctl.result || ctl.status) {
 		int i;
 		NVM_DEBUG("ret(%d)\n", ret);
