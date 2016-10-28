@@ -38,63 +38,80 @@ void timer_pr(const char* tool)
     printf("Ran %s, elapsed wall-clock: %lf\n", tool, timer_elapsed());
 }
 
-int io(NVM_DEV dev, NVM_GEO geo, size_t blk, int flags)
+int erase(NVM_DEV dev, NVM_GEO geo, size_t blk, int flags)
 {
-	int nerr = 0;
+	NVM_SBLK sblk;
+	ssize_t err;
 
-	int nchannels = 1;
-	int nluns = 1;
+	sblk = nvm_sblk_new(dev, 0, geo.nchannels-1, 0, geo.nluns-1, blk);
+	if (!sblk) {
+		return -ENOMEM;
+	}
+	
+	err = nvm_sblk_erase(sblk);
 
-	int ch;
-	for (ch = 0; ch < nchannels; ++ch) {
-		int lun;
-		for (lun = 0; lun < nluns; ++lun) {
+	nvm_sblk_free(sblk);
 
-			int buf_nbytes = geo.vpg_nbytes;
-			char *buf = nvm_buf_alloc(geo, buf_nbytes);
-			nvm_buf_fill(buf, buf_nbytes);
+	return err;
+}
 
-			NVM_VBLK vblk;
-			NVM_ADDR addr;
+int write(NVM_DEV dev, NVM_GEO geo, size_t blk, int flags)
+{
+	NVM_SBLK sblk;
+	size_t sblk_nbytes;
+	ssize_t err;
+	char *buf;
 
-			addr.ppa = 0;
-			addr.g.ch = ch;
-			addr.g.lun = lun;
-			addr.g.blk = blk;
-
-			vblk = nvm_vblk_new_on_dev(dev, addr.ppa);
-
-			int pg;
-			for (pg = 0; pg < geo.npages; ++pg) {
-				ssize_t err;
-				switch (flags) {
-					case 0x1:
-						err = nvm_vblk_pwrite(vblk, buf,
-								      pg);
-						if (err) {
-							++nerr;
-							printf("write err(%ld)\n", err);
-						}
-						break;
-					case 0x2:
-						err = nvm_vblk_pread(vblk, buf,
-								     pg);
-						if (err) {
-							++nerr;
-							printf("read err(%ld)\n", err);
-						}
-						break;
-					default:
-						printf("invalid IO!");
-						break;
-				}
-			}
-			nvm_vblk_free(&vblk);
-			free(buf);
-		}
+	sblk = nvm_sblk_new(dev, 0, geo.nchannels-1, 0, geo.nluns-1, blk);
+	if (!sblk) {
+		return -ENOMEM;
 	}
 
-	return nerr;
+	sblk_nbytes = geo.nchannels * geo.nluns * geo.nplanes * \
+			geo.npages * geo.nsectors * geo.nbytes;
+
+	buf = nvm_buf_alloc(geo, sblk_nbytes);
+	if (!buf) {
+		nvm_sblk_free(sblk);
+		return -ENOMEM;
+	}
+	nvm_buf_fill(buf, sblk_nbytes);
+
+	err = nvm_sblk_write(sblk, buf, 0, geo.npages);
+
+	free(buf);
+	nvm_sblk_free(sblk);
+
+	return err;
+}
+
+int read(NVM_DEV dev, NVM_GEO geo, size_t blk, int flags)
+{
+	NVM_SBLK sblk;
+	size_t sblk_nbytes;
+	ssize_t err;
+	char *buf;
+
+	sblk = nvm_sblk_new(dev, 0, geo.nchannels-1, 0, geo.nluns-1, blk);
+	if (!sblk) {
+		return -ENOMEM;
+	}
+
+	sblk_nbytes = geo.nchannels * geo.nluns * geo.nplanes * \
+			geo.npages * geo.nsectors * geo.nbytes;
+
+	buf = nvm_buf_alloc(geo, sblk_nbytes);
+	if (!buf) {
+		nvm_sblk_free(sblk);
+		return -ENOMEM;
+	}
+
+	err = nvm_sblk_read(sblk, buf, 0, geo.npages);
+
+	free(buf);
+	nvm_sblk_free(sblk);
+
+	return err;
 }
 
 // From hereon out the code is mostly boiler-plate for command-line parsing,
@@ -116,8 +133,9 @@ typedef struct {
 } NVM_CLI_VBLK_CMD;
 
 static NVM_CLI_VBLK_CMD cmds[] = {
-	{"write", io, 4, 0x1},
-	{"read", io, 4, 0x2},
+	{"erase", erase, 4, 0x0},
+	{"write", write, 4, 0x0},
+	{"read", read, 4, 0x0},
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);

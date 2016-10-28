@@ -298,14 +298,6 @@ ssize_t nvm_sblk_erase(NVM_SBLK sblk);
 ssize_t nvm_sblk_write(NVM_SBLK sblk, const void *buf, size_t pg, size_t count);
 ssize_t nvm_sblk_read(NVM_SBLK sblk, void *buf, size_t pg, size_t count);
 
-int nvm_sblk_attr_nchannels(NVM_SBLK sblk);
-int nvm_sblk_attr_nluns(NVM_SBLK sblk);
-int nvm_sblk_attr_nplanes(NVM_SBLK sblk);
-int nvm_sblk_attr_nblocks(NVM_SBLK sblk);
-int nvm_sblk_attr_npages(NVM_SBLK sblk);
-int nvm_sblk_attr_nsectors(NVM_SBLK sblk);
-int nvm_sblk_attr_nbytes(NVM_SBLK sblk);
-
 void nvm_sblk_pr(NVM_SBLK sblk);
 
 /**

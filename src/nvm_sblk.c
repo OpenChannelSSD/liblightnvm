@@ -88,9 +88,7 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 	int ch;
 	ssize_t nerr = 0;
 
-	const int nplanes = nvm_sblk_attr_nplanes(sblk);
-	const int nsectors = nvm_sblk_attr_nsectors(sblk);
-	const int len = nplanes;
+	const int nplanes = nvm_dev_attr_nplanes(sblk->dev);
 
 	for (ch = sblk->bgn.g.ch; ch <= sblk->end.g.ch; ++ch) {
 		int lun;
@@ -101,23 +99,67 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 		addr.g.ch = ch;
 
 		for (lun = sblk->bgn.g.lun; lun <= sblk->end.g.lun; ++lun) {
-			int pg;
+			struct nvm_addr list[nplanes];
+			ssize_t err;
+			int pl;
 
 			addr.g.lun = lun;
 
-			for (pg = sblk->bgn.g.pg; pg <= sblk->end.g.pg; ++pg) {
+			for (pl = 0; pl < nplanes; ++pl) {
+				list[pl].ppa = addr.ppa;
+				list[pl].g.pl = pl;
+			}
+
+			err = nvm_addr_erase(sblk->dev, list, nplanes,
+					     NVM_MAGIC_FLAG_DEFAULT);
+			if (err) {
+				NVM_DEBUG("sblk_erase err(%d)\n", err);
+				++nerr;
+			}
+		}
+	}
+
+	return -nerr;
+}
+
+ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg,
+		       size_t count)
+{
+	int ch;
+	ssize_t nerr = 0;
+
+	const int nplanes = nvm_dev_attr_nplanes(sblk->dev);
+	const int nsectors = nvm_dev_attr_nsectors(sblk->dev);
+	const int len = nplanes * nsectors;
+
+	for (ch = sblk->bgn.g.ch; ch <= sblk->end.g.ch; ++ch) {
+		int pg_off;
+
+		NVM_ADDR addr;
+		
+		addr.ppa = sblk->bgn.ppa;
+		addr.g.ch = ch;
+		
+		for (pg_off = pg; pg_off < pg+count; ++pg_off) {
+			int lun;
+
+			addr.g.pg = pg_off;
+
+			for (lun = sblk->bgn.g.lun; lun <= sblk->end.g.lun; ++lun) {
 				struct nvm_addr list[len];
 				ssize_t err;
 				int i;
 
-				addr.g.pg = pg;
+				addr.g.lun = lun;
 
 				for (i = 0; i < len; ++i) {
 					list[i].ppa = addr.ppa;
-					list[i].g.pl = i;
+					list[i].g.sec = i % nsectors;
+					list[i].g.pl = (i / nsectors) % nplanes;
 				}
 
-				err = nvm_addr_erase(sblk->dev, list, len,
+				// TODO: Fix buffer offset
+				err = nvm_addr_write(sblk->dev, list, len, buf,
 						     NVM_MAGIC_FLAG_DEFAULT);
 				if (err) {
 					NVM_DEBUG("sblk_erase err(%d)\n", err);
@@ -130,16 +172,54 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 	return -nerr;
 }
 
-ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg,
-		       size_t count)
-{
-	return 0;
-}
-
 ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t pg,
 		      size_t count)
 {
-	return 0;
+	int ch;
+	ssize_t nerr = 0;
+
+	const int nplanes = nvm_dev_attr_nplanes(sblk->dev);
+	const int nsectors = nvm_dev_attr_nsectors(sblk->dev);
+	const int len = nplanes * nsectors;
+
+	for (ch = sblk->bgn.g.ch; ch <= sblk->end.g.ch; ++ch) {
+		int pg_off;
+
+		NVM_ADDR addr;
+		
+		addr.ppa = sblk->bgn.ppa;
+		addr.g.ch = ch;
+		
+		for (pg_off = pg; pg_off < pg+count; ++pg_off) {
+			int lun;
+
+			addr.g.pg = pg_off;
+
+			for (lun = sblk->bgn.g.lun; lun <= sblk->end.g.lun; ++lun) {
+				struct nvm_addr list[len];
+				ssize_t err;
+				int i;
+
+				addr.g.lun = lun;
+
+				for (i = 0; i < len; ++i) {
+					list[i].ppa = addr.ppa;
+					list[i].g.sec = i % nsectors;
+					list[i].g.pl = (i / nsectors) % nplanes;
+				}
+
+				// TODO: Fix buffer offset
+				err = nvm_addr_read(sblk->dev, list, len, buf,
+						     NVM_MAGIC_FLAG_DEFAULT);
+				if (err) {
+					NVM_DEBUG("sblk_erase err(%d)\n", err);
+					++nerr;
+				}
+			}
+		}
+	}
+
+	return -nerr;
 }
 
 void nvm_sblk_pr(struct nvm_sblk *sblk)
