@@ -35,6 +35,11 @@
 #include <liblightnvm.h>
 #include <nvm.h>
 #include <nvm_debug.h>
+#ifdef _OPENMP
+#include <omp.h>
+#else
+#define omp_get_thread_num() 0
+#endif
 
 struct nvm_sblk* nvm_sblk_new(struct nvm_dev *dev,
                               int ch_bgn, int ch_end,
@@ -90,6 +95,9 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 
 	const int nplanes = nvm_dev_attr_nplanes(sblk->dev);
 
+	const int nchannels = (sblk->end.g.ch - sblk->bgn.g.ch) + 1;
+
+	#pragma omp parallel for num_threads(nchannels) schedule(static) reduction(+:nerr)
 	for (ch = sblk->bgn.g.ch; ch <= sblk->end.g.ch; ++ch) {
 		int lun;
 
@@ -131,7 +139,10 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg,
 	const int nplanes = nvm_dev_attr_nplanes(sblk->dev);
 	const int nsectors = nvm_dev_attr_nsectors(sblk->dev);
 	const int len = nplanes * nsectors;
+	
+	const int nchannels = (sblk->end.g.ch - sblk->bgn.g.ch) + 1;
 
+	#pragma omp parallel for num_threads(nchannels) schedule(static) reduction(+:nerr)
 	for (ch = sblk->bgn.g.ch; ch <= sblk->end.g.ch; ++ch) {
 		int pg_off;
 
@@ -182,6 +193,9 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t pg,
 	const int nsectors = nvm_dev_attr_nsectors(sblk->dev);
 	const int len = nplanes * nsectors;
 
+	const int nchannels = (sblk->end.g.ch - sblk->bgn.g.ch) + 1;
+
+	#pragma omp parallel for num_threads(nchannels) schedule(static) reduction(+:nerr)
 	for (ch = sblk->bgn.g.ch; ch <= sblk->end.g.ch; ++ch) {
 		int pg_off;
 

@@ -26,13 +26,6 @@ foreach(SRC_FN ${SOURCE_FILES})
 	add_executable(${EXE_FN} ${SRC_FN})
 	target_link_libraries(${EXE_FN} pthread udev lightnvm_a)
 
-	# Enable OpenMP for sblk
-	if (${EXAMPLES_SBLK_PAR} AND ${SRC_FN_WE} STREQUAL "sblk")
-		find_package(OpenMP)
-		if (OPENMP_FOUND)
-			set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-		endif()
-	endif()
 	install(TARGETS ${EXE_FN} DESTINATION bin)
 endforeach()
 

@@ -3,7 +3,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 include(FeatureSummary)
 project(liblightnvm C)
 
-find_package(Threads REQUIRED)
+find_package(OpenMP)
+if (OPENMP_FOUND)
+	set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+endif()
+
 find_package(udev REQUIRED liblightnvm)
 set_package_properties(udev PROPERTIES DESCRIPTION "Queriying OpenChannel SSDs via sysfs/udev.")
 set_package_properties(udev PROPERTIES TYPE REQUIRED PURPOSE "Queriying OpenChannel SSDs via sysfs/udev.")
