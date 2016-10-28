@@ -132,53 +132,43 @@ int nvm_vblock_put(struct nvm_vblock *vblock)
 	return ret;
 }
 
-ssize_t nvm_vblock_pread(struct nvm_vblock *vblock, void *buf, size_t ppa_off)
+ssize_t nvm_vblock_pread(struct nvm_vblock *vblock, void *buf, size_t pg)
 {
-	struct nvm_dev *dev = vblock->dev;
-	const int NSECTORS = nvm_dev_attr_nsectors(dev);
-	const int NPLANES = nvm_dev_attr_nplanes(dev);
-	const int NPPAS_MAX = NPLANES * nvm_dev_attr_nsectors(dev);
+	const struct nvm_geo geo = nvm_dev_attr_geo(vblock->dev);
+	const int len = geo.nplanes * geo.nsectors;
 
-	struct nvm_addr ppas[NPPAS_MAX];
+	struct nvm_addr list[len];
 	int i;
 
-	for (i = 0; i < NPPAS_MAX; i++) {
-		struct nvm_addr ppa;
+	for (i = 0; i < len; i++) {
+		list[i].ppa = vblock->ppa;
 
-		ppa.ppa = vblock->ppa;
-		ppa.g.pg = ppa_off;
-		ppa.g.pl = (i / NSECTORS) % NPLANES;
-		ppa.g.sec = i % NSECTORS;
-
-		ppas[i] = ppa;
+		list[i].g.pg = pg;
+		list[i].g.pl = (i / geo.nsectors) % geo.nplanes;
+		list[i].g.sec = i % geo.nsectors;
 	}
 
-	return nvm_addr_read(dev, ppas, NPPAS_MAX, buf);
+	return nvm_addr_read(vblock->dev, list, len, buf, NVM_MAGIC_FLAG_DEFAULT);
 }
 
 ssize_t nvm_vblock_pwrite(struct nvm_vblock *vblock, const void *buf,
-			  size_t ppa_off)
+			  size_t pg)
 {
-	struct nvm_dev *dev = vblock->dev;
-	const int NSECTORS = nvm_dev_attr_nsectors(dev);
-	const int NPLANES = nvm_dev_attr_nplanes(dev);
-	const int NPPAS_MAX = NPLANES * nvm_dev_attr_nsectors(dev);
+	const struct nvm_geo geo = nvm_dev_attr_geo(vblock->dev);
+	const int len = geo.nplanes * geo.nsectors;
 
-	struct nvm_addr ppas[NPPAS_MAX];
+	struct nvm_addr list[len];
 	int i;
 
-	for (i = 0; i < NPPAS_MAX; i++) {
-		struct nvm_addr ppa;
+	for (i = 0; i < len; i++) {
+		list[i].ppa = vblock->ppa;
 
-		ppa.ppa = vblock->ppa;
-		ppa.g.pg = ppa_off;
-		ppa.g.pl = (i / NSECTORS) % NPLANES;
-		ppa.g.sec = i % NSECTORS;
-
-		ppas[i] = ppa;
+		list[i].g.pg = pg;
+		list[i].g.pl = (i / geo.nsectors) % geo.nplanes;
+		list[i].g.sec = i % geo.nsectors;
 	}
 
-	return nvm_addr_write(dev, ppas, NPPAS_MAX, buf);
+	return nvm_addr_write(vblock->dev, list, len, buf, NVM_MAGIC_FLAG_DEFAULT);
 }
 
 ssize_t nvm_vblock_write(struct nvm_vblock *vblock, const void *buf)
@@ -188,7 +178,7 @@ ssize_t nvm_vblock_write(struct nvm_vblock *vblock, const void *buf)
 	int buf_off = 0;
 	int pg;
 
-	for(pg=0; pg<geo.npages; ++pg) {
+	for(pg = 0; pg < geo.npages; ++pg) {
 		int err = nvm_vblock_pwrite(vblock, buf+buf_off, pg);
 		if (err) {
 			return -(pg+1);
@@ -206,7 +196,7 @@ ssize_t nvm_vblock_read(struct nvm_vblock *vblock, void *buf)
 	int buf_off = 0;
 	int pg;
 
-	for(pg=0; pg<geo.npages; ++pg) {
+	for(pg = 0; pg < geo.npages; ++pg) {
 		int err = nvm_vblock_pread(vblock, buf+buf_off, pg);
 		if (err) {
 			return -(pg+1);
@@ -219,41 +209,15 @@ ssize_t nvm_vblock_read(struct nvm_vblock *vblock, void *buf)
 
 ssize_t nvm_vblock_erase(struct nvm_vblock *vblock)
 {
-	struct nvm_dev *dev = vblock->dev;
-	const int NPLANES = nvm_dev_attr_nplanes(dev);
+	const int len = nvm_dev_attr_nplanes(vblock->dev);
+	struct nvm_addr list[len];
+	int i;
 
-	struct nvm_addr ppas[NPLANES];
-	struct nvm_ioctl_dev_pio ctl;
-	int i, ret;
-
-	for (i = 0; i < NPLANES; i++) {
-		struct nvm_addr ppa;
-
-		ppa.ppa = vblock->ppa;
-		ppa.g.pl = i;
-
-		ppas[i] = ppa;
+	for (i = 0; i < len; ++i) {
+		list[i].ppa = vblock->ppa;
+		list[i].g.pl = i;
 	}
 
-	memset(&ctl, 0, sizeof(ctl));
-	ctl.opcode = NVM_MAGIC_OPCODE_ERASE;
-	ctl.flags = NVM_MAGIC_FLAG_ACCESS;
-	ctl.nppas = NPLANES;
-	ctl.ppas = (uint64_t)ppas;
-
-	ret = ioctl(vblock->dev->fd, NVM_DEV_PIO, &ctl);
-	if (ret || ctl.result || ctl.status) {
-		NVM_DEBUG("ret(%d)\n", ret);
-		NVM_DEBUG("result(%d)\n", ctl.result);
-		NVM_DEBUG("status(%llu)\n", ctl.status);
-	}
-	if (ret) {
-		return ret;
-	}
-	if (ctl.result) {
-		return ctl.result;
-	}
-
-	return ctl.status;
+	return nvm_addr_erase(vblock->dev, list, len, NVM_MAGIC_FLAG_DEFAULT);
 }
 

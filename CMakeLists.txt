@@ -34,6 +34,7 @@ set(SOURCE_FILES
 	src/nvm_beam.c
 	src/nvm_dev.c
 	src/nvm_utils.c
+	src/nvm_sblk.c
 	src/nvm_vblock.c
 	src/nvm_addr.c)
 

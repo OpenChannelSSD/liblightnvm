@@ -5,11 +5,40 @@
 #include <errno.h>
 #include <liblightnvm.h>
 
+int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len)
+{
+	int buf_len, i;
+	char *buf;
+	ssize_t err;
+
+	buf_len = len * geo.nbytes;
+	buf = nvm_buf_alloc(geo, buf_len);
+	if (!buf) {
+		printf("Failed allocating buf\n");
+		return -ENOMEM;
+	}
+	nvm_buf_fill(buf, buf_len);
+
+	printf("** nvm_addr_write(...):\n");
+	for (i = 0; i < len; ++i) {
+		nvm_addr_pr(list[i]);
+	}
+
+	err = nvm_addr_write(dev, list, len, buf, NVM_MAGIC_FLAG_DEFAULT);
+	if (err) {
+		printf("ERR: nvm_addr_write err(%ld)\n", err);
+	}
+
+	free(buf);
+
+	return err;
+}
+
 int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len)
 {
-	ssize_t err;
-	char *buf;
 	int buf_len, i;
+	char *buf;
+	ssize_t err;
 
 	buf_len = len * geo.nbytes;
 	buf = nvm_buf_alloc(geo, buf_len);
@@ -23,41 +52,11 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len)
 		nvm_addr_pr(list[i]);
 	}
 
-	err = nvm_addr_read(dev, list, len, buf);
+	err = nvm_addr_read(dev, list, len, buf, NVM_MAGIC_FLAG_DEFAULT);
 	if (getenv("NVM_BUF_PR"))
 		nvm_buf_pr(buf, buf_len);
 	if (err) {
 		printf("ERR: nvm_addr_read err(%ld)\n", err);
-	}
-
-	free(buf);
-
-	return err;
-}
-
-int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len)
-{
-	ssize_t err;
-
-	char *buf;
-	int buf_len, i;
-
-	buf_len = len * geo.nbytes;		// Construct buffer
-	buf = nvm_buf_alloc(geo, buf_len);
-	if (!buf) {
-		printf("Failed allocating buf\n");
-		return -ENOMEM;
-	}
-	nvm_buf_fill(buf, buf_len);
-
-	printf("** nvm_addr_write(...):\n");
-	for (i = 0; i < len; ++i) {
-		nvm_addr_pr(list[i]);
-	}
-
-	err = nvm_addr_write(dev, list, len, buf);
-	if (err) {
-		printf("Detected err(%ld)\n", err);
 	}
 
 	free(buf);

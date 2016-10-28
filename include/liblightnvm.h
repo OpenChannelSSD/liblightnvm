@@ -40,6 +40,14 @@ extern "C" {
 #define NVM_DISK_NAME_LEN 32
 #endif
 
+#define NVM_MAGIC_OPCODE_ERASE 0x90     // NVM_OP_ERASE
+#define NVM_MAGIC_OPCODE_WRITE 0x91     // NVM_OP_PWRITE
+#define NVM_MAGIC_OPCODE_READ 0x92      // NVM_OP_PREAD
+
+#define NVM_MAGIC_FLAG_DUAL 0x1         // NVM_IO_DUAL_ACCESS
+#define NVM_MAGIC_FLAG_QUAD 0x2         // NVM_IO_QUAD_ACCESS
+#define NVM_MAGIC_FLAG_DEFAULT NVM_MAGIC_FLAG_DUAL
+
 /* BITS ALLOCATED FOR THE GENERAL ADDRESS FORMAT */
 #define NVM_BLK_BITS (16)
 #define NVM_PG_BITS  (16)
@@ -89,6 +97,19 @@ typedef struct nvm_geo {
 typedef struct nvm_dev *NVM_DEV;
 typedef struct nvm_vblock *NVM_VBLOCK;
 typedef struct nvm_sblock *NVM_SBLOCK;
+typedef enum nvm_sblock_span NVM_SBLOCK_SPAN;
+
+enum nvm_sblock_span {
+  NVM_SBLOCK_SPAN_CH    = 0x1,
+  NVM_SBLOCK_SPAN_LUN   = 0x2,
+};
+
+struct nvm_sblock {
+  NVM_DEV dev;
+  NVM_ADDR bgn;
+  NVM_ADDR end;
+  NVM_SBLOCK_SPAN span;
+};
 
 void nvm_geo_pr(NVM_GEO geo);
 
@@ -183,8 +204,11 @@ void nvm_buf_pr(char *buf, int buf_len);
 void nvm_buf_fill(char *buf, int buf_len);
 
 void nvm_addr_pr(NVM_ADDR addr);
-ssize_t nvm_addr_write(NVM_DEV dev, NVM_ADDR list[], int len, const void *buf);
-ssize_t nvm_addr_read(NVM_DEV dev, NVM_ADDR list[], int len, void *buf);
+ssize_t nvm_addr_erase(NVM_DEV dev, NVM_ADDR list[], int len, uint16_t flags);
+ssize_t nvm_addr_write(NVM_DEV dev, NVM_ADDR list[], int len, const void *buf,
+                       uint16_t flags);
+ssize_t nvm_addr_read(NVM_DEV dev, NVM_ADDR list[], int len, void *buf,
+                      uint16_t flags);
 
 NVM_VBLOCK nvm_vblock_new(void);
 NVM_VBLOCK nvm_vblock_new_on_dev(NVM_DEV dev, uint64_t ppa);
@@ -265,10 +289,10 @@ ssize_t nvm_vblock_erase(NVM_VBLOCK vblock);
  * Spanning block interface
  */
 
-NVM_SBLOCK nvm_sblock_new(NVM_DEV,
-                          int ch_begin, int ch_end,
-                          int ln_begin, int ln_end,
-                          int pln_begin, int pln_end);
+NVM_SBLOCK nvm_sblock_new(NVM_DEV dev,
+                          int ch_bgn, int ch_end,
+                          int lun_bgn, int lun_end,
+                          int blk);
 
 void nvm_sblock_free(NVM_SBLOCK sblk);
 
@@ -283,6 +307,8 @@ int nvm_sblock_attr_nblocks(NVM_SBLOCK sblk);
 int nvm_sblock_attr_npages(NVM_SBLOCK sblk);
 int nvm_sblock_attr_nsectors(NVM_SBLOCK sblk);
 int nvm_sblock_attr_nbytes(NVM_SBLOCK sblk);
+
+void nvm_sblock_pr(NVM_SBLOCK sblk);
 
 /**
  * Beam interface
