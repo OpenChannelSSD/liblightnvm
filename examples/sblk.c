@@ -38,47 +38,40 @@ void timer_pr(const char* tool)
     printf("Ran %s, elapsed wall-clock: %lf\n", tool, timer_elapsed());
 }
 
-int erase(NVM_DEV dev, NVM_GEO geo, size_t blk, int flags)
+int erase(NVM_DEV dev, NVM_GEO geo, NVM_SBLK sblk, int flags)
 {
-	NVM_SBLK sblk;
+	size_t sblk_nbytes;
 	ssize_t err;
 
-	sblk = nvm_sblk_new(dev, 0, geo.nchannels-1, 0, geo.nluns-1, blk);
-	if (!sblk) {
-		printf("FAILED: allocating sblk\n");
-		return -ENOMEM;
-	}
-	
+	sblk_nbytes = geo.nchannels * geo.nluns * geo.nplanes * \
+			geo.npages * geo.nsectors * geo.nbytes;
+
+	printf("** nvm_sblk_erase(...): sblk_nbytes(%lu)\n", sblk_nbytes);
+	nvm_sblk_pr(sblk);
+
 	err = nvm_sblk_erase(sblk);
 	if (err) {
 		printf("FAILED: nvm_sblk_erase err(%ld)\n", err);
 	}
 
-	nvm_sblk_free(sblk);
-
 	return err;
 }
 
-int write(NVM_DEV dev, NVM_GEO geo, size_t blk, int flags)
+int write(NVM_DEV dev, NVM_GEO geo, NVM_SBLK sblk, int flags)
 {
-	NVM_SBLK sblk;
 	size_t sblk_nbytes;
 	ssize_t err;
 	char *buf;
 
-	sblk = nvm_sblk_new(dev, 0, geo.nchannels-1, 0, geo.nluns-1, blk);
-	if (!sblk) {
-		printf("FAILED: allocating sblk\n");
-		return -ENOMEM;
-	}
-
 	sblk_nbytes = geo.nchannels * geo.nluns * geo.nplanes * \
 			geo.npages * geo.nsectors * geo.nbytes;
+
+	printf("** nvm_sblk_write(...): sblk_nbytes(%lu)\n", sblk_nbytes);
+	nvm_sblk_pr(sblk);
 
 	buf = nvm_buf_alloc(geo, sblk_nbytes);
 	if (!buf) {
 		printf("FAILED: allocating buf\n");
-		nvm_sblk_free(sblk);
 		return -ENOMEM;
 	}
 	nvm_buf_fill(buf, sblk_nbytes);
@@ -89,28 +82,21 @@ int write(NVM_DEV dev, NVM_GEO geo, size_t blk, int flags)
 	}
 
 	free(buf);
-	nvm_sblk_free(sblk);
 
 	return err;
 }
 
-int read(NVM_DEV dev, NVM_GEO geo, size_t blk, int flags)
+int read(NVM_DEV dev, NVM_GEO geo, NVM_SBLK sblk, int flags)
 {
-	NVM_SBLK sblk;
 	size_t sblk_nbytes;
 	ssize_t err;
 	char *buf;
 
-	printf("** nvm_sblk_read(...):");
-
-	sblk = nvm_sblk_new(dev, 0, geo.nchannels-1, 0, geo.nluns-1, blk);
-	if (!sblk) {
-		printf("FAILED: allocating sblk\n");
-		return -ENOMEM;
-	}
-
 	sblk_nbytes = geo.nchannels * geo.nluns * geo.nplanes * \
 			geo.npages * geo.nsectors * geo.nbytes;
+
+	printf("** nvm_sblk_read(...): sblk_nbytes(%lu)\n", sblk_nbytes);
+	nvm_sblk_pr(sblk);
 
 	buf = nvm_buf_alloc(geo, sblk_nbytes);
 	if (!buf) {
@@ -124,7 +110,6 @@ int read(NVM_DEV dev, NVM_GEO geo, size_t blk, int flags)
 		printf("FAILED: nvm_sblk_read err(%ld)\n", err);
 	}
 
-	nvm_sblk_free(sblk);
 	free(buf);
 
 	return err;
@@ -143,19 +128,26 @@ int read(NVM_DEV dev, NVM_GEO geo, size_t blk, int flags)
 
 typedef struct {
 	char name[NVM_CLI_CMD_LEN];
-	int (*func)(NVM_DEV, NVM_GEO, size_t blk, int);
+	int (*func)(NVM_DEV, NVM_GEO, NVM_SBLK, int);
 	int argc;
 	int flags;
 } NVM_CLI_VBLK_CMD;
 
 static NVM_CLI_VBLK_CMD cmds[] = {
-	{"erase", erase, 4, 0x0},
-	{"write", write, 4, 0x0},
-	{"read", read, 4, 0x0},
+	{"erase", erase, 8, 0x0},
+	{"write", write, 8, 0x0},
+	{"read", read, 8, 0x0},
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
-static char *args[] = {"dev_name", "blk"};
+static char *args[] = {
+	"dev_name",
+	"ch_bgn",
+	"ch_end",
+	"lun_bgn",
+	"lun_end",
+	"blk"
+};
 
 void _usage_pr(char *cli_name)
 {
@@ -182,7 +174,8 @@ int main(int argc, char **argv)
 	
 	NVM_DEV dev;
 	NVM_GEO geo;
-	size_t blk;
+	NVM_SBLK sblk;
+	int ch_bgn, ch_end, lun_bgn, lun_end, blk;
 
 	if (argc < 3) {
 		_usage_pr(argv[0]);
@@ -223,7 +216,13 @@ int main(int argc, char **argv)
 	memset(dev_name, 0, sizeof(dev_name));
 	strcpy(dev_name, argv[2]);
 
-	blk = atol(argv[3]);
+	ch_bgn = atol(argv[3]);
+	ch_end = atol(argv[4]);
+
+	lun_bgn = atol(argv[5]);
+	lun_end = atol(argv[6]);
+
+	blk = atol(argv[7]);
 
 	dev = nvm_dev_open(dev_name);			// open `dev`
 	if (!dev) {
@@ -231,8 +230,16 @@ int main(int argc, char **argv)
 		return -EINVAL;
 	}
 	geo = nvm_dev_attr_geo(dev);			// Get `geo`
-	ret = cmd->func(dev, geo, blk, cmd->flags);
 
+	sblk = nvm_sblk_new(dev, ch_bgn, ch_end, lun_bgn, lun_end, blk);
+	if (!sblk) {
+		printf("FAILED: allocating sblk\n");
+		return -ENOMEM;
+	}
+
+	ret = cmd->func(dev, geo, sblk, cmd->flags);
+
+	nvm_sblk_free(sblk);
 	nvm_dev_close(dev);				// close `dev`
 
 	return ret;

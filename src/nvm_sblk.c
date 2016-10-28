@@ -224,6 +224,10 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t pg,
 
 void nvm_sblk_pr(struct nvm_sblk *sblk)
 {
-	printf("sblk {}\n");
+	printf("sblk {\n");
+	printf(" "); nvm_dev_pr(sblk->dev);
+	printf(" bgn "); nvm_addr_pr(sblk->bgn);
+	printf(" end "); nvm_addr_pr(sblk->end);
+	printf("}\n");
 }
 
