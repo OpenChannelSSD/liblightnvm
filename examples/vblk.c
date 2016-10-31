@@ -4,6 +4,30 @@
 #include <errno.h>
 #include <liblightnvm.h>
 
+int mark(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
+{
+	ssize_t err;
+
+	printf("** nvm_dev_mark(...): ");
+	nvm_addr_pr(addr);
+
+	switch(flags) {
+		case 0x0:	// free / good
+		case 0x1:	// bad
+		case 0x2:	// grown bad
+			break;
+		default:
+			return -EINVAL;
+	}
+
+	err = nvm_dev_mark(dev, addr, flags);
+	if (err) {
+		printf("FAILED: nvm_dev_mark err(%ld)\n", err);
+	}
+
+	return err;
+}
+
 int get(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 {
 	NVM_VBLK vblk;
@@ -230,29 +254,6 @@ int erase(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 	return err;
 }
 
-int mark(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
-{
-	ssize_t err;
-
-	printf("** nvm_dev_mark(...): ");
-	nvm_addr_pr(addr);
-
-	switch(flags) {
-		case 0x0:	// free / good
-		case 0x1:	// bad
-		case 0x2:	// grown bad
-			break;
-		default:
-			return -EINVAL;
-	}
-
-	err = nvm_dev_mark(dev, addr, flags);
-	if (err) {
-		printf("FAILED: nvm_dev_mark err(%ld)\n", err);
-	}
-
-	return err;
-}
 
 // From hereon out the code is mostly boiler-plate for command-line parsing,
 // there is a bit of useful code exemplifying:
