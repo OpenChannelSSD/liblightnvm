@@ -184,7 +184,7 @@ void* nvm_vblk_buf_alloc(NVM_GEO geo)
 	return buf;
 }
 
-void nvm_buf_pr(char *buf, int buf_len)
+void nvm_buf_pr(char *buf, size_t buf_len)
 {
 	const int width = 32;
 	int i;
@@ -197,7 +197,7 @@ void nvm_buf_pr(char *buf, int buf_len)
 	printf("\n** NVM_BUF_PR - END **\n");
 }
 
-void nvm_buf_fill(char *buf, int buf_len)
+void nvm_buf_fill(char *buf, size_t buf_len)
 {
 	int i;
 

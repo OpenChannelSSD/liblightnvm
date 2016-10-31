@@ -196,12 +196,12 @@ void *nvm_vpg_buf_alloc(NVM_GEO geo);
 /**
  * Prints `buf` to stdout
  */
-void nvm_buf_pr(char *buf, int buf_len);
+void nvm_buf_pr(char *buf, size_t buf_len);
 
 /**
  * Fills `buf` with chars A-Z
  */
-void nvm_buf_fill(char *buf, int buf_len);
+void nvm_buf_fill(char *buf, size_t buf_len);
 
 void nvm_addr_pr(NVM_ADDR addr);
 ssize_t nvm_addr_erase(NVM_DEV dev, NVM_ADDR list[], int len, uint16_t flags);

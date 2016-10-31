@@ -136,6 +136,7 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg,
 	int ch;
 	ssize_t nerr = 0;
 
+	const int vpage_nbytes = nvm_dev_attr_vpage_nbytes(sblk->dev);
 	const int nplanes = nvm_dev_attr_nplanes(sblk->dev);
 	const int nsectors = nvm_dev_attr_nsectors(sblk->dev);
 	const int len = nplanes * nsectors;
@@ -157,6 +158,7 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg,
 			addr.g.pg = pg_off;
 
 			for (lun = sblk->bgn.g.lun; lun <= sblk->end.g.lun; ++lun) {
+				const char *data = buf + pg_off * vpage_nbytes;
 				struct nvm_addr list[len];
 				ssize_t err;
 				int i;
@@ -169,8 +171,9 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg,
 					list[i].g.pl = (i / nsectors) % nplanes;
 				}
 
-				// TODO: Fix buffer offset
-				err = nvm_addr_write(sblk->dev, list, len, buf,
+				// TODO: Fix buffer offset and ordering
+				err = nvm_addr_write(sblk->dev, list, len,
+						     data,
 						     NVM_MAGIC_FLAG_DEFAULT);
 				if (err) {
 					NVM_DEBUG("sblk_write err(%d)\n", err);
