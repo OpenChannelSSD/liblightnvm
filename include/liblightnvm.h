@@ -108,7 +108,7 @@ struct nvm_sblk {
   NVM_DEV dev;
   NVM_ADDR bgn;
   NVM_ADDR end;
-  NVM_SBLK_SPAN span;
+  NVM_GEO geo;
 };
 
 void nvm_geo_pr(NVM_GEO geo);
@@ -298,6 +298,10 @@ ssize_t nvm_sblk_erase(NVM_SBLK sblk);
 ssize_t nvm_sblk_write(NVM_SBLK sblk, const void *buf, size_t pg, size_t count);
 ssize_t nvm_sblk_read(NVM_SBLK sblk, void *buf, size_t pg, size_t count);
 
+NVM_DEV nvm_sblk_attr_dev(NVM_SBLK sblk);
+NVM_ADDR nvm_sblk_attr_bgn(NVM_SBLK sblk);
+NVM_ADDR nvm_sblk_attr_end(NVM_SBLK sblk);
+NVM_GEO nvm_sblk_attr_geo(NVM_SBLK sblk);
 void nvm_sblk_pr(NVM_SBLK sblk);
 
 /**
