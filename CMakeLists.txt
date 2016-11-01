@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 include(FeatureSummary)
-project(liblightnvm C)
+
+set(NVM_VERSION_MAJOR 0)
+set(NVM_VERSION_MINOR 0)
+set(NVM_VERSION_PATCH 1)
+set(NVM_VERSION "${NVM_VERSION_MAJOR}.${NVM_VERSION_MINOR}.${NVM_VERSION_PATCH}")
+
+project(liblightnvm LANGUAGES C)
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
@@ -15,11 +21,6 @@ if ( NOT ${UDEV_FOUND} )
 	message(FATAL_ERROR
 		"Please install libudev ('libudev-dev' on Ubuntu)")
 endif()
-
-set(NVM_VERSION_MAJOR 0)
-set(NVM_VERSION_MINOR 0)
-set(NVM_VERSION_PATCH 1)
-set(NVM_VERSION "${NVM_VERSION_MAJOR}.${NVM_VERSION_MINOR}.${NVM_VERSION_PATCH}")
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DNVM_DEBUG_ENABLED")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
