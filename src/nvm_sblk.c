@@ -88,6 +88,7 @@ struct nvm_sblk* nvm_sblk_new(struct nvm_dev *dev,
 	/* Overwrite with channels and luns */
 	sblk->geo.nchannels = (sblk->end.g.ch - sblk->bgn.g.ch) + 1;
 	sblk->geo.nluns = (sblk->end.g.lun - sblk->bgn.g.lun) + 1;
+	sblk->geo.nblocks = 1; // For each ch/lun there is only one block
 
 	/* Derive total number of bytes in sblk */
 	sblk->geo.tbytes = sblk->geo.nchannels * sblk->geo.nluns * \
