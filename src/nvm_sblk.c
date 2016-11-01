@@ -87,7 +87,7 @@ struct nvm_sblk* nvm_sblk_new(struct nvm_dev *dev,
 
 	/* Overwrite with channels and luns */
 	sblk->geo.nchannels = (sblk->end.g.ch - sblk->bgn.g.ch) + 1;
-	sblk->geo.nluns = (sblk->end.g.ch - sblk->bgn.g.ch) + 1;
+	sblk->geo.nluns = (sblk->end.g.lun - sblk->bgn.g.lun) + 1;
 
 	/* Derive total number of bytes in sblk */
 	sblk->geo.tbytes = sblk->geo.nchannels * sblk->geo.nluns * \
@@ -267,6 +267,7 @@ void nvm_sblk_pr(struct nvm_sblk *sblk)
 	printf(" "); nvm_dev_pr(sblk->dev);
 	printf(" bgn "); nvm_addr_pr(sblk->bgn);
 	printf(" end "); nvm_addr_pr(sblk->end);
+	printf(" "); nvm_geo_pr(sblk->geo);
 	printf("}\n");
 }
 

@@ -40,13 +40,11 @@ void timer_pr(const char* tool)
 
 int erase(NVM_DEV dev, NVM_GEO geo, NVM_SBLK sblk, int flags)
 {
-	size_t sblk_nbytes;
 	ssize_t err;
 
-	sblk_nbytes = geo.nchannels * geo.nluns * geo.nplanes * \
-			geo.npages * geo.nsectors * geo.nbytes;
+	NVM_GEO sblk_geo = nvm_sblk_attr_geo(sblk);
 
-	printf("** nvm_sblk_erase(...): sblk_nbytes(%lu)\n", sblk_nbytes);
+	printf("** nvm_sblk_erase(...): sblk_tbytes(%lu)\n", sblk_geo.tbytes);
 	nvm_sblk_pr(sblk);
 
 	err = nvm_sblk_erase(sblk);
@@ -59,22 +57,20 @@ int erase(NVM_DEV dev, NVM_GEO geo, NVM_SBLK sblk, int flags)
 
 int write(NVM_DEV dev, NVM_GEO geo, NVM_SBLK sblk, int flags)
 {
-	size_t sblk_nbytes;
 	ssize_t err;
 	char *buf;
 
-	sblk_nbytes = geo.nchannels * geo.nluns * geo.nplanes * \
-			geo.npages * geo.nsectors * geo.nbytes;
+	NVM_GEO sblk_geo = nvm_sblk_attr_geo(sblk);
 
-	printf("** nvm_sblk_write(...): sblk_nbytes(%lu)\n", sblk_nbytes);
+	printf("** nvm_sblk_write(...): sblk_tbytes(%lu)\n", sblk_geo.tbytes);
 	nvm_sblk_pr(sblk);
 
-	buf = nvm_buf_alloc(geo, sblk_nbytes);
+	buf = nvm_buf_alloc(geo, sblk_geo.tbytes);
 	if (!buf) {
 		printf("FAILED: allocating buf\n");
 		return -ENOMEM;
 	}
-	nvm_buf_fill(buf, sblk_nbytes);
+	nvm_buf_fill(buf, sblk_geo.tbytes);
 
 	err = nvm_sblk_write(sblk, buf, 0, geo.npages);
 	if (err) {
@@ -88,17 +84,15 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_SBLK sblk, int flags)
 
 int read(NVM_DEV dev, NVM_GEO geo, NVM_SBLK sblk, int flags)
 {
-	size_t sblk_nbytes;
 	ssize_t err;
 	char *buf;
 
-	sblk_nbytes = geo.nchannels * geo.nluns * geo.nplanes * \
-			geo.npages * geo.nsectors * geo.nbytes;
+	NVM_GEO sblk_geo = nvm_sblk_attr_geo(sblk);
 
-	printf("** nvm_sblk_read(...): sblk_nbytes(%lu)\n", sblk_nbytes);
+	printf("** nvm_sblk_read(...): sblk_tbytes(%lu)\n", sblk_geo.tbytes);
 	nvm_sblk_pr(sblk);
 
-	buf = nvm_buf_alloc(geo, sblk_nbytes);
+	buf = nvm_buf_alloc(geo, sblk_geo.tbytes);
 	if (!buf) {
 		printf("FAILED: allocating buf\n");
 		nvm_sblk_free(sblk);
