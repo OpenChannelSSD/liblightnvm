@@ -134,14 +134,17 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg,
 		       size_t count)
 {
 	int ch;
-	ssize_t nerr = 0;
 
-	const int vpage_nbytes = nvm_dev_attr_vpage_nbytes(sblk->dev);
 	const int nplanes = nvm_dev_attr_nplanes(sblk->dev);
 	const int nsectors = nvm_dev_attr_nsectors(sblk->dev);
-	const int len = nplanes * nsectors;
-	
+	const int nbytes = nvm_dev_attr_nbytes(sblk->dev);
+
+	const int nluns = (sblk->end.g.lun - sblk->bgn.g.lun) + 1;
 	const int nchannels = (sblk->end.g.ch - sblk->bgn.g.ch) + 1;
+
+	const int naddrs = nluns * nplanes * nsectors;
+
+	ssize_t nerr = 0;
 
 	#pragma omp parallel for num_threads(nchannels) schedule(static) reduction(+:nerr)
 	for (ch = sblk->bgn.g.ch; ch <= sblk->end.g.ch; ++ch) {
@@ -153,32 +156,26 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg,
 		addr.g.ch = ch;
 		
 		for (pg_off = pg; pg_off < pg+count; ++pg_off) {
-			int lun;
+			struct nvm_addr addrs[naddrs];
+			ssize_t err;
+
+			int i;
 
 			addr.g.pg = pg_off;
 
-			for (lun = sblk->bgn.g.lun; lun <= sblk->end.g.lun; ++lun) {
-				const char *data = buf + pg_off * vpage_nbytes;
-				struct nvm_addr list[len];
-				ssize_t err;
-				int i;
+			for (i = 0; i < naddrs; ++i) {
+				addrs[i].ppa = addr.ppa;
+				addrs[i].g.sec = i % nsectors;
+				addrs[i].g.pl = (i / nsectors) % nplanes;
+				addrs[i].g.lun = ((i / nsectors) / nplanes) % nluns + sblk->bgn.g.lun;
+			}
 
-				addr.g.lun = lun;
-
-				for (i = 0; i < len; ++i) {
-					list[i].ppa = addr.ppa;
-					list[i].g.sec = i % nsectors;
-					list[i].g.pl = (i / nsectors) % nplanes;
-				}
-
-				// TODO: Fix buffer offset and ordering
-				err = nvm_addr_write(sblk->dev, list, len,
-						     data,
-						     NVM_MAGIC_FLAG_DEFAULT);
-				if (err) {
-					NVM_DEBUG("sblk_write err(%d)\n", err);
-					++nerr;
-				}
+			err = nvm_addr_write(sblk->dev, addrs, naddrs,
+					    buf + naddrs * nbytes * pg_off,
+					    NVM_MAGIC_FLAG_DEFAULT);
+			if (err) {
+				NVM_DEBUG("sblk_read err(%d)\n", err);
+				++nerr;
 			}
 		}
 	}
@@ -190,13 +187,17 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t pg,
 		      size_t count)
 {
 	int ch;
-	ssize_t nerr = 0;
 
 	const int nplanes = nvm_dev_attr_nplanes(sblk->dev);
 	const int nsectors = nvm_dev_attr_nsectors(sblk->dev);
-	const int len = nplanes * nsectors;
+	const int nbytes = nvm_dev_attr_nbytes(sblk->dev);
 
+	const int nluns = (sblk->end.g.lun - sblk->bgn.g.lun) + 1;
 	const int nchannels = (sblk->end.g.ch - sblk->bgn.g.ch) + 1;
+
+	const int naddrs = nluns * nplanes * nsectors;
+
+	ssize_t nerr = 0;
 
 	#pragma omp parallel for num_threads(nchannels) schedule(static) reduction(+:nerr)
 	for (ch = sblk->bgn.g.ch; ch <= sblk->end.g.ch; ++ch) {
@@ -208,30 +209,26 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t pg,
 		addr.g.ch = ch;
 		
 		for (pg_off = pg; pg_off < pg+count; ++pg_off) {
-			int lun;
+			struct nvm_addr addrs[naddrs];
+			ssize_t err;
+
+			int i;
 
 			addr.g.pg = pg_off;
 
-			for (lun = sblk->bgn.g.lun; lun <= sblk->end.g.lun; ++lun) {
-				struct nvm_addr list[len];
-				ssize_t err;
-				int i;
+			for (i = 0; i < naddrs; ++i) {
+				addrs[i].ppa = addr.ppa;
+				addrs[i].g.sec = i % nsectors;
+				addrs[i].g.pl = (i / nsectors) % nplanes;
+				addrs[i].g.lun = ((i / nsectors) / nplanes) % nluns + sblk->bgn.g.lun;
+			}
 
-				addr.g.lun = lun;
-
-				for (i = 0; i < len; ++i) {
-					list[i].ppa = addr.ppa;
-					list[i].g.sec = i % nsectors;
-					list[i].g.pl = (i / nsectors) % nplanes;
-				}
-
-				// TODO: Fix buffer offset
-				err = nvm_addr_read(sblk->dev, list, len, buf,
-						     NVM_MAGIC_FLAG_DEFAULT);
-				if (err) {
-					NVM_DEBUG("sblk_read err(%d)\n", err);
-					++nerr;
-				}
+			err = nvm_addr_read(sblk->dev, addrs, naddrs,
+					    buf + naddrs * nbytes * pg_off,
+					    NVM_MAGIC_FLAG_DEFAULT);
+			if (err) {
+				NVM_DEBUG("sblk_read err(%d)\n", err);
+				++nerr;
 			}
 		}
 	}
