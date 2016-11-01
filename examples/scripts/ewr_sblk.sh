@@ -1,20 +1,27 @@
 #!/usr/bin/env bash
 
-BLK=$1
-if [ -z "$BLK" ]; then
-	echo "usage: ./sbl_ewr.sh [SPANNED_BLK_IDX]"
+function usage {
+	echo "usage: ./sbl_ewr.sh LNVM_DEV CH_BGN CH_END LUN_BGN LUN_END BLK DRY"
 	exit
+}
+
+LNVM_DEV=$1
+CH_BEGIN=$2
+CH_END=$3
+LUN_BEGIN=$4
+LUN_END=$5
+BLK=$6
+DRY=$7
+
+if [ -z "$LNVM_DEV" ] || [ -z "$CH_BEGIN" ] || [ -z "$CH_END" ] || \
+   [ -z "$LUN_BEGIN" ] || [ -z "$LUN_END" ] || [ -z "$BLK" ] || [ -z "$DRY" ]; then
+	usage
 fi
 
-NVME_DEV=nvme0
-LNVM_DEV=nvme0n1
+SZ=$((${#LNVM_DEV} -2))
+NVME_DEV=`echo "$LNVM_DEV" | cut -c-$SZ`
 NCHANNELS=`cat /sys/class/nvme/$NVME_DEV/$LNVM_DEV/lightnvm/num_channels`
-CH_BEGIN=0
-CH_END=$(($NCHANNELS-1))
 NLUNS=`cat /sys/class/nvme/$NVME_DEV/$LNVM_DEV/lightnvm/num_luns`
-LUN_BEGIN=0
-LUN_END=$(($NLUNS-1))
-DRY=0
 
 echo "** $LNVM_DEV with nchannels($NCHANNELS) and nluns($NLUNS)"
 
@@ -30,7 +37,7 @@ if [ $DRY -ne "1" ]; then
 	echo "nerr($?)"
 fi
 
-echo "** Reading spanned blk($BLK) on $LNVM_DEV"
+echo "** R 'spanned' blk($BLK) on $LNVM_DEV"
 if [ $DRY -ne "1" ]; then
 	/usr/bin/time nvm_sblk read $LNVM_DEV $CH_BEGIN $CH_END $LUN_BEGIN $LUN_END $BLK
 	echo "nerr($?)"
