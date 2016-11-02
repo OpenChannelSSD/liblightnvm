@@ -199,9 +199,8 @@ void nvm_buf_pr(char *buf, size_t buf_len)
 
 void nvm_buf_fill(char *buf, size_t buf_len)
 {
-	int i;
-
-	for (i = 0; i < buf_len; ++i)
+	#pragma omp parallel for schedule(static)
+	for (size_t i = 0; i < buf_len; ++i)
 		buf[i] = (i % 26) + 65;
 }
 
