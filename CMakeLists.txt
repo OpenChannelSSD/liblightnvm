@@ -1,17 +1,16 @@
 cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
-include(FeatureSummary)
-include(use_c99)
-
 set(NVM_VERSION_MAJOR 0)
 set(NVM_VERSION_MINOR 0)
 set(NVM_VERSION_PATCH 1)
 set(NVM_VERSION "${NVM_VERSION_MAJOR}.${NVM_VERSION_MINOR}.${NVM_VERSION_PATCH}")
 
 project(liblightnvm C)
+include(FeatureSummary)
+include(FindOpenMP)
+include(use_c99)
 use_c99()
 
-find_package(OpenMP)
 if (OPENMP_FOUND)
 	set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 endif()
