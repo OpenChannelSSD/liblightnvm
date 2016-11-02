@@ -106,47 +106,45 @@ void nvm_sblk_free(struct nvm_sblk *sblk)
 
 ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 {
-	ssize_t nerr = 0;
-
 	const struct nvm_geo geo = nvm_sblk_attr_geo(sblk);
 
 	const int nchannels = geo.nchannels;
+	const int nluns = geo.nluns;
 	const int nplanes = geo.nplanes;
+	const int naddrs = nluns * nplanes;
+
+	const struct nvm_addr bgn = sblk->bgn;
+	const struct nvm_addr end = sblk->end;
+
+	ssize_t nerr = 0;
 
 	#pragma omp parallel for num_threads(nchannels) schedule(static) reduction(+:nerr)
-	for (int ch = sblk->bgn.g.ch; ch <= sblk->end.g.ch; ++ch) {
-		int lun;
+	for (int ch = bgn.g.ch; ch <= end.g.ch; ++ch) {
+		ssize_t err;
+		struct nvm_addr addrs[naddrs];
 
-		NVM_ADDR addr;
+		for (int i = 0; i < naddrs; ++i) {
+			addrs[i].ppa = bgn.ppa;
+			addrs[i].g.ch = ch;
+			addrs[i].g.lun = (i / nplanes) % nluns + bgn.g.lun;
+			addrs[i].g.pl = i % nplanes;
+			// blk is fixed and inherited from bgn
+			// pg is fixed and inherited from bgn (0)
+			// sec is fixed and inherited from bgn (0)
+		}
 		
-		addr.ppa = sblk->bgn.ppa;
-		addr.g.ch = ch;
-
-		for (lun = sblk->bgn.g.lun; lun <= sblk->end.g.lun; ++lun) {
-			struct nvm_addr list[nplanes];
-			ssize_t err;
-			int pl;
-
-			addr.g.lun = lun;
-
-			for (pl = 0; pl < nplanes; ++pl) {
-				list[pl].ppa = addr.ppa;
-				list[pl].g.pl = pl;
-			}
-
-			err = nvm_addr_erase(sblk->dev, list, nplanes,
-					     NVM_MAGIC_FLAG_DEFAULT);
-			if (err) {
-				NVM_DEBUG("sblk_erase err(%d)\n", err);
-				++nerr;
-			}
+		err = nvm_addr_erase(sblk->dev, addrs, naddrs,
+				     NVM_MAGIC_FLAG_DEFAULT);
+		if (err) {
+			NVM_DEBUG("sblk_erase err(%d)\n", err);
+			++nerr;
 		}
 	}
 
 	return -nerr;
 }
 
-ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg,
+ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg_offset,
 		       size_t count)
 {
 	const struct nvm_geo geo = nvm_sblk_attr_geo(sblk);
@@ -156,40 +154,38 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg,
 	const int nplanes = geo.nplanes;
 	const int nsectors = geo.nsectors;
 	const int nbytes = geo.nbytes;
+	const int naddrs = geo.nluns * geo.nplanes * geo.nsectors;
 
-	const int naddrs = nluns * nplanes * nsectors;
+	const struct nvm_addr bgn = sblk->bgn;
+	const struct nvm_addr end = sblk->end;
 
 	ssize_t nerr = 0;
 
 	#pragma omp parallel for num_threads(nchannels) schedule(static) reduction(+:nerr)
-	for (int ch = sblk->bgn.g.ch; ch <= sblk->end.g.ch; ++ch) {
-		int pg_off;
+	for (int ch = bgn.g.ch; ch <= end.g.ch; ++ch) {
 
-		NVM_ADDR addr;
+		struct nvm_addr addrs[naddrs];
+		for (int i = 0; i < naddrs; ++i) {
+			addrs[i].ppa = bgn.ppa;
+			addrs[i].g.ch = ch;
+			addrs[i].g.lun = ((i / nsectors) / nplanes) % nluns + bgn.g.lun;
+			addrs[i].g.pl = (i / nsectors) % nplanes;
+			// blk is fixed and inherited from bgn
+			addrs[i].g.sec = i % nsectors;
+		}
 		
-		addr.ppa = sblk->bgn.ppa;
-		addr.g.ch = ch;
-		
-		for (pg_off = pg; pg_off < pg+count; ++pg_off) {
-			struct nvm_addr addrs[naddrs];
+		for (int pg = pg_offset; pg < pg_offset + count; ++pg) {
 			ssize_t err;
 
-			int i;
-
-			addr.g.pg = pg_off;
-
-			for (i = 0; i < naddrs; ++i) {
-				addrs[i].ppa = addr.ppa;
-				addrs[i].g.sec = i % nsectors;
-				addrs[i].g.pl = (i / nsectors) % nplanes;
-				addrs[i].g.lun = ((i / nsectors) / nplanes) % nluns + sblk->bgn.g.lun;
+			for (int i = 0; i < naddrs; ++i) {
+				addrs[i].g.pg = pg;
 			}
 
 			err = nvm_addr_write(sblk->dev, addrs, naddrs,
-					     buf + naddrs * nbytes * pg_off,
+					     buf + naddrs * nbytes * pg,
 					     NVM_MAGIC_FLAG_DEFAULT);
 			if (err) {
-				NVM_DEBUG("sblk_read err(%d)\n", err);
+				NVM_DEBUG("sblk_write err(%d)\n", err);
 				++nerr;
 			}
 		}
@@ -198,7 +194,7 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg,
 	return -nerr;
 }
 
-ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t pg,
+ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t pg_offset,
 		      size_t count)
 {
 	const struct nvm_geo geo = nvm_sblk_attr_geo(sblk);
@@ -210,34 +206,33 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t pg,
 	const int nbytes = geo.nbytes;
 	const int naddrs = geo.nluns * geo.nplanes * geo.nsectors;
 
+	const struct nvm_addr bgn = sblk->bgn;
+	const struct nvm_addr end = sblk->end;
+
 	ssize_t nerr = 0;
 
 	#pragma omp parallel for num_threads(nchannels) schedule(static) reduction(+:nerr)
-	for (int ch = sblk->bgn.g.ch; ch <= sblk->end.g.ch; ++ch) {
-		int pg_off;
+	for (int ch = bgn.g.ch; ch <= end.g.ch; ++ch) {
 
-		NVM_ADDR addr;
+		struct nvm_addr addrs[naddrs];
+		for (int i = 0; i < naddrs; ++i) {
+			addrs[i].ppa = bgn.ppa;
+			addrs[i].g.ch = ch;
+			addrs[i].g.lun = ((i / nsectors) / nplanes) % nluns + bgn.g.lun;
+			addrs[i].g.pl = (i / nsectors) % nplanes;
+			// blk is fixed and inherited from bgn
+			addrs[i].g.sec = i % nsectors;
+		}
 		
-		addr.ppa = sblk->bgn.ppa;
-		addr.g.ch = ch;
-		
-		for (pg_off = pg; pg_off < pg+count; ++pg_off) {
-			struct nvm_addr addrs[naddrs];
+		for (int pg = pg_offset; pg < pg_offset + count; ++pg) {
 			ssize_t err;
 
-			int i;
-
-			addr.g.pg = pg_off;
-
-			for (i = 0; i < naddrs; ++i) {
-				addrs[i].ppa = addr.ppa;
-				addrs[i].g.sec = i % nsectors;
-				addrs[i].g.pl = (i / nsectors) % nplanes;
-				addrs[i].g.lun = ((i / nsectors) / nplanes) % nluns + sblk->bgn.g.lun;
+			for (int i = 0; i < naddrs; ++i) {
+				addrs[i].g.pg = pg;
 			}
 
 			err = nvm_addr_read(sblk->dev, addrs, naddrs,
-					    buf + naddrs * nbytes * pg_off,
+					    buf + naddrs * nbytes * pg,
 					    NVM_MAGIC_FLAG_DEFAULT);
 			if (err) {
 				NVM_DEBUG("sblk_read err(%d)\n", err);
