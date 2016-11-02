@@ -7,7 +7,9 @@ set(NVM_VERSION "${NVM_VERSION_MAJOR}.${NVM_VERSION_MINOR}.${NVM_VERSION_PATCH}"
 
 project(liblightnvm C)
 include(FeatureSummary)
+if (NOT CMAKE_VERSION VERSION_LESS "2.8.12")
 include(FindOpenMP)
+endif()
 include(use_c99)
 use_c99()
 
