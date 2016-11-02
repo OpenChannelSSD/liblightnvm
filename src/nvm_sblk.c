@@ -106,7 +106,6 @@ void nvm_sblk_free(struct nvm_sblk *sblk)
 
 ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 {
-	int ch;
 	ssize_t nerr = 0;
 
 	const struct nvm_geo geo = nvm_sblk_attr_geo(sblk);
@@ -115,7 +114,7 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 	const int nplanes = geo.nplanes;
 
 	#pragma omp parallel for num_threads(nchannels) schedule(static) reduction(+:nerr)
-	for (ch = sblk->bgn.g.ch; ch <= sblk->end.g.ch; ++ch) {
+	for (int ch = sblk->bgn.g.ch; ch <= sblk->end.g.ch; ++ch) {
 		int lun;
 
 		NVM_ADDR addr;
@@ -150,8 +149,6 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg,
 		       size_t count)
 {
-	int ch;
-
 	const struct nvm_geo geo = nvm_sblk_attr_geo(sblk);
 
 	const int nchannels = geo.nchannels;
@@ -165,7 +162,7 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg,
 	ssize_t nerr = 0;
 
 	#pragma omp parallel for num_threads(nchannels) schedule(static) reduction(+:nerr)
-	for (ch = sblk->bgn.g.ch; ch <= sblk->end.g.ch; ++ch) {
+	for (int ch = sblk->bgn.g.ch; ch <= sblk->end.g.ch; ++ch) {
 		int pg_off;
 
 		NVM_ADDR addr;
@@ -204,8 +201,6 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg,
 ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t pg,
 		      size_t count)
 {
-	int ch;
-
 	const struct nvm_geo geo = nvm_sblk_attr_geo(sblk);
 
 	const int nchannels = geo.nchannels;
@@ -218,7 +213,7 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t pg,
 	ssize_t nerr = 0;
 
 	#pragma omp parallel for num_threads(nchannels) schedule(static) reduction(+:nerr)
-	for (ch = sblk->bgn.g.ch; ch <= sblk->end.g.ch; ++ch) {
+	for (int ch = sblk->bgn.g.ch; ch <= sblk->end.g.ch; ++ch) {
 		int pg_off;
 
 		NVM_ADDR addr;
