@@ -32,6 +32,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <sys/types.h>
 
 #ifndef DISK_NAME_LEN
 #define DISK_NAME_LEN 32
