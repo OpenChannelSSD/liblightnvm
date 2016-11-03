@@ -27,16 +27,6 @@
  */
 #include <libudev.h>
 
-#define nvm_util_max(a,b) \
-   ({ __typeof__ (a) _a = (a); \
-       __typeof__ (b) _b = (b); \
-     _a > _b ? _a : _b; })
-
-#define nvm_util_min(a,b) \
-   ({ __typeof__ (a) _a = (a); \
-       __typeof__ (b) _b = (b); \
-     _a < _b ? _a : _b; })
-
 int nvm_execute_ioctl(int opcode, void *u);
 void nvm_misc_pr(void);
 struct udev_device *udev_dev_find(struct udev *udev, const char *subsystem,
