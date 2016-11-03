@@ -1,5 +1,5 @@
 /*
- * utils - Helper functions and utitilies used by liblnvm
+ * nvm_omp - include-guard for OpenMP and fall-backs
  *
  * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
  * Copyright (C) 2015 Matias Bjørling <matias@cnexlabs.com>
@@ -25,14 +25,13 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef __NVM_UTIL_H
-#define __NVM_UTIL_H
+#ifndef __NVM_OMP_H
+#define __NVM_OMP_H
 
-#include <libudev.h>
+#ifdef _OPENMP
+#include <omp.h>
+#else
+#define omp_get_thread_num() 0
+#endif
 
-void nvm_misc_pr(void);
-struct udev_device *udev_dev_find(struct udev *udev, const char *subsystem,
-				  const char *devtype, const char *dev_name);
-struct udev_device *udev_nvmdev_find(struct udev *udev, const char *dev_name);
-
-#endif /* __NMV_UTIL_H */
+#endif /* __NVM_OMP_H */

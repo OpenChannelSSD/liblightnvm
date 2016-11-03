@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <omp.h>
 #include <liblightnvm.h>
 
 #include <sys/time.h>

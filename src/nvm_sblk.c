@@ -35,11 +35,7 @@
 #include <liblightnvm.h>
 #include <nvm.h>
 #include <nvm_debug.h>
-#ifdef _OPENMP
-#include <omp.h>
-#else
-#define omp_get_thread_num() 0
-#endif
+#include <nvm_omp.h>
 
 struct nvm_sblk* nvm_sblk_new(struct nvm_dev *dev,
                               int ch_bgn, int ch_end,
@@ -136,7 +132,7 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 		err = nvm_addr_erase(sblk->dev, addrs, naddrs,
 				     NVM_MAGIC_FLAG_DEFAULT);
 		if (err) {
-			NVM_DEBUG("sblk_erase err(%d)\n", err);
+			NVM_DEBUG("sblk_erase err(%ld)\n", err);
 			++nerr;
 		}
 	}
@@ -184,7 +180,7 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 					     buf + naddrs * nbytes * pg,
 					     NVM_MAGIC_FLAG_DEFAULT);
 			if (err) {
-				NVM_DEBUG("sblk_write err(%d)\n", err);
+				NVM_DEBUG("sblk_write err(%ld)\n", err);
 				++nerr;
 			}
 		}
@@ -233,7 +229,7 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 					    buf + naddrs * nbytes * pg,
 					    NVM_MAGIC_FLAG_DEFAULT);
 			if (err) {
-				NVM_DEBUG("sblk_read err(%d)\n", err);
+				NVM_DEBUG("sblk_read err(%ld)\n", err);
 				++nerr;
 			}
 		}
