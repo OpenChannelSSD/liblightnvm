@@ -32,6 +32,7 @@ set(HEADER_FILES
 	include/liblightnvm.h
 	include/nvm.h
 	include/nvm_debug.h
+	include/nvm_omp.h
 	include/nvm_util.h)
 
 set(SOURCE_FILES

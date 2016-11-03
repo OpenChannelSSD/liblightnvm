@@ -132,49 +132,23 @@ void* nvm_buf_alloc(NVM_GEO geo, size_t nbytes)
 	return buf;
 }
 
-void* nvm_vpg_buf_alloc(NVM_GEO geo)
+void nvm_buf_fill(char *buf, size_t nbytes)
 {
-	char *buf;
-	int ret;
-
-	ret = posix_memalign((void**)&buf, geo.nbytes, geo.vpg_nbytes);
-	if (ret) {
-		return NULL;
-	}
-
-	return buf;
+	#pragma omp parallel for schedule(static)
+	for (size_t i = 0; i < nbytes; ++i)
+		buf[i] = (i % 26) + 65;
 }
 
-void* nvm_vblk_buf_alloc(NVM_GEO geo)
-{
-	char *buf;
-	int ret;
-
-	ret = posix_memalign((void**)&buf, geo.nbytes, geo.vblk_nbytes);
-	if (ret) {
-		return NULL;
-	}
-
-	return buf;
-}
-
-void nvm_buf_pr(char *buf, size_t buf_len)
+void nvm_buf_pr(char *buf, size_t nbytes)
 {
 	const int width = 32;
 	int i;
 	printf("** NVM_BUF_PR - BEGIN **");
-	for (i = 0; i < buf_len; i++) {
+	for (i = 0; i < nbytes; i++) {
 		if (!(i % width))
 			printf("\ni[%d,%d]: ", i, i+(width-1));
 		printf(" %c", buf[i]);
 	}
 	printf("\n** NVM_BUF_PR - END **\n");
-}
-
-void nvm_buf_fill(char *buf, size_t buf_len)
-{
-	#pragma omp parallel for schedule(static)
-	for (size_t i = 0; i < buf_len; ++i)
-		buf[i] = (i % 26) + 65;
 }
 

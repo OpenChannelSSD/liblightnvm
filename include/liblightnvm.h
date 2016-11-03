@@ -130,57 +130,6 @@ void nvm_dev_pr(NVM_DEV dev);
 int nvm_dev_mark(NVM_DEV dev, NVM_ADDR addr, int type);
 
 /**
- * @return Number of channels on given device
- */
-int nvm_dev_attr_nchannels(NVM_DEV dev);
-
-/**
- * @return Number of luns (NAND dies) on given device
- */
-int nvm_dev_attr_nluns(NVM_DEV dev);
-
-/**
- * @return Number of planes in a lun on given device
- */
-int nvm_dev_attr_nplanes(NVM_DEV dev);
-
-/**
- * @return Number of blocks per plane on given device
-
- */
-int nvm_dev_attr_nblocks(NVM_DEV dev);
-
-/**
- * @return Number of pages per block on given device
-
- */
-int nvm_dev_attr_npages(NVM_DEV dev);
-
-/**
- * @return Number of sectors per page on given device
-
- */
-int nvm_dev_attr_nsectors(NVM_DEV dev);
-
-/**
- * @return Number of bytes per sector on given device
-
- */
-int nvm_dev_attr_nbytes(NVM_DEV dev);
-
-/**
- * @return Number of bytes occupied by a vpage
-
- */
-int nvm_dev_attr_vpage_nbytes(NVM_DEV dev);
-
-/**
- * @return Number of bytes occupied by a vblk
-
- */
-int nvm_dev_attr_vblk_nbytes(NVM_DEV dev);
-
-/**
  * Returns of the geometry related device information including derived
  * information such as total number of bytes etc.
  *
@@ -191,18 +140,20 @@ int nvm_dev_attr_vblk_nbytes(NVM_DEV dev);
 NVM_GEO nvm_dev_attr_geo(NVM_DEV dev);
 
 void *nvm_buf_alloc(NVM_GEO geo, size_t nbytes);
-void *nvm_vblk_buf_alloc(NVM_GEO geo);
-void *nvm_vpg_buf_alloc(NVM_GEO geo);
-
-/**
- * Prints `buf` to stdout
- */
-void nvm_buf_pr(char *buf, size_t buf_len);
 
 /**
  * Fills `buf` with chars A-Z
  */
-void nvm_buf_fill(char *buf, size_t buf_len);
+void nvm_buf_fill(char *buf, size_t nbytes);
+
+/**
+ * Prints `buf` to stdout
+ */
+void nvm_buf_pr(char *buf, size_t nbytes);
+
+/**
+ *      address interface
+ */
 
 void nvm_addr_pr(NVM_ADDR addr);
 ssize_t nvm_addr_erase(NVM_DEV dev, NVM_ADDR list[], int len, uint16_t flags);
@@ -210,6 +161,10 @@ ssize_t nvm_addr_write(NVM_DEV dev, NVM_ADDR list[], int len, const void *buf,
                        uint16_t flags);
 ssize_t nvm_addr_read(NVM_DEV dev, NVM_ADDR list[], int len, void *buf,
                       uint16_t flags);
+
+/**
+ *      virtual block interface
+ */
 
 NVM_VBLK nvm_vblk_new(void);
 NVM_VBLK nvm_vblk_new_on_dev(NVM_DEV dev, uint64_t ppa);
@@ -287,7 +242,7 @@ ssize_t nvm_vblk_write(NVM_VBLK vblk, const void *buf);
 ssize_t nvm_vblk_erase(NVM_VBLK vblk);
 
 /**
- * Spanning block interface
+ *      spanning block interface
  */
 
 NVM_SBLK nvm_sblk_new(NVM_DEV dev, int ch_bgn, int ch_end, int lun_bgn,

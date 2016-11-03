@@ -95,7 +95,7 @@ int pread(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 		return -ENOMEM;
 	}
 
-	buf_len = nvm_dev_attr_vpage_nbytes(dev);
+	buf_len = geo.vpg_nbytes;
 	buf = nvm_buf_alloc(geo, buf_len);
 	if (!buf) {
 		printf("FAILED: allocating buf\n");
@@ -133,7 +133,7 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 		return -ENOMEM;
 	}
 
-	buf_len = nvm_dev_attr_vblk_nbytes(dev);
+	buf_len = geo.vblk_nbytes;
 	buf = nvm_buf_alloc(geo, buf_len);
 	if (!buf) {
 		printf("FAILED: allocating buf\n");
@@ -171,7 +171,7 @@ int pwrite(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 		return -ENOMEM;
 	}
 
-	buf_len = nvm_dev_attr_vpage_nbytes(dev);
+	buf_len = geo.vpg_nbytes;
 	buf = nvm_buf_alloc(geo, buf_len);
 	if (!buf) {
 		printf("FAILED: allocating buf\n");
@@ -209,7 +209,7 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 		return -ENOMEM;
 	}
 
-	buf_len = nvm_dev_attr_vblk_nbytes(dev);
+	buf_len = geo.vblk_nbytes;
 	buf = nvm_buf_alloc(geo, buf_len);
 	if (!buf) {
 		printf("FAILED: allocating buf\n");

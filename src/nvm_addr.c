@@ -25,9 +25,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <assert.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
@@ -94,8 +92,9 @@ ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr list[], int len,
 
 int nvm_dev_mark(struct nvm_dev *dev, struct nvm_addr addr, int type)
 {
-	const int NPLANES = nvm_dev_attr_nplanes(dev);
+	struct nvm_geo geo = nvm_dev_attr_geo(dev);
 
+	const int NPLANES = geo.nplanes;
 	struct nvm_addr ppas[NPLANES];
 	struct nvm_ioctl_dev_pio ctl;
 	int i, ret;

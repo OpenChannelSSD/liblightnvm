@@ -211,7 +211,9 @@ ssize_t nvm_vblk_read(struct nvm_vblk *vblk, void *buf)
 
 ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 {
-	const int len = nvm_dev_attr_nplanes(vblk->dev);
+	struct nvm_geo geo = nvm_dev_attr_geo(vblk->dev);
+
+	const int len = geo.nplanes;
 	struct nvm_addr list[len];
 	int i;
 
