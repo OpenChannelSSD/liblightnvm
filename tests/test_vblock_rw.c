@@ -12,7 +12,7 @@ static char nvm_dev_name[DISK_NAME_LEN] = "nvme0n1";
 void __TEST_VBLOCK_PWRITE_READ_N(int iterations, int npage_io)
 {
 	NVM_DEV dev;
-	uint32_t sector_nbytes, vpage_nbytes;
+	NVM_GEO geo;
 
 	NVM_VBLK vblock;
 	int i, j;
@@ -20,20 +20,19 @@ void __TEST_VBLOCK_PWRITE_READ_N(int iterations, int npage_io)
 
 	dev = nvm_dev_open(nvm_dev_name);	/* Open device */
 	CU_ASSERT_PTR_NOT_NULL(dev);
-
-	sector_nbytes = nvm_dev_attr_nbytes(dev);
-	vpage_nbytes = nvm_dev_attr_vpage_nbytes(dev);
+	
+	geo = nvm_dev_attr_geo(dev);
 
 	for(i=0; i<iterations; ++i) {
-		char *wbuf = NULL;
-		char *rbuf = NULL;
+		char *wbuf;
+		char *rbuf;
 						/* Allocate buffers */
-		err = posix_memalign((void**)&wbuf, sector_nbytes, vpage_nbytes);
-		CU_ASSERT(!err);
+		wbuf = nvm_buf_alloc(geo, geo.vpg_nbytes);
+		CU_ASSERT_PTR_NOT_NULL(wbuf);
 		strcpy(wbuf, "Hello World of NVM");
 
-		err = posix_memalign((void**)&rbuf, sector_nbytes, vpage_nbytes);
-		CU_ASSERT(!err);
+		rbuf = nvm_buf_alloc(geo, geo.vpg_nbytes);
+		CU_ASSERT_PTR_NOT_NULL(rbuf);
 
 		vblock = nvm_vblk_new();	/* Allocate vblock */
 		CU_ASSERT_PTR_NOT_NULL(vblock);

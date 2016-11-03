@@ -65,12 +65,11 @@ void test_VBLOCK_CONCUR(void)
 		vblock[i] = nvm_vblk_new();
 		err = nvm_vblk_gets(vblock[i], dev, 0, 0);
 		CU_ASSERT(!err);
-		//nvm_vblk_pr(vblock[i]);
 	}
 
-	err = posix_memalign((void**)&wbuf, geo.nbytes, geo.vpg_nbytes);
-	CU_ASSERT(!err);
-	if (err) {
+	wbuf = nvm_buf_alloc(geo, geo.vpg_nbytes);
+	CU_ASSERT_PTR_NOT_NULL(wbuf);
+	if (!wbuf) {
 		printf("Failed allocating write buffer(%p)\n", wbuf);
 		return;
 	}

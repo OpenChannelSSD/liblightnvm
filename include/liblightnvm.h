@@ -295,26 +295,14 @@ NVM_SBLK nvm_sblk_new(NVM_DEV dev, int ch_bgn, int ch_end, int lun_bgn,
 void nvm_sblk_free(NVM_SBLK sblk);
 
 ssize_t nvm_sblk_erase(NVM_SBLK sblk);
-ssize_t nvm_sblk_write(NVM_SBLK sblk, const void *buf, size_t pg, size_t count);
-ssize_t nvm_sblk_read(NVM_SBLK sblk, void *buf, size_t pg, size_t count);
+ssize_t nvm_sblk_write(NVM_SBLK sblk, const void *buf, size_t count);
+ssize_t nvm_sblk_read(NVM_SBLK sblk, void *buf, size_t count);
 
 NVM_DEV nvm_sblk_attr_dev(NVM_SBLK sblk);
 NVM_ADDR nvm_sblk_attr_bgn(NVM_SBLK sblk);
 NVM_ADDR nvm_sblk_attr_end(NVM_SBLK sblk);
 NVM_GEO nvm_sblk_attr_geo(NVM_SBLK sblk);
 void nvm_sblk_pr(NVM_SBLK sblk);
-
-/**
- * Beam interface
- */
-int nvm_beam_init(void);
-void nvm_beam_exit(void);
-int nvm_beam_create(const char *dev_name, int lun, int flags);
-void nvm_beam_destroy(int beam, int flags);
-ssize_t nvm_beam_append(int beam, const void *buf, size_t count);
-ssize_t nvm_beam_read(int beam, void *buf, size_t count, off_t offset,
-		      int flags);
-int nvm_beam_sync(int beam, int flags);
 
 #ifdef __cplusplus
 }

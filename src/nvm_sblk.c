@@ -144,8 +144,7 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 	return -nerr;
 }
 
-ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg_offset,
-		       size_t count)
+ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 {
 	const struct nvm_geo geo = nvm_sblk_attr_geo(sblk);
 
@@ -174,7 +173,7 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg_offset,
 			addrs[i].g.sec = i % nsectors;
 		}
 		
-		for (int pg = pg_offset; pg < pg_offset + count; ++pg) {
+		for (int pg = 0; pg < count; ++pg) {
 			ssize_t err;
 
 			for (int i = 0; i < naddrs; ++i) {
@@ -194,8 +193,7 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t pg_offset,
 	return -nerr;
 }
 
-ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t pg_offset,
-		      size_t count)
+ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 {
 	const struct nvm_geo geo = nvm_sblk_attr_geo(sblk);
 
@@ -224,7 +222,7 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t pg_offset,
 			addrs[i].g.sec = i % nsectors;
 		}
 		
-		for (int pg = pg_offset; pg < pg_offset + count; ++pg) {
+		for (int pg = 0; pg < count; ++pg) {
 			ssize_t err;
 
 			for (int i = 0; i < naddrs; ++i) {

@@ -83,7 +83,7 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_SBLK sblk, int flags)
 	timer_pr("nvm_buf_fill");
 
 	timer_start();
-	err = nvm_sblk_write(sblk, buf, 0, geo.npages);
+	err = nvm_sblk_write(sblk, buf, geo.npages);
 	if (err) {
 		printf("FAILED: nvm_sblk_write err(%ld)\n", err);
 	}
@@ -116,7 +116,7 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_SBLK sblk, int flags)
 	timer_pr("nvm_buf_alloc");
 
 	timer_start();
-	err = nvm_sblk_read(sblk, buf, 0, geo.npages);
+	err = nvm_sblk_read(sblk, buf, geo.npages);
 	if (err) {
 		printf("FAILED: nvm_sblk_read err(%ld)\n", err);
 	}
