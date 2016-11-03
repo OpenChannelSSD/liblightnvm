@@ -25,6 +25,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#define _GNU_SOURCE
+#include <stdlib.h>
+#undef _GNU_SOURCE
+
 #include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
@@ -33,9 +37,6 @@
 #include <nvm.h>
 #include <nvm_util.h>
 #include <nvm_debug.h>
-#define _GNU_SOURCE
-#include <stdlib.h>
-#undef _GNU_SOURCE
 
 void nvm_misc_pr(void)
 {
