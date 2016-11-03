@@ -22,7 +22,6 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/test_vblock.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_vblock_rw.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_vblock_gp_n.c
-	${CMAKE_CURRENT_SOURCE_DIR}/test_beam.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_concur.c)
 
 #

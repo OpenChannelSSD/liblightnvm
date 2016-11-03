@@ -33,23 +33,9 @@
 #include <nvm.h>
 #include <nvm_util.h>
 #include <nvm_debug.h>
-
-int nvm_execute_ioctl(int opcode, void *u)
-{
-	char dev[FILENAME_MAX] = NVM_CTRL_FILE;
-	int ret, fd;
-
-	fd = open(dev, O_WRONLY);
-	if (fd < 0)
-		return fd;
-
-	ret = ioctl(fd, opcode, u);
-	if (ret)
-		return ret;
-
-	close(fd);
-	return 0;
-}
+#define _GNU_SOURCE
+#include <stdlib.h>
+#undef _GNU_SOURCE
 
 void nvm_misc_pr(void)
 {

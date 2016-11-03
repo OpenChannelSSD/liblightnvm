@@ -28,15 +28,11 @@
 #define __NVM_H
 
 #include <liblightnvm.h>
-#include <uthash.h>
-#include <nvm_atomic.h>
 
 struct nvm_dev {
 	char name[NVM_DISK_NAME_LEN];	/* Device name e.g. nvme0n1 */
 	struct nvm_geo geo;		/* Device information */
 	int fd;				/* Char device for IOCTL */
-	atomic_cnt ref_cnt;		/* Reference counter */
-	UT_hash_handle hh;		/* Handle for device registry */
 };
 
 struct nvm_vblk {

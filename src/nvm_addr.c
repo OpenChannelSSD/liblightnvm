@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <string.h>
 #include <errno.h>
 #include <stdio.h>
 #include <linux/lightnvm.h>
@@ -89,6 +90,54 @@ ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr list[], int len,
 		      void* buf, uint16_t flags)
 {
 	return nvm_addr_io(dev, list, len, buf, flags, NVM_MAGIC_OPCODE_READ);
+}
+
+int nvm_dev_mark(struct nvm_dev *dev, struct nvm_addr addr, int type)
+{
+	const int NPLANES = nvm_dev_attr_nplanes(dev);
+
+	struct nvm_addr ppas[NPLANES];
+	struct nvm_ioctl_dev_pio ctl;
+	int i, ret;
+
+	switch (type) {
+		case 0x0:	/* MAGIC -- NVM_BLK_T_FREE aka "good" */
+		case 0x1:	/* MAGIC -- NVM_BLK_T_BAD */
+		case 0x2:	/* MAGIC -- NVM_BLK_T_GRWN_BAD */
+			break;
+		default:
+			return -EINVAL;
+	}
+
+	for (i = 0; i < NPLANES; i++) {	/* Unroll over nplanes */
+		struct nvm_addr ppa;
+
+		ppa.ppa = addr.ppa;
+		ppa.g.pg = 0;
+		ppa.g.sec = 0;
+		ppa.g.pl = i;
+
+		ppas[i] = ppa;
+	}
+
+	memset(&ctl, 0, sizeof(ctl));
+	ctl.opcode = 0xf1;	/* MAGIC -- NVM_OP_PWRITE */
+	ctl.flags = type;	/* MAGIC -- encoding bad-block type in flags */
+	ctl.nppas = NPLANES;
+	ctl.ppas = (uint64_t)ppas;
+
+	ret = ioctl(dev->fd, NVM_DEV_PIO, &ctl);
+	if (ret) {
+		NVM_DEBUG("failed ret(%d)\n", ret);
+		return ret;
+	}
+
+	if (ctl.result) {
+		NVM_DEBUG("result(%u)\n", ctl.result);
+		NVM_DEBUG("status(%llu)\n", (unsigned long long)ctl.status);
+	}
+
+	return ret;
 }
 
 void nvm_addr_pr(struct nvm_addr addr)

@@ -77,11 +77,8 @@ test_vblock_gp_n:
 test_concur:
 	sudo nvm_test_concur nvme0n1
 
-test_beam:
-	sudo nvm_test_beam nvme0n1
-
 # ... all of them
-test: test_dev test_vblock test_vblock_rw test_vblock_gp_n test_concur test_beam
+test: test_dev test_vblock test_vblock_rw test_vblock_gp_n test_concur
 
 test_nb: test_dev test_vblock test_vblock_rw test_vblock_gp_n test_concur
 

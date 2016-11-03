@@ -21,18 +21,19 @@ void test_DEV_OPEN_CLOSE(void)
 
 void test_DEV_OPEN_CLOSE_N(void)
 {
-	NVM_DEV dev;
-	const int n = 10;
 	int i;
 
+	const int n = 10;
+	NVM_DEV dev[n];
+
 	for(i=0; i<n; ++i) {
-		dev = nvm_dev_open(nvm_dev_name);
-		CU_ASSERT_PTR_NOT_NULL(dev);
+		dev[i] = nvm_dev_open(nvm_dev_name);
+		CU_ASSERT_PTR_NOT_NULL(dev[i]);
 	}
 
 	for(i=0; i<n; ++i) {
-		nvm_dev_close(dev);
-		CU_ASSERT_PTR_NOT_NULL(dev);
+		nvm_dev_close(dev[i]);
+		CU_ASSERT_PTR_NOT_NULL(dev[i]);
 		// still dangling...
 	}
 }

@@ -30,21 +30,17 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 
 set(HEADER_FILES
 	include/liblightnvm.h
-	include/likely.h
 	include/nvm.h
-	include/nvm_atomic.h
-	include/nvm_beam.h
 	include/nvm_debug.h
-	include/nvm_util.h
-	include/uthash.h)
+	include/nvm_util.h)
 
 set(SOURCE_FILES
-	src/nvm_beam.c
 	src/nvm_dev.c
 	src/nvm_util.c
-	src/nvm_sblk.c
+	src/nvm_addr.c
 	src/nvm_vblk.c
-	src/nvm_addr.c)
+	src/nvm_sblk.c
+)
 
 include_directories("${PROJECT_SOURCE_DIR}/include")
 include_directories("${PROJECT_SOURCE_DIR}/include/linux/uapi")
