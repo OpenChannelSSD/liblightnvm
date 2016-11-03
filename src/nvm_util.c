@@ -27,24 +27,11 @@
  */
 #define _GNU_SOURCE
 #include <stdlib.h>
-#undef _GNU_SOURCE
 
-#include <unistd.h>
-#include <string.h>
-#include <fcntl.h>
-#include <linux/lightnvm.h>
 #include <liblightnvm.h>
-#include <nvm.h>
-#include <nvm_util.h>
+#include <string.h>
 #include <nvm_debug.h>
-
-void nvm_misc_pr(void)
-{
-	printf("_GET(%lu:0x%lx), _PUT(%lu:0x%lx), _PIO(%lu:0x%lx)\n",
-	       NVM_DEV_BLOCK_GET, NVM_DEV_BLOCK_GET,
-	       NVM_DEV_BLOCK_PUT, NVM_DEV_BLOCK_PUT,
-	       NVM_DEV_PIO, NVM_DEV_PIO);
-}
+#include <nvm_util.h>
 
 /*
  * Searches the udev 'subsystem' for device named 'dev_name' of type 'devtype'
