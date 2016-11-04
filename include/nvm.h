@@ -46,7 +46,8 @@ struct nvm_sblk {
   struct nvm_addr bgn;
   struct nvm_addr end;
   struct nvm_geo geo;
-  size_t cursor;
+  size_t curs_w;
+  size_t curs_r;
 };
 
 #endif /* __NVM_H */

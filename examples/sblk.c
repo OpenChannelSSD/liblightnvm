@@ -68,7 +68,7 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_SBLK sblk, int flags)
 	nvm_sblk_pr(sblk);
 	
 	timer_start();
-	buf = nvm_buf_alloc(geo, sblk_geo.tbytes);
+	buf = nvm_buf_alloc(sblk_geo, sblk_geo.tbytes);
 	if (!buf) {
 		printf("FAILED: allocating buf\n");
 		return -ENOMEM;
@@ -82,7 +82,9 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_SBLK sblk, int flags)
 	timer_pr("nvm_buf_fill");
 
 	timer_start();
-	err = nvm_sblk_write(sblk, buf, geo.npages);
+	err = nvm_sblk_write(sblk,
+			     buf,
+			     sblk_geo.nluns * sblk_geo.nchannels *sblk_geo.npages);
 	if (err) {
 		printf("FAILED: nvm_sblk_write err(%ld)\n", err);
 	}
@@ -250,9 +252,10 @@ int main(int argc, char **argv)
 	}
 
 	ret = cmd->func(dev, geo, sblk, cmd->flags);
+	printf("ret(%d)\n", ret);
 
 	nvm_sblk_free(sblk);
 	nvm_dev_close(dev);				// close `dev`
 
-	return ret;
+	return ret != 0;
 }
