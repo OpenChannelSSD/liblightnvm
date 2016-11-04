@@ -235,17 +235,20 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 		int ch = (spg % nchannels) + ch_off;
 		int lun = ((spg / nchannels) % nluns) + lun_off;
 		int vpg = ((spg / nchannels) / nluns) % npages;
-
+		
 		char *buf_off = buf + spg * nbytes * NVM_CMD_NADDR_MIN;
+
+		NVM_DEBUG("spg(%ld), ch(%d), lun(%d), vpg(%d)\n",
+			  spg, ch, lun, vpg);
 
 		struct nvm_addr addrs[NVM_CMD_NADDR_MIN];
 		for (int i = 0; i < NVM_CMD_NADDR_MIN; ++i) {
 			addrs[i].ppa = bgn.ppa;
 			addrs[i].g.ch = ch;
 			addrs[i].g.lun = lun;
+			addrs[i].g.pg = vpg;
 			addrs[i].g.pl = (i / nsectors) % nplanes;
 			// blk is fixed and inherited from bgn
-			addrs[i].g.pg = vpg;
 			addrs[i].g.sec = i % nsectors;
 		}
 
