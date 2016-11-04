@@ -116,6 +116,11 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 
 	ssize_t nerr = 0;
 
+	int PLANE_FLAG = 0x0;
+
+	PLANE_FLAG = (geo.nplanes = 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
+	PLANE_FLAG = (geo.nplanes = 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
+
 	#pragma omp parallel for schedule(static,1) reduction(+:nerr)
 	for (int ch = bgn.g.ch; ch <= end.g.ch; ++ch) {
 		ssize_t err;
@@ -132,7 +137,7 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 		}
 		
 		err = nvm_addr_erase(sblk->dev, addrs, naddrs,
-				     NVM_MAGIC_FLAG_DEFAULT);
+				     PLANE_FLAG);
 		if (err) {
 			NVM_DEBUG("sblk_erase err(%ld)\n", err);
 			++nerr;
@@ -168,6 +173,11 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 
 	ssize_t nerr = 0;
 
+	int PLANE_FLAG = 0x0;
+
+	PLANE_FLAG = (geo.nplanes = 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
+	PLANE_FLAG = (geo.nplanes = 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
+
 	#pragma omp parallel for schedule(static,1) reduction(+:nerr)
 	for (size_t spg = spg_begin; spg < spg_end; spg += NVM_CMD_NOPS) {
 
@@ -199,7 +209,7 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 					     addrs,
 					     NCM_CMD_NADDR,
 					     buf_off,
-					     NVM_MAGIC_FLAG_DEFAULT);
+					     PLANE_FLAG);
 		if (err) {
 			NVM_DEBUG("FAILED: nvm_sblk_write err(%ld)\n", err);
 			++nerr;
@@ -239,6 +249,11 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 
 	ssize_t nerr = 0;
 
+	int PLANE_FLAG = 0x0;
+
+	PLANE_FLAG = (geo.nplanes = 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
+	PLANE_FLAG = (geo.nplanes = 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
+
 	#pragma omp parallel for schedule(static,1) reduction(+:nerr)
 	for (size_t spg = spg_begin; spg < spg_end; spg += NVM_CMD_NOPS) {
 
@@ -270,7 +285,7 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 					     addrs,
 					     NCM_CMD_NADDR,
 					     buf_off,
-					     NVM_MAGIC_FLAG_DEFAULT);
+					     PLANE_FLAG);
 		if (err) {
 			NVM_DEBUG("FAILED: nvm_sblk_read err(%ld)\n", err);
 			++nerr;
