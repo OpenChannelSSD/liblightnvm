@@ -116,7 +116,7 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 
 	ssize_t nerr = 0;
 
-	#pragma omp parallel for schedule(static) reduction(+:nerr)
+	#pragma omp parallel for schedule(static,1) reduction(+:nerr)
 	for (int ch = bgn.g.ch; ch <= end.g.ch; ++ch) {
 		ssize_t err;
 		struct nvm_addr addrs[naddrs];
@@ -165,7 +165,7 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 
 	ssize_t nerr = 0;
 
-	#pragma omp parallel for schedule(static) reduction(+:nerr)
+	#pragma omp parallel for schedule(static,1) reduction(+:nerr)
 	for (size_t spg = spg_begin; spg < spg_end; ++spg) {
 
 		int ch = (spg % nchannels) + ch_off;
@@ -229,7 +229,7 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 
 	ssize_t nerr = 0;
 
-	#pragma omp parallel for schedule(static) reduction(+:nerr)
+	#pragma omp parallel for schedule(static,1) reduction(+:nerr)
 	for (size_t spg = spg_begin; spg < spg_end; ++spg) {
 
 		int ch = (spg % nchannels) + ch_off;
