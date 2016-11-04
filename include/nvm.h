@@ -41,4 +41,12 @@ struct nvm_vblk {
 	uint16_t flags;
 };
 
+struct nvm_sblk {
+  struct nvm_dev *dev;
+  struct nvm_addr bgn;
+  struct nvm_addr end;
+  struct nvm_geo geo;
+  size_t cursor;
+};
+
 #endif /* __NVM_H */

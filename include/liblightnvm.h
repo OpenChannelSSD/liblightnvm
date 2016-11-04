@@ -98,19 +98,6 @@ typedef struct nvm_geo {
 typedef struct nvm_dev *NVM_DEV;
 typedef struct nvm_vblk *NVM_VBLK;
 typedef struct nvm_sblk *NVM_SBLK;
-typedef enum nvm_sblk_span NVM_SBLK_SPAN;
-
-enum nvm_sblk_span {
-  NVM_SBLK_SPAN_CH    = 0x1,
-  NVM_SBLK_SPAN_LUN   = 0x2,
-};
-
-struct nvm_sblk {
-  NVM_DEV dev;
-  NVM_ADDR bgn;
-  NVM_ADDR end;
-  NVM_GEO geo;
-};
 
 void nvm_geo_pr(NVM_GEO geo);
 
