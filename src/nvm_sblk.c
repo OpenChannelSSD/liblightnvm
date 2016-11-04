@@ -118,8 +118,8 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 
 	int PLANE_FLAG = 0x0;
 
-	PLANE_FLAG = (geo.nplanes = 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
-	PLANE_FLAG = (geo.nplanes = 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
+	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
+	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
 
 	#pragma omp parallel for schedule(static,1) reduction(+:nerr)
 	for (int ch = bgn.g.ch; ch <= end.g.ch; ++ch) {
@@ -175,8 +175,8 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 
 	int PLANE_FLAG = 0x0;
 
-	PLANE_FLAG = (geo.nplanes = 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
-	PLANE_FLAG = (geo.nplanes = 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
+	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
+	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
 
 	#pragma omp parallel for schedule(static,1) reduction(+:nerr)
 	for (size_t spg = spg_begin; spg < spg_end; spg += NVM_CMD_NOPS) {
@@ -251,8 +251,8 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 
 	int PLANE_FLAG = 0x0;
 
-	PLANE_FLAG = (geo.nplanes = 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
-	PLANE_FLAG = (geo.nplanes = 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
+	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
+	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
 
 	#pragma omp parallel for schedule(static,1) reduction(+:nerr)
 	for (size_t spg = spg_begin; spg < spg_end; spg += NVM_CMD_NOPS) {
