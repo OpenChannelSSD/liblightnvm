@@ -63,8 +63,8 @@ struct nvm_sblk* nvm_sblk_new(struct nvm_dev *dev,
 		return NULL;
 	}
 
-	sblk->curs_w = 0;
-	sblk->curs_r = 0;
+	sblk->curs_write = 0;
+	sblk->curs_read = 0;
 
 	sblk->dev = dev;
 
@@ -158,39 +158,46 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 	const int nsectors = geo.nsectors;
 	const int nbytes = geo.nbytes;
 
-	const size_t spg_begin = sblk->curs_w;
-	const size_t spg_end = sblk->curs_w + count;
+	const size_t spg_begin = sblk->curs_write;
+	const size_t spg_end = sblk->curs_write + count;
 
-	const int NVM_CMD_NADDR_MIN = nplanes * nsectors;
+	const int NVM_OP_NADDR = nplanes * nsectors;
+	//const int NCM_CMD_NADDR = 32;
+	const int NCM_CMD_NADDR = NVM_OP_NADDR;
+	const size_t NVM_CMD_NOPS = NCM_CMD_NADDR / NVM_OP_NADDR;
 
 	ssize_t nerr = 0;
 
 	#pragma omp parallel for schedule(static,1) reduction(+:nerr)
-	for (size_t spg = spg_begin; spg < spg_end; ++spg) {
+	for (size_t spg = spg_begin; spg < spg_end; spg += NVM_CMD_NOPS) {
 
-		int ch = (spg % nchannels) + ch_off;
-		int lun = ((spg / nchannels) % nluns) + lun_off;
-		int vpg = ((spg / nchannels) / nluns) % npages;
-		
-		const char *buf_off = buf + spg * nbytes * NVM_CMD_NADDR_MIN;
+		const char *buf_off = buf + spg * nbytes * NCM_CMD_NADDR;
 
-		NVM_DEBUG("spg(%ld), ch(%d), lun(%d), vpg(%d)\n",
-			  spg, ch, lun, vpg);
+		struct nvm_addr addrs[NCM_CMD_NADDR];
 
-		struct nvm_addr addrs[NVM_CMD_NADDR_MIN];
-		for (int i = 0; i < NVM_CMD_NADDR_MIN; ++i) {
-			addrs[i].ppa = bgn.ppa;
-			addrs[i].g.ch = ch;
-			addrs[i].g.lun = lun;
-			addrs[i].g.pg = vpg;
-			addrs[i].g.pl = (i / nsectors) % nplanes;
-			// blk is fixed and inherited from bgn
-			addrs[i].g.sec = i % nsectors;
+		for (size_t off = 0; off < NVM_CMD_NOPS; ++off) {
+			size_t pg = spg + off;
+
+			/* channels X luns X pages */
+			int ch = (pg % nchannels) + ch_off;
+			int lun = ((pg / nchannels) % nluns) + lun_off;
+			int vpg = ((pg / nchannels) / nluns) % npages;
+
+			// Unroll: nplane X nsector
+			for (int i = NVM_OP_NADDR * off; i < NVM_OP_NADDR * (off+1); ++i) {
+				addrs[i].ppa = bgn.ppa;
+				addrs[i].g.ch = ch;
+				addrs[i].g.lun = lun;
+				addrs[i].g.pg = vpg;
+				addrs[i].g.pl = (i / nsectors) % nplanes;
+				// blk is fixed and inherited from bgn
+				addrs[i].g.sec = i % nsectors;
+			}
 		}
 
 		ssize_t err = nvm_addr_write(sblk->dev,
 					     addrs,
-					     NVM_CMD_NADDR_MIN,
+					     NCM_CMD_NADDR,
 					     buf_off,
 					     NVM_MAGIC_FLAG_DEFAULT);
 		if (err) {
@@ -200,7 +207,7 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 	}
 
 	if (!nerr) {
-		sblk->curs_w += count;
+		sblk->curs_write += count;
 	}
 
 	return -nerr;
@@ -222,41 +229,48 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 	const int nsectors = geo.nsectors;
 	const int nbytes = geo.nbytes;
 
-	const size_t spg_begin = sblk->curs_r;
-	const size_t spg_end = sblk->curs_r + count;
+	const size_t spg_begin = sblk->curs_read;
+	const size_t spg_end = sblk->curs_read + count;
 
-	const int NVM_CMD_NADDR_MIN = nplanes * nsectors;
+	const int NVM_OP_NADDR = nplanes * nsectors;
+	//const int NCM_CMD_NADDR = 32;
+	const int NCM_CMD_NADDR = NVM_OP_NADDR;
+	const size_t NVM_CMD_NOPS = NCM_CMD_NADDR / NVM_OP_NADDR;
 
 	ssize_t nerr = 0;
 
 	#pragma omp parallel for schedule(static,1) reduction(+:nerr)
-	for (size_t spg = spg_begin; spg < spg_end; ++spg) {
+	for (size_t spg = spg_begin; spg < spg_end; spg += NVM_CMD_NOPS) {
 
-		int ch = (spg % nchannels) + ch_off;
-		int lun = ((spg / nchannels) % nluns) + lun_off;
-		int vpg = ((spg / nchannels) / nluns) % npages;
-		
-		char *buf_off = buf + spg * nbytes * NVM_CMD_NADDR_MIN;
+		char *buf_off = buf + spg * nbytes * NCM_CMD_NADDR;
 
-		NVM_DEBUG("spg(%ld), ch(%d), lun(%d), vpg(%d)\n",
-			  spg, ch, lun, vpg);
+		struct nvm_addr addrs[NCM_CMD_NADDR];
 
-		struct nvm_addr addrs[NVM_CMD_NADDR_MIN];
-		for (int i = 0; i < NVM_CMD_NADDR_MIN; ++i) {
-			addrs[i].ppa = bgn.ppa;
-			addrs[i].g.ch = ch;
-			addrs[i].g.lun = lun;
-			addrs[i].g.pg = vpg;
-			addrs[i].g.pl = (i / nsectors) % nplanes;
-			// blk is fixed and inherited from bgn
-			addrs[i].g.sec = i % nsectors;
+		for (size_t off = 0; off < NVM_CMD_NOPS; ++off) {
+			size_t pg = spg + off;
+
+			/* channels X luns X pages */
+			int ch = (pg % nchannels) + ch_off;
+			int lun = ((pg / nchannels) % nluns) + lun_off;
+			int vpg = ((pg / nchannels) / nluns) % npages;
+
+			// Unroll: nplane X nsector
+			for (int i = NVM_OP_NADDR * off; i < NVM_OP_NADDR * (off+1); ++i) {
+				addrs[i].ppa = bgn.ppa;
+				addrs[i].g.ch = ch;
+				addrs[i].g.lun = lun;
+				addrs[i].g.pg = vpg;
+				addrs[i].g.pl = (i / nsectors) % nplanes;
+				// blk is fixed and inherited from bgn
+				addrs[i].g.sec = i % nsectors;
+			}
 		}
 
 		ssize_t err = nvm_addr_read(sblk->dev,
-					    addrs,
-					    NVM_CMD_NADDR_MIN,
-					    buf_off,
-					    NVM_MAGIC_FLAG_DEFAULT);
+					     addrs,
+					     NCM_CMD_NADDR,
+					     buf_off,
+					     NVM_MAGIC_FLAG_DEFAULT);
 		if (err) {
 			NVM_DEBUG("FAILED: nvm_sblk_read err(%ld)\n", err);
 			++nerr;
@@ -264,7 +278,7 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 	}
 
 	if (!nerr) {
-		sblk->curs_r += count;
+		sblk->curs_read += count;
 	}
 
 	return -nerr;

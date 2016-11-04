@@ -41,7 +41,6 @@ extern "C" {
 #define NVM_DISK_NAME_LEN 32
 #endif
 
-#define NVM_CMD_MAX_LEN 64
 
 #define NVM_MAGIC_OPCODE_ERASE 0x90     // NVM_OP_ERASE
 #define NVM_MAGIC_OPCODE_WRITE 0x91     // NVM_OP_PWRITE
