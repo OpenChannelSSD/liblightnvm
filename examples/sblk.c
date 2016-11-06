@@ -37,7 +37,7 @@ void timer_pr(const char* tool)
     printf("Ran %s, elapsed wall-clock: %lf\n", tool, timer_elapsed());
 }
 
-int erase(NVM_DEV dev, NVM_GEO geo, NVM_SBLK sblk, int flags)
+int erase(NVM_SBLK sblk, int flags)
 {
 	ssize_t err;
 
@@ -57,7 +57,7 @@ int erase(NVM_DEV dev, NVM_GEO geo, NVM_SBLK sblk, int flags)
 	return err;
 }
 
-int write(NVM_DEV dev, NVM_GEO geo, NVM_SBLK sblk, int flags)
+int write(NVM_SBLK sblk, int flags)
 {
 	ssize_t err;
 	char *buf;
@@ -96,7 +96,7 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_SBLK sblk, int flags)
 	return err;
 }
 
-int read(NVM_DEV dev, NVM_GEO geo, NVM_SBLK sblk, int flags)
+int read(NVM_SBLK sblk, int flags)
 {
 	ssize_t err;
 	char *buf;
@@ -107,7 +107,7 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_SBLK sblk, int flags)
 	nvm_sblk_pr(sblk);
 
 	timer_start();
-	buf = nvm_buf_alloc(geo, sblk_geo.tbytes);
+	buf = nvm_buf_alloc(sblk_geo, sblk_geo.tbytes);
 	if (!buf) {
 		printf("FAILED: allocating buf\n");
 		nvm_sblk_free(sblk);
@@ -144,7 +144,7 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_SBLK sblk, int flags)
 
 typedef struct {
 	char name[NVM_CLI_CMD_LEN];
-	int (*func)(NVM_DEV, NVM_GEO, NVM_SBLK, int);
+	int (*func)(NVM_SBLK, int);
 	int argc;
 	int flags;
 } NVM_CLI_VBLK_CMD;
@@ -189,7 +189,6 @@ int main(int argc, char **argv)
 	NVM_CLI_VBLK_CMD *cmd = NULL;
 	
 	NVM_DEV dev;
-	NVM_GEO geo;
 	NVM_SBLK sblk;
 	int ch_bgn, ch_end, lun_bgn, lun_end, blk;
 
@@ -242,10 +241,9 @@ int main(int argc, char **argv)
 
 	dev = nvm_dev_open(dev_name);			// open `dev`
 	if (!dev) {
-		printf("Failed opening device, dev_name(%s)\n", dev_name);
+		printf("FAILED: opening device, dev_name(%s)\n", dev_name);
 		return -EINVAL;
 	}
-	geo = nvm_dev_attr_geo(dev);			// Get `geo`
 
 	sblk = nvm_sblk_new(dev, ch_bgn, ch_end, lun_bgn, lun_end, blk);
 	if (!sblk) {
@@ -253,7 +251,7 @@ int main(int argc, char **argv)
 		return -ENOMEM;
 	}
 
-	ret = cmd->func(dev, geo, sblk, cmd->flags);
+	ret = cmd->func(sblk, cmd->flags);
 	printf("ret(%d)\n", ret);
 
 	nvm_sblk_free(sblk);
