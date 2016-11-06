@@ -66,6 +66,7 @@ struct udev_device* udev_dev_find(struct udev *udev, const char *subsystem,
 
 		if (dev_name) {			/* Compare name */
 			int dev_name_len = strlen(dev_name);
+
 			int match = strcmp(dev_name,
 					   path + path_len-dev_name_len);
 			if (0 != match) {
@@ -109,14 +110,16 @@ struct udev_device* udev_dev_find(struct udev *udev, const char *subsystem,
 
 struct udev_device* udev_nvmdev_find(struct udev *udev, const char *dev_name)
 {
-	struct udev_device* dev = udev_dev_find(udev, "gennvm", NULL, dev_name);
+	struct udev_device* dev;
 
-	if (!dev) {
-		NVM_DEBUG("NOTHING FOUND\n");
+	dev  = udev_dev_find(udev, "gennvm", NULL, dev_name);
+	if (dev) {
 		return dev;
 	}
 
-	return dev;
+	NVM_DEBUG("NOTHING FOUND\n");
+	return NULL;
+
 }
 
 void* nvm_buf_alloc(NVM_GEO geo, size_t nbytes)

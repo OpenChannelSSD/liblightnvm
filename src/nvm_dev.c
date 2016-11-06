@@ -38,32 +38,89 @@
 #include <nvm_util.h>
 #include <nvm_debug.h>
 
+int sysattr_to_int(struct udev_device *dev, const char *attr, int *val)
+{
+	const char *dev_path;
+	char path[4096];
+	char buf[4096];
+	char c;
+	FILE *fp;
+	int i;
+
+	memset(buf, 0, sizeof(char)*4096);
+
+	dev_path = udev_device_get_syspath(dev);
+	if (!dev_path)
+		return -ENODEV;
+
+	sprintf(path, "%s/%s", dev_path, attr);
+	fp = fopen(path, "rb");
+	if (!fp)
+		return -ENODEV;
+
+	i = 0;
+	while(((c = getc(fp)) != EOF) && i < 4096) {
+		buf[i] = c;
+		++i;
+	}
+	fclose(fp);
+
+	*val = atoi(buf);
+	return 0;
+}
+
 int nvm_dev_geo_fill(struct nvm_geo *geo, const char *dev_name)
 {
 	struct udev *udev;
 	struct udev_device *dev;
+	int val;
 
 	udev = udev_new();
 	if (!udev) {
 		NVM_DEBUG("Failed creating udev for dev_name(%s)\n", dev_name);
-		return -1;
+		return -ENOMEM;
 	}
 
-	/* Extract geometry from sysfs via libudev*/
+	/* Extract geometry from sysfs via libudev */
 	dev = udev_nvmdev_find(udev, dev_name);
 	if (!dev) {
 		NVM_DEBUG("Cannot find dev_name(%s)\n", dev_name);
 		udev_unref(udev);
-		return -1;
+		return -ENODEV;
 	}
 
-	geo->nchannels = atoi(udev_device_get_sysattr_value(dev, "device/lightnvm/num_channels"));
-	geo->nluns = atoi(udev_device_get_sysattr_value(dev, "device/lightnvm/num_luns"));
-	geo->nplanes = atoi(udev_device_get_sysattr_value(dev, "device/lightnvm/num_planes"));
-	geo->nblocks = atoi(udev_device_get_sysattr_value(dev, "device/lightnvm/num_blocks"));
-	geo->npages = atoi(udev_device_get_sysattr_value(dev, "device/lightnvm/num_pages"));
-	geo->nsectors = atoi(udev_device_get_sysattr_value(dev, "device/lightnvm/sec_per_pg"));
-	geo->nbytes = atoi(udev_device_get_sysattr_value(dev, "device/lightnvm/hw_sector_size"));
+	dev = udev_device_get_parent(dev);
+	if (!dev) {
+		return -ENODEV;
+	}
+
+	if (sysattr_to_int(dev, "lightnvm/num_channels", &val))
+		return -EIO;
+	geo->nchannels = val;
+
+	if (sysattr_to_int(dev, "lightnvm/num_luns", &val))
+		return -EIO;
+	geo->nluns = val;
+	
+	if (sysattr_to_int(dev, "lightnvm/num_planes", &val))
+		return -EIO;
+	geo->nplanes = val;
+
+	if (sysattr_to_int(dev, "lightnvm/num_blocks", &val))
+		return -EIO;
+	geo->nblocks = val;
+
+	if (sysattr_to_int(dev, "lightnvm/num_pages", &val))
+		return -EIO;
+	geo->npages = val;
+
+	if (sysattr_to_int(dev, "lightnvm/sec_per_pg", &val))
+		return -EIO;
+	geo->nsectors = val;
+
+	if (sysattr_to_int(dev, "lightnvm/hw_sector_size", &val))
+		return -EIO;
+	geo->nbytes = val;
 
 	/* Derive total number of bytes on device */
 	geo->tbytes = geo->nchannels * geo->nluns * geo->nplanes * \
