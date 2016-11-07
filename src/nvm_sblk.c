@@ -171,6 +171,8 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 	const int NCM_CMD_NADDR = NVM_OP_NADDR;
 	const size_t NVM_CMD_NOPS = NCM_CMD_NADDR / NVM_OP_NADDR;
 
+	const int nthreads = nchannels * nluns;
+
 	ssize_t nerr = 0;
 
 	int PLANE_FLAG = 0x0;
@@ -178,7 +180,7 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
 	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
 
-	#pragma omp parallel for schedule(static,1) reduction(+:nerr)
+	#pragma omp parallel for num_threads(nthreads) schedule(static,1) reduction(+:nerr)
 	for (size_t spg = spg_begin; spg < spg_end; spg += NVM_CMD_NOPS) {
 
 		const char *buf_off = buf + spg * nbytes * NCM_CMD_NADDR;
@@ -247,6 +249,8 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 	const int NCM_CMD_NADDR = NVM_OP_NADDR;
 	const size_t NVM_CMD_NOPS = NCM_CMD_NADDR / NVM_OP_NADDR;
 
+	const int nthreads = nchannels * nluns;
+
 	ssize_t nerr = 0;
 
 	int PLANE_FLAG = 0x0;
@@ -254,7 +258,7 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
 	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
 
-	#pragma omp parallel for schedule(static,1) reduction(+:nerr)
+	#pragma omp parallel for num_threads(nthreads) schedule(static,1) reduction(+:nerr)
 	for (size_t spg = spg_begin; spg < spg_end; spg += NVM_CMD_NOPS) {
 
 		char *buf_off = buf + spg * nbytes * NCM_CMD_NADDR;
