@@ -240,6 +240,7 @@ void nvm_sblk_free(NVM_SBLK sblk);
 
 ssize_t nvm_sblk_erase(NVM_SBLK sblk);
 ssize_t nvm_sblk_write(NVM_SBLK sblk, const void *buf, size_t count);
+ssize_t nvm_sblk_pad(NVM_SBLK sblk);
 ssize_t nvm_sblk_read(NVM_SBLK sblk, void *buf, size_t count);
 
 NVM_DEV nvm_sblk_attr_dev(NVM_SBLK sblk);
