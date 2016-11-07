@@ -1,7 +1,8 @@
 /*
- * nvm - LightNVM get/put block API
+ * nvm - internal header for liblightnvm
  *
  * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
+ * Copyright (C) 2016 Simon A. F. Lund <slund@cnexlabs.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,8 +47,8 @@ struct nvm_sblk {
   struct nvm_addr bgn;
   struct nvm_addr end;
   struct nvm_geo geo;
-  size_t curs_write;
-  size_t curs_read;
+  size_t pos_write;
+  size_t pos_read;
 };
 
 #endif /* __NVM_H */

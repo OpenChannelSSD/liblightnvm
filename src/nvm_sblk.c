@@ -63,8 +63,8 @@ struct nvm_sblk* nvm_sblk_new(struct nvm_dev *dev,
 		return NULL;
 	}
 
-	sblk->curs_write = 0;
-	sblk->curs_read = 0;
+	sblk->pos_write = 0;
+	sblk->pos_read = 0;
 
 	sblk->dev = dev;
 
@@ -163,8 +163,8 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 	const int nsectors = geo.nsectors;
 	const int nbytes = geo.nbytes;
 
-	const size_t spg_begin = sblk->curs_write;
-	const size_t spg_end = sblk->curs_write + count;
+	const size_t spg_begin = sblk->pos_write;
+	const size_t spg_end = sblk->pos_write + count;
 
 	const int NVM_OP_NADDR = nplanes * nsectors;
 	//const int NCM_CMD_NADDR = 32;
@@ -219,7 +219,7 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 	}
 
 	if (!nerr) {
-		sblk->curs_write += count;
+		sblk->pos_write += count;
 	}
 
 	return -nerr;
@@ -241,8 +241,8 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 	const int nsectors = geo.nsectors;
 	const int nbytes = geo.nbytes;
 
-	const size_t spg_begin = sblk->curs_read;
-	const size_t spg_end = sblk->curs_read + count;
+	const size_t spg_begin = sblk->pos_read;
+	const size_t spg_end = sblk->pos_read + count;
 
 	const int NVM_OP_NADDR = nplanes * nsectors;
 	//const int NCM_CMD_NADDR = 32;
@@ -297,20 +297,10 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 	}
 
 	if (!nerr) {
-		sblk->curs_read += count;
+		sblk->pos_read += count;
 	}
 
 	return -nerr;
-}
-
-struct nvm_dev* nvm_sblk_attr_dev(struct nvm_sblk *sblk)
-{
-	return sblk->dev;
-}
-
-struct nvm_addr nvm_sblk_attr_bgn(struct nvm_sblk *sblk)
-{
-	return sblk->bgn;
 }
 
 struct nvm_addr nvm_sblk_attr_end(struct nvm_sblk *sblk)
@@ -321,6 +311,16 @@ struct nvm_addr nvm_sblk_attr_end(struct nvm_sblk *sblk)
 struct nvm_geo nvm_sblk_attr_geo(struct nvm_sblk *sblk)
 {
 	return sblk->geo;
+}
+
+size_t nvm_sblk_attr_pos_write(struct nvm_sblk *sblk)
+{
+	return sblk->pos_write;
+}
+
+size_t nvm_sblk_attr_pos_read(struct nvm_sblk *sblk)
+{
+	return sblk->pos_read;
 }
 
 void nvm_sblk_pr(struct nvm_sblk *sblk)

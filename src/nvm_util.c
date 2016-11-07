@@ -137,7 +137,7 @@ void* nvm_buf_alloc(NVM_GEO geo, size_t nbytes)
 
 void nvm_buf_fill(char *buf, size_t nbytes)
 {
-	#pragma omp parallel for schedule(static)
+	#pragma omp parallel for schedule(static,1)
 	for (size_t i = 0; i < nbytes; ++i)
 		buf[i] = (i % 26) + 65;
 }

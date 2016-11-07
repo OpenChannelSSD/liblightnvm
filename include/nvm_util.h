@@ -1,5 +1,5 @@
 /*
- * utils - Helper functions and utitilies used by liblnvm
+ * nvm_util - liblightnvm misc. utilities (internal)
  *
  * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
  * Copyright (C) 2015 Matias Bjørling <matias@cnexlabs.com>
@@ -30,7 +30,6 @@
 
 #include <libudev.h>
 
-void nvm_misc_pr(void);
 struct udev_device *udev_dev_find(struct udev *udev, const char *subsystem,
 				  const char *devtype, const char *dev_name);
 struct udev_device *udev_nvmdev_find(struct udev *udev, const char *dev_name);
