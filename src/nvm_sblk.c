@@ -163,7 +163,7 @@ ssize_t nvm_sblk_pad(NVM_SBLK sblk)
 	const int nsectors = geo.nsectors;
 	const int nbytes = geo.nbytes;
 
-	const size_t count = npages - sblk->pos_write;
+	const size_t count = nchannels * nluns * npages - sblk->pos_write;
 	const size_t spg_begin = sblk->pos_write;
 	const size_t spg_end = sblk->pos_write + count;
 

@@ -96,6 +96,26 @@ int write(NVM_SBLK sblk, int flags)
 	return err;
 }
 
+int pad(NVM_SBLK sblk, int flags)
+{
+	ssize_t err;
+
+	NVM_GEO sblk_geo = nvm_sblk_attr_geo(sblk);
+
+	printf("** nvm_sblk_pad(...): sblk_tbytes(%lu)\n", sblk_geo.tbytes);
+	nvm_sblk_pr(sblk);
+
+	timer_start();
+	err = nvm_sblk_pad(sblk);
+	if (err) {
+		printf("FAILED: nvm_sblk_pad err(%ld)\n", err);
+	}
+	timer_stop();
+	timer_pr("nvm_sblk_pad");
+
+	return err;
+}
+
 int read(NVM_SBLK sblk, int flags)
 {
 	ssize_t err;
@@ -152,6 +172,7 @@ typedef struct {
 static NVM_CLI_VBLK_CMD cmds[] = {
 	{"erase", erase, 8, 0x0},
 	{"write", write, 8, 0x0},
+	{"pad", pad, 8, 0x0},
 	{"read", read, 8, 0x0},
 };
 
