@@ -190,7 +190,6 @@ ssize_t nvm_sblk_pad(NVM_SBLK sblk)
 
 	#pragma omp parallel for num_threads(nthreads) schedule(static,1) reduction(+:nerr)
 	for (size_t spg = spg_begin; spg < spg_end; spg += NVM_CMD_NOPS) {
-
 		struct nvm_addr addrs[NVM_CMD_NADDR];
 
 		for (size_t off = 0; off < NVM_CMD_NOPS; ++off) {
@@ -227,6 +226,8 @@ ssize_t nvm_sblk_pad(NVM_SBLK sblk)
 	if (!nerr) {
 		sblk->pos_write += count;
 	}
+
+	free(buf);
 
 	return -nerr;
 }
