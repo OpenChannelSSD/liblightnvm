@@ -39,7 +39,7 @@ static ssize_t nvm_addr_io(struct nvm_dev *dev, struct nvm_addr list[], int len,
 		    void* buf, uint16_t flags, uint16_t opcode)
 {
 	struct nvm_ioctl_dev_pio ctl;
-	int ret;
+	int err;
 
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.opcode = opcode;
@@ -49,26 +49,30 @@ static ssize_t nvm_addr_io(struct nvm_dev *dev, struct nvm_addr list[], int len,
 	ctl.addr = (uint64_t)buf;
 	ctl.data_len = buf ? dev->geo.nbytes * len : 0;
 
-	ret = ioctl(dev->fd, NVM_DEV_PIO, &ctl);
+	err = ioctl(dev->fd, NVM_DEV_PIO, &ctl);
 #ifdef NVM_DEBUG_ENABLED
-	if (ret || ctl.result || ctl.status) {
+	if (err || ctl.result || ctl.status) {
 		int i;
-		NVM_DEBUG("ret(%d)\n", ret);
-		NVM_DEBUG("result(0x%x)\n", ctl.result);
-		NVM_DEBUG("status(%llu)\n", ctl.status);
+		NVM_DEBUG("WARN: err(%d), ctl.r(0x%x), ctl.s(%llu), naddr(%d):",
+			  err, ctl.result, ctl.status, ctl.nppas);
 		for (i = 0; i < len; ++i) {
-			printf("ERR: "); nvm_addr_pr(list[i]);
+			nvm_addr_pr(list[i]);
 		}
 	}
 #endif
-	if (ret) {
-		return ret;
+	if (err) {		// Give up on IOCTL errors
+		return err;
 	}
-	if (ctl.result) {
-		return ctl.result;
-	}
+	
+	switch (ctl.result) {
+		case 0x0:	// All good
+			return 0;
+		case 0x4700:	// As good as it gets..
+			return 0;
 
-	return ctl.status;
+		default:	// We give up on everything else
+			return -1;
+	}
 }
 
 ssize_t nvm_addr_erase(struct nvm_dev *dev, struct nvm_addr list[], int len,
