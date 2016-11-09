@@ -242,6 +242,8 @@ ssize_t nvm_sblk_erase(NVM_SBLK sblk);
 ssize_t nvm_sblk_write(NVM_SBLK sblk, const void *buf, size_t count);
 ssize_t nvm_sblk_pad(NVM_SBLK sblk);
 ssize_t nvm_sblk_read(NVM_SBLK sblk, void *buf, size_t count);
+ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
+		       size_t offset);
 
 NVM_DEV nvm_sblk_attr_dev(NVM_SBLK sblk);
 NVM_ADDR nvm_sblk_attr_bgn(NVM_SBLK sblk);

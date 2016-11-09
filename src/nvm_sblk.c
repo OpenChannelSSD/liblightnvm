@@ -307,7 +307,8 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 	return -nerr;
 }
 
-ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
+ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
+		       size_t offset)
 {
 	const struct nvm_addr bgn = sblk->bgn;
 
@@ -323,8 +324,8 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 	const int nsectors = geo.nsectors;
 	const int nbytes = geo.nbytes;
 
-	const size_t spg_bgn = sblk->pos_read;
-	const size_t spg_end = sblk->pos_read + count;
+	const size_t spg_bgn = offset;
+	const size_t spg_end = offset + count;
 
 	const int NVM_OP_NADDR = nplanes * nsectors;
 	const int NVM_CMD_NADDR = NVM_OP_NADDR;
@@ -376,11 +377,18 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 		}
 	}
 
+	return -nerr;
+}
+
+ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
+{
+	ssize_t nerr = nvm_sblk_pread(sblk, buf, count, sblk->pos_read);
+
 	if (!nerr) {
 		sblk->pos_read += count;
 	}
 
-	return -nerr;
+	return nerr;
 }
 
 struct nvm_addr nvm_sblk_attr_end(struct nvm_sblk *sblk)
