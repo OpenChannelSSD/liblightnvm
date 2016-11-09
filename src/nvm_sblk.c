@@ -119,7 +119,7 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
 	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
 
-	#pragma omp parallel for schedule(static,1) collapse(2) reduction(+:nerr)
+	#pragma omp parallel for schedule(static) collapse(2) reduction(+:nerr)
 	for (int ch = bgn.g.ch; ch <= end.g.ch; ++ch) {
 		for (int lun = bgn.g.lun; lun <= end.g.lun; ++lun) {
 			struct nvm_addr addrs[nplanes];
@@ -149,7 +149,8 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 	return -nerr;
 }
 
-ssize_t nvm_sblk_pad(NVM_SBLK sblk)
+ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
+			size_t offset)
 {
 	const struct nvm_addr bgn = sblk->bgn;
 
@@ -165,99 +166,35 @@ ssize_t nvm_sblk_pad(NVM_SBLK sblk)
 	const int nsectors = geo.nsectors;
 	const int nbytes = geo.nbytes;
 
-	const size_t count = nchannels * nluns * npages - sblk->pos_write;
-	const size_t spg_bgn = sblk->pos_write;
-	const size_t spg_end = sblk->pos_write + count;
+	const int alignment = (nplanes * nsectors * nbytes);
+
+	const size_t spg_bgn = sblk->pos_write / alignment;
+	const size_t spg_end = spg_bgn + (count / alignment);
 
 	const int NVM_OP_NADDR = nplanes * nsectors;
 	const int NVM_CMD_NADDR = NVM_OP_NADDR;
 
 	const int nthreads = nchannels * nluns;
 
-	char *buf;
-
 	ssize_t nerr = 0;
 
 	int PLANE_FLAG = 0x0;
 
-	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
-	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
+	const char *data;
 
-	buf = nvm_buf_alloc(geo, NVM_CMD_NADDR * nbytes);
-	if (!buf) {
-		return -ENOMEM;
-	}
-	nvm_buf_fill(buf, NVM_CMD_NADDR * nbytes);
-
-	#pragma omp parallel num_threads(nthreads) reduction(+:nerr)
-	{
-		const int tid = omp_get_thread_num();
-
-		#pragma omp barrier
-		for (size_t spg = spg_bgn + tid; spg < spg_end; spg += nthreads) {
-			struct nvm_addr addrs[NVM_CMD_NADDR];
-
-			// channels X luns X pages
-			int ch = (spg % nchannels) + ch_off;
-			int lun = ((spg / nchannels) % nluns) + lun_off;
-			int vpg = ((spg / nchannels) / nluns) % npages;
-
-			// Unroll: nplane X nsector
-			for (int i = 0; i < NVM_CMD_NADDR; ++i) {
-				addrs[i].ppa = bgn.ppa;
-				addrs[i].g.ch = ch;
-				addrs[i].g.lun = lun;
-				addrs[i].g.pg = vpg;
-				addrs[i].g.pl = (i / nsectors) % nplanes;
-				// blk is fixed and inherited from bgn
-				addrs[i].g.sec = i % nsectors;
-			}
-			ssize_t err = nvm_addr_write(sblk->dev,
-						     addrs,
-						     NVM_CMD_NADDR,
-						     buf,
-						     PLANE_FLAG);
-			if (err) {
-				NVM_DEBUG("FAILED: nvm_addr_write err(%ld)\n", err);
-				++nerr;
-			}
+	if (buf) {	// Use user-supplied buffer
+		data = buf;
+	} else {	// Allocate and use a padding buffer
+		data = nvm_buf_alloc(geo, NVM_CMD_NADDR * nbytes);
+		if (!data) {
+			return -count;
 		}
 	}
 
-	if (!nerr) {
-		sblk->pos_write += count;
+	// Check alignment
+	if ((count % alignment) || (sblk->pos_write % alignment)) {
+		return -count;
 	}
-
-	return -nerr;
-}
-
-ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
-{
-	const struct nvm_addr bgn = sblk->bgn;
-
-	const struct nvm_geo geo = nvm_sblk_attr_geo(sblk);
-
-	const int nchannels = geo.nchannels;
-	const int ch_off = bgn.g.ch;
-	const int nluns = geo.nluns;
-	const int lun_off = bgn.g.lun;
-
-	const int npages = geo.npages;
-	const int nplanes = geo.nplanes;
-	const int nsectors = geo.nsectors;
-	const int nbytes = geo.nbytes;
-
-	const size_t spg_bgn = sblk->pos_write;
-	const size_t spg_end = sblk->pos_write + count;
-
-	const int NVM_OP_NADDR = nplanes * nsectors;
-	const int NVM_CMD_NADDR = NVM_OP_NADDR;
-
-	const int nthreads = nchannels * nluns;
-
-	ssize_t nerr = 0;
-
-	int PLANE_FLAG = 0x0;
 
 	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
 	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
@@ -270,7 +207,12 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 		for (size_t spg = spg_bgn + tid; spg < spg_end; spg += nthreads) {
 			struct nvm_addr addrs[NVM_CMD_NADDR];
 
-			const char *buf_off = buf + spg * nbytes * NVM_CMD_NADDR;
+			const char *data_off;
+			if (buf) {
+				data_off = data + spg * nbytes * NVM_CMD_NADDR;
+			} else {
+				data_off = data;
+			}
 
 			// channels X luns X pages
 			int ch = (spg % nchannels) + ch_off;
@@ -291,7 +233,7 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 			ssize_t err = nvm_addr_write(sblk->dev,
 						     addrs,
 						     NVM_CMD_NADDR,
-						     buf_off,
+						     data_off,
 						     PLANE_FLAG);
 			if (err) {
 				NVM_DEBUG("FAILED: nvm_addr_write e(%ld)", err);
@@ -300,11 +242,23 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 		}
 	}
 
+	return nerr;
+}
+
+ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
+{
+	ssize_t nerr = nvm_sblk_pwrite(sblk, buf, count, sblk->pos_write);
+
 	if (!nerr) {
 		sblk->pos_write += count;
 	}
 
-	return -nerr;
+	return nerr;
+}
+
+ssize_t nvm_sblk_pad(NVM_SBLK sblk)
+{
+	return nvm_sblk_write(sblk, NULL, sblk->geo.tbytes - sblk->pos_write);
 }
 
 ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
@@ -324,8 +278,10 @@ ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
 	const int nsectors = geo.nsectors;
 	const int nbytes = geo.nbytes;
 
-	const size_t spg_bgn = offset;
-	const size_t spg_end = offset + count;
+	const int alignment = (nplanes * nsectors * nbytes);
+
+	const size_t spg_bgn = offset / alignment;
+	const size_t spg_end = spg_bgn + (count / alignment);
 
 	const int NVM_OP_NADDR = nplanes * nsectors;
 	const int NVM_CMD_NADDR = NVM_OP_NADDR;
@@ -335,6 +291,10 @@ ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
 	ssize_t nerr = 0;
 
 	int PLANE_FLAG = 0x0;
+
+	if ((count % alignment) || (offset % alignment)) {	// Check align
+		return -count;
+	}
 
 	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
 	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
