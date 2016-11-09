@@ -107,9 +107,7 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 {
 	const struct nvm_geo geo = nvm_sblk_attr_geo(sblk);
 
-	const int nluns = geo.nluns;
 	const int nplanes = geo.nplanes;
-	const int naddrs = nluns * nplanes;
 
 	const struct nvm_addr bgn = sblk->bgn;
 	const struct nvm_addr end = sblk->end;
@@ -121,26 +119,30 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
 	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
 
-	#pragma omp parallel for schedule(static,1) reduction(+:nerr)
+	#pragma omp parallel for schedule(static,1) collapse(2) reduction(+:nerr)
 	for (int ch = bgn.g.ch; ch <= end.g.ch; ++ch) {
-		ssize_t err;
-		struct nvm_addr addrs[naddrs];
+		for (int lun = bgn.g.lun; lun <= end.g.lun; ++lun) {
+			struct nvm_addr addrs[nplanes];
+			ssize_t err;
 
-		for (int i = 0; i < naddrs; ++i) {
-			addrs[i].ppa = bgn.ppa;
-			addrs[i].g.ch = ch;
-			addrs[i].g.lun = (i / nplanes) % nluns + bgn.g.lun;
-			addrs[i].g.pl = i % nplanes;
-			// blk is fixed and inherited from bgn
-			// pg is fixed and inherited from bgn (0)
-			// sec is fixed and inherited from bgn (0)
-		}
-		
-		err = nvm_addr_erase(sblk->dev, addrs, naddrs,
-				     PLANE_FLAG);
-		if (err) {
-			NVM_DEBUG("sblk_erase err(%ld)\n", err);
-			++nerr;
+			for (int i = 0; i < nplanes; ++i) {
+				addrs[i].ppa = bgn.ppa;
+				addrs[i].g.ch = ch;
+				addrs[i].g.lun = lun;
+				addrs[i].g.pl = i % nplanes;
+				// blk is fixed and inherited from bgn
+				// pg is fixed and inherited from bgn (0)
+				// sec is fixed and inherited from bgn (0)
+			}
+			
+			err = nvm_addr_erase(sblk->dev,
+					     addrs,
+					     nplanes,
+					     PLANE_FLAG);
+			if (err) {
+				NVM_DEBUG("FAILED: nvm_addr_erase err(%ld)", err);
+				++nerr;
+			}
 		}
 	}
 
@@ -191,6 +193,7 @@ ssize_t nvm_sblk_pad(NVM_SBLK sblk)
 	{
 		const int tid = omp_get_thread_num();
 
+		#pragma omp barrier
 		for (size_t spg = spg_bgn + tid; spg < spg_end; spg += nthreads) {
 			struct nvm_addr addrs[NVM_CMD_NADDR];
 
@@ -219,7 +222,6 @@ ssize_t nvm_sblk_pad(NVM_SBLK sblk)
 				++nerr;
 			}
 		}
-		#pragma omp barrier
 	}
 
 	if (!nerr) {
@@ -264,6 +266,7 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 	{
 		const int tid = omp_get_thread_num();
 
+		#pragma omp barrier
 		for (size_t spg = spg_bgn + tid; spg < spg_end; spg += nthreads) {
 			struct nvm_addr addrs[NVM_CMD_NADDR];
 
@@ -295,7 +298,6 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 				++nerr;
 			}
 		}
-		#pragma omp barrier
 	}
 
 	if (!nerr) {
@@ -340,6 +342,7 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 	{
 		const int tid = omp_get_thread_num();
 
+		#pragma omp barrier
 		for (size_t spg = spg_bgn + tid; spg < spg_end; spg += nthreads) {
 			struct nvm_addr addrs[NVM_CMD_NADDR];
 
@@ -371,7 +374,6 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 				++nerr;
 			}
 		}
-		#pragma omp barrier
 	}
 
 	if (!nerr) {
