@@ -28,17 +28,30 @@ echo "** $LNVM_DEV with nchannels($NCHANNELS) and nluns($NLUNS)"
 echo "** E 'spanned' block"
 if [ $DRY -ne "1" ]; then
 	/usr/bin/time nvm_sblk erase $LNVM_DEV $CH_BEGIN $CH_END $LUN_BEGIN $LUN_END $BLK
-	echo "nerr($?)"
+	ERR=$?
+	if [ $ERR -ne 0 ]; then
+		echo "sblk operation error($ERR)"
+		exit
+	fi
 fi
 
 echo "** P 'spanned' blk($BLK) on $LNVM_DEV"
 if [ $DRY -ne "1" ]; then
 	/usr/bin/time nvm_sblk pad $LNVM_DEV $CH_BEGIN $CH_END $LUN_BEGIN $LUN_END $BLK
-	echo "nerr($?)"
+	ERR=$?
+	if [ $ERR -ne 0 ]; then
+		echo "sblk operation error($ERR)"
+		exit
+	fi
 fi
 
 echo "** R 'spanned' blk($BLK) on $LNVM_DEV"
 if [ $DRY -ne "1" ]; then
 	/usr/bin/time nvm_sblk read $LNVM_DEV $CH_BEGIN $CH_END $LUN_BEGIN $LUN_END $BLK
-	echo "nerr($?)"
+	ERR=$?
+	if [ $ERR -ne 0 ]; then
+		echo "sblk operation error($ERR)"
+		exit
+	fi
 fi
+
