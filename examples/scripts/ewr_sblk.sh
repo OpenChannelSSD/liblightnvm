@@ -23,35 +23,22 @@ NVME_DEV=`echo "$LNVM_DEV" | cut -c-$SZ`
 NCHANNELS=`cat /sys/class/nvme/$NVME_DEV/$LNVM_DEV/lightnvm/num_channels`
 NLUNS=`cat /sys/class/nvme/$NVME_DEV/$LNVM_DEV/lightnvm/num_luns`
 
+echo "**"
 echo "** $LNVM_DEV with nchannels($NCHANNELS) and nluns($NLUNS)"
+echo "**"
 
-echo "** E 'spanned' block"
-if [ $DRY -ne "1" ]; then
-	/usr/bin/time nvm_sblk erase $LNVM_DEV $CH_BEGIN $CH_END $LUN_BEGIN $LUN_END $BLK
-	ERR=$?
-	if [ $ERR -ne 0 ]; then
-		echo "sblk operation error($ERR)"
-		exit
+for CMD in erase write read
+do
+	echo "*"
+	echo "* $CMD 'spanned' block"
+	echo "*"
+	if [ $DRY -ne "1" ]; then
+		/usr/bin/time nvm_sblk $CMD $LNVM_DEV $CH_BEGIN $CH_END $LUN_BEGIN $LUN_END $BLK
+		ERR=$?
+		if [ $ERR -ne 0 ]; then
+			echo "sblk operation error($ERR)"
+			exit $ERR
+		fi
 	fi
-fi
-
-echo "** W 'spanned' blk($BLK) on $LNVM_DEV"
-if [ $DRY -ne "1" ]; then
-	/usr/bin/time nvm_sblk write $LNVM_DEV $CH_BEGIN $CH_END $LUN_BEGIN $LUN_END $BLK
-	ERR=$?
-	if [ $ERR -ne 0 ]; then
-		echo "sblk operation error($ERR)"
-		exit
-	fi
-fi
-
-echo "** R 'spanned' blk($BLK) on $LNVM_DEV"
-if [ $DRY -ne "1" ]; then
-	/usr/bin/time nvm_sblk read $LNVM_DEV $CH_BEGIN $CH_END $LUN_BEGIN $LUN_END $BLK
-	ERR=$?
-	if [ $ERR -ne 0 ]; then
-		echo "sblk operation error($ERR)"
-		exit
-	fi
-fi
+done
 

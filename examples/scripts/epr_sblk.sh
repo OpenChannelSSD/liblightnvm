@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function usage {
-	echo "usage: ./sbl_ewr.sh LNVM_DEV CH_BGN CH_END LUN_BGN LUN_END BLK DRY"
+	echo "usage: ./sbl_epr.sh LNVM_DEV CH_BGN CH_END LUN_BGN LUN_END BLK DRY"
 	exit
 }
 
@@ -23,35 +23,22 @@ NVME_DEV=`echo "$LNVM_DEV" | cut -c-$SZ`
 NCHANNELS=`cat /sys/class/nvme/$NVME_DEV/$LNVM_DEV/lightnvm/num_channels`
 NLUNS=`cat /sys/class/nvme/$NVME_DEV/$LNVM_DEV/lightnvm/num_luns`
 
+echo "**"
 echo "** $LNVM_DEV with nchannels($NCHANNELS) and nluns($NLUNS)"
+echo "**"
 
-echo "** E 'spanned' block"
-if [ $DRY -ne "1" ]; then
-	/usr/bin/time nvm_sblk erase $LNVM_DEV $CH_BEGIN $CH_END $LUN_BEGIN $LUN_END $BLK
-	ERR=$?
-	if [ $ERR -ne 0 ]; then
-		echo "sblk operation error($ERR)"
-		exit
+for CMD in erase pad read
+do
+	echo "*"
+	echo "* $CMD 'spanned' block"
+	echo "*"
+	if [ $DRY -ne "1" ]; then
+		/usr/bin/time nvm_sblk $CMD $LNVM_DEV $CH_BEGIN $CH_END $LUN_BEGIN $LUN_END $BLK
+		ERR=$?
+		if [ $ERR -ne 0 ]; then
+			echo "sblk operation error($ERR)"
+			exit $ERR
+		fi
 	fi
-fi
-
-echo "** P 'spanned' blk($BLK) on $LNVM_DEV"
-if [ $DRY -ne "1" ]; then
-	/usr/bin/time nvm_sblk pad $LNVM_DEV $CH_BEGIN $CH_END $LUN_BEGIN $LUN_END $BLK
-	ERR=$?
-	if [ $ERR -ne 0 ]; then
-		echo "sblk operation error($ERR)"
-		exit
-	fi
-fi
-
-echo "** R 'spanned' blk($BLK) on $LNVM_DEV"
-if [ $DRY -ne "1" ]; then
-	/usr/bin/time nvm_sblk read $LNVM_DEV $CH_BEGIN $CH_END $LUN_BEGIN $LUN_END $BLK
-	ERR=$?
-	if [ $ERR -ne 0 ]; then
-		echo "sblk operation error($ERR)"
-		exit
-	fi
-fi
+done
 
