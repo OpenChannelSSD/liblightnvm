@@ -107,17 +107,6 @@ void nvm_dev_close(NVM_DEV dev);
 void nvm_dev_pr(NVM_DEV dev);
 
 /**
- * Mark the given block address as being of state 'type'
- *
- * @param dev The device on which the block lives
- * @param addr The address of the block
- * @param type 0=Free/Good?, 1=BAD, 2=Grown bad
- * @returns 0 on success, some error code otherwise.
- *
- */
-int nvm_dev_mark(NVM_DEV dev, NVM_ADDR addr, int type);
-
-/**
  * Returns of the geometry related device information including derived
  * information such as total number of bytes etc.
  *
@@ -143,20 +132,34 @@ void nvm_buf_pr(char *buf, size_t nbytes);
  *      address interface
  */
 
-void nvm_addr_pr(NVM_ADDR addr);
+/**
+ * Mark address by setting flags to one of:
+ *
+ * 0x0 -- GOOD
+ * 0x1 -- BAD
+ * 0x2 -- GROWN_BAD
+ */
+ssize_t nvm_addr_mark(NVM_DEV dev, NVM_ADDR list[], int len, uint16_t flags);
+
 ssize_t nvm_addr_erase(NVM_DEV dev, NVM_ADDR list[], int len, uint16_t flags);
+
 ssize_t nvm_addr_write(NVM_DEV dev, NVM_ADDR list[], int len, const void *buf,
                        uint16_t flags);
+
 ssize_t nvm_addr_read(NVM_DEV dev, NVM_ADDR list[], int len, void *buf,
                       uint16_t flags);
+
+
+
+void nvm_addr_pr(NVM_ADDR addr);
 
 /**
  *      virtual block interface
  */
 
 NVM_VBLK nvm_vblk_new(void);
-NVM_VBLK nvm_vblk_new_on_dev(NVM_DEV dev, uint64_t ppa);
-void nvm_vblk_free(NVM_VBLK *vblk);
+NVM_VBLK nvm_vblk_new_on_dev(NVM_DEV dev, NVM_ADDR addr);
+void nvm_vblk_free(NVM_VBLK vblk);
 void nvm_vblk_pr(NVM_VBLK vblk);
 
 uint64_t nvm_vblk_attr_ppa(NVM_VBLK vblk);
@@ -178,7 +181,8 @@ int nvm_vblk_get(NVM_VBLK vblk, NVM_DEV dev);
  * @param dev Handle obtained with nvm_dev_open
  * @param ch Channel from which to reserve via
  * @param lun Lun from which to reserve via
- * @return -1 on error and *errno* set, zero otherwise.
+ *
+ * @returns On success 0, on error -1 and *errno* set appropriately.
  */
 int nvm_vblk_gets(NVM_VBLK vblk, NVM_DEV dev, uint32_t ch, uint32_t lun);
 
@@ -190,44 +194,48 @@ int nvm_vblk_gets(NVM_VBLK vblk, NVM_DEV dev, uint32_t ch, uint32_t lun);
  * submit I/Os to it, or expect that data on it is persisted. The flash block
  * cannot be reclaimed by the previous owner.
  *
- * @return -1 on error and *errno* set, zero otherwise.
+ * @returns On success 0, on error -1 and *errno* set appropriately.
  */
 int nvm_vblk_put(NVM_VBLK vblk);
 
 /**
- * Read the flash page at 'ppa_off' in 'vblk' into 'buf'
+ * Erase an entire vblk
  *
- * @returns 0 on success, some error code otherwise.
+ * @returns On success 0, on error -1 and *errno* set appropriately.
  */
-ssize_t nvm_vblk_pread(NVM_VBLK vblk, void *buf, size_t ppa_off);
+ssize_t nvm_vblk_erase(NVM_VBLK vblk);
 
 /**
- * Write 'buf' to the flash page at 'ppa_off' in 'vblk'
+ * Read 'count' bytes from 'vblk' starting at 'offset' into 'buf'
  *
- * @returns 0 on success, some error code otherwise.
+ * @returns On success 0, on error -1 and *errno* set appropriately.
  */
-ssize_t nvm_vblk_pwrite(NVM_VBLK vblk, const void *buf, size_t ppa_off);
+ssize_t nvm_vblk_pread(NVM_VBLK vblk, void *buf, size_t count, size_t offset);
+
+/**
+ * Write 'count' bytes to 'vblk' starting at 'offset' from 'buf'
+ *
+ * NOTE: Use this for controlling chunked writing, do NOT use this for
+ *       random-access.
+ *
+ * @returns On success 0, on error -1 and *errno* set appropriately.
+ */
+ssize_t nvm_vblk_pwrite(NVM_VBLK vblk, const void *buf, size_t count,
+			size_t offset);
+
+/**
+ * Write 'count' bytes to 'vblk' starting at 'offset' from 'buf'
+ *
+ * @returns On success 0, on error -1 and *errno* set appropriately.
+ */
+ssize_t nvm_vblk_write(NVM_VBLK vblk, const void *buf, size_t count);
 
 /**
  * Read the entire vblk, storing it into buf
  *
- * @returns 0 on success, some error code otherwise.
+ * @returns On success 0, on error -1 and *errno* set appropriately.
  */
-ssize_t nvm_vblk_read(NVM_VBLK vblk, void *buf);
-
-/**
- * Write the entire vblk, filling it with data from buf.
- *
- * @returns 0 on success, some error code otherwise.
- */
-ssize_t nvm_vblk_write(NVM_VBLK vblk, const void *buf);
-
-/**
- * Erase an entire vblk
- *
- * @returns 0 on success, some error code otherwise.
- */
-ssize_t nvm_vblk_erase(NVM_VBLK vblk);
+ssize_t nvm_vblk_read(NVM_VBLK vblk, void *buf, size_t count);
 
 /**
  *      spanning block interface

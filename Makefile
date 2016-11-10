@@ -65,22 +65,17 @@ test_dev:
 test_mbad:
 	sudo nvm_test_mbad nvme0n1
 
-test_vblock:
-	sudo nvm_test_vblock nvme0n1
+test_vblk:
+	sudo nvm_test_vblk nvme0n1
 
-test_vblock_rw:
-	sudo nvm_test_vblock_rw nvme0n1
-
-test_vblock_gp_n:
-	sudo nvm_test_vblock_gp_n nvme0n1
+test_vblk_gp_n:
+	sudo nvm_test_vblk_gp_n nvme0n1
 
 test_concur:
 	sudo nvm_test_concur nvme0n1
 
 # ... all of them
-test: test_dev test_vblock test_vblock_rw test_vblock_gp_n test_concur
-
-test_nb: test_dev test_vblock test_vblock_rw test_vblock_gp_n test_concur
+test: test_dev test_vblk test_vblk_gp_n test_concur
 
 # Invoking examples ...
 ex_info:

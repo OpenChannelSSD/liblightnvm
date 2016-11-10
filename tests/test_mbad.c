@@ -24,7 +24,7 @@ void TEST_DEV_MARK(void)
 	int mark_total;				/* Calls to mark */
 	int mark_failed;			/* Failed calls to mark */
 	
-	vblk = nvm_vblk_new();		/* Allocate a vblock */
+	vblk = nvm_vblk_new();			/* Allocate a vblock */
 	if (!vblk) {
 		CU_FAIL();
 		return;
@@ -32,7 +32,7 @@ void TEST_DEV_MARK(void)
 
 	dev = nvm_dev_open(nvm_dev_name);	/* Open device */
 	if (!dev) {
-		nvm_vblk_free(&vblk);
+		nvm_vblk_free(vblk);
 		CU_FAIL();
 		return;
 	}
@@ -44,16 +44,17 @@ void TEST_DEV_MARK(void)
 	mark_total = 0;
 	mark_failed = 0;
 	for (i = 0; i < vblocks_total; ++i) {
-		NVM_ADDR addr;
-		int err;
+		NVM_ADDR addr[geo.nplanes];
+		int err, pl;
 
-		addr.g.ch = i % geo.nchannels;	/* Setup block address */
-		addr.g.lun = i % geo.nluns;
-		addr.g.blk = i % geo.nblocks;
+		for (pl = 0; pl < geo.nplanes; ++pl) {
+			addr[pl].g.ch = i % geo.nchannels;	/* Setup block address */
+			addr[pl].g.lun = i % geo.nluns;
+			addr[pl].g.blk = i % geo.nblocks;
+			addr[pl].g.pl = pl;
+		}
 
-		nvm_addr_pr(addr);
-
-		err = nvm_dev_mark(dev, addr, 0x1);
+		err = nvm_addr_mark(dev, addr, geo.nplanes, 0x1);
 		mark_total++;
 		if (err) {
 			mark_failed++;
@@ -76,6 +77,7 @@ void TEST_DEV_MARK(void)
 		}
 	}
 
+	nvm_vblk_free(vblk);
 	nvm_dev_close(dev);
 }
 

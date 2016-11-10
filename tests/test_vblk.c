@@ -16,8 +16,7 @@ void test_VBLOCK_NEW_FREE(void)
 	vblock = nvm_vblk_new();
 	CU_ASSERT_PTR_NOT_NULL(vblock);
 
-	nvm_vblk_free(&vblock);
-	CU_ASSERT_PTR_NULL(vblock);
+	nvm_vblk_free(vblock);
 }
 
 void test_VBLOCK_GET_PUT_01(void)
@@ -38,8 +37,7 @@ void test_VBLOCK_GET_PUT_01(void)
 	ret = nvm_vblk_put(vblock);
 	CU_ASSERT(0==ret);
 
-	nvm_vblk_free(&vblock);
-	CU_ASSERT_PTR_NULL(vblock);
+	nvm_vblk_free(vblock);
 
 	nvm_dev_close(dev);
 	CU_ASSERT(0==ret);

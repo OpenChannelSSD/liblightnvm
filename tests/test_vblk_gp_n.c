@@ -107,7 +107,7 @@ void TEST_VBLOCK_GP_N(void)
 	}
 
 	for (i=0; i < vblocks_total; i++) {		/* Deallocate vblocks */
-		nvm_vblk_free(&vblocks[i]);
+		nvm_vblk_free(vblocks[i]);
 	}
 	free(vblocks);
 }

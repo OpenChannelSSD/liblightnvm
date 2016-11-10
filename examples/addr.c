@@ -5,7 +5,52 @@
 #include <errno.h>
 #include <liblightnvm.h>
 
-int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len)
+int mark(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
+{
+	ssize_t err;
+	int i;
+
+	printf("** nvm_addr_mark(...): ");
+	for (i = 0; i < len; ++i) {
+		nvm_addr_pr(list[i]);
+	}
+
+	switch(flags) {
+		case 0x0:	// free / good
+		case 0x1:	// bad
+		case 0x2:	// grown bad
+			break;
+		default:
+			return -EINVAL;
+	}
+
+	err = nvm_addr_mark(dev, list, len, flags);
+	if (err) {
+		printf("FAILED: nvm_dev_mark err(%ld)\n", err);
+	}
+
+	return err;
+}
+
+int erase(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
+{
+	ssize_t err;
+	int i;
+
+	printf("** nvm_addr_erase(...):\n");
+	for (i = 0; i < len; ++i) {
+		nvm_addr_pr(list[i]);
+	}
+
+	err = nvm_addr_erase(dev, list, len, NVM_MAGIC_FLAG_DEFAULT);
+	if (err) {
+		printf("ERR: nvm_addr_write err(%ld)\n", err);
+	}
+
+	return err;
+}
+
+int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 {
 	int buf_len, i;
 	char *buf;
@@ -34,7 +79,7 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len)
 	return err;
 }
 
-int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len)
+int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 {
 	int buf_len, i;
 	char *buf;
@@ -64,7 +109,7 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len)
 	return err;
 }
 
-int fmt_p(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len)
+int fmt_p(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 {
 	int i;
 	
@@ -75,7 +120,7 @@ int fmt_p(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len)
 	return 0;
 }
 
-int fmt_g(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len)
+int fmt_g(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 {
 	nvm_addr_pr(list[0]);
 
@@ -86,15 +131,20 @@ int fmt_g(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len)
 
 typedef struct {
 	char name[NVM_CLI_CMD_LEN];
-	int (*func)(NVM_DEV, NVM_GEO, NVM_ADDR[], int);
+	int (*func)(NVM_DEV, NVM_GEO, NVM_ADDR[], int, int);
 	int argc;
+	int flags;
 } NVM_CLI_ADDR_CMD;
 
 static NVM_CLI_ADDR_CMD cmds[] = {
-	{"read", read, -1},
-	{"write", write, -1},
-	{"fmt_p", fmt_p, -1},
-	{"fmt_g", fmt_g, 9},
+	{"erase", erase, -1, 0x0},
+	{"write", write, -1, 0x0},
+	{"read", read, -1, 0x0},
+	{"fmt_p", fmt_p, -1, 0x0},
+	{"fmt_g", fmt_g, 9, 0x0},
+	{"mark_f", mark, 6, 0x0},
+	{"mark_b", mark, 6, 0x1},
+	{"mark_g", mark, 6, 0x2},
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
@@ -232,7 +282,7 @@ int main(int argc, char **argv)
 		nvm_geo_pr(geo);
 		ret = -EINVAL;
 	} else {
-		ret = cmd->func(dev, geo, list, len);
+		ret = cmd->func(dev, geo, list, len, cmd->flags);
 	}
 
 	nvm_dev_close(dev);

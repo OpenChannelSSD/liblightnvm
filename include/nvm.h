@@ -40,15 +40,17 @@ struct nvm_vblk {
 	struct nvm_dev *dev;
 	uint64_t ppa;
 	uint16_t flags;
+	size_t pos_write;
+	size_t pos_read;
 };
 
 struct nvm_sblk {
-  struct nvm_dev *dev;
-  struct nvm_addr bgn;
-  struct nvm_addr end;
-  struct nvm_geo geo;
-  size_t pos_write;
-  size_t pos_read;
+	struct nvm_dev *dev;
+	struct nvm_addr bgn;
+	struct nvm_addr end;
+	struct nvm_geo geo;
+	size_t pos_write;
+	size_t pos_read;
 };
 
 #endif /* __NVM_H */

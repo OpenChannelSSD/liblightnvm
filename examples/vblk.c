@@ -4,42 +4,11 @@
 #include <errno.h>
 #include <liblightnvm.h>
 
-int mark(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
+int get(NVM_DEV dev, NVM_GEO geo, NVM_VBLK vblk, NVM_ADDR addr, int flags)
 {
-	ssize_t err;
-
-	printf("** nvm_dev_mark(...): ");
-	nvm_addr_pr(addr);
-
-	switch(flags) {
-		case 0x0:	// free / good
-		case 0x1:	// bad
-		case 0x2:	// grown bad
-			break;
-		default:
-			return -EINVAL;
-	}
-
-	err = nvm_dev_mark(dev, addr, flags);
-	if (err) {
-		printf("FAILED: nvm_dev_mark err(%ld)\n", err);
-	}
-
-	return err;
-}
-
-int get(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
-{
-	NVM_VBLK vblk;
 	ssize_t err;
 
 	printf("** nvm_vblk_gets(..., %d, %d)\n", addr.g.ch, addr.g.lun);
-
-	vblk = nvm_vblk_new();
-	if (!vblk) {
-		printf("FAILED: allocating vblk\n");
-		return -ENOMEM;
-	}
 
 	err = nvm_vblk_gets(vblk, dev, addr.g.ch, addr.g.lun);
 	if (err) {
@@ -49,211 +18,171 @@ int get(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 		nvm_vblk_pr(vblk);
 	}
 
-	nvm_vblk_free(&vblk);
+	nvm_vblk_free(vblk);
 
 	return err;
 }
 
-int put(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
+int put(NVM_DEV dev, NVM_GEO geo, NVM_VBLK vblk, NVM_ADDR addr, int flags)
 {
-	NVM_VBLK vblk;
 	ssize_t err;
 
 	printf("** nvm_vblk_put(...): ");
 	nvm_addr_pr(addr);
-
-	vblk = nvm_vblk_new_on_dev(dev, addr.ppa);
-	if (!vblk) {
-		printf("FAILED: allocating vblk\n");
-		return -ENOMEM;
-	}
 
 	err = nvm_vblk_put(vblk);
 	if (err) {
 		printf("FAILED: nvm_vblk_put err(%ld)\n", err);
 	}
 
-	nvm_vblk_free(&vblk);
+	nvm_vblk_free(vblk);
 
 	return err;
 }
 
-int pread(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
+int erase(NVM_DEV dev, NVM_GEO geo, NVM_VBLK vblk, NVM_ADDR addr, int flags)
 {
-	NVM_VBLK vblk;
 	ssize_t err;
-
-	void *buf;
-	int buf_len;
-
-	printf("** nvm_vblk_pread(...): ");
-	nvm_addr_pr(addr);
-
-	vblk = nvm_vblk_new_on_dev(dev, addr.ppa);
-	if (!vblk) {
-		printf("FAILED: allocating vblk\n");
-		return -ENOMEM;
-	}
-
-	buf_len = geo.vpg_nbytes;
-	buf = nvm_buf_alloc(geo, buf_len);
-	if (!buf) {
-		printf("FAILED: allocating buf\n");
-		free(vblk);
-		return -ENOMEM;
-	}
-
-	err = nvm_vblk_pread(vblk, buf, addr.g.pg);
-	if (getenv("NVM_BUF_PR"))
-		nvm_buf_pr(buf, buf_len);
-	if (err) {
-		printf("FAILED: nvm_vblk_pread err(%ld)\n", err);
-	}
-
-	nvm_vblk_free(&vblk);
-	free(buf);
-
-	return err;
-}
-
-int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
-{
-	NVM_VBLK vblk;
-	ssize_t err;
-
-	void *buf;
-	int buf_len;
-
-	printf("** nvm_vblk_read(...): ");
-	nvm_addr_pr(addr);
-
-	vblk = nvm_vblk_new_on_dev(dev, addr.ppa);
-	if (!vblk) {
-		printf("FAILED: allocating vblk\n");
-		return -ENOMEM;
-	}
-
-	buf_len = geo.vblk_nbytes;
-	buf = nvm_buf_alloc(geo, buf_len);
-	if (!buf) {
-		printf("FAILED: allocating buf\n");
-		nvm_vblk_free(&vblk);
-		return -ENOMEM;
-	}
-
-	err = nvm_vblk_read(vblk, buf);
-	if (getenv("NVM_BUF_PR"))
-		nvm_buf_pr(buf, buf_len);
-	if (err) {
-		printf("FAILED: nvm_vblk_read err(%ld)\n", err);
-	}
-
-	nvm_vblk_free(&vblk);
-	free(buf);
-
-	return err;
-}
-
-int pwrite(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
-{
-	NVM_VBLK vblk;
-	ssize_t err;
-
-	char *buf;
-	int buf_len;
-
-	printf("** nvm_vblk_pwrite(...): ");
-	nvm_addr_pr(addr);
-
-	vblk = nvm_vblk_new_on_dev(dev, addr.ppa);
-	if (!vblk) {
-		printf("FAILED: allocating vblk\n");
-		return -ENOMEM;
-	}
-
-	buf_len = geo.vpg_nbytes;
-	buf = nvm_buf_alloc(geo, buf_len);
-	if (!buf) {
-		printf("FAILED: allocating buf\n");
-		free(vblk);
-		return -ENOMEM;
-	}
-
-	nvm_buf_fill(buf, buf_len);
-
-	err = nvm_vblk_pwrite(vblk, buf, addr.g.pg);
-	if (err) {
-		printf("FAILED: nvm_vblk_pwrite err(%ld)\n", err);
-	}
-
-	nvm_vblk_free(&vblk);
-	free(buf);
-
-	return err;
-}
-
-int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
-{
-	NVM_VBLK vblk;
-	ssize_t err = 0;
-
-	char *buf;
-	int buf_len;
-
-	printf("** nvm_vblk_write(...): ");
-	nvm_addr_pr(addr);
-
-	vblk = nvm_vblk_new_on_dev(dev, addr.ppa);
-	if (!vblk) {
-		printf("FAILED: allocating vblk\n");
-		return -ENOMEM;
-	}
-
-	buf_len = geo.vblk_nbytes;
-	buf = nvm_buf_alloc(geo, buf_len);
-	if (!buf) {
-		printf("FAILED: allocating buf\n");
-		free(vblk);
-		return -ENOMEM;
-	}
-
-	nvm_buf_fill(buf, buf_len);
-
-	err = nvm_vblk_write(vblk, buf);
-	if (err) {
-		printf("FAILED: nvm_vblk_write err(%ld)\n", err);
-	}
-
-	nvm_vblk_free(&vblk);
-	free(buf);
-
-	return err;
-}
-
-int erase(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
-{
-	NVM_VBLK vblk;
-	ssize_t err = 0;
 
 	printf("** nvm_vblk_erase(...): ");
 	nvm_addr_pr(addr);
-
-	vblk = nvm_vblk_new_on_dev(dev, addr.ppa);
-	if (!vblk) {
-		printf("FAILED: allocating vblk\n");
-		return -ENOMEM;
-	}
 
 	err = nvm_vblk_erase(vblk);
 	if (err) {
 		printf("FAILED: nvm_vblk_erase err(%ld)\n", err);
 	}
 
-	nvm_vblk_free(&vblk);
+	nvm_vblk_free(vblk);
 
 	return err;
 }
 
+int pwrite(NVM_DEV dev, NVM_GEO geo, NVM_VBLK vblk, NVM_ADDR addr, int flags)
+{
+	ssize_t err;
+
+	char *buf;
+	size_t count, offset;
+
+	printf("** nvm_vblk_pwrite(...): ");
+	nvm_addr_pr(addr);
+
+	count = geo.vpg_nbytes;
+
+	buf = nvm_buf_alloc(geo, count);
+	if (!buf) {
+		printf("FAILED: allocating buf\n");
+		free(vblk);
+		return -ENOMEM;
+	}
+
+	nvm_buf_fill(buf, count);
+
+	offset = geo.vpg_nbytes * addr.g.pg;
+	err = nvm_vblk_pwrite(vblk, buf, count, offset);
+	if (err) {
+		printf("FAILED: nvm_vblk_pwrite err(%ld)\n", err);
+	}
+
+	nvm_vblk_free(vblk);
+	free(buf);
+
+	return err;
+}
+
+int write(NVM_DEV dev, NVM_GEO geo, NVM_VBLK vblk, NVM_ADDR addr, int flags)
+{
+	ssize_t err = 0;
+
+	char *buf;
+	const int count = geo.vblk_nbytes;
+
+	printf("** nvm_vblk_write(...): ");
+	nvm_addr_pr(addr);
+
+	buf = nvm_buf_alloc(geo, count);
+	if (!buf) {
+		printf("FAILED: allocating buf\n");
+		free(vblk);
+		return -ENOMEM;
+	}
+
+	nvm_buf_fill(buf, count);
+
+	err = nvm_vblk_write(vblk, buf, count);
+	if (err) {
+		printf("FAILED: nvm_vblk_write err(%ld)\n", err);
+	}
+
+	nvm_vblk_free(vblk);
+	free(buf);
+
+	return err;
+}
+
+int pread(NVM_DEV dev, NVM_GEO geo, NVM_VBLK vblk, NVM_ADDR addr, int flags)
+{
+	ssize_t err;
+
+	void *buf;
+	size_t count, offset;
+
+	printf("** nvm_vblk_pread(...): ");
+	nvm_addr_pr(addr);
+
+	count = geo.vpg_nbytes;
+	offset = geo.vpg_nbytes * addr.g.pg;
+
+	buf = nvm_buf_alloc(geo, count);
+	if (!buf) {
+		printf("FAILED: allocating buf\n");
+		free(vblk);
+		return -ENOMEM;
+	}
+
+	err = nvm_vblk_pread(vblk, buf, count, offset);
+	if (getenv("NVM_BUF_PR"))
+		nvm_buf_pr(buf, count);
+	if (err) {
+		printf("FAILED: nvm_vblk_pread err(%ld)\n", err);
+	}
+
+	nvm_vblk_free(vblk);
+	free(buf);
+
+	return err;
+}
+
+int read(NVM_DEV dev, NVM_GEO geo, NVM_VBLK vblk, NVM_ADDR addr, int flags)
+{
+	ssize_t err;
+
+	void *buf;
+	int count;
+
+	printf("** nvm_vblk_read(...): ");
+	nvm_addr_pr(addr);
+
+	count = geo.vblk_nbytes;
+	buf = nvm_buf_alloc(geo, count);
+	if (!buf) {
+		printf("FAILED: allocating buf\n");
+		nvm_vblk_free(vblk);
+		return -ENOMEM;
+	}
+
+	err = nvm_vblk_read(vblk, buf, geo.vblk_nbytes);
+	if (getenv("NVM_BUF_PR"))
+		nvm_buf_pr(buf, count);
+	if (err) {
+		printf("FAILED: nvm_vblk_read err(%ld)\n", err);
+	}
+
+	nvm_vblk_free(vblk);
+	free(buf);
+
+	return err;
+}
 
 // From hereon out the code is mostly boiler-plate for command-line parsing,
 // there is a bit of useful code exemplifying:
@@ -268,7 +197,7 @@ int erase(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 
 typedef struct {
 	char name[NVM_CLI_CMD_LEN];
-	int (*func)(NVM_DEV, NVM_GEO, NVM_ADDR, int);
+	int (*func)(NVM_DEV, NVM_GEO, NVM_VBLK, NVM_ADDR, int);
 	int argc;
 	int flags;
 } NVM_CLI_VBLK_CMD;
@@ -281,9 +210,6 @@ static NVM_CLI_VBLK_CMD cmds[] = {
 	{"erase", erase, 6, 0},
 	{"pread", pread, 7, 0},
 	{"pwrite", pwrite, 7, 0},
-	{"mark_f", mark, 6, 0x0},
-	{"mark_b", mark, 6, 0x1},
-	{"mark_g", mark, 6, 0x2},
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
@@ -320,6 +246,7 @@ int main(int argc, char **argv)
 	NVM_DEV dev;
 	NVM_GEO geo;
 	NVM_ADDR addr;
+	NVM_VBLK vblk;
 
 	if (argc < 4) {
 		_usage_pr(argv[0]);
@@ -409,7 +336,9 @@ int main(int argc, char **argv)
 		addr.g.sec = 0;
 	}
 
-	ret = cmd->func(dev, geo, addr, cmd->flags);
+	vblk = nvm_vblk_new_on_dev(dev, addr);
+
+	ret = cmd->func(dev, geo, vblk, addr, cmd->flags);
 
 	nvm_dev_close(dev);				// close `dev`
 

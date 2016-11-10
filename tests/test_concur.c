@@ -23,7 +23,13 @@ static void *write_thread(void *priv)
 	int i;
 
 	for (i = 0; i < ctx->geo.npages; i++) {
-		ssize_t err = nvm_vblk_pwrite(ctx->blk, ctx->buf, i);
+		size_t count, offset;
+		ssize_t err;
+
+		count = ctx->geo.vpg_nbytes;
+		offset = ctx->geo.vpg_nbytes * i;
+		
+		err = nvm_vblk_pwrite(ctx->blk, ctx->buf, count, offset);
 		CU_ASSERT(!err);
 	}
 	pthread_exit(NULL);
@@ -99,7 +105,11 @@ void test_VBLOCK_CONCUR(void)
 	pthread_join(er_th, NULL);
 
 	for (i = 0; i < geo.npages; i++) {
-		err = nvm_vblk_pread(vblock[0], wbuf, i); /* READ */
+		size_t count, offset;
+		count = geo.vpg_nbytes;
+		offset = geo.vpg_nbytes * i;
+
+		err = nvm_vblk_pread(vblock[0], wbuf, count, offset); /* READ */
 		CU_ASSERT(!err);
 		if (err)
 			printf("FAILED err(%ld) i(%d), wbuf(%s)\n",
@@ -110,7 +120,7 @@ void test_VBLOCK_CONCUR(void)
 		err = nvm_vblk_put(vblock[i]);
 		CU_ASSERT(!err);
 
-		nvm_vblk_free(&vblock[i]);
+		nvm_vblk_free(vblock[i]);
 	}
 
 	nvm_dev_close(dev);
