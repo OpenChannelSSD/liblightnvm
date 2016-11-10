@@ -27,7 +27,7 @@ int put(NVM_DEV dev, NVM_GEO geo, NVM_VBLK vblk, NVM_ADDR addr, int flags)
 {
 	ssize_t err;
 
-	printf("** nvm_vblk_put(...): ");
+	printf("** nvm_vblk_put(...):\n");
 	nvm_addr_pr(addr);
 
 	err = nvm_vblk_put(vblk);
@@ -44,7 +44,7 @@ int erase(NVM_DEV dev, NVM_GEO geo, NVM_VBLK vblk, NVM_ADDR addr, int flags)
 {
 	ssize_t err;
 
-	printf("** nvm_vblk_erase(...): ");
+	printf("** nvm_vblk_erase(...):\n");
 	nvm_addr_pr(addr);
 
 	err = nvm_vblk_erase(vblk);
@@ -64,7 +64,7 @@ int pwrite(NVM_DEV dev, NVM_GEO geo, NVM_VBLK vblk, NVM_ADDR addr, int flags)
 	char *buf;
 	size_t count, offset;
 
-	printf("** nvm_vblk_pwrite(...): ");
+	printf("** nvm_vblk_pwrite(...):\n");
 	nvm_addr_pr(addr);
 
 	count = geo.vpg_nbytes;
@@ -97,7 +97,7 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_VBLK vblk, NVM_ADDR addr, int flags)
 	char *buf;
 	const int count = geo.vblk_nbytes;
 
-	printf("** nvm_vblk_write(...): ");
+	printf("** nvm_vblk_write(...):\n");
 	nvm_addr_pr(addr);
 
 	buf = nvm_buf_alloc(geo, count);
@@ -127,7 +127,7 @@ int pread(NVM_DEV dev, NVM_GEO geo, NVM_VBLK vblk, NVM_ADDR addr, int flags)
 	void *buf;
 	size_t count, offset;
 
-	printf("** nvm_vblk_pread(...): ");
+	printf("** nvm_vblk_pread(...):\n");
 	nvm_addr_pr(addr);
 
 	count = geo.vpg_nbytes;
@@ -160,7 +160,7 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_VBLK vblk, NVM_ADDR addr, int flags)
 	void *buf;
 	int count;
 
-	printf("** nvm_vblk_read(...): ");
+	printf("** nvm_vblk_read(...):\n");
 	nvm_addr_pr(addr);
 
 	count = geo.vblk_nbytes;
