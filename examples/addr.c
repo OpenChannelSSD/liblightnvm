@@ -10,7 +10,7 @@ int mark(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 	ssize_t err;
 	int i;
 
-	printf("** nvm_addr_mark(...): ");
+	printf("** nvm_addr_mark(...):\n");
 	for (i = 0; i < len; ++i) {
 		nvm_addr_pr(list[i]);
 	}
