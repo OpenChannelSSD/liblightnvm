@@ -142,9 +142,9 @@ static NVM_CLI_ADDR_CMD cmds[] = {
 	{"read", read, -1, 0x0},
 	{"fmt_p", fmt_p, -1, 0x0},
 	{"fmt_g", fmt_g, 9, 0x0},
-	{"mark_f", mark, 6, 0x0},
-	{"mark_b", mark, 6, 0x1},
-	{"mark_g", mark, 6, 0x2},
+	{"mark_f", mark, -1, 0x0},
+	{"mark_b", mark, -1, 0x1},
+	{"mark_g", mark, -1, 0x2},
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
