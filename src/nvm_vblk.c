@@ -157,14 +157,14 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
 	const int len = geo.nplanes * geo.nsectors;
 	const int align = len * geo.nbytes;
 	const int vpg_offset = offset / align;
-	size_t written = 0;
+	size_t nbytes_written = 0;
 
 	if ((count % align) || (offset % align)) {
 		errno = EINVAL;
 		return -1;
 	}
 
-	while (written < count) {
+	while (nbytes_written < count) {
 		struct nvm_addr list[len];
 		ssize_t err;
 		int i;
@@ -172,19 +172,18 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
 		for (i = 0; i < len; i++) {
 			list[i].ppa = vblk->ppa;
 
-			list[i].g.pg = (written / align) + vpg_offset;
+			list[i].g.pg = (nbytes_written / align) + vpg_offset;
 			list[i].g.sec = i % geo.nsectors;
 			list[i].g.pl = (i / geo.nsectors) % geo.nplanes;
 		}
 
-		err = nvm_addr_write(vblk->dev, list, len, buf,
+		err = nvm_addr_write(vblk->dev, list, len, buf + nbytes_written,
 				     NVM_MAGIC_FLAG_DEFAULT);
-		if (err) {
-			errno = EIO;
+		if (err) {	// errno set by `nvm_addr_write`
 			return -1;
 		}
 
-		written += align;
+		nbytes_written += align;
 	}
 
 	return 0;
@@ -195,8 +194,7 @@ ssize_t nvm_vblk_write(struct nvm_vblk *vblk, const void *buf, size_t count)
 	ssize_t err;
 	
 	err = nvm_vblk_pwrite(vblk, buf, count, vblk->pos_write);
-	if (err) {
-		// errno is set by _pwrite
+	if (err) {		// errno set by nvm_vblk_pwrite / nvm_addr_write
 		return -1;
 	}
 
@@ -212,14 +210,14 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 	const int len = geo.nplanes * geo.nsectors;
 	const int align = len * geo.nbytes;
 	const int vpg_offset = offset / align;
-	size_t written = 0;
+	size_t nbytes_read = 0;
 
 	if ((count % align) || (offset % align)) {
 		errno = EINVAL;
 		return -1;
 	}
 
-	while (written < count) {
+	while (nbytes_read < count) {
 		struct nvm_addr list[len];
 		ssize_t err;
 		int i;
@@ -227,19 +225,18 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 		for (i = 0; i < len; i++) {
 			list[i].ppa = vblk->ppa;
 
-			list[i].g.pg = (written / align) + vpg_offset;
+			list[i].g.pg = (nbytes_read / align) + vpg_offset;
 			list[i].g.sec = i % geo.nsectors;
 			list[i].g.pl = (i / geo.nsectors) % geo.nplanes;
 		}
 
-		err = nvm_addr_read(vblk->dev, list, len, buf,
+		err = nvm_addr_read(vblk->dev, list, len, buf + nbytes_read,
 				     NVM_MAGIC_FLAG_DEFAULT);
-		if (err) {
-			errno = EIO;
+		if (err) {	// errno set by `nvm_addr_read`
 			return -1;
 		}
 
-		written += align;
+		nbytes_read += align;
 	}
 
 	return 0;
@@ -250,8 +247,7 @@ ssize_t nvm_vblk_read(struct nvm_vblk *vblk, void *buf, size_t count)
 	ssize_t err;
 	
 	err = nvm_vblk_pread(vblk, buf, count, vblk->pos_read);
-	if (err) {
-		// errno is set by _pwrite
+	if (err) {		// errno set by nvm_vblk_pread / nvm_addr_read
 		return -1;
 	}
 
