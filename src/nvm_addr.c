@@ -61,7 +61,8 @@ static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr list[], int len
 	}
 #endif
 	if (err) {		// Give up on IOCTL errors
-		return err;
+		errno = EIO;
+		return -1;
 	}
 	
 	switch (ctl.result) {
@@ -71,6 +72,7 @@ static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr list[], int len
 			return 0;
 
 		default:	// We give up on everything else
+			errno = EIO;
 			return -1;
 	}
 }
