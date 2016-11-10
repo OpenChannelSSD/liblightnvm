@@ -42,8 +42,7 @@ struct nvm_vblk* nvm_vblk_new(void)
 {
 	struct nvm_vblk *vblock = malloc(sizeof(*vblock));
 	vblock->dev = 0;
-	vblock->ppa = 0;
-	vblock->flags = 0;
+	vblock->addr.ppa = 0;
 	vblock->pos_write = 0;
 	vblock->pos_read = 0;
 
@@ -55,8 +54,7 @@ struct nvm_vblk* nvm_vblk_new_on_dev(NVM_DEV dev, NVM_ADDR addr)
 	struct nvm_vblk *vblock = malloc(sizeof(*vblock));
 
 	vblock->dev = dev;
-	vblock->ppa = addr.ppa;
-	vblock->flags = 0;
+	vblock->addr = addr;
 	vblock->pos_write = 0;
 	vblock->pos_read = 0;
 
@@ -70,26 +68,16 @@ void nvm_vblk_free(struct nvm_vblk *vblk)
 
 void nvm_vblk_pr(struct nvm_vblk *vblk)
 {
-	struct nvm_addr addr;
-
-	addr.ppa = vblk->ppa;
-
 	printf("vblk {");
 	printf("\n  dev(%p),", vblk->dev);
-	printf("\n  flags(%u),", vblk->flags);
 	printf("\n  ");
-	nvm_addr_pr(addr);
+	nvm_addr_pr(vblk->addr);
 	printf("}\n");
 }
 
-uint64_t nvm_vblk_attr_ppa(struct nvm_vblk *vblk)
+struct nvm_addr nvm_vblk_attr_addr(struct nvm_vblk *vblk)
 {
-	return vblk->ppa;
-}
-
-uint16_t nvm_vblk_attr_flags(struct nvm_vblk *vblk)
-{
-	return vblk->flags;
+	return vblk->addr;
 }
 
 int nvm_vblk_gets(struct nvm_vblk *vblock, struct nvm_dev *dev, uint32_t ch,
@@ -110,7 +98,7 @@ int nvm_vblk_gets(struct nvm_vblk *vblock, struct nvm_dev *dev, uint32_t ch,
 		return err;
 	}
 
-	vblock->ppa = ctl.ppa;
+	vblock->addr.ppa = ctl.ppa;
 	vblock->dev = dev;
 
 	return 0;
@@ -127,7 +115,7 @@ int nvm_vblk_put(struct nvm_vblk *vblock)
 	int ret;
 
 	memset(&ctl, 0, sizeof(ctl));
-	ctl.ppa = vblock->ppa;
+	ctl.ppa = vblock->addr.ppa;
 	
 	ret = ioctl(vblock->dev->fd, NVM_DEV_BLOCK_PUT, &ctl);
 
@@ -143,7 +131,7 @@ ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 	int i;
 
 	for (i = 0; i < len; ++i) {
-		list[i].ppa = vblk->ppa;
+		list[i].ppa = vblk->addr.ppa;
 		list[i].g.pl = i;
 	}
 
@@ -170,7 +158,7 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
 		int i;
 
 		for (i = 0; i < len; i++) {
-			list[i].ppa = vblk->ppa;
+			list[i].ppa = vblk->addr.ppa;
 
 			list[i].g.pg = (nbytes_written / align) + vpg_offset;
 			list[i].g.sec = i % geo.nsectors;
@@ -223,7 +211,7 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 		int i;
 
 		for (i = 0; i < len; i++) {
-			list[i].ppa = vblk->ppa;
+			list[i].ppa = vblk->addr.ppa;
 
 			list[i].g.pg = (nbytes_read / align) + vpg_offset;
 			list[i].g.sec = i % geo.nsectors;

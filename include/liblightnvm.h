@@ -162,8 +162,7 @@ NVM_VBLK nvm_vblk_new_on_dev(NVM_DEV dev, NVM_ADDR addr);
 void nvm_vblk_free(NVM_VBLK vblk);
 void nvm_vblk_pr(NVM_VBLK vblk);
 
-uint64_t nvm_vblk_attr_ppa(NVM_VBLK vblk);
-uint16_t nvm_vblk_attr_flags(NVM_VBLK vblk);
+NVM_ADDR nvm_vblk_attr_addr(NVM_VBLK vblk);
 
 /**
  * Get ownership of an arbitrary flash block from the given device.

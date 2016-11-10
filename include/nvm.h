@@ -38,8 +38,7 @@ struct nvm_dev {
 
 struct nvm_vblk {
 	struct nvm_dev *dev;
-	uint64_t ppa;
-	uint16_t flags;
+	struct nvm_addr addr;
 	size_t pos_write;
 	size_t pos_read;
 };
