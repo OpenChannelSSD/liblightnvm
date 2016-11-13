@@ -41,7 +41,6 @@ extern "C" {
 #define NVM_DISK_NAME_LEN 32
 #endif
 
-
 #define NVM_MAGIC_OPCODE_ERASE 0x90     // NVM_OP_ERASE
 #define NVM_MAGIC_OPCODE_WRITE 0x91     // NVM_OP_PWRITE
 #define NVM_MAGIC_OPCODE_READ 0x92      // NVM_OP_PREAD
@@ -59,25 +58,25 @@ extern "C" {
 #define NVM_CH_BITS  (7)
 
 typedef struct nvm_addr {
-        /* Generic structure for all addresses */
-        union {
-                struct {
-                        uint64_t blk         : NVM_BLK_BITS;
-                        uint64_t pg          : NVM_PG_BITS;
-                        uint64_t sec         : NVM_SEC_BITS;
-                        uint64_t pl          : NVM_PL_BITS;
-                        uint64_t lun         : NVM_LUN_BITS;
-                        uint64_t ch          : NVM_CH_BITS;
-                        uint64_t reserved    : 1;
-                } g;
+	/* Generic structure for all addresses */
+	union {
+		struct {
+			uint64_t blk         : NVM_BLK_BITS;
+			uint64_t pg          : NVM_PG_BITS;
+			uint64_t sec         : NVM_SEC_BITS;
+			uint64_t pl          : NVM_PL_BITS;
+			uint64_t lun         : NVM_LUN_BITS;
+			uint64_t ch          : NVM_CH_BITS;
+			uint64_t reserved    : 1;
+		} g;
 
-                struct {
-                        uint64_t line        : 63;
-                        uint64_t is_cached   : 1;
-                } c;
+		struct {
+			uint64_t line        : 63;
+			uint64_t is_cached   : 1;
+		} c;
 
-                uint64_t ppa;
-        };
+		uint64_t ppa;
+	};
 } NVM_ADDR;
 
 typedef struct nvm_geo {

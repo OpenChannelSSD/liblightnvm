@@ -35,8 +35,9 @@
 #include <nvm.h>
 #include <nvm_debug.h>
 
-static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr list[], int len,
-			   void* buf, uint16_t flags, uint16_t opcode)
+static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr list[],
+				    int len, void *buf, uint16_t flags,
+			    uint16_t opcode)
 {
 	struct nvm_ioctl_dev_pio ctl;
 	int err;
@@ -53,45 +54,48 @@ static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr list[], int len
 #ifdef NVM_DEBUG_ENABLED
 	if (err || ctl.result || ctl.status) {
 		int i;
+
 		NVM_DEBUG("WARN: err(%d), ctl.r(0x%x), ctl.s(%llu), naddr(%d):",
 			  err, ctl.result, ctl.status, ctl.nppas);
-		for (i = 0; i < len; ++i) {
+		for (i = 0; i < len; ++i)
 			nvm_addr_pr(list[i]);
-		}
 	}
 #endif
 	if (err) {		// Give up on IOCTL errors
 		errno = EIO;
 		return -1;
 	}
-	
-	switch (ctl.result) {
-		case 0x0:	// All good
-			return 0;
-		case 0x4700:	// As good as it gets..
-			return 0;
 
-		default:	// We give up on everything else
-			errno = EIO;
-			return -1;
+	switch (ctl.result) {
+	case 0x0:	// All good
+		return 0;
+	case 0x4700:	// As good as it gets..
+		return 0;
+
+	default:	// We give up on everything else
+		errno = EIO;
+		return -1;
 	}
 }
 
 ssize_t nvm_addr_erase(struct nvm_dev *dev, struct nvm_addr list[], int len,
 		       uint16_t flags)
 {
-	return nvm_addr_cmd(dev, list, len, NULL, flags, NVM_MAGIC_OPCODE_ERASE);
+	return nvm_addr_cmd(dev, list, len, NULL, flags,
+			    NVM_MAGIC_OPCODE_ERASE);
 }
 
 ssize_t nvm_addr_write(struct nvm_dev *dev, struct nvm_addr list[], int len,
-		       const void* cbuf, uint16_t flags)
+		       const void *buf, uint16_t flags)
 {
-	char *buf = (char*)cbuf;
-	return nvm_addr_cmd(dev, list, len, buf, flags, NVM_MAGIC_OPCODE_WRITE);
+	char *cbuf = (char *)buf;
+
+	return nvm_addr_cmd(dev, list, len, cbuf, flags,
+			    NVM_MAGIC_OPCODE_WRITE);
 }
 
 ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr list[], int len,
-		      void* buf, uint16_t flags)
+		      void *buf, uint16_t flags)
 {
 	return nvm_addr_cmd(dev, list, len, buf, flags, NVM_MAGIC_OPCODE_READ);
 }
@@ -99,14 +103,14 @@ ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr list[], int len,
 ssize_t nvm_addr_mark(struct nvm_dev *dev, struct nvm_addr list[], int len,
 		      uint16_t flags)
 {
-	switch(flags) {
-		case 0x0:
-		case 0x1:
-		case 0x2:
-			break;
-		default:
-			errno = EINVAL;
-			return -1;
+	switch (flags) {
+	case 0x0:
+	case 0x1:
+	case 0x2:
+		break;
+	default:
+		errno = EINVAL;
+		return -1;
 	}
 
 	return nvm_addr_cmd(dev, list, len, NULL, flags, 0xF1);
@@ -114,9 +118,9 @@ ssize_t nvm_addr_mark(struct nvm_dev *dev, struct nvm_addr list[], int len,
 
 void nvm_addr_pr(struct nvm_addr addr)
 {
-	printf("(%016lu){ ch(%02d), lun(%02d), pl(%d), "
-	       "blk(%04d), pg(%03d), sec(%d) }\n",
-	       addr.ppa, addr.g.ch, addr.g.lun, addr.g.pl,
+	printf("(%016lu){ ch(%02d), lun(%02d), pl(%d), ",
+	       addr.ppa, addr.g.ch, addr.g.lun, addr.g.pl);
+	printf("blk(%04d), pg(%03d), sec(%d) }\n",
 	       addr.g.blk, addr.g.pg, addr.g.sec);
 }
 

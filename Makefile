@@ -55,7 +55,7 @@ pkg_uninstall:
 #
 #
 tags:
-	ctags * -R
+	ctags * -R .
 	cscope -b `find . -name '*.c'` `find . -name '*.h'`
 
 # Invoking tests ...

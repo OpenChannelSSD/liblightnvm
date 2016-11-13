@@ -41,7 +41,7 @@
  *
  * @returns First device in 'subsystem' of given 'devtype' with given 'dev_name'
  */
-struct udev_device* udev_dev_find(struct udev *udev, const char *subsystem,
+struct udev_device *udev_dev_find(struct udev *udev, const char *subsystem,
 				  const char *devtype, const char *dev_name)
 {
 	struct udev_device *dev = NULL;
@@ -56,7 +56,7 @@ struct udev_device* udev_dev_find(struct udev *udev, const char *subsystem,
 	udev_list_entry_foreach(dev_list_entry, devices) {
 		const char *path;
 		int path_len;
-		
+
 		path = udev_list_entry_get_name(dev_list_entry);
 		if (!path) {
 			NVM_DEBUG("Failed retrieving path from entry\n");
@@ -66,10 +66,10 @@ struct udev_device* udev_dev_find(struct udev *udev, const char *subsystem,
 
 		if (dev_name) {			/* Compare name */
 			int dev_name_len = strlen(dev_name);
-
 			int match = strcmp(dev_name,
 					   path + path_len-dev_name_len);
-			if (0 != match) {
+
+			if (match != 0) {
 				NVM_DEBUG("Name comparison failed\n");
 				continue;
 			}
@@ -82,9 +82,9 @@ struct udev_device* udev_dev_find(struct udev *udev, const char *subsystem,
 		}
 
 		if (devtype) {			/* Compare device type */
-			const char* sys_devtype;
+			const char *sys_devtype;
 			int sys_devtype_match;
-			
+
 			sys_devtype = udev_device_get_devtype(dev);
 			if (!sys_devtype) {
 				NVM_DEBUG("sys_devtype(%s)", sys_devtype);
@@ -94,7 +94,7 @@ struct udev_device* udev_dev_find(struct udev *udev, const char *subsystem,
 			}
 
 			sys_devtype_match = strcmp(devtype, sys_devtype);
-			if (0 != sys_devtype_match) {
+			if (sys_devtype_match != 0) {
 				NVM_DEBUG("%s != %s\n", devtype, sys_devtype);
 				udev_device_unref(dev);
 				dev = NULL;
@@ -108,36 +108,34 @@ struct udev_device* udev_dev_find(struct udev *udev, const char *subsystem,
 	return dev;
 }
 
-struct udev_device* udev_nvmdev_find(struct udev *udev, const char *dev_name)
+struct udev_device *udev_nvmdev_find(struct udev *udev, const char *dev_name)
 {
-	struct udev_device* dev;
+	struct udev_device *dev;
 
 	dev  = udev_dev_find(udev, "gennvm", NULL, dev_name);
-	if (dev) {
+	if (dev)
 		return dev;
-	}
 
 	NVM_DEBUG("NOTHING FOUND\n");
 	return NULL;
 
 }
 
-void* nvm_buf_alloc(NVM_GEO geo, size_t nbytes)
+void *nvm_buf_alloc(NVM_GEO geo, size_t nbytes)
 {
 	char *buf;
 	int ret;
 
-	ret = posix_memalign((void**)&buf, geo.nbytes, nbytes);
-	if (ret) {
+	ret = posix_memalign((void **)&buf, geo.nbytes, nbytes);
+	if (ret)
 		return NULL;
-	}
 
 	return buf;
 }
 
 void nvm_buf_fill(char *buf, size_t nbytes)
 {
-	#pragma omp parallel for schedule(static,1)
+	#pragma omp parallel for schedule(static, 1)
 	for (size_t i = 0; i < nbytes; ++i)
 		buf[i] = (i % 26) + 65;
 }
@@ -146,6 +144,7 @@ void nvm_buf_pr(char *buf, size_t nbytes)
 {
 	const int width = 32;
 	int i;
+
 	printf("** NVM_BUF_PR - BEGIN **");
 	for (i = 0; i < nbytes; i++) {
 		if (!(i % width))

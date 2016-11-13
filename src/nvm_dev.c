@@ -59,7 +59,7 @@ int sysattr_to_int(struct udev_device *dev, const char *attr, int *val)
 		return -ENODEV;
 
 	i = 0;
-	while(((c = getc(fp)) != EOF) && i < 4096) {
+	while (((c = getc(fp)) != EOF) && i < 4096) {
 		buf[i] = c;
 		++i;
 	}
@@ -90,9 +90,8 @@ int nvm_dev_geo_fill(struct nvm_geo *geo, const char *dev_name)
 	}
 
 	dev = udev_device_get_parent(dev);
-	if (!dev) {
+	if (!dev)
 		return -ENODEV;
-	}
 
 	if (sysattr_to_int(dev, "lightnvm/num_channels", &val))
 		return -EIO;
@@ -101,7 +100,7 @@ int nvm_dev_geo_fill(struct nvm_geo *geo, const char *dev_name)
 	if (sysattr_to_int(dev, "lightnvm/num_luns", &val))
 		return -EIO;
 	geo->nluns = val;
-	
+
 	if (sysattr_to_int(dev, "lightnvm/num_planes", &val))
 		return -EIO;
 	geo->nplanes = val;
@@ -127,7 +126,8 @@ int nvm_dev_geo_fill(struct nvm_geo *geo, const char *dev_name)
 		      geo->nblocks * geo->npages * geo->nsectors * geo->nbytes;
 
 	/* Derive number of bytes occupied by a virtual block/page */
-	geo->vblk_nbytes = geo->nplanes * geo->npages * geo->nsectors * geo->nbytes;
+	geo->vblk_nbytes = geo->nplanes * geo->npages * geo->nsectors * \
+				   geo->nbytes;
 	geo->vpg_nbytes = geo->nplanes * geo->nsectors * geo->nbytes;
 
 	udev_device_unref(dev);
@@ -136,14 +136,13 @@ int nvm_dev_geo_fill(struct nvm_geo *geo, const char *dev_name)
 	return 0;
 }
 
-struct nvm_dev* nvm_dev_new(void)
+struct nvm_dev *nvm_dev_new(void)
 {
 	struct nvm_dev *dev;
 
 	dev = malloc(sizeof(*dev));
-	if (dev) {
+	if (dev)
 		memset(dev, 0, sizeof(*dev));
-	}
 
 	return dev;
 }
@@ -157,7 +156,7 @@ void nvm_dev_free(struct nvm_dev **dev)
 	*dev = NULL;
 }
 
-void nvm_dev_pr(struct nvm_dev* dev)
+void nvm_dev_pr(struct nvm_dev *dev)
 {
 	printf("dev { name(%s), fd(%d) }\n", dev->name, dev->fd);
 }
@@ -216,19 +215,19 @@ void nvm_geo_pr(struct nvm_geo geo)
 {
 	printf("geo {\n");
 	printf(" nchannels(%lu), nluns(%lu), nplanes(%lu), nblocks(%lu),\n",
-		geo.nchannels, geo.nluns, geo.nplanes, geo.nblocks);
-	printf(" npages(%lu), nsectors(%lu), nbytes(%lu), \n",
-		geo.npages, geo.nsectors, geo.nbytes);
+	       geo.nchannels, geo.nluns, geo.nplanes, geo.nblocks);
+	printf(" npages(%lu), nsectors(%lu), nbytes(%lu),\n",
+	       geo.npages, geo.nsectors, geo.nbytes);
 	printf(" total_nbytes(%lub:%luMb)\n",
-		geo.tbytes, geo.tbytes >> 20);
+	       geo.tbytes, geo.tbytes >> 20);
 	printf(" vblk_nbytes(%lub:%luMb)\n",
-		geo.vblk_nbytes, geo.vblk_nbytes >> 20);
+	       geo.vblk_nbytes, geo.vblk_nbytes >> 20);
 	printf(" vpg_nbytes(%lub:%luKb)\n",
-		geo.vpg_nbytes, geo.vpg_nbytes >> 10);
+	       geo.vpg_nbytes, geo.vpg_nbytes >> 10);
 	printf("}\n");
 }
 
-struct nvm_dev* nvm_dev_open(const char *dev_name)
+struct nvm_dev *nvm_dev_open(const char *dev_name)
 {
 	char dev_path[NVM_DISK_NAME_LEN];
 	struct nvm_dev *dev;
@@ -241,7 +240,7 @@ struct nvm_dev* nvm_dev_open(const char *dev_name)
 	}
 
 	strncpy(dev->name, dev_name, DISK_NAME_LEN);
-	
+
 	err = nvm_dev_geo_fill(&dev->geo, dev_name);
 	if (err) {
 		NVM_DEBUG("FAILED: nvm_dev_geo_fill, err(%d)\n", err);

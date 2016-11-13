@@ -37,10 +37,10 @@
 #include <nvm_debug.h>
 #include <nvm_omp.h>
 
-struct nvm_sblk* nvm_sblk_new(struct nvm_dev *dev,
-                              int ch_bgn, int ch_end,
-                              int lun_bgn, int lun_end,
-                              int blk)
+struct nvm_sblk *nvm_sblk_new(struct nvm_dev *dev,
+			      int ch_bgn, int ch_end,
+			      int lun_bgn, int lun_end,
+			      int blk)
 {
 	struct nvm_sblk *sblk;
 	struct nvm_geo dev_geo = nvm_dev_attr_geo(dev);
@@ -59,9 +59,8 @@ struct nvm_sblk* nvm_sblk_new(struct nvm_dev *dev,
 	}
 
 	sblk = malloc(sizeof(*sblk));
-	if (!sblk) {
+	if (!sblk)
 		return NULL;
-	}
 
 	sblk->pos_write = 0;
 	sblk->pos_read = 0;
@@ -134,7 +133,7 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 				// pg is fixed and inherited from bgn (0)
 				// sec is fixed and inherited from bgn (0)
 			}
-			
+
 			err = nvm_addr_erase(sblk->dev,
 					     addrs,
 					     nplanes,
@@ -186,15 +185,13 @@ ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
 		data = buf;
 	} else {	// Allocate and use a padding buffer
 		data = nvm_buf_alloc(geo, NVM_CMD_NADDR * nbytes);
-		if (!data) {
+		if (!data)
 			return -count;
-		}
 	}
 
 	// Check alignment
-	if ((count % alignment) || (sblk->pos_write % alignment)) {
+	if ((count % alignment) || (sblk->pos_write % alignment))
 		return -count;
-	}
 
 	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
 	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
@@ -206,13 +203,12 @@ ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
 		#pragma omp barrier
 		for (size_t spg = spg_bgn + tid; spg < spg_end; spg += nthreads) {
 			struct nvm_addr addrs[NVM_CMD_NADDR];
-
 			const char *data_off;
-			if (buf) {
+
+			if (buf)
 				data_off = data + spg * nbytes * NVM_CMD_NADDR;
-			} else {
+			else
 				data_off = data;
-			}
 
 			// channels X luns X pages
 			int ch = (spg % nchannels) + ch_off;
@@ -249,9 +245,8 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 {
 	ssize_t nerr = nvm_sblk_pwrite(sblk, buf, count, sblk->pos_write);
 
-	if (!nerr) {
+	if (!nerr)
 		sblk->pos_write += count;
-	}
 
 	return nerr;
 }
@@ -344,9 +339,8 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 {
 	ssize_t nerr = nvm_sblk_pread(sblk, buf, count, sblk->pos_read);
 
-	if (!nerr) {
+	if (!nerr)
 		sblk->pos_read += count;
-	}
 
 	return nerr;
 }

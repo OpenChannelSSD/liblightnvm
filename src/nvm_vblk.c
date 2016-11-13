@@ -38,27 +38,36 @@
 #include <nvm.h>
 #include <nvm_debug.h>
 
-struct nvm_vblk* nvm_vblk_new(void)
+struct nvm_vblk *nvm_vblk_new(void)
 {
-	struct nvm_vblk *vblock = malloc(sizeof(*vblock));
-	vblock->dev = 0;
-	vblock->addr.ppa = 0;
-	vblock->pos_write = 0;
-	vblock->pos_read = 0;
+	struct nvm_vblk *vblk;
 
-	return vblock;
+	vblk = malloc(sizeof(*vblk));
+	if (!vblk)
+		return NULL;
+
+	vblk->dev = 0;
+	vblk->addr.ppa = 0;
+	vblk->pos_write = 0;
+	vblk->pos_read = 0;
+
+	return vblk;
 }
 
-struct nvm_vblk* nvm_vblk_new_on_dev(NVM_DEV dev, NVM_ADDR addr)
+struct nvm_vblk *nvm_vblk_new_on_dev(NVM_DEV dev, NVM_ADDR addr)
 {
-	struct nvm_vblk *vblock = malloc(sizeof(*vblock));
+	struct nvm_vblk *vblk;
 
-	vblock->dev = dev;
-	vblock->addr = addr;
-	vblock->pos_write = 0;
-	vblock->pos_read = 0;
+	vblk = malloc(sizeof(*vblk));
+	if (!vblk)
+		return NULL;
 
-	return vblock;
+	vblk->dev = dev;
+	vblk->addr = addr;
+	vblk->pos_write = 0;
+	vblk->pos_read = 0;
+
+	return vblk;
 }
 
 void nvm_vblk_free(struct nvm_vblk *vblk)
@@ -81,7 +90,7 @@ struct nvm_addr nvm_vblk_attr_addr(struct nvm_vblk *vblk)
 }
 
 int nvm_vblk_gets(struct nvm_vblk *vblock, struct nvm_dev *dev, uint32_t ch,
-                  uint32_t lun)
+		  uint32_t lun)
 {
 	struct nvm_ioctl_dev_vblk ctl;
 	struct nvm_addr addr;
@@ -94,9 +103,8 @@ int nvm_vblk_gets(struct nvm_vblk *vblock, struct nvm_dev *dev, uint32_t ch,
 	ctl.ppa = addr.ppa;
 
 	err = ioctl(dev->fd, NVM_DEV_BLOCK_GET, &ctl);
-	if (err) {
+	if (err)
 		return err;
-	}
 
 	vblock->addr.ppa = ctl.ppa;
 	vblock->dev = dev;
@@ -116,7 +124,7 @@ int nvm_vblk_put(struct nvm_vblk *vblock)
 
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.ppa = vblock->addr.ppa;
-	
+
 	ret = ioctl(vblock->dev->fd, NVM_DEV_BLOCK_PUT, &ctl);
 
 	return ret;
@@ -139,7 +147,7 @@ ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 }
 
 ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
-                        size_t count, size_t offset)
+			size_t count, size_t offset)
 {
 	const struct nvm_geo geo = nvm_dev_attr_geo(vblk->dev);
 	const int len = geo.nplanes * geo.nsectors;
@@ -180,11 +188,10 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
 ssize_t nvm_vblk_write(struct nvm_vblk *vblk, const void *buf, size_t count)
 {
 	ssize_t err;
-	
+
 	err = nvm_vblk_pwrite(vblk, buf, count, vblk->pos_write);
-	if (err) {		// errno set by nvm_vblk_pwrite / nvm_addr_write
-		return -1;
-	}
+	if (err)
+		return -1;	// errno set by nvm_vblk_pwrite / nvm_addr_write
 
 	vblk->pos_write += count;
 
@@ -233,11 +240,10 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 ssize_t nvm_vblk_read(struct nvm_vblk *vblk, void *buf, size_t count)
 {
 	ssize_t err;
-	
+
 	err = nvm_vblk_pread(vblk, buf, count, vblk->pos_read);
-	if (err) {		// errno set by nvm_vblk_pread / nvm_addr_read
-		return -1;
-	}
+	if (err)
+		return -1;	// errno set by nvm_vblk_pread / nvm_addr_read
 
 	vblk->pos_read += count;
 
