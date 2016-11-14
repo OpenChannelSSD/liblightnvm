@@ -1,8 +1,10 @@
 /*
- * addr - Sector addressing functions for pr, erase, read, write
+ * addr - Sector addressing functions for mark, erase, write, read, and
+ *        meta-data print
  *
  * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
  * Copyright (C) 2015 Matias Bjørling <matias@cnexlabs.com>
+ * Copyright (C) 2016 Simon A. F. Lund <slund@cnexlabs.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +38,7 @@
 #include <nvm_debug.h>
 
 static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr list[],
-				    int len, void *buf, uint16_t flags,
+			    int len, void *buf, uint16_t flags,
 			    uint16_t opcode)
 {
 	struct nvm_ioctl_dev_pio ctl;
