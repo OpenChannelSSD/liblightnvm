@@ -96,8 +96,15 @@ int nvm_vblk_gets(struct nvm_vblk *vblock, struct nvm_dev *dev, uint32_t ch,
 	struct nvm_addr addr;
 	int err;
 
+	if (ch >= dev->geo.nchannels)
+		return -1;
+
+	if (lun >= dev->geo.nluns)
+		return -1;
+
 	addr.ppa = 0;
 	addr.g.lun = lun;
+	addr.g.ch = ch;
 
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.ppa = addr.ppa;
