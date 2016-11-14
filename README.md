@@ -1,8 +1,12 @@
 # liblightnvm - Userspace I/O library for LightNVM
 
-[![Build Status](https://travis-ci.org/OpenChannelSSD/liblightnvm.svg?branch=master)](https://travis-ci.org/OpenChannelSSD/liblightnvm)
 tgz:[![Download tgz](https://api.bintray.com/packages/openchannelssd/binaries/liblightnvm/images/download.svg) ](https://bintray.com/openchannelssd/binaries/liblightnvm/_latestVersion)
 deb:[![Download deb](https://api.bintray.com/packages/openchannelssd/debs/liblightnvm/images/download.svg) ](https://bintray.com/openchannelssd/debs/liblightnvm/_latestVersion)
+
+[![Build Status](https://travis-ci.org/OpenChannelSSD/liblightnvm.svg?branch=master)](https://travis-ci.org/OpenChannelSSD/liblightnvm)
+
+[![Coverage
+Status](https://coveralls.io/repos/github/OpenChannelSSD/liblightnvm/badge.svg?branch=master)](https://coveralls.io/github/OpenChannelSSD/liblightnvm?branch=master)
 
 liblightnvm is a user space library that manages provisioning of and I/O
 submission to physical flash. The motivation is to enable I/O-intensive
