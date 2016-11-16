@@ -1,7 +1,9 @@
 /*
- * liblightnvm - Linux Open-Channel I/O interface
+ * liblightnvm - User space I/O library for OpenChannelSSDs
  *
  * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
+ * Copyright (C) 2015 Matias González <javier@cnexlabs.com>
+ * Copyright (C) 2016 Simon A. F. Lund <slund@cnexlabs.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,8 +59,10 @@ extern "C" {
 #define NVM_LUN_BITS (8)
 #define NVM_CH_BITS  (7)
 
+/**
+ * Encapsulation of generic nvm addressing
+ */
 typedef struct nvm_addr {
-	/* Generic structure for all addresses */
 	union {
 		struct {
 			uint64_t blk         : NVM_BLK_BITS;
@@ -79,22 +83,26 @@ typedef struct nvm_addr {
 	};
 } NVM_ADDR;
 
+/**
+ * Representation of device geometry
+ */
 typedef struct nvm_geo {
-	/* Values queried from device */
-	size_t nchannels;	// # of channels on device
-	size_t nluns;		// # of luns per channel
-	size_t nplanes;		// # of planes for lun
-	size_t nblocks;		// # of blocks per plane
-	size_t npages;		// # of pages per block
-	size_t nsectors;	// # of sectors per page
-	size_t nbytes;		// # of bytes per sector
+	size_t nchannels;	/// Number of channels on device
+	size_t nluns;		/// Number of luns per channel
+	size_t nplanes;		/// Number of planes per lun
+	size_t nblocks;		/// Number of blocks per plane
+	size_t npages;		/// Number of pages per block
+	size_t nsectors;	/// Number of sectors per page
+	size_t nbytes;		/// Number of bytes per sector
 
-	/* Values derived from above */
-	size_t tbytes;		// Total # of bytes on device
-	size_t vblk_nbytes;	// # of bytes per vblk
-	size_t vpg_nbytes;	// # upper bound on _nvm_vblk_[read|write]
+	size_t tbytes;		/// Total number of bytes on device
+	size_t vblk_nbytes;	/// Number of bytes per virtual block
+	size_t vpg_nbytes;	/// Number of bytes per virtual page
 } NVM_GEO;
 
+/**
+ * Handle for nvm devices
+ */
 typedef struct nvm_dev *NVM_DEV;
 typedef struct nvm_vblk *NVM_VBLK;
 typedef struct nvm_sblk *NVM_SBLK;
@@ -235,19 +243,41 @@ ssize_t nvm_vblk_write(NVM_VBLK vblk, const void *buf, size_t count);
  */
 ssize_t nvm_vblk_read(NVM_VBLK vblk, void *buf, size_t count);
 
-/**
- *      spanning block interface
- */
 
+/**
+ * Create a new sblk.
+ */
 NVM_SBLK nvm_sblk_new(NVM_DEV dev, int ch_bgn, int ch_end, int lun_bgn,
                       int lun_end, int blk);
 
+/**
+ * Destroy an sblk
+ */
 void nvm_sblk_free(NVM_SBLK sblk);
 
+/**
+ * Erase an sblk
+ */
 ssize_t nvm_sblk_erase(NVM_SBLK sblk);
+
+/**
+ * Write content from buffer to sblk
+ */
 ssize_t nvm_sblk_write(NVM_SBLK sblk, const void *buf, size_t count);
+
+/**
+ * Pad the sblk
+ */
 ssize_t nvm_sblk_pad(NVM_SBLK sblk);
+
+/**
+ * Read content from sblk to buffer
+ */
 ssize_t nvm_sblk_read(NVM_SBLK sblk, void *buf, size_t count);
+
+/**
+ * Positioned read from sblk to buffer
+ */
 ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
 		       size_t offset);
 
