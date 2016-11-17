@@ -1,5 +1,5 @@
-User space I/O library for OpenChannelSSDs / LightNVM
-=====================================================
+User space I/O library for OpenChannelSSDs -- LightNVM
+======================================================
 
 | Status | [![Build Status](https://travis-ci.org/OpenChannelSSD/liblightnvm.svg?branch=master)](https://travis-ci.org/OpenChannelSSD/liblightnvm) |
 |--------|:----------------------------------------------------------|

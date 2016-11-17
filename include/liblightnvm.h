@@ -1,5 +1,5 @@
 /*
- * liblightnvm - User space I/O library for OpenChannelSSDs
+ * User space I/O library for OpenChannelSSDs -- LightNVM
  *
  * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
  * Copyright (C) 2015 Matias González <javier@cnexlabs.com>
