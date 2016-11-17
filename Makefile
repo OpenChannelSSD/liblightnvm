@@ -39,12 +39,12 @@ docs-view:
 docs-publish:
 	rm -fr $(BUILD_DIR)/ghpages
 	mkdir -p $(BUILD_DIR)/ghpages
-	git clone -b gh-pages `git config --get remote.origin.url` --single-branch $(BUILD_DIR)/ghpages
+	git clone -b gh-pages git@github.com:OpenChannelSSD/liblightnvm.git --single-branch $(BUILD_DIR)/ghpages
 	cd $(BUILD_DIR)/ghpages && git rm -rf .
 	cp -r $(BUILD_DIR)/docs/html/. $(BUILD_DIR)/ghpages/
 	cd $(BUILD_DIR)/ghpages && git add .
-	if [ -z "`git config user.name`" ]; then git config user.name "Simon A. F. Lund"; fi
-	if [ -z "`git config user.email`" ]; then git config user.email "slund@cnexlabs.com"; fi
+	if [ -z "`git config user.name`" ]; then git config user.name "Mr. Robot"; fi
+	if [ -z "`git config user.email`" ]; then git config user.email "foo@example.com"; fi
 	cd $(BUILD_DIR)/ghpages && git commit -m "Autogen docs for `git rev-parse --short HEAD`."
 	cd $(BUILD_DIR)/ghpages && git push origin gh-pages
 
