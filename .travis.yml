@@ -53,6 +53,10 @@ script:
   - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm-${NVM_VERSION}.tar.gz .
   - docker stop "${CONTAINER_ID}"
 
+after_success:
+  - make docs
+  - make docs-publish
+
 before_deploy:
   - python ci/bintray_descriptor.py --repos debs --dist_code $DIST_CODE --version ${NVM_VERSION} --branch ${TRAVIS_BRANCH} --commit ${TRAVIS_COMMIT} > ci/bintray_debs.json
   - python ci/bintray_descriptor.py --repos binaries --dist_code $DIST_CODE --version ${NVM_VERSION} --branch ${TRAVIS_BRANCH} --commit ${TRAVIS_COMMIT} > ci/bintray_binaries.json
