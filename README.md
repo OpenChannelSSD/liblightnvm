@@ -3,8 +3,8 @@
 **tgz** [![Download tgz](https://api.bintray.com/packages/openchannelssd/binaries/liblightnvm/images/download.svg)](https://bintray.com/openchannelssd/binaries/liblightnvm/_latestVersion)
 **docs** [http://lightnvm.io/liblightnvm](http://lightnvm.io/liblightnvm)
 
-User space I/O library for OpenChannelSSDs -- LightNVM
-======================================================
+User space I/O library for Open-channel SSDs
+============================================
 
 liblightnvm is a user space library that manages provisioning of and I/O
 submission to physical flash. The motivation is to enable I/O-intensive
@@ -25,6 +25,19 @@ indirection that the traditional I/O stack imposes to enable genericity: page
 cache, VFS, file system, and device physical - logical translation table.
 liblightnvm exposes append-only primitives using direct physical flash to
 support this class of applications.
+
+Interface and abstractions
+==========================
+
+Address
+-------
+
+Virtual Block
+-------------
+
+Spanning Block
+--------------
+
 
 Contact and Contributions
 =========================
