@@ -2,6 +2,7 @@
  * nvm - internal header for liblightnvm
  *
  * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
+ * Copyright (C) 2015 Matias Bjørling <matias@cnexlabs.com>
  * Copyright (C) 2016 Simon A. F. Lund <slund@cnexlabs.com>
  * All rights reserved.
  *
