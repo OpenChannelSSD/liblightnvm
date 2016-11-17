@@ -46,6 +46,7 @@ docs-publish:
 	if [ -z "`git config user.name`" ]; then git config user.name "Mr. Robot"; fi
 	if [ -z "`git config user.email`" ]; then git config user.email "foo@example.com"; fi
 	cd $(BUILD_DIR)/ghpages && git commit -m "Autogen docs for `git rev-parse --short HEAD`."
+	cd $(BUILD_DIR)/ghpages && git push origin gh-pages
 
 install:
 	cd $(BUILD_DIR) && make install
