@@ -1,5 +1,13 @@
 sudo: required
+
 language: c
+
+addons:
+  apt:
+    packages:
+    - doxygen
+    - graphviz
+
 services:
   - docker
 
