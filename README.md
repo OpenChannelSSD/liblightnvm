@@ -1,10 +1,10 @@
+User space I/O library for Open-channel SSDs
+============================================
+
 **Status** [![Build Status](https://travis-ci.org/OpenChannelSSD/liblightnvm.svg?branch=master)](https://travis-ci.org/OpenChannelSSD/liblightnvm)
 **deb** [![Download deb](https://api.bintray.com/packages/openchannelssd/debs/liblightnvm/images/download.svg)](https://bintray.com/openchannelssd/debs/liblightnvm/_latestVersion)
 **tgz** [![Download tgz](https://api.bintray.com/packages/openchannelssd/binaries/liblightnvm/images/download.svg)](https://bintray.com/openchannelssd/binaries/liblightnvm/_latestVersion)
 **docs** [http://lightnvm.io/liblightnvm](http://lightnvm.io/liblightnvm)
-
-User space I/O library for Open-channel SSDs
-============================================
 
 liblightnvm is a user space library that manages provisioning of and I/O
 submission to physical flash. The motivation is to enable I/O-intensive
@@ -26,19 +26,6 @@ cache, VFS, file system, and device physical - logical translation table.
 liblightnvm exposes append-only primitives using direct physical flash to
 support this class of applications.
 
-Interface and abstractions
-==========================
-
-Address
--------
-
-Virtual Block
--------------
-
-Spanning Block
---------------
-
-
 Contact and Contributions
 =========================
 
@@ -47,10 +34,10 @@ liblightnvm is in active development and pull requests are very welcome.
 References
 ==========
 
-1.  <https://github.com/OpenChannelSSD/linux/tree/liblnvm>
-2.  <http://openchannelssd.readthedocs.org/en/latest/gettingstarted/#configure-qemu>
-3.  <https://github.com/OpenChannelSSD/qemu-nvme>
-4.  <https://github.com/OpenChannelSSD/lightnvm-hw>
-5.  <https://github.com/OpenChannelSSD/rocksdb>
-6.  <http://openchannelssd.readthedocs.org/en/latest/>
+1.  [Open-channel SSDs](http://openchannelssd.readthedocs.org/en/latest/>)
+2.  [Getting Started](http://openchannelssd.readthedocs.org/en/latest/gettingstarted/#configure-qemu)
+3.  [nvme-cli](https://github.com/linux-nvme/nvme-cli)
+4.  [qemu-nvme](<https://github.com/OpenChannelSSD/qemu-nvme)
+5.  [lightnvm-hw](<https://github.com/OpenChannelSSD/lightnvm-hw)
+6.  [rocksdb support](https://github.com/OpenChannelSSD/rocksdb)
 
