@@ -4,6 +4,8 @@
 #include <string.h>
 #include <liblightnvm.h>
 
+#define DISK_NAME_LEN 32
+
 int main(int argc, char **argv)
 {
 	if (argc != 2) {

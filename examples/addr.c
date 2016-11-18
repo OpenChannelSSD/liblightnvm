@@ -5,6 +5,8 @@
 #include <errno.h>
 #include <liblightnvm.h>
 
+#define CLI_CMD_LEN 50
+
 int mark(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 {
 	ssize_t err;
@@ -127,10 +129,8 @@ int fmt_g(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 	return 0;
 }
 
-#define NVM_CLI_CMD_LEN 50
-
 typedef struct {
-	char name[NVM_CLI_CMD_LEN];
+	char name[CLI_CMD_LEN];
 	int (*func)(NVM_DEV, NVM_GEO, NVM_ADDR[], int, int);
 	int argc;
 	int flags;
@@ -167,8 +167,8 @@ void _usage_pr(char *cli_name)
 
 int main(int argc, char **argv)
 {
-	char cmd_name[NVM_CLI_CMD_LEN];
-	char dev_name[DISK_NAME_LEN+1];
+	char cmd_name[CLI_CMD_LEN];
+	char dev_name[NVM_DISK_NAME_LEN+1];
 	int ret;
 
 	NVM_CLI_ADDR_CMD *cmd = NULL;
@@ -183,7 +183,7 @@ int main(int argc, char **argv)
 		return -EINVAL;
 	}
 							// Get `cmd_name`
-	if (strlen(argv[1]) < 1 || strlen(argv[1]) > (NVM_CLI_CMD_LEN-1)) {
+	if (strlen(argv[1]) < 1 || strlen(argv[1]) > (CLI_CMD_LEN-1)) {
 		printf("Invalid cmd\n");
 		_usage_pr(argv[0]);
 		return -EINVAL;
@@ -203,8 +203,8 @@ int main(int argc, char **argv)
 		return -EINVAL;
 	}
 							// Get `dev_name`
-	if (strlen(argv[2]) < 1 || strlen(argv[2]) > DISK_NAME_LEN) {
-		printf("len(dev_name) > %d\n", DISK_NAME_LEN);
+	if (strlen(argv[2]) < 1 || strlen(argv[2]) > NVM_DISK_NAME_LEN) {
+		printf("len(dev_name) > %d\n", NVM_DISK_NAME_LEN);
 		return -EINVAL;
 	}
 	memset(dev_name, 0, sizeof(dev_name));

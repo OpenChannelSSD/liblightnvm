@@ -4,6 +4,8 @@
 #include <errno.h>
 #include <liblightnvm.h>
 
+#define DISK_NAME_LEN 32
+
 int get(NVM_DEV dev, NVM_GEO geo, NVM_VBLK vblk, NVM_ADDR addr, int flags)
 {
 	ssize_t err;

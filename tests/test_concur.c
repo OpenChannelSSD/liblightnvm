@@ -8,7 +8,7 @@
 
 #include <CUnit/Basic.h>
 
-static char nvm_dev_name[DISK_NAME_LEN] = "nvme0n1";
+static char nvm_dev_name[NVM_DISK_NAME_LEN] = "nvme0n1";
 
 struct context {
 	NVM_VBLK blk;
@@ -129,9 +129,9 @@ void test_VBLOCK_CONCUR(void)
 int main(int argc, char **argv)
 {
 	if (argc > 1) {
-		if (strlen(argv[1]) > DISK_NAME_LEN) {
+		if (strlen(argv[1]) > NVM_DISK_NAME_LEN) {
 			printf("Argument nvm_dev can be maximum %d characters\n",
-				DISK_NAME_LEN - 1);
+				NVM_DISK_NAME_LEN - 1);
 		}
 		strcpy(nvm_dev_name, argv[1]);
 	}

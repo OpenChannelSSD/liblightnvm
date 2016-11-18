@@ -20,7 +20,7 @@
 
 #include <CUnit/Basic.h>
 
-static char nvm_dev_name[DISK_NAME_LEN] = "nvm_vblock_tst";
+static char nvm_dev_name[NVM_DISK_NAME_LEN] = "nvm_vblock_tst";
 int k = 10;	// Total number of nvm_vblk_gets allowed to fail
 
 void TEST_VBLOCK_GP_N(void)
@@ -118,8 +118,8 @@ int main(int argc, char **argv)
 		printf("Usage: %s dev_name\n", argv[0]);
 		return -1;
 	}
-	if (strlen(argv[1]) > DISK_NAME_LEN) {
-		printf("len(device_name) > %d\n", DISK_NAME_LEN - 1);
+	if (strlen(argv[1]) > NVM_DISK_NAME_LEN) {
+		printf("len(device_name) > %d\n", NVM_DISK_NAME_LEN - 1);
 	}
 	strcpy(nvm_dev_name, argv[1]);
 

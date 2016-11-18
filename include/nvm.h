@@ -31,6 +31,10 @@
 
 #include <liblightnvm.h>
 
+#define NVM_MAGIC_OPCODE_ERASE 0x90     // NVM_OP_ERASE
+#define NVM_MAGIC_OPCODE_WRITE 0x91     // NVM_OP_PWRITE
+#define NVM_MAGIC_OPCODE_READ 0x92      // NVM_OP_PREAD
+
 struct nvm_dev {
 	char name[NVM_DISK_NAME_LEN];	/* Device name e.g. nvme0n1 */
 	struct nvm_geo geo;		/* Device information */

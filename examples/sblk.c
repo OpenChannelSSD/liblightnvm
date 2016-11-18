@@ -160,10 +160,11 @@ int read(NVM_SBLK sblk, int flags)
 //
 // as well as using the NVM_ADDR data structure.
 
-#define NVM_CLI_CMD_LEN 50
+#define CLI_CMD_LEN 50
+#define DISK_NAME_LEN 32
 
 typedef struct {
-	char name[NVM_CLI_CMD_LEN];
+	char name[CLI_CMD_LEN];
 	int (*func)(NVM_SBLK, int);
 	int argc;
 	int flags;
@@ -203,7 +204,7 @@ void _usage_pr(char *cli_name)
 
 int main(int argc, char **argv)
 {
-	char cmd_name[NVM_CLI_CMD_LEN];
+	char cmd_name[CLI_CMD_LEN];
 	char dev_name[DISK_NAME_LEN+1];
 	int ret, i;
 
@@ -218,7 +219,7 @@ int main(int argc, char **argv)
 		return -1;
 	}
 							// Get `cmd_name`
-	if (strlen(argv[1]) < 1 || strlen(argv[1]) > (NVM_CLI_CMD_LEN-1)) {
+	if (strlen(argv[1]) < 1 || strlen(argv[1]) > (CLI_CMD_LEN-1)) {
 		printf("Invalid cmd\n");
 		_usage_pr(argv[0]);
 		return -EINVAL;

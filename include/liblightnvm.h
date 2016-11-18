@@ -36,31 +36,26 @@ extern "C" {
 #include <stdint.h>
 #include <sys/types.h>
 
-#ifndef DISK_NAME_LEN
-#define DISK_NAME_LEN 32
-#endif
 #ifndef NVM_DISK_NAME_LEN
 #define NVM_DISK_NAME_LEN 32
 #endif
-
-#define NVM_MAGIC_OPCODE_ERASE 0x90     // NVM_OP_ERASE
-#define NVM_MAGIC_OPCODE_WRITE 0x91     // NVM_OP_PWRITE
-#define NVM_MAGIC_OPCODE_READ 0x92      // NVM_OP_PREAD
 
 #define NVM_MAGIC_FLAG_DUAL 0x1         // NVM_IO_DUAL_ACCESS
 #define NVM_MAGIC_FLAG_QUAD 0x2         // NVM_IO_QUAD_ACCESS
 #define NVM_MAGIC_FLAG_DEFAULT NVM_MAGIC_FLAG_DUAL
 
 /* BITS ALLOCATED FOR THE GENERAL ADDRESS FORMAT */
-#define NVM_BLK_BITS (16)
-#define NVM_PG_BITS  (16)
-#define NVM_SEC_BITS (8)
-#define NVM_PL_BITS  (8)
-#define NVM_LUN_BITS (8)
-#define NVM_CH_BITS  (7)
+#define NVM_BLK_BITS (16)	///< Number of bits for block field
+#define NVM_PG_BITS  (16)	///< Number of bits for page field
+#define NVM_SEC_BITS (8)	///< Number of bits for sector field
+#define NVM_PL_BITS  (8)	///< Number of bits for plane field
+#define NVM_LUN_BITS (8)	///< Number of bits for lun field
+#define NVM_CH_BITS  (7)	///< NUmber of bits for channel field
 
 /**
  * Encapsulation of generic nvm addressing
+ *
+ * @ingroup NVM_ADDR
  */
 typedef struct nvm_addr {
 	union {
@@ -84,45 +79,90 @@ typedef struct nvm_addr {
 } NVM_ADDR;
 
 /**
- * Representation of device geometry
+ * Representation of geometry of devices and spanning blocks.
+ *
+ * @ingroup NVM_GEO
  */
 typedef struct nvm_geo {
-	size_t nchannels;	/// Number of channels on device
-	size_t nluns;		/// Number of luns per channel
-	size_t nplanes;		/// Number of planes per lun
-	size_t nblocks;		/// Number of blocks per plane
-	size_t npages;		/// Number of pages per block
-	size_t nsectors;	/// Number of sectors per page
-	size_t nbytes;		/// Number of bytes per sector
+	size_t nchannels;	///< Number of channels on device
+	size_t nluns;		///< Number of luns per channel
+	size_t nplanes;		///< Number of planes per lun
+	size_t nblocks;		///< Number of blocks per plane
+	size_t npages;		///< Number of pages per block
+	size_t nsectors;	///< Number of sectors per page
+	size_t nbytes;		///< Number of bytes per sector
 
-	size_t tbytes;		/// Total number of bytes on device
-	size_t vblk_nbytes;	/// Number of bytes per virtual block
-	size_t vpg_nbytes;	/// Number of bytes per virtual page
+	size_t tbytes;		///< Total number of bytes on device
+	size_t vblk_nbytes;	///< Number of bytes per virtual block
+	size_t vpg_nbytes;	///< Number of bytes per virtual page
 } NVM_GEO;
 
 /**
  * Handle for nvm devices
+ *
+ * @ingroup NVM_DEV
  */
 typedef struct nvm_dev *NVM_DEV;
+
+/**
+ * Virtual block
+ *
+ * @ingroup NVM_VBLK
+ */
 typedef struct nvm_vblk *NVM_VBLK;
+
+/**
+ * Spanning block
+ *
+ * @ingroup NVM_SBLK
+ */
 typedef struct nvm_sblk *NVM_SBLK;
 
+/**
+ * Prints human readable representation of given geometry
+ *
+ * @ingroup NVM_GEO
+ */
 void nvm_geo_pr(NVM_GEO geo);
 
+/**
+ * Creates a handle to the device named dev_name
+ *
+ * @ingroup NVM_DEV
+ * @param dev_name Name of the device to open e.g. nvme0n1
+ * @returns A handle to the device
+ */
 NVM_DEV nvm_dev_open(const char *dev_name);
+
+/**
+ * Close the handle
+ */
 void nvm_dev_close(NVM_DEV dev);
+
+/**
+ * Prints information about the device associated with the given handle
+ *
+ * @param dev Handle for the device to print information about
+ */
 void nvm_dev_pr(NVM_DEV dev);
 
 /**
- * Returns of the geometry related device information including derived
- * information such as total number of bytes etc.
+ * Returns the geometry of the given device
  *
- * NOTE: See NVM_GEO for the specifics.
+ * NOTE: See NVM_GEO for the specifics
  *
- * @return NVM_GEO of given dev
+ * @param dev The device to obtain the geometry of
+ * @returns The geometry (NVM_GEO) of given NVM_DEV
  */
 NVM_GEO nvm_dev_attr_geo(NVM_DEV dev);
 
+/**
+ * Allocate a buffer aligned to match the given geometry
+ *
+ * @param geo The geometry to get alignment information from
+ * @param nbytes The size of the allocated buffer in bytes
+ * @returns On succes: a pointer to the allocated memory. On error: NULL.
+ */
 void *nvm_buf_alloc(NVM_GEO geo, size_t nbytes);
 
 /**
