@@ -144,13 +144,17 @@ ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 	const int len = geo.nplanes;
 	struct nvm_addr list[len];
 	int i;
+	int PLANE_FLAG = 0x0;
+
+	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
+	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
 
 	for (i = 0; i < len; ++i) {
 		list[i].ppa = vblk->addr.ppa;
 		list[i].g.pl = i;
 	}
 
-	return nvm_addr_erase(vblk->dev, list, len, NVM_MAGIC_FLAG_DEFAULT);
+	return nvm_addr_erase(vblk->dev, list, len, PLANE_FLAG);
 }
 
 ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
@@ -161,11 +165,15 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
 	const int align = len * geo.nbytes;
 	const int vpg_offset = offset / align;
 	size_t nbytes_written = 0;
+	int PLANE_FLAG = 0x0;
 
 	if ((count % align) || (offset % align)) {
 		errno = EINVAL;
 		return -1;
 	}
+
+	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
+	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
 
 	while (nbytes_written < count) {
 		struct nvm_addr list[len];
@@ -181,7 +189,7 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
 		}
 
 		err = nvm_addr_write(vblk->dev, list, len, buf + nbytes_written,
-				     NVM_MAGIC_FLAG_DEFAULT);
+				     PLANE_FLAG);
 		if (err) {	// errno set by `nvm_addr_write`
 			return -1;
 		}
@@ -213,11 +221,15 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 	const int align = len * geo.nbytes;
 	const int vpg_offset = offset / align;
 	size_t nbytes_read = 0;
+	int PLANE_FLAG = 0x0;
 
 	if ((count % align) || (offset % align)) {
 		errno = EINVAL;
 		return -1;
 	}
+
+	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
+	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
 
 	while (nbytes_read < count) {
 		struct nvm_addr list[len];
@@ -233,7 +245,7 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 		}
 
 		err = nvm_addr_read(vblk->dev, list, len, buf + nbytes_read,
-				     NVM_MAGIC_FLAG_DEFAULT);
+				     PLANE_FLAG);
 		if (err) {	// errno set by `nvm_addr_read`
 			return -1;
 		}

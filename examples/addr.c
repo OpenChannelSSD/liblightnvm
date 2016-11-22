@@ -11,6 +11,10 @@ int mark(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 {
 	ssize_t err;
 	int i;
+	int PLANE_FLAG = 0x0;
+
+	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
+	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
 
 	printf("** nvm_addr_mark(...):\n");
 	for (i = 0; i < len; ++i) {
@@ -38,13 +42,17 @@ int erase(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 {
 	ssize_t err;
 	int i;
+	int PLANE_FLAG = 0x0;
+
+	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
+	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
 
 	printf("** nvm_addr_erase(...):\n");
 	for (i = 0; i < len; ++i) {
 		nvm_addr_pr(list[i]);
 	}
 
-	err = nvm_addr_erase(dev, list, len, NVM_MAGIC_FLAG_DEFAULT);
+	err = nvm_addr_erase(dev, list, len, PLANE_FLAG);
 	if (err) {
 		printf("ERR: nvm_addr_write err(%ld)\n", err);
 	}
@@ -57,6 +65,10 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 	int buf_len, i;
 	char *buf;
 	ssize_t err;
+	int PLANE_FLAG = 0x0;
+
+	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
+	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
 
 	buf_len = len * geo.nbytes;
 	buf = nvm_buf_alloc(geo, buf_len);
@@ -71,7 +83,7 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 		nvm_addr_pr(list[i]);
 	}
 
-	err = nvm_addr_write(dev, list, len, buf, NVM_MAGIC_FLAG_DEFAULT);
+	err = nvm_addr_write(dev, list, len, buf, PLANE_FLAG);
 	if (err) {
 		printf("ERR: nvm_addr_write err(%ld)\n", err);
 	}
@@ -86,6 +98,10 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 	int buf_len, i;
 	char *buf;
 	ssize_t err;
+	int PLANE_FLAG = 0x0;
+
+	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
+	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
 
 	buf_len = len * geo.nbytes;
 	buf = nvm_buf_alloc(geo, buf_len);
@@ -99,7 +115,7 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 		nvm_addr_pr(list[i]);
 	}
 
-	err = nvm_addr_read(dev, list, len, buf, NVM_MAGIC_FLAG_DEFAULT);
+	err = nvm_addr_read(dev, list, len, buf, PLANE_FLAG);
 	if (getenv("NVM_BUF_PR"))
 		nvm_buf_pr(buf, buf_len);
 	if (err) {

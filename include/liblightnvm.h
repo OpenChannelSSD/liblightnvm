@@ -1,5 +1,5 @@
 /*
- * User space I/O library for OpenChannelSSDs -- LightNVM
+ * User space I/O library for Open-channelSSDs
  *
  * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
  * Copyright (C) 2015 Matias González <javier@cnexlabs.com>
@@ -40,11 +40,10 @@ extern "C" {
 #define NVM_DISK_NAME_LEN 32
 #endif
 
-#define NVM_MAGIC_FLAG_DUAL 0x1         // NVM_IO_DUAL_ACCESS
-#define NVM_MAGIC_FLAG_QUAD 0x2         // NVM_IO_QUAD_ACCESS
-#define NVM_MAGIC_FLAG_DEFAULT NVM_MAGIC_FLAG_DUAL
+#define NVM_MAGIC_FLAG_SNGL 0x0	///< Single-plane
+#define NVM_MAGIC_FLAG_DUAL 0x1	///< Dual-plane (NVM_IO_DUAL_ACCESS)
+#define NVM_MAGIC_FLAG_QUAD 0x2	///< Quad-plane (NVM_IO_QUAD_ACCESS)
 
-/* BITS ALLOCATED FOR THE GENERAL ADDRESS FORMAT */
 #define NVM_BLK_BITS (16)	///< Number of bits for block field
 #define NVM_PG_BITS  (16)	///< Number of bits for page field
 #define NVM_SEC_BITS (8)	///< Number of bits for sector field
@@ -53,20 +52,31 @@ extern "C" {
 #define NVM_CH_BITS  (7)	///< NUmber of bits for channel field
 
 /**
- * Encapsulation of generic nvm addressing
+ * Encapsulation of generic physical nvm addressing
+ *
+ * The kernel translates the generic physical address represented by this
+ * structure to device specific address formats. Although the user need not
+ * worry about device specific address formats the user has to know and respect
+ * addressing within device specific geometric boundaries.
+ *
+ * For that purpose one can use the NVM_GEO of an NVM_DEV to obtain device
+ * specific geometries.
  *
  * @ingroup NVM_ADDR
  */
 typedef struct nvm_addr {
 	union {
+		/**
+		 * Address packing and geometric accessors
+		 */
 		struct {
-			uint64_t blk         : NVM_BLK_BITS;
-			uint64_t pg          : NVM_PG_BITS;
-			uint64_t sec         : NVM_SEC_BITS;
-			uint64_t pl          : NVM_PL_BITS;
-			uint64_t lun         : NVM_LUN_BITS;
-			uint64_t ch          : NVM_CH_BITS;
-			uint64_t reserved    : 1;
+			uint64_t blk	: NVM_BLK_BITS;	///< Block address
+			uint64_t pg	: NVM_PG_BITS;	///< Page address
+			uint64_t sec	: NVM_SEC_BITS;	///< Sector address
+			uint64_t pl	: NVM_PL_BITS;	///< Plane address
+			uint64_t lun	: NVM_LUN_BITS;	///< Lun address
+			uint64_t ch	: NVM_CH_BITS;	///< Channel address
+			uint64_t rsvd	: 1;		///< Reserved
 		} g;
 
 		struct {
@@ -74,6 +84,9 @@ typedef struct nvm_addr {
 			uint64_t is_cached   : 1;
 		} c;
 
+		/**
+		 * Address in numerical form
+		 */
 		uint64_t ppa;
 	};
 } NVM_ADDR;
@@ -105,8 +118,9 @@ typedef struct nvm_geo {
 typedef struct nvm_dev *NVM_DEV;
 
 /**
- * Virtual block
- *
+ * Virtual blocks facilitate a libc-like write, pwrite, read, pread
+ * interface to perform I/O on blocks on nvm.
+  *
  * @ingroup NVM_VBLK
  */
 typedef struct nvm_vblk *NVM_VBLK;
@@ -135,14 +149,17 @@ void nvm_geo_pr(NVM_GEO geo);
 NVM_DEV nvm_dev_open(const char *dev_name);
 
 /**
- * Close the handle
+ * Destroys device-handle
+ *
+ * @ingroup NVM_DEV
+ * @param dev Handle to destroy
  */
 void nvm_dev_close(NVM_DEV dev);
 
 /**
  * Prints information about the device associated with the given handle
  *
- * @param dev Handle for the device to print information about
+ * @param dev Handle of the device to print information about
  */
 void nvm_dev_pr(NVM_DEV dev);
 
@@ -152,7 +169,7 @@ void nvm_dev_pr(NVM_DEV dev);
  * NOTE: See NVM_GEO for the specifics
  *
  * @param dev The device to obtain the geometry of
- * @returns The geometry (NVM_GEO) of given NVM_DEV
+ * @returns The geometry (NVM_GEO) of given device handle
  */
 NVM_GEO nvm_dev_attr_geo(NVM_DEV dev);
 
@@ -167,42 +184,90 @@ void *nvm_buf_alloc(NVM_GEO geo, size_t nbytes);
 
 /**
  * Fills `buf` with chars A-Z
+ *
+ * @param buf Pointer to the buffer to fill
+ * @param nbytes Amount of bytes to fill in buf
  */
 void nvm_buf_fill(char *buf, size_t nbytes);
 
 /**
  * Prints `buf` to stdout
+ *
+ * @param buf Pointer to the buffer to print
+ * @param nbytes Amount of bytes of buf to print
  */
 void nvm_buf_pr(char *buf, size_t nbytes);
 
 /**
- *      address interface
- */
-
-/**
- * Mark address by setting flags to one of:
+ * Mark addresses good, bad, or host-bad.
  *
- * 0x0 -- GOOD
- * 0x1 -- BAD
- * 0x2 -- GROWN_BAD
+ * NOTE: The addresses given to this function are interpreted as block
+ *       addresses, in contrast to nvm_addr_mark, nvm_addr_write, and
+ *       nvm_addr_read for which the address is interpreted as a sector address.
+ *
+ * @param dev Handle to the device on which to mark
+ * @param list List of memory address
+ * @param len Length of memory address list
+ * @param flags 0x0 = GOOD, 0x1 = BAD, 0x2 = GROWN_BAD, as well as access mode
+ * @returns On success: 0. On error: -1 and errno set accordingly.
  */
 ssize_t nvm_addr_mark(NVM_DEV dev, NVM_ADDR list[], int len, uint16_t flags);
 
+/**
+ * Erase nvm at given addresses
+ *
+ * NOTE: The addresses given to this function are interpreted as block
+ *       addresses, in contrast to nvm_addr_mark, nvm_addr_write, and
+ *       nvm_addr_read for which the address is interpreted as a sector address.
+ *
+ * @param dev Handle to the device on which to erase
+ * @param list List of memory address
+ * @param len Length of memory address list
+ * @param flags Access mode
+ * @returns On success: 0. On error: -1 and errno set accordingly.
+ */
 ssize_t nvm_addr_erase(NVM_DEV dev, NVM_ADDR list[], int len, uint16_t flags);
 
+/**
+ * Write content of buf to nvm at address(es)
+ *
+ * NOTE: The addresses given to this function are interpreted as sector
+ *       addresses, in contrast to nvm_addr_mark and nvm_addr_erase for which
+ *       the address is interpreted as a block address.
+ *
+ * @param dev Handle to the device on which to erase
+ * @param list List of memory address
+ * @param len Length of memory address list
+ * @param buf The buffer which content to write
+ * @param flags Access mode
+ * @returns On success: 0. On error: -1 and errno set accordingly.
+ */
 ssize_t nvm_addr_write(NVM_DEV dev, NVM_ADDR list[], int len, const void *buf,
                        uint16_t flags);
 
+/**
+ * Read content of nvm at addresses into buf
+ *
+ * NOTE: The addresses given to this function are interpreted as sector
+ *       addresses, in contrast to nvm_addr_mark and nvm_addr_erase for which
+ *       the address is interpreted as a block address.
+ *
+ * @param dev Handle to the device on which to erase
+ * @param list List of memory address
+ * @param len Length of memory address list
+ * @param buf The buffer which content to write
+ * @param flags Access mode
+ * @returns On success: 0. On error: -1 and errno set accordingly.
+ */
 ssize_t nvm_addr_read(NVM_DEV dev, NVM_ADDR list[], int len, void *buf,
                       uint16_t flags);
 
-
-
-void nvm_addr_pr(NVM_ADDR addr);
-
 /**
- *      virtual block interface
+ * Prints a human readable representation of the given address.
+ *
+ * @param addr The address to print
  */
+void nvm_addr_pr(NVM_ADDR addr);
 
 NVM_VBLK nvm_vblk_new(void);
 NVM_VBLK nvm_vblk_new_on_dev(NVM_DEV dev, NVM_ADDR addr);
