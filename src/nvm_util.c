@@ -68,9 +68,7 @@ struct udev_device *udev_dev_find(struct udev *udev, const char *subsystem,
 			int dev_name_len = strlen(dev_name);
 			int match = strcmp(dev_name,
 					   path + path_len-dev_name_len);
-
 			if (match != 0) {
-				NVM_DEBUG("Name comparison failed\n");
 				continue;
 			}
 		}
@@ -112,7 +110,7 @@ struct udev_device *udev_nvmdev_find(struct udev *udev, const char *dev_name)
 {
 	struct udev_device *dev;
 
-	dev  = udev_dev_find(udev, "gennvm", NULL, dev_name);
+	dev  = udev_dev_find(udev, "block", NULL, dev_name);
 	if (dev)
 		return dev;
 

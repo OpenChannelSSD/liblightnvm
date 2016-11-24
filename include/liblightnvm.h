@@ -1,5 +1,5 @@
 /*
- * User space I/O library for Open-channelSSDs
+ * User space I/O library for Open-channel SSDs
  *
  * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
  * Copyright (C) 2015 Matias González <javier@cnexlabs.com>
@@ -40,9 +40,12 @@ extern "C" {
 #define NVM_DISK_NAME_LEN 32
 #endif
 
-#define NVM_MAGIC_FLAG_SNGL 0x0	///< Single-plane
-#define NVM_MAGIC_FLAG_DUAL 0x1	///< Dual-plane (NVM_IO_DUAL_ACCESS)
-#define NVM_MAGIC_FLAG_QUAD 0x2	///< Quad-plane (NVM_IO_QUAD_ACCESS)
+#define NVM_MAGIC_FLAG_SNGL 0x0		///< Single-plane
+#define NVM_MAGIC_FLAG_DUAL 0x1		///< Dual-plane (NVM_IO_DUAL_ACCESS)
+#define NVM_MAGIC_FLAG_QUAD 0x2		///< Quad-plane (NVM_IO_QUAD_ACCESS)
+#define NVM_MAGIC_FLAG_SCRBL 0x200	///< Scrambler ON/OFF: Context sensitive
+
+#define NVM_MAGIC_FLAG_DEFAULT (NVM_MAGIC_FLAG_SNGL | NVM_MAGIC_FLAG_SCRBL);
 
 #define NVM_BLK_BITS (16)	///< Number of bits for block field
 #define NVM_PG_BITS  (16)	///< Number of bits for page field
@@ -90,6 +93,38 @@ typedef struct nvm_addr {
 		uint64_t ppa;
 	};
 } NVM_ADDR;
+
+/**
+ * Encoding for address formats
+ *
+ */
+typedef struct nvm_addr_fmt {
+    union {
+	/**
+	 * Address formed as named fields
+	 */
+	struct {
+	    uint8_t ch_ofz;
+	    uint8_t ch_len;
+	    uint8_t lun_ofz;
+	    uint8_t lun_len;
+	    uint8_t pl_ofz;
+	    uint8_t pl_len;
+	    uint8_t blk_ofz;
+	    uint8_t blk_len;
+	    uint8_t pg_ofz;
+	    uint8_t pg_len;
+	    uint8_t sec_ofz;
+	    uint8_t sec_len;
+	} n;
+
+	/**
+	 * Address formed as anonymous consecutive fields
+	 */
+	uint8_t a[12];
+    };
+} NVM_ADDR_FMT;
+
 
 /**
  * Representation of geometry of devices and spanning blocks.
@@ -263,11 +298,18 @@ ssize_t nvm_addr_read(NVM_DEV dev, NVM_ADDR list[], int len, void *buf,
                       uint16_t flags);
 
 /**
- * Prints a human readable representation of the given address.
+ * Prints a humanly readable representation of the given address
  *
  * @param addr The address to print
  */
 void nvm_addr_pr(NVM_ADDR addr);
+
+/**
+ * Prints a humanly readable representation of the give address format
+ *
+ * @param fmt The address format to porint
+ */
+void nvm_addr_fmt_pr(NVM_ADDR_FMT* fmt);
 
 NVM_VBLK nvm_vblk_new(void);
 NVM_VBLK nvm_vblk_new_on_dev(NVM_DEV dev, NVM_ADDR addr);

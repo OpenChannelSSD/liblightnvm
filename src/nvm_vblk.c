@@ -92,31 +92,10 @@ struct nvm_addr nvm_vblk_attr_addr(struct nvm_vblk *vblk)
 int nvm_vblk_gets(struct nvm_vblk *vblock, struct nvm_dev *dev, uint32_t ch,
 		  uint32_t lun)
 {
-	struct nvm_ioctl_dev_vblk ctl;
-	struct nvm_addr addr;
-	int err;
-
-	if (ch >= dev->geo.nchannels)
-		return -1;
-
-	if (lun >= dev->geo.nluns)
-		return -1;
-
-	addr.ppa = 0;
-	addr.g.lun = lun;
-	addr.g.ch = ch;
-
-	memset(&ctl, 0, sizeof(ctl));
-	ctl.ppa = addr.ppa;
-
-	err = ioctl(dev->fd, NVM_DEV_BLOCK_GET, &ctl);
-	if (err)
-		return err;
-
-	vblock->addr.ppa = ctl.ppa;
-	vblock->dev = dev;
-
-	return 0;
+	// We no longer have provisioning in the kernel so we fail until
+	// we implement this somehow in the library
+	errno = ENXIO;
+	return -1;
 }
 
 int nvm_vblk_get(struct nvm_vblk *vblock, struct nvm_dev *dev)
@@ -126,15 +105,10 @@ int nvm_vblk_get(struct nvm_vblk *vblock, struct nvm_dev *dev)
 
 int nvm_vblk_put(struct nvm_vblk *vblock)
 {
-	struct nvm_ioctl_dev_vblk ctl;
-	int ret;
-
-	memset(&ctl, 0, sizeof(ctl));
-	ctl.ppa = vblock->addr.ppa;
-
-	ret = ioctl(vblock->dev->fd, NVM_DEV_BLOCK_PUT, &ctl);
-
-	return ret;
+	// We no longer have provisioning in the kernel so we fail until
+	// we implement this somehow in the library
+	errno = ENXIO;
+	return -1;
 }
 
 ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)

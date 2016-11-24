@@ -36,9 +36,10 @@
 #define NVM_MAGIC_OPCODE_READ 0x92      // NVM_OP_PREAD
 
 struct nvm_dev {
-	char name[NVM_DISK_NAME_LEN];	/* Device name e.g. nvme0n1 */
-	struct nvm_geo geo;		/* Device information */
-	int fd;				/* Char device for IOCTL */
+	char name[NVM_DISK_NAME_LEN];	///< Device name e.g. "nvme0n1"
+	struct nvm_addr_fmt fmt;	///< Device address format
+	struct nvm_geo geo;		///< Device geometry
+	int fd;				///< Device fd / IOCTL handle
 };
 
 struct nvm_vblk {

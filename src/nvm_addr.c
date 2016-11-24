@@ -1,6 +1,6 @@
 /*
- * addr - Sector addressing functions for mark, erase, write, read, and
- *        meta-data print
+ * addr - Sector addressing functions for write, read, and meta-data print
+ *        Block addressing functions for erase and mark
  *
  * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
  * Copyright (C) 2015 Matias Bjørling <matias@cnexlabs.com>
@@ -37,22 +37,50 @@
 #include <nvm.h>
 #include <nvm_debug.h>
 
+/**
+ * Convert nvm_address from generic format to device specific format
+ *
+ * @param dev The device which address format to convert to
+ * @param addr The address to convert
+ * @returns Address formatted to device
+ */
+static inline struct nvm_addr nvm_addr_gen2dev(struct nvm_dev *dev,
+					       struct nvm_addr addr)
+{
+	struct nvm_addr d_addr;
+
+	d_addr.ppa = ((uint64_t)addr.g.blk) << dev->fmt.n.blk_ofz;
+	d_addr.ppa |= ((uint64_t)addr.g.pg) << dev->fmt.n.pg_ofz;
+	d_addr.ppa |= ((uint64_t)addr.g.sec) << dev->fmt.n.sec_ofz;
+	d_addr.ppa |= ((uint64_t)addr.g.pl) << dev->fmt.n.pl_ofz;
+	d_addr.ppa |= ((uint64_t)addr.g.lun) << dev->fmt.n.lun_ofz;
+	d_addr.ppa |= ((uint64_t)addr.g.ch) << dev->fmt.n.ch_ofz;
+
+	return d_addr;
+}
+
 static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr list[],
 			    int len, void *buf, uint16_t flags,
 			    uint16_t opcode)
 {
-	struct nvm_ioctl_dev_pio ctl;
-	int err;
+	struct nvm_user_vio ctl;
+	struct nvm_addr dlist[len];
+	int i, err;
+
+	// Convert generic address format to device specific
+	for (i = 0; i < len; ++i) {
+		dlist[i] = nvm_addr_gen2dev(dev, list[i]);
+	}
 
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.opcode = opcode;
-	ctl.flags = flags;
-	ctl.nppas = len;
-	ctl.ppas = len == 1 ? list[0].ppa : (uint64_t)list;
+	ctl.control = flags | NVM_MAGIC_FLAG_DEFAULT;
+	ctl.nppas = len - 1;	// unnatural numbers, we count from zero
+	ctl.ppas = len == 1 ? dlist[0].ppa : (uint64_t)dlist;
 	ctl.addr = (uint64_t)buf;
 	ctl.data_len = buf ? dev->geo.nbytes * len : 0;
 
-	err = ioctl(dev->fd, NVM_DEV_PIO, &ctl);
+	err = ioctl(dev->fd, NVM_DEV_VIO_CMD, &ctl);
 #ifdef NVM_DEBUG_ENABLED
 	if (err || ctl.result || ctl.status) {
 		int i;
@@ -118,6 +146,18 @@ ssize_t nvm_addr_mark(struct nvm_dev *dev, struct nvm_addr list[], int len,
 	return nvm_addr_cmd(dev, list, len, NULL, flags, 0xF1);
 }
 
+void nvm_addr_fmt_pr(struct nvm_addr_fmt *fmt)
+{
+	printf("fmt {\n");
+	printf(" ch_ofz(%d), ch_len(%d)", fmt->n.ch_ofz, fmt->n.ch_len);
+	printf(",\n lun_ofz(%d), lun_len(%d)", fmt->n.lun_ofz, fmt->n.lun_len);
+	printf(",\n pl_ofz(%d), pl_len(%d)", fmt->n.pl_ofz, fmt->n.pl_len);
+	printf(",\n blk_ofz(%d), blk_len(%d)", fmt->n.blk_ofz, fmt->n.blk_len);
+	printf(",\n pg_ofz(%d), pg_len(%d)", fmt->n.pg_ofz, fmt->n.pg_len);
+	printf(",\n sec_ofz(%d), sec_len(%d)", fmt->n.sec_ofz, fmt->n.sec_len);
+	printf("\n}\n");
+}
+
 void nvm_addr_pr(struct nvm_addr addr)
 {
 	printf("(%016lu){ ch(%02d), lun(%02d), pl(%d), ",
@@ -125,4 +165,3 @@ void nvm_addr_pr(struct nvm_addr addr)
 	printf("blk(%04d), pg(%03d), sec(%d) }\n",
 	       addr.g.blk, addr.g.pg, addr.g.sec);
 }
-

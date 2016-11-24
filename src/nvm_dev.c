@@ -38,7 +38,7 @@
 #include <nvm_util.h>
 #include <nvm_debug.h>
 
-int sysattr_to_int(struct udev_device *dev, const char *attr, int *val)
+static int sysattr2int(struct udev_device *dev, const char *attr, int *val)
 {
 	const char *dev_path;
 	char path[4096];
@@ -69,68 +69,143 @@ int sysattr_to_int(struct udev_device *dev, const char *attr, int *val)
 	return 0;
 }
 
-int nvm_dev_geo_fill(struct nvm_geo *geo, const char *dev_name)
+static int sysattr2fmt(struct udev_device *dev, const char *attr,
+		   struct nvm_addr_fmt  *fmt)
+{
+	const char *dev_path;
+	char path[4096];
+	char buf[4096];
+	char buf_fmt[3];
+	char c;
+	FILE *fp;
+	int i;
+
+	memset(buf, 0, sizeof(char)*4096);
+
+	dev_path = udev_device_get_syspath(dev);
+	if (!dev_path)
+		return -ENODEV;
+
+	sprintf(path, "%s/%s", dev_path, attr);
+	fp = fopen(path, "rb");
+	if (!fp)
+		return -ENODEV;
+
+	i = 0;
+	while (((c = getc(fp)) != EOF) && i < 4096) {
+		buf[i] = c;
+		++i;
+	}
+	fclose(fp);
+
+	if (strlen(buf) != 27) { // len !matching "0x380830082808001010102008\n"
+		return -1;
+	}
+
+	for (i = 0; i < 12; ++i) {
+		buf_fmt[0] = buf[2 + i*2];
+		buf_fmt[1] = buf[2 + i*2 + 1];
+		buf_fmt[2] = '\0';
+		fmt->a[i] = atoi(buf_fmt);
+	}
+
+	return 0;
+}
+
+int nvm_dev_attr_fill(struct nvm_dev *dev, const char *dev_name)
 {
 	struct udev *udev;
-	struct udev_device *dev;
+	struct udev_device *udev_dev;
 	int val;
 
 	udev = udev_new();
 	if (!udev) {
 		NVM_DEBUG("Failed creating udev for dev_name(%s)\n", dev_name);
-		return -ENOMEM;
+		errno = ENOMEM;
+		return -1;
 	}
 
-	/* Extract geometry from sysfs via libudev */
-	dev = udev_nvmdev_find(udev, dev_name);
-	if (!dev) {
+	/* Get a handle on udev / sysfs */
+	udev_dev = udev_nvmdev_find(udev, dev_name);
+	if (!udev_dev) {
 		NVM_DEBUG("Cannot find dev_name(%s)\n", dev_name);
 		udev_unref(udev);
-		return -ENODEV;
+		errno = ENODEV;
+		return -1;
 	}
 
-	dev = udev_device_get_parent(dev);
-	if (!dev)
-		return -ENODEV;
+	/* Extract ppa_format from sysfs via libudev */
+	if (sysattr2fmt(udev_dev, "lightnvm/ppa_format", &dev->fmt)) {
+		NVM_DEBUG("ERR: ppa_format for dev_name(%s)\n", dev_name);
+		errno = EIO;
+		return -1;
+	}
 
-	if (sysattr_to_int(dev, "lightnvm/num_channels", &val))
-		return -EIO;
-	geo->nchannels = val;
+	/*
+	 * Extract geometry from sysfs via libudev
+	 */
 
-	if (sysattr_to_int(dev, "lightnvm/num_luns", &val))
-		return -EIO;
-	geo->nluns = val;
+	if (sysattr2int(udev_dev, "lightnvm/num_channels", &val)) {
+		NVM_DEBUG("ERR: num_channels for dev_name(%s)\n", dev_name);
+		errno = EIO;
+		return -1;
+	}
+	dev->geo.nchannels = val;
 
-	if (sysattr_to_int(dev, "lightnvm/num_planes", &val))
-		return -EIO;
-	geo->nplanes = val;
+	if (sysattr2int(udev_dev, "lightnvm/num_luns", &val)) {
+		NVM_DEBUG("ERR: num_luns for dev_name(%s)\n", dev_name);
+		errno = EIO;
+		return -1;
+	}
+	dev->geo.nluns = val;
 
-	if (sysattr_to_int(dev, "lightnvm/num_blocks", &val))
-		return -EIO;
-	geo->nblocks = val;
+	if (sysattr2int(udev_dev, "lightnvm/num_planes", &val)) {
+		NVM_DEBUG("ERR: num_planes for dev_name(%s)\n", dev_name);
+		errno = EIO;
+		return -1;
+	}
+	dev->geo.nplanes = val;
 
-	if (sysattr_to_int(dev, "lightnvm/num_pages", &val))
-		return -EIO;
-	geo->npages = val;
+	if (sysattr2int(udev_dev, "lightnvm/num_blocks", &val)) {
+		NVM_DEBUG("ERR: num_blocks for dev_name(%s)\n", dev_name);
+		errno = EIO;
+		return -1;
+	}
+	dev->geo.nblocks = val;
 
-	if (sysattr_to_int(dev, "lightnvm/sec_per_pg", &val))
-		return -EIO;
-	geo->nsectors = val;
+	if (sysattr2int(udev_dev, "lightnvm/num_pages", &val)) {
+		NVM_DEBUG("ERR: num_pages for dev_name(%s)\n", dev_name);
+		errno = EIO;
+		return -1;
+	}
+	dev->geo.npages = val;
 
-	if (sysattr_to_int(dev, "lightnvm/hw_sector_size", &val))
-		return -EIO;
-	geo->nbytes = val;
+	if (sysattr2int(udev_dev, "lightnvm/sec_per_pg", &val)) {
+		NVM_DEBUG("ERR: sec_per_pg for dev_name(%s)\n", dev_name);
+		errno = EIO;
+		return -1;
+	}
+	dev->geo.nsectors = val;
+
+	if (sysattr2int(udev_dev, "lightnvm/hw_sector_size", &val)) {
+		NVM_DEBUG("ERR: hw_sector_size for dev_name(%s)\n", dev_name);
+		errno = EIO;
+		return -1;
+	}
+	dev->geo.nbytes = val;
 
 	/* Derive total number of bytes on device */
-	geo->tbytes = geo->nchannels * geo->nluns * geo->nplanes * \
-		      geo->nblocks * geo->npages * geo->nsectors * geo->nbytes;
+	dev->geo.tbytes = dev->geo.nchannels * dev->geo.nluns * \
+			  dev->geo.nplanes * dev->geo.nblocks * \
+			  dev->geo.npages * dev->geo.nsectors * dev->geo.nbytes;
 
 	/* Derive number of bytes occupied by a virtual block/page */
-	geo->vblk_nbytes = geo->nplanes * geo->npages * geo->nsectors * \
-				   geo->nbytes;
-	geo->vpg_nbytes = geo->nplanes * geo->nsectors * geo->nbytes;
+	dev->geo.vblk_nbytes = dev->geo.nplanes * dev->geo.npages * \
+				dev->geo.nsectors * dev->geo.nbytes;
+	dev->geo.vpg_nbytes = dev->geo.nplanes * dev->geo.nsectors * \
+				dev->geo.nbytes;
 
-	udev_device_unref(dev);
+	udev_device_unref(udev_dev);
 	udev_unref(udev);
 
 	return 0;
@@ -159,6 +234,8 @@ void nvm_dev_free(struct nvm_dev **dev)
 void nvm_dev_pr(struct nvm_dev *dev)
 {
 	printf("dev { name(%s), fd(%d) }\n", dev->name, dev->fd);
+	printf("dev-"); nvm_geo_pr(dev->geo);
+	printf("dev-"); nvm_addr_fmt_pr(&dev->fmt);
 }
 
 int nvm_dev_attr_nchannels(struct nvm_dev *dev)
@@ -241,9 +318,9 @@ struct nvm_dev *nvm_dev_open(const char *dev_name)
 
 	strncpy(dev->name, dev_name, DISK_NAME_LEN);
 
-	err = nvm_dev_geo_fill(&dev->geo, dev_name);
+	err = nvm_dev_attr_fill(dev, dev_name);
 	if (err) {
-		NVM_DEBUG("FAILED: nvm_dev_geo_fill, err(%d)\n", err);
+		NVM_DEBUG("FAILED: nvm_dev_attr_fill, err(%d)\n", err);
 		nvm_dev_free(&dev);
 		return NULL;
 	}

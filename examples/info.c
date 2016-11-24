@@ -26,9 +26,6 @@ int main(int argc, char **argv)
 	printf("** Device information  -- nvm_dev_pr **\n");
 	nvm_dev_pr(dev);
 
-	printf("** Device geometry -- nvm_geo_pr **\n");
-	nvm_geo_pr(nvm_dev_attr_geo(dev));
-
 	nvm_dev_close(dev);
 
 	return 0;
