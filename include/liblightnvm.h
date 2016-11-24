@@ -95,34 +95,35 @@ typedef struct nvm_addr {
 } NVM_ADDR;
 
 /**
- * Encoding for address formats
+ * Encoding descriptor for address formats
  *
+ * @ingroup NVM_ADDR
  */
 typedef struct nvm_addr_fmt {
-    union {
-	/**
-	 * Address formed as named fields
-	 */
-	struct {
-	    uint8_t ch_ofz;
-	    uint8_t ch_len;
-	    uint8_t lun_ofz;
-	    uint8_t lun_len;
-	    uint8_t pl_ofz;
-	    uint8_t pl_len;
-	    uint8_t blk_ofz;
-	    uint8_t blk_len;
-	    uint8_t pg_ofz;
-	    uint8_t pg_len;
-	    uint8_t sec_ofz;
-	    uint8_t sec_len;
-	} n;
+	union {
+		/**
+		 * Address formed as named fields
+		 */
+		struct {
+			uint8_t ch_ofz;   ///< Offset in bits for channel
+			uint8_t ch_len;   ///< Nr. of bits representing channel
+			uint8_t lun_ofz;  ///< Offset in bits for lun
+			uint8_t lun_len;  ///< Nr. of bits representing lun
+			uint8_t pl_ofz;   ///< Offset in bits for plane
+			uint8_t pl_len;   ///< Nr. of bits representing plane
+			uint8_t blk_ofz;  ///< Offset in bits for block
+			uint8_t blk_len;  ///< Nr. of bits representing block
+			uint8_t pg_ofz;   ///< Offset in bits for page
+			uint8_t pg_len;   ///< Nr. of bits representing page
+			uint8_t sec_ofz;  ///< Offset in bits for sector
+			uint8_t sec_len;  ///< Nr. of bits representing sector
+		} n;
 
-	/**
-	 * Address formed as anonymous consecutive fields
-	 */
-	uint8_t a[12];
-    };
+		/**
+		 * Address formed as anonymous consecutive fields
+		 */
+		uint8_t a[12];
+	};
 } NVM_ADDR_FMT;
 
 
