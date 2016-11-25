@@ -106,7 +106,7 @@ static int sysattr2fmt(struct udev_device *dev, const char *attr,
 		buf_fmt[0] = buf[2 + i*2];
 		buf_fmt[1] = buf[2 + i*2 + 1];
 		buf_fmt[2] = '\0';
-		fmt->a[i] = atoi(buf_fmt);
+		fmt->a[i] = strtol(buf_fmt, NULL, 16);
 	}
 
 	return 0;
