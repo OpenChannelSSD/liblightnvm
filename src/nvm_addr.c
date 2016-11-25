@@ -49,7 +49,8 @@ static inline struct nvm_addr nvm_addr_gen2dev(struct nvm_dev *dev,
 {
 	struct nvm_addr d_addr;
 
-	d_addr.ppa = ((uint64_t)addr.g.blk) << dev->fmt.n.blk_ofz;
+	d_addr.ppa = 0;
+	d_addr.ppa |= ((uint64_t)addr.g.blk) << dev->fmt.n.blk_ofz;
 	d_addr.ppa |= ((uint64_t)addr.g.pg) << dev->fmt.n.pg_ofz;
 	d_addr.ppa |= ((uint64_t)addr.g.sec) << dev->fmt.n.sec_ofz;
 	d_addr.ppa |= ((uint64_t)addr.g.pl) << dev->fmt.n.pl_ofz;
@@ -80,7 +81,7 @@ static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr list[],
 	ctl.addr = (uint64_t)buf;
 	ctl.data_len = buf ? dev->geo.nbytes * len : 0;
 
-	err = ioctl(dev->fd, NVM_DEV_VIO_CMD, &ctl);
+	err = ioctl(dev->fd, NVME_NVM_IOCTL_SUBMIT_VIO, &ctl);
 #ifdef NVM_DEBUG_ENABLED
 	if (err || ctl.result || ctl.status) {
 		int i;
@@ -91,7 +92,7 @@ static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr list[],
 			nvm_addr_pr(list[i]);
 	}
 #endif
-	if (err) {		// Give up on IOCTL errors
+	if (err) {	// Give up on IOCTL errors
 		errno = EIO;
 		return -1;
 	}
