@@ -50,12 +50,12 @@ static inline struct nvm_addr nvm_addr_gen2dev(struct nvm_dev *dev,
 	struct nvm_addr d_addr;
 
 	d_addr.ppa = 0;
+	d_addr.ppa |= ((uint64_t)addr.g.ch) << dev->fmt.n.ch_ofz;
+	d_addr.ppa |= ((uint64_t)addr.g.lun) << dev->fmt.n.lun_ofz;
+	d_addr.ppa |= ((uint64_t)addr.g.pl) << dev->fmt.n.pl_ofz;
 	d_addr.ppa |= ((uint64_t)addr.g.blk) << dev->fmt.n.blk_ofz;
 	d_addr.ppa |= ((uint64_t)addr.g.pg) << dev->fmt.n.pg_ofz;
 	d_addr.ppa |= ((uint64_t)addr.g.sec) << dev->fmt.n.sec_ofz;
-	d_addr.ppa |= ((uint64_t)addr.g.pl) << dev->fmt.n.pl_ofz;
-	d_addr.ppa |= ((uint64_t)addr.g.lun) << dev->fmt.n.lun_ofz;
-	d_addr.ppa |= ((uint64_t)addr.g.ch) << dev->fmt.n.ch_ofz;
 
 	return d_addr;
 }
@@ -86,7 +86,7 @@ static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr list[],
 	if (err || ctl.result || ctl.status) {
 		int i;
 
-		NVM_DEBUG("WARN: err(%d), ctl.r(0x%x), ctl.s(%llu), naddr(%d):",
+		NVM_DEBUG("err(%d), ctl: result(0x%x), status(%llu), nppas(%d)",
 			  err, ctl.result, ctl.status, ctl.nppas);
 		for (i = 0; i < len; ++i)
 			nvm_addr_pr(list[i]);

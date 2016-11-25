@@ -83,14 +83,11 @@ typedef struct nvm_addr {
 		} g;
 
 		struct {
-			uint64_t line        : 63;
-			uint64_t is_cached   : 1;
+			uint64_t line        : 63;	///< Address line
+			uint64_t is_cached   : 1;	///< Cache hint?
 		} c;
 
-		/**
-		 * Address in numerical form
-		 */
-		uint64_t ppa;
+		uint64_t ppa;				///< Address as ppa
 	};
 } NVM_ADDR;
 
