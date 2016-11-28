@@ -64,7 +64,6 @@ extern "C" {
  * For that purpose one can use the NVM_GEO of an NVM_DEV to obtain device
  * specific geometries.
  *
- * @ingroup NVM_ADDR
  */
 typedef struct nvm_addr {
 	union {
@@ -92,8 +91,6 @@ typedef struct nvm_addr {
 
 /**
  * Encoding descriptor for address formats
- *
- * @ingroup NVM_ADDR
  */
 typedef struct nvm_addr_fmt {
 	union {
@@ -125,8 +122,6 @@ typedef struct nvm_addr_fmt {
 
 /**
  * Representation of geometry of devices and spanning blocks.
- *
- * @ingroup NVM_GEO
  */
 typedef struct nvm_geo {
 	size_t nchannels;	///< Number of channels on device
@@ -144,37 +139,30 @@ typedef struct nvm_geo {
 
 /**
  * Handle for nvm devices
- *
- * @ingroup NVM_DEV
  */
 typedef struct nvm_dev *NVM_DEV;
 
 /**
- * Virtual blocks facilitate a libc-like write, pwrite, read, pread
+ * Virtual blocks facilitate a libc-like write/pwrite, read/pread
  * interface to perform I/O on blocks on nvm.
-  *
- * @ingroup NVM_VBLK
  */
 typedef struct nvm_vblk *NVM_VBLK;
 
 /**
- * Spanning block
- *
- * @ingroup NVM_SBLK
+ * Spanning block abstraction, facilitates a libc-like write/pwrite, read/pread
+ * interface to perform I/O on blocks spanning multiple physical blocks of
+ * non-volatile memory.
  */
 typedef struct nvm_sblk *NVM_SBLK;
 
 /**
- * Prints human readable representation of given geometry
- *
- * @ingroup NVM_GEO
+ * Prints human readable representation of the given geometry
  */
 void nvm_geo_pr(NVM_GEO geo);
 
 /**
  * Creates a handle to given device path
  *
- * @ingroup NVM_DEV
  * @param dev_path Path of the device to open e.g. "/dev/nvme0n1"
  * @returns A handle to the device
  */
@@ -183,7 +171,6 @@ NVM_DEV nvm_dev_open(const char *dev_path);
 /**
  * Destroys device-handle
  *
- * @ingroup NVM_DEV
  * @param dev Handle to destroy
  */
 void nvm_dev_close(NVM_DEV dev);
