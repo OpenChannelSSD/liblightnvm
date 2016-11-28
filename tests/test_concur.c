@@ -8,7 +8,7 @@
 
 #include <CUnit/Basic.h>
 
-static char nvm_dev_name[NVM_DISK_NAME_LEN] = "nvme0n1";
+static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
 
 struct context {
 	NVM_VBLK blk;
@@ -62,7 +62,7 @@ void test_VBLOCK_CONCUR(void)
 	char *wbuf;
 	pthread_t wr_th, er_th;
 
-	dev = nvm_dev_open(nvm_dev_name);
+	dev = nvm_dev_open(nvm_dev_path);
 	CU_ASSERT(dev > 0);
 
 	geo = nvm_dev_attr_geo(dev);
@@ -129,11 +129,11 @@ void test_VBLOCK_CONCUR(void)
 int main(int argc, char **argv)
 {
 	if (argc > 1) {
-		if (strlen(argv[1]) > NVM_DISK_NAME_LEN) {
+		if (strlen(argv[1]) > NVM_DEV_PATH_LEN) {
 			printf("Argument nvm_dev can be maximum %d characters\n",
-				NVM_DISK_NAME_LEN - 1);
+			       NVM_DEV_PATH_LEN - 1);
 		}
-		strcpy(nvm_dev_name, argv[1]);
+		strncpy(nvm_dev_path, argv[1], NVM_DEV_PATH_LEN);
 	}
 
 	CU_pSuite pSuite = NULL;

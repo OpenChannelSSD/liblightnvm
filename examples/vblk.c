@@ -4,8 +4,6 @@
 #include <errno.h>
 #include <liblightnvm.h>
 
-#define DISK_NAME_LEN 32
-
 int get(NVM_DEV dev, NVM_GEO geo, NVM_VBLK vblk, NVM_ADDR addr, int flags)
 {
 	ssize_t err;
@@ -215,7 +213,7 @@ static NVM_CLI_VBLK_CMD cmds[] = {
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
-static char *args[] = {"dev_name", "ch", "lun", "blk", "pg"};
+static char *args[] = {"dev_path", "ch", "lun", "blk", "pg"};
 
 void _usage_pr(char *cli_name)
 {
@@ -233,14 +231,14 @@ void _usage_pr(char *cli_name)
 
 	printf("OR using PPA (parts as above are extracted from address):\n");
 	for (cmd = 0; cmd < ncmds; cmd++) {
-		printf(" %s %6s dev_name ppa\n", cli_name, cmds[cmd].name);
+		printf(" %s %6s dev_path ppa\n", cli_name, cmds[cmd].name);
 	}
 }
 
 int main(int argc, char **argv)
 {
 	char cmd_name[NVM_CLI_CMD_LEN];
-	char dev_name[DISK_NAME_LEN+1];
+	char dev_path[NVM_DEV_PATH_LEN+1];
 	int ret, i;
 
 	NVM_CLI_VBLK_CMD *cmd = NULL;
@@ -283,12 +281,12 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	if (strlen(argv[2]) > DISK_NAME_LEN) {		// Get `dev_name`
-		printf("len(dev_name) > %d\n", DISK_NAME_LEN);
+	if (strlen(argv[2]) > NVM_DEV_PATH_LEN) {	// Get `dev_path`
+		printf("len(dev_path) > %d\n", NVM_DEV_PATH_LEN);
 		return -1;
 	}
-	memset(dev_name, 0, sizeof(dev_name));
-	strcpy(dev_name, argv[2]);
+	memset(dev_path, 0, sizeof(dev_path));
+	strcpy(dev_path, argv[2]);
 
 	addr.ppa = 0;
 	switch(argc) {					// Get `addr`
@@ -311,9 +309,9 @@ int main(int argc, char **argv)
 			return -1;
 	}
 
-	dev = nvm_dev_open(dev_name);			// open `dev`
+	dev = nvm_dev_open(dev_path);			// open `dev`
 	if (!dev) {
-		printf("Failed opening device, dev_name(%s)\n", dev_name);
+		printf("Failed opening device, dev_path(%s)\n", dev_path);
 		return -EINVAL;
 	}
 	geo = nvm_dev_attr_geo(dev);			// Get `geo`

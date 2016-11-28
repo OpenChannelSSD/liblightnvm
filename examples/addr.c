@@ -172,10 +172,10 @@ void _usage_pr(char *cli_name)
 	printf("Usage:\n");
 	for (cmd = 0; cmd < ncmds; ++cmd) {
 		if (cmds[cmd].argc < 0) {
-			printf(" %s %6s dev_name ppa [ppa...]\n",
+			printf(" %s %6s dev_path ppa [ppa...]\n",
 				cli_name, cmds[cmd].name);
 		} else {
-			printf(" %s %6s dev_name ch lun pl blk pg sec\n",
+			printf(" %s %6s dev_path ch lun pl blk pg sec\n",
 				cli_name, cmds[cmd].name);
 		}
 	}
@@ -184,7 +184,7 @@ void _usage_pr(char *cli_name)
 int main(int argc, char **argv)
 {
 	char cmd_name[CLI_CMD_LEN];
-	char dev_name[NVM_DISK_NAME_LEN+1];
+	char dev_path[NVM_DEV_PATH_LEN+1];
 	int ret;
 
 	NVM_CLI_ADDR_CMD *cmd = NULL;
@@ -218,13 +218,13 @@ int main(int argc, char **argv)
 		_usage_pr(argv[0]);
 		return -EINVAL;
 	}
-							// Get `dev_name`
-	if (strlen(argv[2]) < 1 || strlen(argv[2]) > NVM_DISK_NAME_LEN) {
-		printf("len(dev_name) > %d\n", NVM_DISK_NAME_LEN);
+							// Get `dev_path`
+	if (strlen(argv[2]) < 1 || strlen(argv[2]) > NVM_DEV_PATH_LEN) {
+		printf("len(dev_path) > %d\n", NVM_DEV_PATH_LEN);
 		return -EINVAL;
 	}
-	memset(dev_name, 0, sizeof(dev_name));
-	strcpy(dev_name, argv[2]);
+	memset(dev_path, 0, sizeof(dev_path));
+	strcpy(dev_path, argv[2]);
 
 	switch(cmd->argc) {				// Get `list` and `len`
 		case -1:				// ppa [ppa..]
@@ -249,9 +249,9 @@ int main(int argc, char **argv)
 			return -EINVAL;
 	}
 
-	dev = nvm_dev_open(dev_name);
+	dev = nvm_dev_open(dev_path);
 	if (!dev) {
-		printf("Failed opening device, dev_name(%s)\n", dev_name);
+		printf("Failed opening device, dev_path(%s)\n", dev_path);
 		return -EINVAL;
 	}
 	geo = nvm_dev_attr_geo(dev);

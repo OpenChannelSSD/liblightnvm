@@ -161,7 +161,6 @@ int read(NVM_SBLK sblk, int flags)
 // as well as using the NVM_ADDR data structure.
 
 #define CLI_CMD_LEN 50
-#define DISK_NAME_LEN 32
 
 typedef struct {
 	char name[CLI_CMD_LEN];
@@ -179,7 +178,7 @@ static NVM_CLI_VBLK_CMD cmds[] = {
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
 static char *args[] = {
-	"dev_name",
+	"dev_path",
 	"ch_bgn",
 	"ch_end",
 	"lun_bgn",
@@ -205,7 +204,7 @@ void _usage_pr(char *cli_name)
 int main(int argc, char **argv)
 {
 	char cmd_name[CLI_CMD_LEN];
-	char dev_name[DISK_NAME_LEN+1];
+	char dev_path[NVM_DEV_PATH_LEN+1];
 	int ret, i;
 
 	NVM_CLI_VBLK_CMD *cmd = NULL;
@@ -246,12 +245,11 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	if (strlen(argv[2]) > DISK_NAME_LEN) {		// Get `dev_name`
-		printf("len(dev_name) > %d\n", DISK_NAME_LEN);
+	if (strlen(argv[2]) > NVM_DEV_PATH_LEN) {	// Get `dev_path`
+		printf("len(dev_path) > %d\n", NVM_DEV_PATH_LEN);
 		return -1;
 	}
-	memset(dev_name, 0, sizeof(dev_name));
-	strcpy(dev_name, argv[2]);
+	strncpy(dev_path, argv[2], NVM_DEV_PATH_LEN);
 
 	ch_bgn = atol(argv[3]);
 	ch_end = atol(argv[4]);
@@ -261,9 +259,9 @@ int main(int argc, char **argv)
 
 	blk = atol(argv[7]);
 
-	dev = nvm_dev_open(dev_name);			// open `dev`
+	dev = nvm_dev_open(dev_path);			// open `dev`
 	if (!dev) {
-		printf("FAILED: opening device, dev_name(%s)\n", dev_name);
+		printf("FAILED: opening device, dev_path(%s)\n", dev_path);
 		return -EINVAL;
 	}
 

@@ -112,7 +112,7 @@ static int sysattr2fmt(struct udev_device *dev, const char *attr,
 	return 0;
 }
 
-int nvm_dev_attr_fill(struct nvm_dev *dev, const char *dev_name)
+static int dev_attr_fill(struct nvm_dev *dev)
 {
 	struct udev *udev;
 	struct udev_device *udev_dev;
@@ -120,15 +120,15 @@ int nvm_dev_attr_fill(struct nvm_dev *dev, const char *dev_name)
 
 	udev = udev_new();
 	if (!udev) {
-		NVM_DEBUG("Failed creating udev for dev_name(%s)\n", dev_name);
+		NVM_DEBUG("FAILED: udev_new for name(%s)\n", dev->name);
 		errno = ENOMEM;
 		return -1;
 	}
 
 	/* Get a handle on udev / sysfs */
-	udev_dev = udev_nvmdev_find(udev, dev_name);
+	udev_dev = udev_nvmdev_find(udev, dev->name);
 	if (!udev_dev) {
-		NVM_DEBUG("Cannot find dev_name(%s)\n", dev_name);
+		NVM_DEBUG("FAILED: udev_nvmdev_find for name(%s)\n", dev->name);
 		udev_unref(udev);
 		errno = ENODEV;
 		return -1;
@@ -136,7 +136,7 @@ int nvm_dev_attr_fill(struct nvm_dev *dev, const char *dev_name)
 
 	/* Extract ppa_format from sysfs via libudev */
 	if (sysattr2fmt(udev_dev, "lightnvm/ppa_format", &dev->fmt)) {
-		NVM_DEBUG("ERR: ppa_format for dev_name(%s)\n", dev_name);
+		NVM_DEBUG("FAILED: ppa_format for name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
@@ -146,49 +146,49 @@ int nvm_dev_attr_fill(struct nvm_dev *dev, const char *dev_name)
 	 */
 
 	if (sysattr2int(udev_dev, "lightnvm/num_channels", &val)) {
-		NVM_DEBUG("ERR: num_channels for dev_name(%s)\n", dev_name);
+		NVM_DEBUG("ERR: num_channels for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
 	dev->geo.nchannels = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/num_luns", &val)) {
-		NVM_DEBUG("ERR: num_luns for dev_name(%s)\n", dev_name);
+		NVM_DEBUG("ERR: num_luns for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
 	dev->geo.nluns = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/num_planes", &val)) {
-		NVM_DEBUG("ERR: num_planes for dev_name(%s)\n", dev_name);
+		NVM_DEBUG("ERR: num_planes for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
 	dev->geo.nplanes = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/num_blocks", &val)) {
-		NVM_DEBUG("ERR: num_blocks for dev_name(%s)\n", dev_name);
+		NVM_DEBUG("ERR: num_blocks for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
 	dev->geo.nblocks = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/num_pages", &val)) {
-		NVM_DEBUG("ERR: num_pages for dev_name(%s)\n", dev_name);
+		NVM_DEBUG("ERR: num_pages for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
 	dev->geo.npages = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/sec_per_pg", &val)) {
-		NVM_DEBUG("ERR: sec_per_pg for dev_name(%s)\n", dev_name);
+		NVM_DEBUG("ERR: sec_per_pg for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
 	dev->geo.nsectors = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/hw_sector_size", &val)) {
-		NVM_DEBUG("ERR: hw_sector_size for dev_name(%s)\n", dev_name);
+		NVM_DEBUG("ERR: hw_sector_size for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
@@ -222,18 +222,10 @@ struct nvm_dev *nvm_dev_new(void)
 	return dev;
 }
 
-void nvm_dev_free(struct nvm_dev **dev)
-{
-	if (!dev)
-		return;
-
-	free(*dev);
-	*dev = NULL;
-}
-
 void nvm_dev_pr(struct nvm_dev *dev)
 {
-	printf("dev { name(%s), fd(%d) }\n", dev->name, dev->fd);
+	printf("dev { path(%s), name(%s), fd(%d) }\n",
+	       dev->path, dev->name, dev->fd);
 	printf("dev-"); nvm_geo_pr(dev->geo);
 	printf("dev-"); nvm_addr_fmt_pr(&dev->fmt);
 }
@@ -297,18 +289,22 @@ void nvm_geo_pr(struct nvm_geo geo)
 	       geo.npages, geo.nsectors, geo.nbytes);
 	printf(" total_nbytes(%lub:%luMb)\n",
 	       geo.tbytes, geo.tbytes >> 20);
-	printf(" vblk_nbytes(%lub:%luMb)\n",
-	       geo.vblk_nbytes, geo.vblk_nbytes >> 20);
-	printf(" vpg_nbytes(%lub:%luKb)\n",
+	printf(" vblk_nbytes(%lub:%luMb), vpg_nbytes(%lub:%luKb)\n",
+	       geo.vblk_nbytes, geo.vblk_nbytes >> 20,
 	       geo.vpg_nbytes, geo.vpg_nbytes >> 10);
 	printf("}\n");
 }
 
-struct nvm_dev *nvm_dev_open(const char *dev_name)
+struct nvm_dev *nvm_dev_open(const char *dev_path)
 {
-	char dev_path[NVM_DISK_NAME_LEN];
 	struct nvm_dev *dev;
 	int err;
+	
+	if (strlen(dev_path) > NVM_DEV_PATH_LEN) {
+		NVM_DEBUG("FAILED: Device path too long\n");
+		errno = EINVAL;
+		return NULL;
+	}
 
 	dev = nvm_dev_new();
 	if (!dev) {
@@ -316,24 +312,24 @@ struct nvm_dev *nvm_dev_open(const char *dev_name)
 		return NULL;
 	}
 
-	strncpy(dev->name, dev_name, DISK_NAME_LEN);
+	strncpy(dev->path, dev_path, NVM_DEV_PATH_LEN);
+	strncpy(dev->name, dev_path+5, NVM_DEV_NAME_LEN);
 
-	err = nvm_dev_attr_fill(dev, dev_name);
-	if (err) {
-		NVM_DEBUG("FAILED: nvm_dev_attr_fill, err(%d)\n", err);
-		nvm_dev_free(&dev);
+	dev->fd = open(dev->path, O_RDWR);
+	if (dev->fd < 0) {
+		NVM_DEBUG("FAILED: open dev->path(%s) dev->fd(%d)\n",
+			  dev->path, dev->fd);
+
+		free(dev);
+
 		return NULL;
 	}
 
-	sprintf(dev_path, "/dev/%s", dev_name);
-	dev->fd = open(dev_path, O_RDWR);
-	if (dev->fd < 0) {
-		NVM_DEBUG("FAILED: open dev_path(%s) dev->fd(%d)\n",
-			  dev_path, dev->fd);
-
-		nvm_dev_close(dev);
+	err = dev_attr_fill(dev);
+	if (err) {
+		NVM_DEBUG("FAILED: dev_attr_fill, err(%d)\n", err);
+		close(dev->fd);
 		free(dev);
-
 		return NULL;
 	}
 
@@ -342,7 +338,8 @@ struct nvm_dev *nvm_dev_open(const char *dev_name)
 
 void nvm_dev_close(struct nvm_dev *dev)
 {
-	close(dev->fd);
-	nvm_dev_free(&dev);
+	if (dev && !dev->fd)
+		close(dev->fd);
+	free(dev);
 }
 

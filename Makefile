@@ -79,32 +79,32 @@ tags:
 
 # Invoking tests ...
 test_dev:
-	sudo nvm_test_dev nvme0n1
+	sudo nvm_test_dev /dev/nvme0n1
 
 test_mbad:
-	sudo nvm_test_mbad nvme0n1
+	sudo nvm_test_mbad /dev/nvme0n1
 
 test_vblk:
-	sudo nvm_test_vblk nvme0n1
+	sudo nvm_test_vblk /dev/nvme0n1
 
 test_vblk_gp_n:
-	sudo nvm_test_vblk_gp_n nvme0n1
+	sudo nvm_test_vblk_gp_n /dev/nvme0n1
 
 test_concur:
-	sudo nvm_test_concur nvme0n1
+	sudo nvm_test_concur /dev/nvme0n1
 
 # ... all of them
-test: test_dev test_vblk test_vblk_gp_n test_concur
+test: test_dev test_vblk test_vblk_gp_n test_mbad test_concur
 
 # Invoking examples ...
 ex_info:
-	@sudo nvm_ex_info nvme0n1 || true
+	@sudo nvm_ex_info /dev/nvme0n1 || true
 
 ex_vblock_pio_1:
-	@sudo nvm_ex_vblock_pio_1 nvme0n1 || true
+	@sudo nvm_ex_vblock_pio_1 /dev/nvme0n1 || true
 
 ex_vblock_pio_n:
-	@sudo nvm_ex_vblock_pio_n nvme0n1 || true
+	@sudo nvm_ex_vblock_pio_n /dev/nvme0n1 || true
 
 example: ex_info ex_vblock_pio_1 ex_vblock_pio_n
 

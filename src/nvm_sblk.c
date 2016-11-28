@@ -369,10 +369,9 @@ size_t nvm_sblk_attr_pos_read(struct nvm_sblk *sblk)
 void nvm_sblk_pr(struct nvm_sblk *sblk)
 {
 	printf("sblk {\n");
-	printf(" "); nvm_dev_pr(sblk->dev);
 	printf(" bgn "); nvm_addr_pr(sblk->bgn);
 	printf(" end "); nvm_addr_pr(sblk->end);
-	printf(" "); nvm_geo_pr(sblk->geo);
 	printf("}\n");
+	printf("sblk-"); nvm_geo_pr(sblk->geo);
 }
 

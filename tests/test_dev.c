@@ -5,13 +5,13 @@
 
 #include <CUnit/Basic.h>
 
-static char nvm_dev_name[NVM_DISK_NAME_LEN] = "nvme0n1";
+static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
 
 void test_DEV_OPEN_CLOSE(void)
 {
 	NVM_DEV dev;
 
-	dev = nvm_dev_open(nvm_dev_name);
+	dev = nvm_dev_open(nvm_dev_path);
 	CU_ASSERT_PTR_NOT_NULL(dev);
 
 	nvm_dev_close(dev);
@@ -27,7 +27,7 @@ void test_DEV_OPEN_CLOSE_N(void)
 	NVM_DEV dev[n];
 
 	for(i=0; i<n; ++i) {
-		dev[i] = nvm_dev_open(nvm_dev_name);
+		dev[i] = nvm_dev_open(nvm_dev_path);
 		CU_ASSERT_PTR_NOT_NULL(dev[i]);
 	}
 
@@ -41,11 +41,11 @@ void test_DEV_OPEN_CLOSE_N(void)
 int main(int argc, char **argv)
 {
 	if (argc > 1) {
-		if (strlen(argv[1]) > NVM_DISK_NAME_LEN) {
-			printf("len(dev_name) > %d\n", NVM_DISK_NAME_LEN - 1);
+		if (strlen(argv[1]) > NVM_DEV_PATH_LEN) {
+			printf("len(dev_path) > %d\n", NVM_DEV_PATH_LEN - 1);
 			return -1;
 		}
-		strcpy(nvm_dev_name, argv[1]);
+		strcpy(nvm_dev_path, argv[1]);
 	}
 
 	CU_pSuite pSuite = NULL;

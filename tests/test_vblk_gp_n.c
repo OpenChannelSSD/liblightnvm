@@ -20,7 +20,7 @@
 
 #include <CUnit/Basic.h>
 
-static char nvm_dev_name[NVM_DISK_NAME_LEN] = "nvm_vblock_tst";
+static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
 int k = 10;	// Total number of nvm_vblk_gets allowed to fail
 
 void TEST_VBLOCK_GP_N(void)
@@ -39,7 +39,7 @@ void TEST_VBLOCK_GP_N(void)
 
 	int i;
 
-	dev = nvm_dev_open(nvm_dev_name);
+	dev = nvm_dev_open(nvm_dev_path);
 	CU_ASSERT_PTR_NOT_NULL(dev);
 
 	geo = nvm_dev_attr_geo(dev);
@@ -115,13 +115,13 @@ void TEST_VBLOCK_GP_N(void)
 int main(int argc, char **argv)
 {
 	if (argc != 2) {
-		printf("Usage: %s dev_name\n", argv[0]);
+		printf("Usage: %s dev_path\n", argv[0]);
 		return -1;
 	}
-	if (strlen(argv[1]) > NVM_DISK_NAME_LEN) {
-		printf("len(device_name) > %d\n", NVM_DISK_NAME_LEN - 1);
+	if (strlen(argv[1]) > NVM_DEV_PATH_LEN) {
+		printf("len(dev_path) > %d\n", NVM_DEV_PATH_LEN);
 	}
-	strcpy(nvm_dev_name, argv[1]);
+	strcpy(nvm_dev_path, argv[1]);
 
 	CU_pSuite pSuite = NULL;
 

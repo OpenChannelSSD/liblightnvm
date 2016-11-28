@@ -7,7 +7,7 @@
 
 #include <CUnit/Basic.h>
 
-static char nvm_dev_name[NVM_DISK_NAME_LEN] = "nvme0n1";
+static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
 
 void test_VBLOCK_NEW_FREE(void)
 {
@@ -25,7 +25,7 @@ void test_VBLOCK_GET_PUT_01(void)
 	NVM_DEV dev;
 	int ret;
 
-	dev = nvm_dev_open(nvm_dev_name);
+	dev = nvm_dev_open(nvm_dev_path);
 	CU_ASSERT(dev > 0);
 
 	vblock = nvm_vblk_new();	/* get block from arbitrary lun */
@@ -49,11 +49,11 @@ void test_VBLOCK_GETS_PUT_01(void)
 	NVM_DEV dev;
 	int ret;
 
-	dev = nvm_dev_open(nvm_dev_name);
+	dev = nvm_dev_open(nvm_dev_path);
 	CU_ASSERT_PTR_NOT_NULL(dev > 0);
 
 	vblock = nvm_vblk_new();
-	CU_ASSERT_PTR_NOT_NULL(vblock);		/* get block from lun 0 */
+	CU_ASSERT_PTR_NOT_NULL(vblock);	/* get block from lun 0 */
 	
 	ret = nvm_vblk_gets(vblock, dev, 0, 0);
 	CU_ASSERT(0==ret);
@@ -66,11 +66,11 @@ void test_VBLOCK_GETS_PUT_01(void)
 int main(int argc, char **argv)
 {
 	if (argc > 1) {
-                if (strlen(argv[1]) > NVM_DISK_NAME_LEN) {
-                        printf("Argument nvm_dev can be maximum %d characters\n",
-                                                                NVM_DISK_NAME_LEN - 1);
+		if (strlen(argv[1]) > NVM_DEV_PATH_LEN) {
+			printf("ERR: len(dev_path) > %d characters\n",
+			       NVM_DEV_PATH_LEN);
                 }
-		strcpy(nvm_dev_name, argv[1]);
+		strncpy(nvm_dev_path, argv[1], NVM_DEV_PATH_LEN);
 	}
 
 	CU_pSuite pSuite = NULL;

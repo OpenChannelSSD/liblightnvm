@@ -4,17 +4,15 @@
 #include <string.h>
 #include <liblightnvm.h>
 
-#define DISK_NAME_LEN 32
-
 int main(int argc, char **argv)
 {
 	if (argc != 2) {
-		printf("Usage: %s dev_name\n", argv[0]);
+		printf("Usage: %s /dev/dev_name\n", argv[0]);
 		return -1;
 	}
 
-	if (strlen(argv[1]) > DISK_NAME_LEN) {
-		printf("len(device_name) > %d\n", DISK_NAME_LEN - 1);
+	if (strlen(argv[1]) > NVM_DEV_PATH_LEN) {
+		printf("len(dev_path) > %d\n", NVM_DEV_PATH_LEN - 1);
 	}
 
 	NVM_DEV dev = nvm_dev_open(argv[1]);

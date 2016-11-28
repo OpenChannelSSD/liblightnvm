@@ -10,7 +10,7 @@
 
 #include <CUnit/Basic.h>
 
-static char nvm_dev_name[NVM_DISK_NAME_LEN] = "nvme0n1";
+static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
 
 void TEST_DEV_MARK(void)
 {
@@ -30,7 +30,7 @@ void TEST_DEV_MARK(void)
 		return;
 	}
 
-	dev = nvm_dev_open(nvm_dev_name);	/* Open device */
+	dev = nvm_dev_open(nvm_dev_path);	/* Open device */
 	if (!dev) {
 		nvm_vblk_free(vblk);
 		CU_FAIL();
@@ -84,11 +84,11 @@ void TEST_DEV_MARK(void)
 int main(int argc, char **argv)
 {
 	if (argc > 1) {
-		if (strlen(argv[1]) > NVM_DISK_NAME_LEN) {
-			printf("len(dev_name) > %d\n", NVM_DISK_NAME_LEN - 1);
+		if (strlen(argv[1]) > NVM_DEV_PATH_LEN) {
+			printf("len(dev_name) > %d\n", NVM_DEV_PATH_LEN - 1);
 			return -1;
 		}
-		strcpy(nvm_dev_name, argv[1]);
+		strcpy(nvm_dev_path, argv[1]);
 	}
 
 	CU_pSuite pSuite = NULL;

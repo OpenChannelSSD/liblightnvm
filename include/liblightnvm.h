@@ -36,9 +36,8 @@ extern "C" {
 #include <stdint.h>
 #include <sys/types.h>
 
-#ifndef NVM_DISK_NAME_LEN
-#define NVM_DISK_NAME_LEN 32
-#endif
+#define NVM_DEV_NAME_LEN 32
+#define NVM_DEV_PATH_LEN (NVM_DEV_NAME_LEN + 5)
 
 #define NVM_MAGIC_FLAG_SNGL 0x0		///< Single-plane
 #define NVM_MAGIC_FLAG_DUAL 0x1		///< Dual-plane (NVM_IO_DUAL_ACCESS)
@@ -173,13 +172,13 @@ typedef struct nvm_sblk *NVM_SBLK;
 void nvm_geo_pr(NVM_GEO geo);
 
 /**
- * Creates a handle to the device named dev_name
+ * Creates a handle to given device path
  *
  * @ingroup NVM_DEV
- * @param dev_name Name of the device to open e.g. nvme0n1
+ * @param dev_path Path of the device to open e.g. "/dev/nvme0n1"
  * @returns A handle to the device
  */
-NVM_DEV nvm_dev_open(const char *dev_name);
+NVM_DEV nvm_dev_open(const char *dev_path);
 
 /**
  * Destroys device-handle
