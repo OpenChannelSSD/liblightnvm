@@ -63,8 +63,10 @@ int erase(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 {
 	int buf_len, i;
-	char *buf;
 	ssize_t err;
+	char *buf;
+	char *meta = NULL;
+	int meta_tbytes = len * geo.meta_nbytes;
 	int PLANE_FLAG = 0x0;
 
 	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
@@ -78,17 +80,40 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 	}
 	nvm_buf_fill(buf, buf_len);
 
+	if (flags & 0x1) {
+		meta = nvm_buf_alloc(geo, meta_tbytes);
+		if (!meta) {
+			printf("FAILED: Allocating meta-buf.\n");
+			errno = ENOMEM;
+			free(buf);
+			return -1;
+		}
+		for (i = 0; i < meta_tbytes; ++i) {
+			meta[i] = (i / len) % len + 65;
+		}
+	}
+
 	printf("** nvm_addr_write(...):\n");
 	for (i = 0; i < len; ++i) {
 		nvm_addr_pr(list[i]);
 	}
+	if (meta) {
+		printf("meta(%d) {", meta_tbytes);
+		for (i = 0; i < meta_tbytes; ++i) {
+			if (i)
+				printf(",");
+			printf(" %c", meta[i]);
+		}
+		printf(" }\n");
+	}
 
-	err = nvm_addr_write(dev, list, len, buf, PLANE_FLAG);
+	err = nvm_addr_write(dev, list, len, buf, meta, PLANE_FLAG);
 	if (err) {
 		printf("ERR: nvm_addr_write err(%ld)\n", err);
 	}
 
 	free(buf);
+	free(meta);
 
 	return err;
 }
@@ -96,8 +121,10 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 {
 	int buf_len, i;
-	char *buf;
 	ssize_t err;
+	char *buf;
+	char *meta = NULL;
+	int meta_tbytes = len * geo.meta_nbytes;
 	int PLANE_FLAG = 0x0;
 
 	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
@@ -110,19 +137,40 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 		return -ENOMEM;
 	}
 
+	if (flags & 0x1) {
+		meta = nvm_buf_alloc(geo, meta_tbytes);
+		if (!meta) {
+			printf("FAILED: Allocating meta-buf.\n");
+			errno = ENOMEM;
+			free(buf);
+			return -1;
+		}
+	}
+
 	printf("** nvm_addr_read(...): \n");
 	for (i = 0; i < len; ++i) {
 		nvm_addr_pr(list[i]);
 	}
 
-	err = nvm_addr_read(dev, list, len, buf, PLANE_FLAG);
-	if (getenv("NVM_BUF_PR"))
+	err = nvm_addr_read(dev, list, len, buf, meta, PLANE_FLAG);
+	if (getenv("NVM_BUF_PR")) {
 		nvm_buf_pr(buf, buf_len);
+		if (meta) {
+			printf("meta {");
+			for (i = 0; i < meta_tbytes; ++i) {
+				if (i)
+					printf(",");
+				printf(" %c", meta[i]);
+			}
+			printf(" }\n");
+		}
+	}
 	if (err) {
 		printf("ERR: nvm_addr_read err(%ld)\n", err);
 	}
 
 	free(buf);
+	free(meta);
 
 	return err;
 }
@@ -155,7 +203,9 @@ typedef struct {
 static NVM_CLI_ADDR_CMD cmds[] = {
 	{"erase", erase, -1, 0x0},
 	{"write", write, -1, 0x0},
+	{"write_m", write, -1, 0x1},
 	{"read", read, -1, 0x0},
+	{"read_m", read, -1, 0x1},
 	{"fmt_p", fmt_p, -1, 0x0},
 	{"fmt_g", fmt_g, 9, 0x0},
 	{"mark_f", mark, -1, 0x0},

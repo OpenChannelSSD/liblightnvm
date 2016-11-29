@@ -194,6 +194,13 @@ static int dev_attr_fill(struct nvm_dev *dev)
 	}
 	dev->geo.nbytes = val;
 
+	if (sysattr2int(udev_dev, "lightnvm/oob_sector_size", &val)) {
+		NVM_DEBUG("ERR: oob_sector_size dev->name(%s)\n", dev->name);
+		errno = EIO;
+		return -1;
+	}
+	dev->geo.meta_nbytes = val;
+
 	/* Derive total number of bytes on device */
 	dev->geo.tbytes = dev->geo.nchannels * dev->geo.nluns * \
 			  dev->geo.nplanes * dev->geo.nblocks * \
@@ -287,11 +294,13 @@ void nvm_geo_pr(struct nvm_geo geo)
 	       geo.nchannels, geo.nluns, geo.nplanes, geo.nblocks);
 	printf(" npages(%lu), nsectors(%lu), nbytes(%lu),\n",
 	       geo.npages, geo.nsectors, geo.nbytes);
+	printf(" meta_nbytes(%lu),\n", geo.meta_nbytes);
+	printf(" vpg_nbytes(%lub:%luKb),\n",
+	       geo.vpg_nbytes, geo.vpg_nbytes >> 10);
+	printf(" vblk_nbytes(%lub:%luMb),\n",
+	       geo.vblk_nbytes, geo.vblk_nbytes >> 20);
 	printf(" total_nbytes(%lub:%luMb)\n",
 	       geo.tbytes, geo.tbytes >> 20);
-	printf(" vblk_nbytes(%lub:%luMb), vpg_nbytes(%lub:%luKb)\n",
-	       geo.vblk_nbytes, geo.vblk_nbytes >> 20,
-	       geo.vpg_nbytes, geo.vpg_nbytes >> 10);
 	printf("}\n");
 }
 

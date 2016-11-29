@@ -163,7 +163,7 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
 		}
 
 		err = nvm_addr_write(vblk->dev, list, len, buf + nbytes_written,
-				     PLANE_FLAG);
+                                     NULL, PLANE_FLAG);
 		if (err) {	// errno set by `nvm_addr_write`
 			return -1;
 		}
@@ -219,7 +219,7 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 		}
 
 		err = nvm_addr_read(vblk->dev, list, len, buf + nbytes_read,
-				     PLANE_FLAG);
+				    NULL, PLANE_FLAG);
 		if (err) {	// errno set by `nvm_addr_read`
 			return -1;
 		}

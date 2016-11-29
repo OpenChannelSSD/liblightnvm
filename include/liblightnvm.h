@@ -132,6 +132,8 @@ typedef struct nvm_geo {
 	size_t nsectors;	///< Number of sectors per page
 	size_t nbytes;		///< Number of bytes per sector
 
+	size_t meta_nbytes;	///< Number of bytes for out-of-bound / metadata
+
 	size_t tbytes;		///< Total number of bytes on device
 	size_t vblk_nbytes;	///< Number of bytes per virtual block
 	size_t vpg_nbytes;	///< Number of bytes per virtual page
@@ -225,12 +227,13 @@ void nvm_buf_pr(char *buf, size_t nbytes);
  *       nvm_addr_read for which the address is interpreted as a sector address.
  *
  * @param dev Handle to the device on which to mark
- * @param list List of memory address
- * @param len Length of memory address list
+ * @param addrs Array of memory address
+ * @param naddrs Length of memory address array
  * @param flags 0x0 = GOOD, 0x1 = BAD, 0x2 = GROWN_BAD, as well as access mode
  * @returns On success: 0. On error: -1 and errno set accordingly.
  */
-ssize_t nvm_addr_mark(NVM_DEV dev, NVM_ADDR list[], int len, uint16_t flags);
+ssize_t nvm_addr_mark(NVM_DEV dev, NVM_ADDR addrs[], int naddrs,
+                      uint16_t flags);
 
 /**
  * Erase nvm at given addresses
@@ -240,12 +243,13 @@ ssize_t nvm_addr_mark(NVM_DEV dev, NVM_ADDR list[], int len, uint16_t flags);
  *       nvm_addr_read for which the address is interpreted as a sector address.
  *
  * @param dev Handle to the device on which to erase
- * @param list List of memory address
- * @param len Length of memory address list
+ * @param addrs Array of memory address
+ * @param naddrs Length of array of memory addresses
  * @param flags Access mode
  * @returns On success: 0. On error: -1 and errno set accordingly.
  */
-ssize_t nvm_addr_erase(NVM_DEV dev, NVM_ADDR list[], int len, uint16_t flags);
+ssize_t nvm_addr_erase(NVM_DEV dev, NVM_ADDR addrs[], int naddrs,
+                       uint16_t flags);
 
 /**
  * Write content of buf to nvm at address(es)
@@ -255,14 +259,17 @@ ssize_t nvm_addr_erase(NVM_DEV dev, NVM_ADDR list[], int len, uint16_t flags);
  *       the address is interpreted as a block address.
  *
  * @param dev Handle to the device on which to erase
- * @param list List of memory address
- * @param len Length of memory address list
- * @param buf The buffer which content to write
+ * @param addrs Array of memory address
+ * @param naddrs Length of array of memory addresses
+ * @param buf The buffer which content to write, must be aligned to device
+ *            geo.vpage_nbytes and size equal to `naddrs * geo.nbytes`
+ * @param meta Buffer containing metadata, must be of size equal to device
+ *             `naddrs * geo.meta_nbytes`
  * @param flags Access mode
  * @returns On success: 0. On error: -1 and errno set accordingly.
  */
-ssize_t nvm_addr_write(NVM_DEV dev, NVM_ADDR list[], int len, const void *buf,
-                       uint16_t flags);
+ssize_t nvm_addr_write(struct nvm_dev *dev, NVM_ADDR addrs[], int naddrs,
+                       const void *buf, const void *meta, uint16_t flags);
 
 /**
  * Read content of nvm at addresses into buf
@@ -272,14 +279,17 @@ ssize_t nvm_addr_write(NVM_DEV dev, NVM_ADDR list[], int len, const void *buf,
  *       the address is interpreted as a block address.
  *
  * @param dev Handle to the device on which to erase
- * @param list List of memory address
- * @param len Length of memory address list
- * @param buf The buffer which content to write
+ * @param addrs List of memory address
+ * @param naddrs Length of array of memory addresses
+ * @param buf Buffer to store result of read into, must be aligned to device
+ *            geo.vpage_nbytes and size equal to `naddrs * geo.nbytes`
+ * @param meta Buffer to store content of metadata, must be of size equal to
+ *             device `naddrs * geo.meta_nbytes`
  * @param flags Access mode
  * @returns On success: 0. On error: -1 and errno set accordingly.
  */
-ssize_t nvm_addr_read(NVM_DEV dev, NVM_ADDR list[], int len, void *buf,
-                      uint16_t flags);
+ssize_t nvm_addr_read(struct nvm_dev *dev, NVM_ADDR addrs[], int naddrs,
+                      void *buf, void *meta, uint16_t flags);
 
 /**
  * Prints a humanly readable representation of the given address
@@ -303,7 +313,7 @@ void nvm_vblk_pr(NVM_VBLK vblk);
 NVM_ADDR nvm_vblk_attr_addr(NVM_VBLK vblk);
 
 /**
- * Get ownership of an arbitrary flash block from the given device.
+ * Get ownership of an arbitrary flash block on the given device.
  *
  * Returns: On success, a flash block is allocated in LightNVM's media manager
  * and vblk is filled up accordingly. On error, -1 is returned, in which case
