@@ -201,6 +201,11 @@ static int dev_attr_fill(struct nvm_dev *dev)
 	}
 	dev->geo.meta_nbytes = val;
 
+	// WARN: HOTFIX for reports of unrealisticly large oob area
+	if (dev->geo.meta_nbytes > 100) {
+		dev->geo.meta_nbytes = 16;	// Naively hope this is right
+	}
+
 	/* Derive total number of bytes on device */
 	dev->geo.tbytes = dev->geo.nchannels * dev->geo.nluns * \
 			  dev->geo.nplanes * dev->geo.nblocks * \
