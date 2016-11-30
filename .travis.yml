@@ -48,7 +48,7 @@ before_script:
 script:
   - CONTAINER_ID=$(cat container.id)
   - docker ps -a
-  - docker exec -t ${TAG} make tests_off configure make pkg
+  - docker exec -t ${TAG} make clean make-pkg
   - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm-${NVM_VERSION}.deb .
   - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm-${NVM_VERSION}.tar.gz .
   - docker stop "${CONTAINER_ID}"

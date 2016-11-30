@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-set(EXAMPLES true CACHE BOOL "Examples: Include example programs in build")
-set(EXAMPLES_SBLK_PAR false CACHE BOOL "Examples-sblk: Enable parallel implementation of sblk")
+set(EXAMPLES false CACHE BOOL "Examples: Include example programs in build")
 if (NOT EXAMPLES)
 	return()
 endif()

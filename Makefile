@@ -1,41 +1,79 @@
 BUILD_TYPE?=Release
 BUILD_DIR?=build
-BUILD_TESTS?=ON
-BUILD_EXAMPLES?=ON
+BUILD_TESTS?=OFF
+BUILD_EXAMPLES?=OFF
 
 #
-# Traditional build commands
+# Traditional build commands / make interface
 #
+default: make
 
-default: configure make
-
+.PHONY: debug
 debug:
 	$(eval BUILD_TYPE := Debug)
 
-tests_off:
-	$(eval BUILD_TESTS := OFF)
+.PHONY: tests
+tests:
+	$(eval BUILD_TESTS := ON)
 
-examples_off:
-	$(eval BUILD_EXAMPLES := OFF)
+.PHONY: examples
+examples:
+	$(eval BUILD_EXAMPLES := ON)
 
+.PHONY: cmake_check
 cmake_check:
 	@cmake --version || (echo "\n** Please install 'cmake' **\n" && exit 1)
 
+.PHONY: configure
 configure: cmake_check
 	mkdir -p $(BUILD_DIR)
 	cd $(BUILD_DIR) && cmake -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DTESTS=$(BUILD_TESTS) -DEXAMPLES=$(BUILD_EXAMPLES) ../
 	@echo "Modify build configuration in '$(BUILD_DIR)'"
 
-make:
+.PHONY: make
+make: configure
 	cd $(BUILD_DIR) && make
 
+.PHONY: install
+install:
+	cd $(BUILD_DIR) && make install
+
+.PHONY: make-pkg
+make-pkg: configure
+	cd $(BUILD_DIR) && make package
+
+.PHONY: install-pkg
+install-pkg:
+	sudo dpkg -i $(BUILD_DIR)/*.deb
+
+.PHONY: uninstall-pkg
+uninstall-pkg:
+	sudo apt-get --yes remove liblightnvm || true
+
+.PHONY: clean
+clean:
+	rm -fr $(BUILD_DIR) || true
+	rm -f tags || true
+
+all: clean default install
+
+# Removes packages, cleans up, builds lib, examples, tests, pkg and installs
+.PHONY: dev
+dev: uninstall-pkg clean examples tests make-pkg install-pkg
+
+#
+# Experimental section
+#
+.PHONY: docs
 docs:
 	@mkdir -p $(BUILD_DIR)/docs
 	doxygen ci/doxy/docs.cfg
 
+.PHONY: docs-view
 docs-view:
 	xdg-open $(BUILD_DIR)/docs/html/index.html
 
+.PHONY: docs-publish
 docs-publish:
 	rm -fr $(BUILD_DIR)/ghpages
 	mkdir -p $(BUILD_DIR)/ghpages
@@ -48,31 +86,10 @@ docs-publish:
 	cd $(BUILD_DIR)/ghpages && git commit -m "Autogen docs for `git rev-parse --short HEAD`."
 	cd $(BUILD_DIR)/ghpages && git push origin gh-pages
 
-install:
-	cd $(BUILD_DIR) && make install
-
-clean:
-	rm -fr $(BUILD_DIR) || true
-	rm -f tags || true
-
-all: clean default install
-
-#
-# Packages (currently debian/.deb)
-#
-pkg:
-	cd $(BUILD_DIR) && make package
-
-pkg_install:
-	sudo dpkg -i $(BUILD_DIR)/*.deb
-
-pkg_uninstall:
-	sudo apt-get --yes remove liblightnvm || true
-
 #
 # Commands useful for development
 #
-#
+.PHONY: tags
 tags:
 	ctags * -R .
 	cscope -b `find . -name '*.c'` `find . -name '*.h'`
@@ -96,19 +113,4 @@ test_concur:
 # ... all of them
 test: test_dev test_vblk test_vblk_gp_n test_mbad test_concur
 
-# Invoking examples ...
-ex_info:
-	@sudo nvm_ex_info /dev/nvme0n1 || true
-
-ex_vblock_pio_1:
-	@sudo nvm_ex_vblock_pio_1 /dev/nvme0n1 || true
-
-ex_vblock_pio_n:
-	@sudo nvm_ex_vblock_pio_n /dev/nvme0n1 || true
-
-example: ex_info ex_vblock_pio_1 ex_vblock_pio_n
-
 # ... all of them
-
-# Removes everything, build and install package
-dev: pkg_uninstall clean configure make pkg pkg_install
