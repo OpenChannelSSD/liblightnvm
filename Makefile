@@ -64,22 +64,44 @@ dev: uninstall-pkg clean examples tests make-pkg install-pkg
 #
 # Experimental section
 #
-.PHONY: docs
-docs:
-	@mkdir -p $(BUILD_DIR)/docs
-	doxygen ci/doxy/docs.cfg
+.PHONY: doxy
+doxy:
+	@mkdir -p $(BUILD_DIR)/doc/doxy
+	doxygen doc/doxy.cfg
 
-.PHONY: docs-view
-docs-view:
-	xdg-open $(BUILD_DIR)/docs/html/index.html
+.PHONY: doxy-view
+doxy-view:
+	xdg-open $(BUILD_DIR)/doc/doxy/html/index.html
 
-.PHONY: docs-publish
-docs-publish:
+.PHONY: sphinx
+sphinx:
+	@mkdir -p $(BUILD_DIR)/doc/sphinx/html
+	@mkdir -p $(BUILD_DIR)/doc/sphinx/pdf
+	sphinx-build -b html -c doc -E doc/src $(BUILD_DIR)/doc/sphinx/html
+#	sphinx-build -b pdf -c doc -E doc/src $(BUILD_DIR)/doc/sphinx/pdf
+
+.PHONY: sphinx-view
+sphinx-view:
+	xdg-open $(BUILD_DIR)/doc/sphinx/html/index.html
+
+.PHONY: doc
+doc: doxy sphinx
+
+.PHONY: doc-view-html
+doc-view-html:
+	xdg-open $(BUILD_DIR)/doc/sphinx/html/index.html
+
+#.PHONY: doc-view-pdf
+#doc-view-pdf:
+#	xdg-open $(BUILD_DIR)/doc/sphinx/pdf/liblightnvm.pdf
+
+.PHONY: doc-publish
+doc-publish:
 	rm -fr $(BUILD_DIR)/ghpages
 	mkdir -p $(BUILD_DIR)/ghpages
 	git clone -b gh-pages git@github.com:OpenChannelSSD/liblightnvm.git --single-branch $(BUILD_DIR)/ghpages
 	cd $(BUILD_DIR)/ghpages && git rm -rf .
-	cp -r $(BUILD_DIR)/docs/html/. $(BUILD_DIR)/ghpages/
+	cp -r $(BUILD_DIR)/doc/sphinx/html/. $(BUILD_DIR)/ghpages/
 	cd $(BUILD_DIR)/ghpages && git add .
 	if [ -z "`git config user.name`" ]; then git config user.name "Mr. Robot"; fi
 	if [ -z "`git config user.email`" ]; then git config user.email "foo@example.com"; fi

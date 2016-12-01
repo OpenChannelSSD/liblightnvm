@@ -1,0 +1,38 @@
+=====
+ API
+=====
+
+Bla bla bla asdfsd
+
+.. toctree::
+
+Geometry
+========
+
+{{NVM_GEO}}
+
+Buffer Management
+=================
+
+{{NVM_BUF}}
+
+Device Management
+=================
+
+{{NVM_DEV}}
+
+Addressing
+==========
+
+{{NVM_ADDR}}
+
+Virtual Block
+=============
+
+{{NVM_VBLK}}
+
+Spanning Block
+==============
+
+{{NVM_SBLK}}
+
