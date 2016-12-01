@@ -1,9 +1,8 @@
 /*
- * nvm_util - liblightnvm misc. utilities (internal)
+ * geo - Geometry functions
  *
  * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
  * Copyright (C) 2015 Matias Bjørling <matias@cnexlabs.com>
- * Copyright (C) 2016 Simon A. F. Lund <slund@cnexlabs.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,13 +25,23 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef __NVM_UTIL_H
-#define __NVM_UTIL_H
+#include <stdio.h>
+#include <liblightnvm.h>
 
-#include <libudev.h>
+void nvm_geo_pr(struct nvm_geo geo)
+{
+	printf("geo {\n");
+	printf(" nchannels(%lu), nluns(%lu), nplanes(%lu), nblocks(%lu),\n",
+	       geo.nchannels, geo.nluns, geo.nplanes, geo.nblocks);
+	printf(" npages(%lu), nsectors(%lu), nbytes(%lu),\n",
+	       geo.npages, geo.nsectors, geo.nbytes);
+	printf(" meta_nbytes(%lu),\n", geo.meta_nbytes);
+	printf(" vpg_nbytes(%lub:%luKb),\n",
+	       geo.vpg_nbytes, geo.vpg_nbytes >> 10);
+	printf(" vblk_nbytes(%lub:%luMb),\n",
+	       geo.vblk_nbytes, geo.vblk_nbytes >> 20);
+	printf(" total_nbytes(%lub:%luMb)\n",
+	       geo.tbytes, geo.tbytes >> 20);
+	printf("}\n");
+}
 
-struct udev_device *udev_dev_find(struct udev *udev, const char *subsystem,
-				  const char *devtype, const char *dev_name);
-struct udev_device *udev_nvmdev_find(struct udev *udev, const char *dev_name);
-
-#endif /* __NMV_UTIL_H */

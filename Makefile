@@ -1,7 +1,7 @@
 BUILD_TYPE?=Release
 BUILD_DIR?=build
 BUILD_TESTS?=OFF
-BUILD_EXAMPLES?=OFF
+BUILD_CLI?=OFF
 
 #
 # Traditional build commands / make interface
@@ -16,9 +16,9 @@ debug:
 tests:
 	$(eval BUILD_TESTS := ON)
 
-.PHONY: examples
-examples:
-	$(eval BUILD_EXAMPLES := ON)
+.PHONY: cli
+cli:
+	$(eval BUILD_CLI := ON)
 
 .PHONY: cmake_check
 cmake_check:
@@ -27,7 +27,7 @@ cmake_check:
 .PHONY: configure
 configure: cmake_check
 	mkdir -p $(BUILD_DIR)
-	cd $(BUILD_DIR) && cmake -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DTESTS=$(BUILD_TESTS) -DEXAMPLES=$(BUILD_EXAMPLES) ../
+	cd $(BUILD_DIR) && cmake -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DTESTS=$(BUILD_TESTS) -DCLI=$(BUILD_CLI) ../
 	@echo "Modify build configuration in '$(BUILD_DIR)'"
 
 .PHONY: make
@@ -57,9 +57,9 @@ clean:
 
 all: clean default install
 
-# Removes packages, cleans up, builds lib, examples, tests, pkg and installs
+# Removes packages, cleans up, builds lib, cli, tests, pkg and installs
 .PHONY: dev
-dev: uninstall-pkg clean examples tests make-pkg install-pkg
+dev: uninstall-pkg clean cli tests make-pkg install-pkg
 
 #
 # Experimental section
@@ -97,15 +97,17 @@ doc-view-html:
 
 .PHONY: doc-publish
 doc-publish:
-	rm -fr $(BUILD_DIR)/ghpages
+	rm -rf $(BUILD_DIR)/ghpages
 	mkdir -p $(BUILD_DIR)/ghpages
 	git clone -b gh-pages git@github.com:OpenChannelSSD/liblightnvm.git --single-branch $(BUILD_DIR)/ghpages
-	cd $(BUILD_DIR)/ghpages && git rm -rf .
+	cd $(BUILD_DIR)/ghpages && git rm -rf --ignore-unmatch .
 	cp -r $(BUILD_DIR)/doc/sphinx/html/. $(BUILD_DIR)/ghpages/
+	touch $(BUILD_DIR)/ghpages/.nojekyll
 	cd $(BUILD_DIR)/ghpages && git add .
 	if [ -z "`git config user.name`" ]; then git config user.name "Mr. Robot"; fi
 	if [ -z "`git config user.email`" ]; then git config user.email "foo@example.com"; fi
 	cd $(BUILD_DIR)/ghpages && git commit -m "Autogen docs for `git rev-parse --short HEAD`."
+	cd $(BUILD_DIR)/ghpages && git push origin --delete gh-pages
 	cd $(BUILD_DIR)/ghpages && git push origin gh-pages
 
 #

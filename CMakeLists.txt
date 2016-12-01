@@ -32,12 +32,12 @@ set(HEADER_FILES
 	include/liblightnvm.h
 	include/nvm.h
 	include/nvm_debug.h
-	include/nvm_omp.h
-	include/nvm_util.h)
+	include/nvm_omp.h)
 
 set(SOURCE_FILES
 	src/nvm_dev.c
-	src/nvm_util.c
+	src/nvm_buf.c
+	src/nvm_geo.c
 	src/nvm_addr.c
 	src/nvm_vblk.c
 	src/nvm_sblk.c
@@ -81,8 +81,8 @@ set_target_properties(lightnvm_a PROPERTIES OUTPUT_NAME lightnvm)
 
 install(TARGETS lightnvm_a DESTINATION lib)
 
-# EXAMPLES
-add_subdirectory(examples)
+# CLI
+add_subdirectory(cli)
 
 # TESTS
 add_subdirectory(tests)

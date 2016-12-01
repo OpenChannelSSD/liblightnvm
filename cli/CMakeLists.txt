@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
-set(EXAMPLES false CACHE BOOL "Examples: Include example programs in build")
-if (NOT EXAMPLES)
+set(CLI false CACHE BOOL "Examples: Include example programs in build")
+if (NOT CLI)
 	return()
 endif()
 
@@ -23,7 +23,7 @@ foreach(SRC_FN ${SOURCE_FILES})
 	get_filename_component(SRC_FN_WE ${SRC_FN} NAME_WE)
 	set(EXE_FN "nvm_${SRC_FN_WE}")
 	add_executable(${EXE_FN} ${SRC_FN})
-	target_link_libraries(${EXE_FN} pthread udev lightnvm_a)
+	target_link_libraries(${EXE_FN} udev lightnvm_a)
 
 	install(TARGETS ${EXE_FN} DESTINATION bin)
 endforeach()

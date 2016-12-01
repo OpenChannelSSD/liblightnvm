@@ -9,7 +9,7 @@ Contents:
 
    getting_started
    constraints
-   api
+   c
 
 Indices and tables
 ==================

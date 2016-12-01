@@ -1,6 +1,6 @@
-=====
- API
-=====
+=======
+ C API
+=======
 
 Bla bla bla asdfsd
 
@@ -260,7 +260,5 @@ nvm_sblk_write
 --------------
 
 .. doxygenfunction:: nvm_sblk_write
-
-
 
 
