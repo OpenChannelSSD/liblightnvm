@@ -77,7 +77,7 @@ static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
 		dev_addrs[i] = nvm_addr_gen2dev(dev, addrs[i]);
 	}
 	ctl.nppas = len - 1;	// unnatural numbers, we count from zero
-	ctl.ppas = len == 1 ? dev_addrs[0].ppa : (uint64_t)dev_addrs;
+	ctl.ppa_list = len == 1 ? dev_addrs[0].ppa : (uint64_t)dev_addrs;
 
 	// Setup data
 	ctl.addr = (uint64_t)data;
