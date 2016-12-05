@@ -17,25 +17,25 @@ Lastly, you need liblightnvm itself, clone it from:
  * https://github.com/OpenChannelSSD/liblightnvm
  * Specifically branch "master"
 
- Prerequisites
+Prerequisites
 ===============
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque
 condimentum tempor justo a placerat. Sed commodo ornare dolor et hendrerit.
 
- nvme-cli -- source
+nvme-cli -- source
 ---------------------
 
 Aenean sit amet imperdiet lacus. Nulla arcu tortor, efficitur sit amet
 pellentesque a, rhoncus id ante.
 
- qemu-nvme -- source
+qemu-nvme -- source
 ---------------------
 
 Aenean sit amet imperdiet lacus. Nulla arcu tortor, efficitur sit amet
 pellentesque a, rhoncus id ante.
 
- Linux kernel -- source
+Linux kernel -- source
 ------------------------
 
 Proin malesuada, nisi vel fermentum vehicula, velit urna lobortis odio,
@@ -43,7 +43,7 @@ consectetur luctus felis tellus ullamcorper arcu. Vivamus dapibus, felis id
 auctor efficitur, nunc justo tincidunt odio, vel laoreet urna erat pulvinar
 libero. Pellentesque convallis risus nec laoreet vulputate.
 
- Linux kernel -- binary
+Linux kernel -- binary
 ------------------------
 
 Proin sagittis, eros semper tincidunt posuere, nulla dolor eleifend nisi, vel
