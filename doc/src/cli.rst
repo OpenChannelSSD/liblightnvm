@@ -8,12 +8,22 @@ Bla bla bla asdfsd
 
 .. toctree::
 
- nvm_info
-==========
+nvm_info
+========
 
 sdfsdf
 
- nvm_addr
-==========
+nvm_addr
+========
+
+sdfdsfsd
+
+nvm_vblk
+========
+
+sdfdsfsd
+
+nvm_sblk
+========
 
 sdfdsfsd

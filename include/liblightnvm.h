@@ -412,6 +412,12 @@ ssize_t nvm_sblk_erase(NVM_SBLK sblk);
 ssize_t nvm_sblk_write(NVM_SBLK sblk, const void *buf, size_t count);
 
 /**
+ * Write content from buffer to sblk
+ */
+ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
+			size_t offset);
+
+/**
  * Pad the sblk
  */
 ssize_t nvm_sblk_pad(NVM_SBLK sblk);

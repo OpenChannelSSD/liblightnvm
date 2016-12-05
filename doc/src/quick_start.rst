@@ -47,5 +47,6 @@ Which should output information similar to:
 .. tip:: If the above does not suffice to get you started then have a look at the :ref:`sec-prereqs` for detailed information about what you need to setup an environment.
 
 With the basics in place, explore the :ref:`sec-c-api`, the :ref:`sec-cli`, and
-the :ref:`sec-python`.
+the :ref:`sec-python`. The section on :ref:`sec-background` provide a brief
+glance of useful information on working with SSDs.
 
