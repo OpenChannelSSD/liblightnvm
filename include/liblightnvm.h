@@ -422,10 +422,53 @@ ssize_t nvm_sblk_read(NVM_SBLK sblk, void *buf, size_t count);
 ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
 		       size_t offset);
 
+/**
+ * Retrieve the device associated with the given sblk
+ *
+ * @param sblk The entity to retrieve information from
+ */
 NVM_DEV nvm_sblk_attr_dev(NVM_SBLK sblk);
+
+/**
+ * Retrieve the address where the sblk begins
+ *
+ * @param sblk The entity to retrieve information from
+ */
 NVM_ADDR nvm_sblk_attr_bgn(NVM_SBLK sblk);
+
+/**
+ * Retrieve the address where the sblk ends
+ *
+ * @param sblk The entity to retrieve information from
+ */
 NVM_ADDR nvm_sblk_attr_end(NVM_SBLK sblk);
+
+/**
+ * Retrieve the geometry of the given sblk
+ *
+ * @param sblk The entity to retrieve information from
+ */
 NVM_GEO nvm_sblk_attr_geo(NVM_SBLK sblk);
+
+/**
+ * Retrieve the current cursor position for writes to the sblk
+ *
+ * @param sblk The entity to retrieve information from
+ */
+size_t nvm_sblk_attr_pos_write(NVM_SBLK sblk);
+
+/**
+ * Retrieve the current cursor position for read to the sblk
+ *
+ * @param sblk The entity to retrieve information from
+ */
+size_t nvm_sblk_attr_pos_read(NVM_SBLK sblk);
+
+/**
+ * Print the sblk in a humanly readable form
+ *
+ * @param sblk The entity to print information about
+ */
 void nvm_sblk_pr(NVM_SBLK sblk);
 
 #ifdef __cplusplus

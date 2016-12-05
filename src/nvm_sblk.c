@@ -342,6 +342,11 @@ ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 	return nerr;
 }
 
+struct nvm_addr nvm_sblk_attr_bgn(struct nvm_sblk *sblk)
+{
+	return sblk->end;
+}
+
 struct nvm_addr nvm_sblk_attr_end(struct nvm_sblk *sblk)
 {
 	return sblk->end;
