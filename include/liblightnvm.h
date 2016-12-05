@@ -187,7 +187,8 @@ void nvm_dev_pr(NVM_DEV dev);
 /**
  * Returns the geometry of the given device
  *
- * NOTE: See NVM_GEO for the specifics
+ * @note
+ * See NVM_GEO for the specifics of the returned geometry
  *
  * @param dev The device to obtain the geometry of
  * @returns The geometry (NVM_GEO) of given device handle
@@ -222,9 +223,10 @@ void nvm_buf_pr(char *buf, size_t nbytes);
 /**
  * Mark addresses good, bad, or host-bad.
  *
- * NOTE: The addresses given to this function are interpreted as block
- *       addresses, in contrast to nvm_addr_mark, nvm_addr_write, and
- *       nvm_addr_read for which the address is interpreted as a sector address.
+ * @note
+ * The addresses given to this function are interpreted as block addresses, in
+ * contrast to `nvm_addr_write`, and `nvm_addr_read` which interpret addresses
+ * and sector addresses.
  *
  * @param dev Handle to the device on which to mark
  * @param addrs Array of memory address
@@ -238,9 +240,10 @@ ssize_t nvm_addr_mark(NVM_DEV dev, NVM_ADDR addrs[], int naddrs,
 /**
  * Erase nvm at given addresses
  *
- * NOTE: The addresses given to this function are interpreted as block
- *       addresses, in contrast to nvm_addr_mark, nvm_addr_write, and
- *       nvm_addr_read for which the address is interpreted as a sector address.
+ * @note
+ * The addresses given to this function are interpreted as block addresses, in
+ * contrast to `nvm_addr_mark`, `nvm_addr_write`, and `nvm_addr_read` for which
+ * the address is interpreted as a sector address.
  *
  * @param dev Handle to the device on which to erase
  * @param addrs Array of memory address
@@ -254,9 +257,10 @@ ssize_t nvm_addr_erase(NVM_DEV dev, NVM_ADDR addrs[], int naddrs,
 /**
  * Write content of buf to nvm at address(es)
  *
- * NOTE: The addresses given to this function are interpreted as sector
- *       addresses, in contrast to nvm_addr_mark and nvm_addr_erase for which
- *       the address is interpreted as a block address.
+ * @note
+ * The addresses given to this function are interpreted as sector addresses, in
+ * contrast to nvm_addr_mark and nvm_addr_erase for which the address is
+ * interpreted as a block address.
  *
  * @param dev Handle to the device on which to erase
  * @param addrs Array of memory address
@@ -274,9 +278,10 @@ ssize_t nvm_addr_write(struct nvm_dev *dev, NVM_ADDR addrs[], int naddrs,
 /**
  * Read content of nvm at addresses into buf
  *
- * NOTE: The addresses given to this function are interpreted as sector
- *       addresses, in contrast to nvm_addr_mark and nvm_addr_erase for which
- *       the address is interpreted as a block address.
+ * @note
+ * The addresses given to this function are interpreted as sector addresses, in
+ * contrast to `nvm_addr_mark` and `nvm_addr_erase` for which the address is
+ * interpreted as a block address.
  *
  * @param dev Handle to the device on which to erase
  * @param addrs List of memory address
@@ -362,8 +367,8 @@ ssize_t nvm_vblk_pread(NVM_VBLK vblk, void *buf, size_t count, size_t offset);
 /**
  * Write 'count' bytes to 'vblk' starting at 'offset' from 'buf'
  *
- * NOTE: Use this for controlling chunked writing, do NOT use this for
- *       random-access.
+ * @note
+ * Use this for controlling chunked writing, do NOT use for random access
  *
  * @returns On success 0, on error -1 and *errno* set appropriately.
  */
