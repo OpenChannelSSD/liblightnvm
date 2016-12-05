@@ -37,6 +37,12 @@
 #include <nvm.h>
 #include <nvm_debug.h>
 
+void nvm_ret_pr(NVM_RET *ret)
+{
+	printf("nvm_ret { result(%lu), status(%u) }\n", ret->result,
+	       ret->status);
+}
+
 /**
  * Convert nvm_address from generic format to device specific format
  *
@@ -60,9 +66,10 @@ static inline struct nvm_addr nvm_addr_gen2dev(struct nvm_dev *dev,
 	return d_addr;
 }
 
-static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
-			    int len, void *data, void *meta,
-			    uint16_t flags, uint16_t opcode)
+static ssize_t
+nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[], int len, void *data,
+             void *meta, uint16_t flags, uint16_t opcode,
+             struct nvm_return *ret)
 {
 	struct nvm_user_vio ctl;
 	struct nvm_addr dev_addrs[len];
@@ -98,6 +105,10 @@ static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
 			nvm_addr_pr(addrs[i]);
 	}
 #endif
+	if (ret) {
+		ret->result = ctl.result;
+		ret->status = ctl.status;
+	}
 	if (err) {	// Give up on IOCTL errors
 		errno = EIO;
 		return -1;
@@ -109,38 +120,39 @@ static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
 	case 0x4700:	// As good as it gets..
 		return 0;
 
-	default:	// We give up on everything else
+	default:	// Everything else is an error
 		errno = EIO;
 		return -1;
 	}
 }
 
-ssize_t nvm_addr_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		       uint16_t flags)
+ssize_t nvm_addr_erase(NVM_DEV dev, NVM_ADDR addrs[], int naddrs, uint16_t flags,
+		       NVM_RET *ret)
 {
 	return nvm_addr_cmd(dev, addrs, naddrs, NULL, NULL, flags,
-			    NVM_MAGIC_OPCODE_ERASE);
+			    NVM_MAGIC_OPCODE_ERASE, ret);
 }
 
-ssize_t nvm_addr_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		       const void *data, const void *meta, uint16_t flags)
+ssize_t nvm_addr_write(struct nvm_dev *dev, NVM_ADDR addrs[], int naddrs,
+		       const void *data, const void *meta, uint16_t flags,
+		       NVM_RET *ret)
 {
 	char *cdata = (char *)data;
         char *cmeta = (char *)meta;
 
 	return nvm_addr_cmd(dev, addrs, naddrs, cdata, cmeta, flags,
-			    NVM_MAGIC_OPCODE_WRITE);
+			    NVM_MAGIC_OPCODE_WRITE, ret);
 }
 
-ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		      void *data, void *meta, uint16_t flags)
+ssize_t nvm_addr_read(struct nvm_dev *dev, NVM_ADDR addrs[], int naddrs, void *data,
+		      void *meta, uint16_t flags, NVM_RET *ret)
 {
 	return nvm_addr_cmd(dev, addrs, naddrs, data, meta, flags,
-			    NVM_MAGIC_OPCODE_READ);
+			    NVM_MAGIC_OPCODE_READ, ret);
 }
 
-ssize_t nvm_addr_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-                      uint16_t flags)
+ssize_t nvm_addr_mark(NVM_DEV dev, NVM_ADDR addrs[], int naddrs, uint16_t flags,
+		      NVM_RET *ret)
 {
 	switch (flags) {
 	case 0x0:
@@ -152,7 +164,7 @@ ssize_t nvm_addr_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		return -1;
 	}
 
-	return nvm_addr_cmd(dev, addrs, naddrs, NULL, NULL, flags, 0xF1);
+	return nvm_addr_cmd(dev, addrs, naddrs, NULL, NULL, flags, 0xF1, ret);
 }
 
 void nvm_addr_fmt_pr(struct nvm_addr_fmt *fmt)

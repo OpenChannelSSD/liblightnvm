@@ -35,7 +35,7 @@
 {
         "name": "NVM_ADDR",
         "structs": [
-                "NVM_ADDR"
+                "NVM_ADDR", "NVM_RET"
         ],
         "typedefs": [],
         "functions": [

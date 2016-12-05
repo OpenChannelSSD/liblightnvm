@@ -135,10 +135,8 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 				// sec is fixed and inherited from bgn (0)
 			}
 
-			err = nvm_addr_erase(sblk->dev,
-					     addrs,
-					     nplanes,
-					     PLANE_FLAG);
+			err = nvm_addr_erase(sblk->dev, addrs, nplanes,
+                                             PLANE_FLAG, NULL);
 			if (err) {
 				NVM_DEBUG("FAILED: nvm_addr_erase err(%ld)", err);
 				++nerr;
@@ -228,8 +226,8 @@ ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
 			}
 
 			ssize_t err = nvm_addr_write(sblk->dev, addrs,
-                                                     NVM_CMD_NADDR, data_off,
-                                                     NULL, PLANE_FLAG);
+						     NVM_CMD_NADDR, data_off,
+						     NULL, PLANE_FLAG, NULL);
 			if (err) {
 				NVM_DEBUG("FAILED: nvm_addr_write e(%ld)", err);
 				++nerr;
@@ -321,7 +319,7 @@ ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
 
 			ssize_t err = nvm_addr_read(sblk->dev, addrs,
 						    NVM_CMD_NADDR, buf_off,
-						    NULL, PLANE_FLAG);
+						    NULL, PLANE_FLAG, NULL);
 			if (err) {
 				NVM_DEBUG("FAILED: nvm_addr_read e(%ld)", err);
 				++nerr;

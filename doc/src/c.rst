@@ -1,8 +1,6 @@
-.. _sec-c-api:
-
-=======
- C API
-=======
+=====
+ API
+=====
 
 Bla bla bla asdfsd
 
@@ -81,6 +79,12 @@ NVM_ADDR
 --------
 
 .. doxygenstruct:: NVM_ADDR
+   :members:
+
+NVM_RET
+-------
+
+.. doxygenstruct:: NVM_RET
    :members:
 
 nvm_addr_erase
@@ -262,5 +266,7 @@ nvm_sblk_write
 --------------
 
 .. doxygenfunction:: nvm_sblk_write
+
+
 
 

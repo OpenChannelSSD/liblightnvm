@@ -54,6 +54,22 @@ extern "C" {
 #define NVM_CH_BITS  (7)	///< NUmber of bits for channel field
 
 /**
+ * Encapsulation and representation of lower-level error conditions
+ *
+ */
+typedef struct nvm_return {
+    uint64_t result;    ///< NVMe command error codes
+    uint16_t status;    ///< NVMe command status / completion bits
+} NVM_RET;
+
+/**
+ * Prints a humanly readable representation the given NVM_RET
+ *
+ * @param ret Pointer to the NVM_RET to print
+ */
+void nvm_ret_pr(NVM_RET *ret);
+
+/**
  * Encapsulation of generic physical nvm addressing
  *
  * The kernel translates the generic physical address represented by this
@@ -61,7 +77,7 @@ extern "C" {
  * worry about device specific address formats the user has to know and respect
  * addressing within device specific geometric boundaries.
  *
- * For that purpose one can use the NVM_GEO of an NVM_DEV to obtain device
+ * For that purpose one can use the `NVM_GEO` of an `NVM_DEV` to obtain device
  * specific geometries.
  *
  */
@@ -166,6 +182,7 @@ void nvm_geo_pr(NVM_GEO geo);
  * Creates a handle to given device path
  *
  * @param dev_path Path of the device to open e.g. "/dev/nvme0n1"
+ *
  * @returns A handle to the device
  */
 NVM_DEV nvm_dev_open(const char *dev_path);
@@ -191,6 +208,7 @@ void nvm_dev_pr(NVM_DEV dev);
  * See NVM_GEO for the specifics of the returned geometry
  *
  * @param dev The device to obtain the geometry of
+ *
  * @returns The geometry (NVM_GEO) of given device handle
  */
 NVM_GEO nvm_dev_attr_geo(NVM_DEV dev);
@@ -200,6 +218,7 @@ NVM_GEO nvm_dev_attr_geo(NVM_DEV dev);
  *
  * @param geo The geometry to get alignment information from
  * @param nbytes The size of the allocated buffer in bytes
+ *
  * @returns On succes: a pointer to the allocated memory. On error: NULL.
  */
 void *nvm_buf_alloc(NVM_GEO geo, size_t nbytes);
@@ -232,10 +251,13 @@ void nvm_buf_pr(char *buf, size_t nbytes);
  * @param addrs Array of memory address
  * @param naddrs Length of memory address array
  * @param flags 0x0 = GOOD, 0x1 = BAD, 0x2 = GROWN_BAD, as well as access mode
- * @returns On success: 0. On error: -1 and errno set accordingly.
+ * @param ret Pointer to structure in which to store lower-level status and
+ *            result.
+ * @returns 0 on success. On error: returns -1, sets `errno` accordingly, and
+ *          fills `ret` with lower-level result and status codes
  */
-ssize_t nvm_addr_mark(NVM_DEV dev, NVM_ADDR addrs[], int naddrs,
-                      uint16_t flags);
+ssize_t nvm_addr_mark(NVM_DEV dev, NVM_ADDR addrs[], int naddrs, uint16_t flags,
+		      NVM_RET *ret);
 
 /**
  * Erase nvm at given addresses
@@ -249,10 +271,13 @@ ssize_t nvm_addr_mark(NVM_DEV dev, NVM_ADDR addrs[], int naddrs,
  * @param addrs Array of memory address
  * @param naddrs Length of array of memory addresses
  * @param flags Access mode
- * @returns On success: 0. On error: -1 and errno set accordingly.
+ * @param ret Pointer to structure in which to store lower-level status and
+ *            result.
+ * @returns 0 on success. On error: returns -1, sets `errno` accordingly, and
+ *          fills `ret` with lower-level result and status codes
  */
-ssize_t nvm_addr_erase(NVM_DEV dev, NVM_ADDR addrs[], int naddrs,
-                       uint16_t flags);
+ssize_t nvm_addr_erase(NVM_DEV dev, NVM_ADDR addrs[], int naddrs, uint16_t flags,
+		       NVM_RET *ret);
 
 /**
  * Write content of buf to nvm at address(es)
@@ -270,10 +295,14 @@ ssize_t nvm_addr_erase(NVM_DEV dev, NVM_ADDR addrs[], int naddrs,
  * @param meta Buffer containing metadata, must be of size equal to device
  *             `naddrs * geo.meta_nbytes`
  * @param flags Access mode
- * @returns On success: 0. On error: -1 and errno set accordingly.
+ * @param ret Pointer to structure in which to store lower-level status and
+ *            result.
+ * @returns 0 on success. On error: returns -1, sets `errno` accordingly, and
+ *          fills `ret` with lower-level result and status codes
  */
 ssize_t nvm_addr_write(struct nvm_dev *dev, NVM_ADDR addrs[], int naddrs,
-                       const void *buf, const void *meta, uint16_t flags);
+		       const void *buf, const void *meta, uint16_t flags,
+		       NVM_RET *ret);
 
 /**
  * Read content of nvm at addresses into buf
@@ -291,10 +320,13 @@ ssize_t nvm_addr_write(struct nvm_dev *dev, NVM_ADDR addrs[], int naddrs,
  * @param meta Buffer to store content of metadata, must be of size equal to
  *             device `naddrs * geo.meta_nbytes`
  * @param flags Access mode
- * @returns On success: 0. On error: -1 and errno set accordingly.
+ * @param ret Pointer to structure in which to store lower-level status and
+ *            result.
+ * @returns 0 on success. On error: returns -1, sets `errno` accordingly, and
+ *          fills `ret` with lower-level result and status codes
  */
-ssize_t nvm_addr_read(struct nvm_dev *dev, NVM_ADDR addrs[], int naddrs,
-                      void *buf, void *meta, uint16_t flags);
+ssize_t nvm_addr_read(struct nvm_dev *dev, NVM_ADDR addrs[], int naddrs, void
+		      *buf, void *meta, uint16_t flags, NVM_RET *ret);
 
 /**
  * Prints a humanly readable representation of the given address

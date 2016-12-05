@@ -54,7 +54,7 @@ void TEST_DEV_MARK(void)
 			addr[pl].g.pl = pl;
 		}
 
-		err = nvm_addr_mark(dev, addr, geo.nplanes, 0x1);
+		err = nvm_addr_mark(dev, addr, geo.nplanes, 0x1, NULL);
 		mark_total++;
 		if (err) {
 			mark_failed++;

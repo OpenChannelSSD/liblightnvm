@@ -9,6 +9,7 @@
 
 int mark(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 {
+	NVM_RET ret;
 	ssize_t err;
 	int i;
 	int PLANE_FLAG = 0x0;
@@ -30,9 +31,10 @@ int mark(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 			return -EINVAL;
 	}
 
-	err = nvm_addr_mark(dev, list, len, flags);
+	err = nvm_addr_mark(dev, list, len, flags, &ret);
 	if (err) {
-		printf("FAILED: nvm_dev_mark err(%ld)\n", err);
+		perror("nvm_addr_mark");
+		nvm_ret_pr(&ret);
 	}
 
 	return err;
@@ -40,6 +42,7 @@ int mark(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 
 int erase(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 {
+	NVM_RET ret;
 	ssize_t err;
 	int i;
 	int PLANE_FLAG = 0x0;
@@ -52,9 +55,10 @@ int erase(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 		nvm_addr_pr(list[i]);
 	}
 
-	err = nvm_addr_erase(dev, list, len, PLANE_FLAG);
+	err = nvm_addr_erase(dev, list, len, PLANE_FLAG, &ret);
 	if (err) {
-		printf("ERR: nvm_addr_write err(%ld)\n", err);
+		perror("nvm_addr_erase");
+		nvm_ret_pr(&ret);
 	}
 
 	return err;
@@ -62,6 +66,7 @@ int erase(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 
 int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 {
+	NVM_RET ret;
 	int buf_len, i;
 	ssize_t err;
 	char *buf;
@@ -75,15 +80,14 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 	buf_len = len * geo.nbytes;
 	buf = nvm_buf_alloc(geo, buf_len);
 	if (!buf) {
-		printf("Failed allocating buf\n");
-		return -ENOMEM;
+		errno = ENOMEM;
+		return -1;
 	}
 	nvm_buf_fill(buf, buf_len);
 
 	if (flags & 0x1) {
 		meta = nvm_buf_alloc(geo, meta_tbytes);
 		if (!meta) {
-			printf("FAILED: Allocating meta-buf.\n");
 			errno = ENOMEM;
 			free(buf);
 			return -1;
@@ -107,9 +111,10 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 		printf(" }\n");
 	}
 
-	err = nvm_addr_write(dev, list, len, buf, meta, PLANE_FLAG);
+	err = nvm_addr_write(dev, list, len, buf, meta, PLANE_FLAG, &ret);
 	if (err) {
-		printf("ERR: nvm_addr_write err(%ld)\n", err);
+		perror("nvm_addr_write");
+		nvm_ret_pr(&ret);
 	}
 
 	free(buf);
@@ -120,6 +125,7 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 
 int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 {
+	NVM_RET ret;
 	int buf_len, i;
 	ssize_t err;
 	char *buf;
@@ -133,14 +139,13 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 	buf_len = len * geo.nbytes;
 	buf = nvm_buf_alloc(geo, buf_len);
 	if (!buf) {
-		printf("Failed allocating buf\n");
-		return -ENOMEM;
+		errno = ENOMEM;
+		return -1;
 	}
 
 	if (flags & 0x1) {
 		meta = nvm_buf_alloc(geo, meta_tbytes);
 		if (!meta) {
-			printf("FAILED: Allocating meta-buf.\n");
 			errno = ENOMEM;
 			free(buf);
 			return -1;
@@ -152,7 +157,7 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 		nvm_addr_pr(list[i]);
 	}
 
-	err = nvm_addr_read(dev, list, len, buf, meta, PLANE_FLAG);
+	err = nvm_addr_read(dev, list, len, buf, meta, PLANE_FLAG, NULL);
 	if (getenv("NVM_BUF_PR")) {
 		nvm_buf_pr(buf, buf_len);
 		if (meta) {
@@ -166,7 +171,8 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 		}
 	}
 	if (err) {
-		printf("ERR: nvm_addr_read err(%ld)\n", err);
+		perror("nvm_addr_read");
+		nvm_ret_pr(&ret);
 	}
 
 	free(buf);
@@ -349,6 +355,8 @@ int main(int argc, char **argv)
 		ret = -EINVAL;
 	} else {
 		ret = cmd->func(dev, geo, list, len, cmd->flags);
+		if (ret)
+			printf("Command failed\n");
 	}
 
 	nvm_dev_close(dev);

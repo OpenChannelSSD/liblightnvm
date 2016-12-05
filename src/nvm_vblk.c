@@ -128,7 +128,7 @@ ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 		list[i].g.pl = i;
 	}
 
-	return nvm_addr_erase(vblk->dev, list, len, PLANE_FLAG);
+	return nvm_addr_erase(vblk->dev, list, len, PLANE_FLAG, NULL);
 }
 
 ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
@@ -163,7 +163,7 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
 		}
 
 		err = nvm_addr_write(vblk->dev, list, len, buf + nbytes_written,
-                                     NULL, PLANE_FLAG);
+				     NULL, PLANE_FLAG, NULL);
 		if (err) {	// errno set by `nvm_addr_write`
 			return -1;
 		}
@@ -219,7 +219,7 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 		}
 
 		err = nvm_addr_read(vblk->dev, list, len, buf + nbytes_read,
-				    NULL, PLANE_FLAG);
+				    NULL, PLANE_FLAG, NULL);
 		if (err) {	// errno set by `nvm_addr_read`
 			return -1;
 		}
