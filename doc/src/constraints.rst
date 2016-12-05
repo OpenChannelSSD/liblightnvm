@@ -1,3 +1,4 @@
+.. _sec-constraints:
 ========================
  NAND Flash Constraints
 ========================

@@ -7,9 +7,12 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   getting_started
+   quick_start
+   prerequisites
    constraints
    c
+   cli
+   python
 
 Indices and tables
 ==================
