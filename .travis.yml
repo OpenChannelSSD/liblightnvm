@@ -7,6 +7,7 @@ addons:
     packages:
     - doxygen
     - graphviz
+    - python-pip
 
 services:
   - docker
@@ -15,7 +16,7 @@ env:
   global:
     - TAG=liblightnvm
     - NVM_VERSION="0.0.1"
-    - DIST_NAME=ubuntu 
+    - DIST_NAME=ubuntu
   matrix:
     - DIST_VERS=16.04 DIST_CODE=xenial
     - DIST_VERS=14.04 DIST_CODE=trusty
@@ -54,14 +55,16 @@ script:
   - docker stop "${CONTAINER_ID}"
 
 after_success:
-  - echo "** FOR DOC **"
+  - echo "** BUILDING AND DEPLOYING DOC TO GH-PAGES **"
+  - export PATH=$HOME/.local/bin:$PATH
+  - pip install --user sphinx sphinx_rtd_theme breathe
   - openssl aes-256-cbc -K $encrypted_ab01438dce7a_key -iv $encrypted_ab01438dce7a_iv -in ci/lnvmdoxy_rsa.enc -out ~/.ssh/lnvmdoxy_rsa -d
   - eval "$(ssh-agent -s)"
   - chmod 0600 ~/.ssh/lnvmdoxy_rsa
   - ssh-add ~/.ssh/lnvmdoxy_rsa
   - echo "** Build and deploy DOC **"
   - make doc
-  - make doc-publish
+  - if [ "$DIST_CODE" == "xenial" ]; then make doc-publish; fi
 
 before_deploy:
   - python ci/bintray_descriptor.py --repos debs --dist_code $DIST_CODE --version ${NVM_VERSION} --branch ${TRAVIS_BRANCH} --commit ${TRAVIS_COMMIT} > ci/bintray_debs.json
