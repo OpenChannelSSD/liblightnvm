@@ -1,7 +1,7 @@
 .. _sec-cli:
 
 ========================
- Command-line Interface
+ Command-Line Interface
 ========================
 
 Bla bla bla asdfsd

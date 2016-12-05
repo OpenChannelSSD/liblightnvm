@@ -1,6 +1,8 @@
-=====
- API
-=====
+.. _sec-c-api:
+
+=======
+ C API
+=======
 
 Bla bla bla asdfsd
 
@@ -92,10 +94,15 @@ nvm_addr_erase
 
 .. doxygenfunction:: nvm_addr_erase
 
-nvm_addr_fmt_pr
----------------
+nvm_addr_write
+--------------
 
-.. doxygenfunction:: nvm_addr_fmt_pr
+.. doxygenfunction:: nvm_addr_write
+
+nvm_addr_read
+-------------
+
+.. doxygenfunction:: nvm_addr_read
 
 nvm_addr_mark
 -------------
@@ -107,15 +114,10 @@ nvm_addr_pr
 
 .. doxygenfunction:: nvm_addr_pr
 
-nvm_addr_read
--------------
+nvm_addr_fmt_pr
+---------------
 
-.. doxygenfunction:: nvm_addr_read
-
-nvm_addr_write
---------------
-
-.. doxygenfunction:: nvm_addr_write
+.. doxygenfunction:: nvm_addr_fmt_pr
 
 
 
@@ -127,30 +129,30 @@ NVM_VBLK
 
 .. doxygentypedef:: NVM_VBLK
 
-nvm_vblk_attr_addr
-------------------
+nvm_vblk_erase
+--------------
 
-.. doxygenfunction:: nvm_vblk_attr_addr
+.. doxygenfunction:: nvm_vblk_erase
 
-nvm_vblk_new
-------------
+nvm_vblk_write
+--------------
 
-.. doxygenfunction:: nvm_vblk_new
+.. doxygenfunction:: nvm_vblk_write
 
-nvm_vblk_new_on_dev
--------------------
-
-.. doxygenfunction:: nvm_vblk_new_on_dev
-
-nvm_vblk_free
+nvm_vblk_read
 -------------
 
-.. doxygenfunction:: nvm_vblk_free
+.. doxygenfunction:: nvm_vblk_read
 
-nvm_vblk_pr
------------
+nvm_vblk_pwrite
+---------------
 
-.. doxygenfunction:: nvm_vblk_pr
+.. doxygenfunction:: nvm_vblk_pwrite
+
+nvm_vblk_pread
+--------------
+
+.. doxygenfunction:: nvm_vblk_pread
 
 nvm_vblk_get
 ------------
@@ -167,30 +169,30 @@ nvm_vblk_put
 
 .. doxygenfunction:: nvm_vblk_put
 
-nvm_vblk_erase
---------------
+nvm_vblk_attr_addr
+------------------
 
-.. doxygenfunction:: nvm_vblk_erase
+.. doxygenfunction:: nvm_vblk_attr_addr
 
-nvm_vblk_pwrite
----------------
+nvm_vblk_pr
+-----------
 
-.. doxygenfunction:: nvm_vblk_pwrite
+.. doxygenfunction:: nvm_vblk_pr
 
-nvm_vblk_pread
---------------
+nvm_vblk_new
+------------
 
-.. doxygenfunction:: nvm_vblk_pread
+.. doxygenfunction:: nvm_vblk_new
 
-nvm_vblk_read
+nvm_vblk_new_on_dev
+-------------------
+
+.. doxygenfunction:: nvm_vblk_new_on_dev
+
+nvm_vblk_free
 -------------
 
-.. doxygenfunction:: nvm_vblk_read
-
-nvm_vblk_write
---------------
-
-.. doxygenfunction:: nvm_vblk_write
+.. doxygenfunction:: nvm_vblk_free
 
 
 
@@ -201,6 +203,51 @@ NVM_SBLK
 --------
 
 .. doxygentypedef:: NVM_SBLK
+
+nvm_sblk_erase
+--------------
+
+.. doxygenfunction:: nvm_sblk_erase
+
+nvm_sblk_write
+--------------
+
+.. doxygenfunction:: nvm_sblk_write
+
+nvm_sblk_read
+-------------
+
+.. doxygenfunction:: nvm_sblk_read
+
+nvm_sblk_pread
+--------------
+
+.. doxygenfunction:: nvm_sblk_pread
+
+nvm_sblk_pwrite
+---------------
+
+.. doxygenfunction:: nvm_sblk_pwrite
+
+nvm_sblk_pad
+------------
+
+.. doxygenfunction:: nvm_sblk_pad
+
+nvm_sblk_new
+------------
+
+.. doxygenfunction:: nvm_sblk_new
+
+nvm_sblk_free
+-------------
+
+.. doxygenfunction:: nvm_sblk_free
+
+nvm_sblk_pr
+-----------
+
+.. doxygenfunction:: nvm_sblk_pr
 
 nvm_sblk_attr_end
 -----------------
@@ -221,51 +268,6 @@ nvm_sblk_attr_pos_write
 -----------------------
 
 .. doxygenfunction:: nvm_sblk_attr_pos_write
-
-nvm_sblk_erase
---------------
-
-.. doxygenfunction:: nvm_sblk_erase
-
-nvm_sblk_free
--------------
-
-.. doxygenfunction:: nvm_sblk_free
-
-nvm_sblk_new
-------------
-
-.. doxygenfunction:: nvm_sblk_new
-
-nvm_sblk_pad
-------------
-
-.. doxygenfunction:: nvm_sblk_pad
-
-nvm_sblk_pr
------------
-
-.. doxygenfunction:: nvm_sblk_pr
-
-nvm_sblk_pread
---------------
-
-.. doxygenfunction:: nvm_sblk_pread
-
-nvm_sblk_pwrite
----------------
-
-.. doxygenfunction:: nvm_sblk_pwrite
-
-nvm_sblk_read
--------------
-
-.. doxygenfunction:: nvm_sblk_read
-
-nvm_sblk_write
---------------
-
-.. doxygenfunction:: nvm_sblk_write
 
 
 

@@ -4,15 +4,15 @@
         "structs": [
                 "NVM_GEO"
         ],
-	"typedefs": [],
+        "typedefs": [],
         "functions": [
                 "nvm_geo_pr"
         ]
 },
 {
         "name": "NVM_BUF",
-	"structs": [],
-	"typedefs": [],
+        "structs": [],
+        "typedefs": [],
         "functions": [
                 "nvm_buf_alloc",
                 "nvm_buf_fill",
@@ -22,9 +22,9 @@
 {
         "name": "NVM_DEV",
         "structs": [],
-	"typedefs": [
-		"NVM_DEV"
-	],
+        "typedefs": [
+                "NVM_DEV"
+        ],
         "functions": [
                 "nvm_dev_open",
                 "nvm_dev_close",
@@ -40,11 +40,11 @@
         "typedefs": [],
         "functions": [
                 "nvm_addr_erase",
-                "nvm_addr_fmt_pr",
+                "nvm_addr_write",
+                "nvm_addr_read",
                 "nvm_addr_mark",
                 "nvm_addr_pr",
-                "nvm_addr_read",
-                "nvm_addr_write"
+                "nvm_addr_fmt_pr"
         ]
 },
 {
@@ -54,22 +54,23 @@
                 "NVM_VBLK"
         ],
         "functions": [
-                "nvm_vblk_attr_addr",
-
-                "nvm_vblk_new",
-                "nvm_vblk_new_on_dev",
-                "nvm_vblk_free",
-                "nvm_vblk_pr",
+                "nvm_vblk_erase",
+                "nvm_vblk_write",
+                "nvm_vblk_read",
+                "nvm_vblk_pwrite",
+                "nvm_vblk_pread",
 
                 "nvm_vblk_get",
                 "nvm_vblk_gets",
                 "nvm_vblk_put",
 
-                "nvm_vblk_erase",
-                "nvm_vblk_pwrite",
-                "nvm_vblk_pread",
-                "nvm_vblk_read",
-                "nvm_vblk_write"
+                "nvm_vblk_attr_addr",
+                "nvm_vblk_pr",
+
+                "nvm_vblk_new",
+                "nvm_vblk_new_on_dev",
+                "nvm_vblk_free"
+
         ]
 },
 {
@@ -79,18 +80,20 @@
                 "NVM_SBLK"
         ],
         "functions": [
+                "nvm_sblk_erase",
+                "nvm_sblk_write",
+                "nvm_sblk_read",
+                "nvm_sblk_pread",
+                "nvm_sblk_pwrite",
+                "nvm_sblk_pad",
+
+                "nvm_sblk_new",
+                "nvm_sblk_free",
+                "nvm_sblk_pr",
+
                 "nvm_sblk_attr_end",
                 "nvm_sblk_attr_geo",
                 "nvm_sblk_attr_pos_read",
-                "nvm_sblk_attr_pos_write",
-                "nvm_sblk_erase",
-                "nvm_sblk_free",
-                "nvm_sblk_new",
-                "nvm_sblk_pad",
-                "nvm_sblk_pr",
-                "nvm_sblk_pread",
-                "nvm_sblk_pwrite",
-                "nvm_sblk_read",
-                "nvm_sblk_write"
+                "nvm_sblk_attr_pos_write"
         ]
 }]
