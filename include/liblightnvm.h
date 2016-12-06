@@ -139,6 +139,14 @@ typedef struct nvm_addr_fmt {
 	};
 } NVM_ADDR_FMT;
 
+/**
+ * Representation of a LUN bad block table
+ */
+typedef struct nvm_bbt {
+  NVM_ADDR addr;        ///< Address of the LUN the bad block table covers
+  uint8_t *blks;        ///< Array of bad blocks
+  uint64_t nblks;       ///< Length of the bad block array
+} NVM_BBT;
 
 /**
  * Representation of geometry of devices and spanning blocks.
@@ -216,6 +224,8 @@ void nvm_dev_pr(NVM_DEV dev);
  * @returns The geometry (NVM_GEO) of given device handle
  */
 NVM_GEO nvm_dev_attr_geo(NVM_DEV dev);
+
+
 
 /**
  * Allocate a buffer aligned to match the given geometry
