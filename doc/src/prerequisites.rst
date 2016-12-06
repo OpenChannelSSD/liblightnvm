@@ -13,15 +13,19 @@ Here is what you need:
 The following sections describe how to and options for meeting started
 prerequisites.
 
-An Open-Channel SDD
+An Open-Channel SSD
 ===================
 
 Physical
 --------
 
-Aenean sit amet imperdiet lacus. Nulla arcu tortor, efficitur sit amet
-pellentesque a, rhoncus id ante.
+A number of Open-Channel SSDs are available upon request. Public Open-Channel SSDs are
 
+ * CNEX Labs LightNVM SDK
+ * EMC Dragon Fire Board Open-Channel OX Controller
+ * Radian Memory Systems RMS325
+
+The CNEX Labs LightNVM SDK may be ordered for academical purposes. Please write to matias@cnexlabs.com with your research description and inquire for availability.
 
 Virtual
 -------
@@ -67,7 +71,6 @@ Management Tool
 
 nvme-cli
 
-Aenean sit amet imperdiet lacus. Nulla arcu tortor, efficitur sit amet
-pellentesque a, rhoncus id ante.
+The NVMe cli tool supports Open-Channel SSDs through the lnvm extension. You may use "nvme lnvm" to see supported parameters.
 
 

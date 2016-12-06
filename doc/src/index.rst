@@ -22,7 +22,6 @@ Contents:
    background
    c
    cli
-   python
 
 Indices and tables
 ==================

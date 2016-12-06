@@ -4,26 +4,26 @@
  Command-Line Interface
 ========================
 
-Bla bla bla asdfsd
+Example programs to interact with Open-Channel SSDs
 
 .. toctree::
 
 nvm_info
 ========
 
-sdfsdf
+List device info
 
 nvm_addr
 ========
 
-sdfdsfsd
+Perform read/write/erase on a given address
 
 nvm_vblk
 ========
 
-sdfdsfsd
+Perform read/write/erase on a virtual page address (That cover a block across all planes)
 
 nvm_sblk
 ========
 
-sdfdsfsd
+Perform read/write/erase on a striped address

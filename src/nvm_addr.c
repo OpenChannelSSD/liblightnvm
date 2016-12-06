@@ -39,7 +39,7 @@
 
 void nvm_ret_pr(NVM_RET *ret)
 {
-	printf("nvm_ret { result(%u), status(%lu) }\n", ret->result,
+	printf("nvm_ret { result(0x%x), status(%lu) }\n", ret->result,
 	       ret->status);
 }
 

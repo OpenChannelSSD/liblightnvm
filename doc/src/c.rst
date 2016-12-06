@@ -4,7 +4,7 @@
  C API
 =======
 
-Bla bla bla asdfsd
+API to interact with an Open-Channel SSD from user-space.
 
 .. toctree::
 
