@@ -9,26 +9,22 @@
 
 int mark(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 {
-	NVM_RET ret;
-	ssize_t err;
 	int i;
-	int PLANE_FLAG = 0x0;
+	ssize_t err;
+	NVM_RET ret;
 
-	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
-	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
+	switch(flags) {
+		case NVM_MARK_GOOD:
+		case NVM_MARK_BAD:
+		case NVM_MARK_GBAD:
+			break;
+		default:
+			return -EINVAL;
+	}
 
 	printf("** nvm_addr_mark(...):\n");
 	for (i = 0; i < len; ++i) {
 		nvm_addr_pr(list[i]);
-	}
-
-	switch(flags) {
-		case 0x0:	// free / good
-		case 0x1:	// bad
-		case 0x2:	// grown bad
-			break;
-		default:
-			return -EINVAL;
 	}
 
 	err = nvm_addr_mark(dev, list, len, flags, &ret);
@@ -42,13 +38,21 @@ int mark(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 
 int erase(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 {
-	NVM_RET ret;
-	ssize_t err;
+	int PLANE_FLAG;
 	int i;
-	int PLANE_FLAG = 0x0;
+	ssize_t err;
+	NVM_RET ret;
 
-	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
-	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
+	switch (geo.nplanes) {
+	case 4:
+		PLANE_FLAG = NVM_MAGIC_FLAG_QUAD;
+		break;
+	case 2:
+		PLANE_FLAG = NVM_MAGIC_FLAG_DUAL;
+		break;
+	default:
+		PLANE_FLAG = 0x0;
+	}
 
 	printf("** nvm_addr_erase(...):\n");
 	for (i = 0; i < len; ++i) {
@@ -72,10 +76,18 @@ int write(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 	char *buf;
 	char *meta = NULL;
 	int meta_tbytes = len * geo.meta_nbytes;
-	int PLANE_FLAG = 0x0;
+	int PLANE_FLAG;
 
-	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
-	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
+	switch (geo.nplanes) {
+	case 4:
+		PLANE_FLAG = NVM_MAGIC_FLAG_QUAD;
+		break;
+	case 2:
+		PLANE_FLAG = NVM_MAGIC_FLAG_DUAL;
+		break;
+	default:
+		PLANE_FLAG = 0x0;
+	}
 
 	buf_len = len * geo.nbytes;
 	buf = nvm_buf_alloc(geo, buf_len);
@@ -131,10 +143,18 @@ int read(NVM_DEV dev, NVM_GEO geo, NVM_ADDR list[], int len, int flags)
 	char *buf;
 	char *meta = NULL;
 	int meta_tbytes = len * geo.meta_nbytes;
-	int PLANE_FLAG = 0x0;
+	int PLANE_FLAG;
 
-	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
-	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
+	switch (geo.nplanes) {
+	case 4:
+		PLANE_FLAG = NVM_MAGIC_FLAG_QUAD;
+		break;
+	case 2:
+		PLANE_FLAG = NVM_MAGIC_FLAG_DUAL;
+		break;
+	default:
+		PLANE_FLAG = 0x0;
+	}
 
 	buf_len = len * geo.nbytes;
 	buf = nvm_buf_alloc(geo, buf_len);
@@ -352,7 +372,7 @@ int main(int argc, char **argv)
 		printf("ninvalid(%d) addresses exceeds device boundaries\n",
 			ninvalid);
 		nvm_geo_pr(geo);
-		ret = -EINVAL;
+		ret = EINVAL;
 	} else {
 		ret = cmd->func(dev, geo, list, len, cmd->flags);
 		if (ret)

@@ -44,6 +44,10 @@ extern "C" {
 #define NVM_MAGIC_FLAG_QUAD 0x2		///< Quad-plane (NVM_IO_QUAD_ACCESS)
 #define NVM_MAGIC_FLAG_SCRBL 0x200	///< Scrambler ON/OFF: Context sensitive
 
+#define NVM_MARK_GOOD 0x0	///< Block is free / good
+#define NVM_MARK_BAD 0x1	///< Block is bad
+#define NVM_MARK_GBAD 0x2	///< Block has grown bad
+
 #define NVM_MAGIC_FLAG_DEFAULT (NVM_MAGIC_FLAG_SNGL | NVM_MAGIC_FLAG_SCRBL);
 
 #define NVM_BLK_BITS (16)	///< Number of bits for block field
@@ -58,8 +62,8 @@ extern "C" {
  *
  */
 typedef struct nvm_return {
-    uint64_t result;    ///< NVMe command error codes
-    uint16_t status;    ///< NVMe command status / completion bits
+    uint64_t status;    ///< NVMe command status / completion bits
+    uint32_t result;    ///< NVMe command error codes
 } NVM_RET;
 
 /**
@@ -300,7 +304,7 @@ ssize_t nvm_addr_erase(NVM_DEV dev, NVM_ADDR addrs[], int naddrs, uint16_t flags
  * @returns 0 on success. On error: returns -1, sets `errno` accordingly, and
  *          fills `ret` with lower-level result and status codes
  */
-ssize_t nvm_addr_write(struct nvm_dev *dev, NVM_ADDR addrs[], int naddrs,
+ssize_t nvm_addr_write(NVM_DEV dev, NVM_ADDR addrs[], int naddrs,
 		       const void *buf, const void *meta, uint16_t flags,
 		       NVM_RET *ret);
 
@@ -325,7 +329,7 @@ ssize_t nvm_addr_write(struct nvm_dev *dev, NVM_ADDR addrs[], int naddrs,
  * @returns 0 on success. On error: returns -1, sets `errno` accordingly, and
  *          fills `ret` with lower-level result and status codes
  */
-ssize_t nvm_addr_read(struct nvm_dev *dev, NVM_ADDR addrs[], int naddrs, void
+ssize_t nvm_addr_read(NVM_DEV dev, NVM_ADDR addrs[], int naddrs, void
 		      *buf, void *meta, uint16_t flags, NVM_RET *ret);
 
 /**
