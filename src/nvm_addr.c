@@ -144,8 +144,8 @@ ssize_t nvm_addr_write(struct nvm_dev *dev, NVM_ADDR addrs[], int naddrs,
 			    NVM_MAGIC_OPCODE_WRITE, ret);
 }
 
-ssize_t nvm_addr_read(struct nvm_dev *dev, NVM_ADDR addrs[], int naddrs, void *data,
-		      void *meta, uint16_t flags, NVM_RET *ret)
+ssize_t nvm_addr_read(struct nvm_dev *dev, NVM_ADDR addrs[], int naddrs,
+		      void *data, void *meta, uint16_t flags, NVM_RET *ret)
 {
 	return nvm_addr_cmd(dev, addrs, naddrs, data, meta, flags,
 			    NVM_MAGIC_OPCODE_READ, ret);
