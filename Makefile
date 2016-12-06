@@ -77,6 +77,8 @@ doxy-view:
 sphinx:
 	@mkdir -p $(BUILD_DIR)/doc/sphinx/html
 	@mkdir -p $(BUILD_DIR)/doc/sphinx/pdf
+	python doc/gen/gen.py capi -j doc/gen/capi.json -t doc/gen/capi.tmpl -r doc/src/c.rst
+	python doc/gen/gen.py cli -j doc/gen/cli.json -t doc/gen/cli.tmpl -r doc/src/cli.rst
 	sphinx-build -b html -c doc -E doc/src $(BUILD_DIR)/doc/sphinx/html
 #	sphinx-build -b pdf -c doc -E doc/src $(BUILD_DIR)/doc/sphinx/pdf
 

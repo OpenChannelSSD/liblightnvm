@@ -3,6 +3,7 @@
  *
  * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
  * Copyright (C) 2015 Matias Bjørling <matias@cnexlabs.com>
+ * Copyright (C) 2016 Simon A. F. Lund <slund@cnexlabs.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +29,7 @@
 #define _GNU_SOURCE
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <liblightnvm.h>
 #include <nvm_debug.h>
 
@@ -36,9 +38,16 @@ void *nvm_buf_alloc(NVM_GEO geo, size_t nbytes)
 	char *buf;
 	int ret;
 
-	ret = posix_memalign((void **)&buf, geo.nbytes, nbytes);
-	if (ret)
+	if ((!nbytes) || (nbytes % geo.vpg_nbytes)) {
+		errno = EINVAL;
 		return NULL;
+	}
+
+	ret = posix_memalign((void **)&buf, geo.nbytes, nbytes);
+	if (ret) {
+		errno = ret;
+		return NULL;
+	}
 
 	return buf;
 }

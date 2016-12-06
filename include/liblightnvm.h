@@ -284,10 +284,14 @@ NVM_GEO nvm_dev_attr_geo(NVM_DEV dev);
 /**
  * Allocate a buffer aligned to match the given geometry
  *
+ * @note
+ * nbytes must be greater than zero and a multiple of geo.vpage_nbytes
+ *
  * @param geo The geometry to get alignment information from
  * @param nbytes The size of the allocated buffer in bytes
  *
- * @returns On succes: a pointer to the allocated memory. On error: NULL.
+ * @returns A pointer to the allocated memory. On error: NULL is returned and
+ * errno set appropriatly
  */
 void *nvm_buf_alloc(NVM_GEO geo, size_t nbytes);
 
@@ -494,7 +498,7 @@ ssize_t nvm_vblk_read(NVM_VBLK vblk, void *buf, size_t count);
  * Create a new sblk.
  */
 NVM_SBLK nvm_sblk_new(NVM_DEV dev, int ch_bgn, int ch_end, int lun_bgn,
-                      int lun_end, int blk);
+		      int lun_end, int blk);
 
 /**
  * Destroy an sblk
