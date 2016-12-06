@@ -37,10 +37,12 @@ set(HEADER_FILES
 set(SOURCE_FILES
 	src/nvm_dev.c
 	src/nvm_buf.c
+	src/nvm_bbt.c
 	src/nvm_geo.c
 	src/nvm_addr.c
 	src/nvm_vblk.c
 	src/nvm_sblk.c
+	src/nvm_bounds.c
 )
 
 include_directories("${PROJECT_SOURCE_DIR}/include")

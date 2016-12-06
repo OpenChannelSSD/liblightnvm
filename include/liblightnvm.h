@@ -57,6 +57,33 @@ extern "C" {
 #define NVM_LUN_BITS (8)	///< Number of bits for lun field
 #define NVM_CH_BITS  (7)	///< NUmber of bits for channel field
 
+enum nvm_bounds {
+	NVM_BOUNDS_CHANNEL = 1,
+	NVM_BOUNDS_LUN = 2,
+	NVM_BOUNDS_PLANE = 4,
+	NVM_BOUNDS_BLOCK = 8,
+	NVM_BOUNDS_PAGE = 16,
+	NVM_BOUNDS_SECTOR = 32
+};
+
+/**
+ * Handle for nvm devices
+ */
+typedef struct nvm_dev *NVM_DEV;
+
+/**
+ * Virtual blocks facilitate a libc-like write/pwrite, read/pread
+ * interface to perform I/O on blocks on nvm.
+ */
+typedef struct nvm_vblk *NVM_VBLK;
+
+/**
+ * Spanning block abstraction, facilitates a libc-like write/pwrite, read/pread
+ * interface to perform I/O on blocks spanning multiple physical blocks of
+ * non-volatile memory.
+ */
+typedef struct nvm_sblk *NVM_SBLK;
+
 /**
  * Encapsulation and representation of lower-level error conditions
  *
@@ -65,13 +92,6 @@ typedef struct nvm_return {
     uint64_t status;    ///< NVMe command status / completion bits
     uint32_t result;    ///< NVMe command error codes
 } NVM_RET;
-
-/**
- * Prints a humanly readable representation the given NVM_RET
- *
- * @param ret Pointer to the NVM_RET to print
- */
-void nvm_ret_pr(NVM_RET *ret);
 
 /**
  * Encapsulation of generic physical nvm addressing
@@ -140,15 +160,6 @@ typedef struct nvm_addr_fmt {
 } NVM_ADDR_FMT;
 
 /**
- * Representation of a LUN bad block table
- */
-typedef struct nvm_bbt {
-  NVM_ADDR addr;        ///< Address of the LUN the bad block table covers
-  uint8_t *blks;        ///< Array of bad blocks
-  uint64_t nblks;       ///< Length of the bad block array
-} NVM_BBT;
-
-/**
  * Representation of geometry of devices and spanning blocks.
  */
 typedef struct nvm_geo {
@@ -168,22 +179,67 @@ typedef struct nvm_geo {
 } NVM_GEO;
 
 /**
- * Handle for nvm devices
+ * Prints a humanly readable description of given boundary mask
  */
-typedef struct nvm_dev *NVM_DEV;
+void nvm_bounds_pr(int mask);
 
 /**
- * Virtual blocks facilitate a libc-like write/pwrite, read/pread
- * interface to perform I/O on blocks on nvm.
+ * Checks whether the given addr exceeds bounds of the given geometry
+ *
+ * @param addr The addr to check
+ * @param geo The bounds to check against
+ * @returns A mask of exceeded boundaries
  */
-typedef struct nvm_vblk *NVM_VBLK;
+int nvm_addr_check(NVM_ADDR addr, NVM_GEO geo);
 
 /**
- * Spanning block abstraction, facilitates a libc-like write/pwrite, read/pread
- * interface to perform I/O on blocks spanning multiple physical blocks of
- * non-volatile memory.
+ * Representation of bad-block-table
+ *
+ * Create and initialize by calling `nvm_bbt_get`
+ * Destroy by calling libc `free`
+ * Print it with `nvm_bbt_pr`
+ * Update it by accessing blks[] after `nvm_bbt_get`
+ * Update device by calling `nvm_bbt_set`
  */
-typedef struct nvm_sblk *NVM_SBLK;
+typedef struct nvm_bbt {
+	NVM_ADDR addr;	///< Address of the LUN the bad block table covers
+	uint8_t *blks;	///< Array containing block status for each block in LUN
+	uint64_t nblks;	///< Length of the bad block array
+} NVM_BBT;
+
+/**
+ * Prints a humanly readable representation the given NVM_RET
+ *
+ * @param ret Pointer to the NVM_RET to print
+ */
+void nvm_ret_pr(NVM_RET *ret);
+
+/**
+ * Retrieves a bad block table from device
+ *
+ * @param dev The device on which to retrieve a bad-block-table from
+ * @param addr Address of the LUN to retrieve bad-block-table for
+ * @returns Pointer to the bad-block-table for the given LUN addr on dev. NULL
+ * on error, errno set accordingly and ret filled with lower-level result codes.
+ */
+NVM_BBT* nvm_bbt_get(NVM_DEV dev, NVM_ADDR addr, NVM_RET *ret);
+
+/**
+ * Updates the bad-block-table on given device using the provided bbt
+ *
+ * @param dev The device on which to update a bad-block-table
+ * @param bbt The bbt to write to device
+ * @returns 0 on success. NULL on error, errno set accordingly and ret filled
+ * with lower-level result codes.
+ */
+int nvm_bbt_set(NVM_DEV dev, NVM_BBT* bbt, NVM_RET *ret);
+
+/**
+ * Prints a humanly readable representation of the given bad-block-table
+ *
+ * @param bbt The bad-block-table to print
+ */
+void nvm_bbt_pr(NVM_BBT* bbt);
 
 /**
  * Prints human readable representation of the given geometry
@@ -224,8 +280,6 @@ void nvm_dev_pr(NVM_DEV dev);
  * @returns The geometry (NVM_GEO) of given device handle
  */
 NVM_GEO nvm_dev_attr_geo(NVM_DEV dev);
-
-
 
 /**
  * Allocate a buffer aligned to match the given geometry

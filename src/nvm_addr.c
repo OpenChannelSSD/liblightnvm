@@ -43,6 +43,32 @@ void nvm_ret_pr(NVM_RET *ret)
 	       ret->status);
 }
 
+int nvm_addr_check(NVM_ADDR addr, NVM_GEO geo)
+{
+	int exceeded = 0;
+
+	if (addr.g.ch >= geo.nchannels) {
+		exceeded |= NVM_BOUNDS_CHANNEL;
+	}
+	if (addr.g.lun >= geo.nluns) {
+		exceeded |= NVM_BOUNDS_LUN;
+	}
+	if (addr.g.pl >= geo.nplanes) {
+		exceeded |= NVM_BOUNDS_PLANE;
+	}
+	if (addr.g.blk >= geo.nblocks) {
+		exceeded |= NVM_BOUNDS_BLOCK;
+	}
+	if (addr.g.pg >= geo.npages) {
+		exceeded |= NVM_BOUNDS_PAGE;
+	}
+	if (addr.g.sec >= geo.nsectors) {
+		exceeded |= NVM_BOUNDS_SECTOR;
+	}
+
+	return exceeded;
+}
+
 /**
  * Convert nvm_address from generic format to device specific format
  *

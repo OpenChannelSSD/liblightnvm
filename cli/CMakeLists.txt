@@ -10,8 +10,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 include_directories("${CMAKE_SOURCE}/include")
 
 set(SOURCE_FILES
-	${CMAKE_CURRENT_SOURCE_DIR}/addr.c
+	${CMAKE_CURRENT_SOURCE_DIR}/bbt.c
 	${CMAKE_CURRENT_SOURCE_DIR}/info.c
+	${CMAKE_CURRENT_SOURCE_DIR}/addr.c
 	${CMAKE_CURRENT_SOURCE_DIR}/vblk.c
 	${CMAKE_CURRENT_SOURCE_DIR}/sblk.c)
 
