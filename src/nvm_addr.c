@@ -92,10 +92,9 @@ static inline struct nvm_addr nvm_addr_gen2dev(struct nvm_dev *dev,
 	return d_addr;
 }
 
-static ssize_t
-nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[], int len, void *data,
-             void *meta, uint16_t flags, uint16_t opcode,
-             struct nvm_return *ret)
+static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
+			    int len, void *data, void *meta, uint16_t flags,
+			    uint16_t opcode, struct nvm_return *ret)
 {
 	struct nvm_user_vio ctl;
 	struct nvm_addr dev_addrs[len];
@@ -105,26 +104,21 @@ nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[], int len, void *data,
 	ctl.opcode = opcode;
 	ctl.control = flags | NVM_MAGIC_FLAG_DEFAULT;
 
-	// Setup PPAs: Convert generic address format to device specific
-	for (i = 0; i < len; ++i) {
+	for (i = 0; i < len; ++i) {	// Setup PPAs: Convert address format
 		dev_addrs[i] = nvm_addr_gen2dev(dev, addrs[i]);
 	}
-	ctl.nppas = len - 1;	// unnatural numbers, we count from zero
+	ctl.nppas = len - 1;		// Unnatural numbers: counting from zero
 	ctl.ppa_list = len == 1 ? dev_addrs[0].ppa : (uint64_t)dev_addrs;
 
-	// Setup data
-	ctl.addr = (uint64_t)data;
+	ctl.addr = (uint64_t)data;	// Setup data
 	ctl.data_len = data ? dev->geo.nbytes * len : 0;
 
-	// Setup metadata
-	ctl.metadata = (uint64_t)meta;
+	ctl.metadata = (uint64_t)meta;	// Setup metadata
 	ctl.metadata_len = meta ? dev->geo.meta_nbytes * len : 0;
 
 	err = ioctl(dev->fd, NVME_NVM_IOCTL_SUBMIT_VIO, &ctl);
 #ifdef NVM_DEBUG_ENABLED
 	if (err || ctl.result || ctl.status) {
-		int i;
-
 		NVM_DEBUG("err(%d), ctl: result(0x%x), status(%llu), nppas(%d)",
 			  err, ctl.result, ctl.status, ctl.nppas);
 		for (i = 0; i < len; ++i)
