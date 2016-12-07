@@ -69,14 +69,7 @@ int nvm_addr_check(NVM_ADDR addr, NVM_GEO geo)
 	return exceeded;
 }
 
-/**
- * Convert nvm_address from generic format to device specific format
- *
- * @param dev The device which address format to convert to
- * @param addr The address to convert
- * @returns Address formatted to device
- */
-static inline struct nvm_addr nvm_addr_gen2dev(struct nvm_dev *dev,
+inline struct nvm_addr nvm_addr_gen2dev(struct nvm_dev *dev,
 					       struct nvm_addr addr)
 {
 	struct nvm_addr d_addr;

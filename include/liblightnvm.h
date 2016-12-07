@@ -193,6 +193,15 @@ void nvm_bounds_pr(int mask);
 int nvm_addr_check(NVM_ADDR addr, NVM_GEO geo);
 
 /**
+ * Convert nvm_address from generic format to device specific format
+ *
+ * @param dev The device which address format to convert to
+ * @param addr The address to convert
+ * @returns Address formatted to device
+ */
+NVM_ADDR nvm_addr_gen2dev(NVM_DEV dev, NVM_ADDR addr);
+
+/**
  * Representation of bad-block-table
  *
  * Create and initialize by calling `nvm_bbt_get`
