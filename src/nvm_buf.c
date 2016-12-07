@@ -38,7 +38,7 @@ void *nvm_buf_alloc(NVM_GEO geo, size_t nbytes)
 	char *buf;
 	int ret;
 
-	if ((!nbytes) || (nbytes % geo.vpg_nbytes)) {
+	if (!nbytes) {
 		errno = EINVAL;
 		return NULL;
 	}
