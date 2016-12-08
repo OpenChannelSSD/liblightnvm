@@ -253,6 +253,26 @@ NVM_BBT* nvm_bbt_get(NVM_DEV dev, NVM_ADDR addr, NVM_RET *ret);
 int nvm_bbt_set(NVM_DEV dev, NVM_BBT* bbt, NVM_RET *ret);
 
 /**
+ * Mark addresses good, bad, or host-bad.
+ *
+ * @note
+ * The addresses given to this function are interpreted as block addresses, in
+ * contrast to `nvm_addr_write`, and `nvm_addr_read` which interpret addresses
+ * and sector addresses.
+ *
+ * @param dev Handle to the device on which to mark
+ * @param addrs Array of memory address
+ * @param naddrs Length of memory address array
+ * @param flags 0x0 = GOOD, 0x1 = BAD, 0x2 = GROWN_BAD, as well as access mode
+ * @param ret Pointer to structure in which to store lower-level status and
+ *            result.
+ * @returns 0 on success. On error: returns -1, sets `errno` accordingly, and
+ *          fills `ret` with lower-level result and status codes
+ */
+int nvm_bbt_mark(NVM_DEV dev, NVM_ADDR addrs[], int naddrs, uint16_t flags,
+		 NVM_RET* ret);
+
+/**
  * Prints a humanly readable representation of the given bad-block-table
  *
  * @param bbt The bad-block-table to print

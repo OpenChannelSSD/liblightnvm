@@ -55,6 +55,7 @@ static char *args[] = {
 	"dev_path",
 	"ch",
 	"lun",
+	"blk"
 };
 
 void _usage_pr(char *cli_name)

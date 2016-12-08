@@ -138,10 +138,36 @@ struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 int nvm_bbt_set(struct nvm_dev *dev, struct nvm_bbt *bbt,
 		struct nvm_return *ret)
 {
-	// TODO: Setup the IOCTL
-
+	// TODO: Use nvm_bbt_mark to update apply the bbt to device
 	errno = ENOTSUP;
 	return -1;
+}
+
+int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+		 uint16_t flags, struct nvm_return *ret)
+{
+	struct nvm_passthru_vio ctl;
+	struct nvm_addr dev_addrs[naddrs];
+
+	int i, err;
+
+	for (i = 0; i < naddrs; ++i) {	// Setup PPAs: Convert address format
+		dev_addrs[i] = nvm_addr_gen2dev(dev, addrs[i]);
+	}
+
+	memset(&ctl, 0, sizeof(ctl));	// Setup the IOCTL
+	ctl.opcode = S12_OPC_SET_BBT;
+
+	ctl.nppas = naddrs - 1;		// Unnatural numbers: counting from zero
+	ctl.ppa_list = naddrs == 1 ? dev_addrs[0].ppa : (uint64_t)dev_addrs;
+
+	err = ioctl(dev->fd, NVME_NVM_IOCTL_ADMIN_VIO, &ctl);
+	if (ret) {			// Fill return-codes when available
+		ret->result = ctl.result;
+		ret->status = ctl.status;
+	}
+
+	return err;
 }
 
 void nvm_bbt_pr(struct nvm_bbt *bbt)
