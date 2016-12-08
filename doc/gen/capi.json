@@ -57,6 +57,7 @@
         "functions": [
                 "nvm_bbt_get",
                 "nvm_bbt_set",
+                "nvm_bbt_mark",
                 "nvm_bbt_pr"
         ]
 },

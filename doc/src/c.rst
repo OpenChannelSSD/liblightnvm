@@ -93,6 +93,11 @@ nvm_bbt_set
 
 .. doxygenfunction:: nvm_bbt_set
 
+nvm_bbt_mark
+------------
+
+.. doxygenfunction:: nvm_bbt_mark
+
 nvm_bbt_pr
 ----------
 
