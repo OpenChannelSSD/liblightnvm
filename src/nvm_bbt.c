@@ -56,7 +56,7 @@ struct krnl_bbt {
 
 void krnl_bbt_pr(struct krnl_bbt *bbt)
 {
-	printf("tblkid {%u, %u, %u, %u}\n",
+	printf("tblkid {%c, %c, %c, %c}\n",
 	       bbt->tblid[0], bbt->tblid[1], bbt->tblid[2], bbt->tblid[3]);
 	printf("verid(%u)\n", bbt->verid);
 	printf("revid(%u)\n", bbt->revid);
@@ -102,49 +102,35 @@ struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 		return NULL;
 	}
 
-	krnl_bbt_pr(k_bbt);
-
-	memset(&ctl, 0, sizeof(ctl));
-	ctl.opcode = 0xF2;	// MAGIC: nvme_nvm_admin_get_bb_tbl
-	//ctl.flags ?
-	ctl.nsid = 1;		// How do we determine this?
-	//ctl.cdw2 ?
-	//ctl.cdw3 ?
-	//ctl.metadata ?
+	memset(&ctl, 0, sizeof(ctl));	// Setup the IOCTL
+	ctl.opcode = S12_OPC_GET_BBT;
 	ctl.addr = (uint64_t)k_bbt;
-	//ctl.metadata_len ?
 	ctl.data_len = bbt->nblks * sizeof(*bbt->blks);
 	ctl.ppa_list = nvm_addr_gen2dev(dev, addr).ppa;
-	//ctl.ppa_list = addr.ppa;
 	ctl.nppas = 0;
-	//ctl.control ?
-	//ctl.cdw13 ?
-	//ctl.cdw14 ?
-	//ctl.cdw15 ?
-	//ctl.status ?
-	//ctl.result ?
 
 	err = ioctl(dev->fd, NVME_NVM_IOCTL_ADMIN_VIO, &ctl);
-	if (ret) {
+	if (ret) {			// Fill return-codes when available
 		ret->result = ctl.result;
 		ret->status = ctl.status;
 	}
-	if (err) {
+	if (err || (k_bbt->tblks != bbt->nblks)) {
 		errno = EIO;
+		free(bbt->blks);
 		free(bbt);
 		return NULL;
 	}
-	if (k_bbt->tblks != bbt->nblks) {
+	if (!(k_bbt->tblid[0] == 'B' && k_bbt->tblid[1] == 'B' &&
+	      k_bbt->tblid[2] == 'L' && k_bbt->tblid[3] == 'T')) {
 		errno = EIO;
+		free(bbt->blks);
 		free(bbt);
-		return 0;
+		return NULL;
 	}
 
 	for (i = 0; i < bbt->nblks; ++i) {
 		bbt->blks[i] = k_bbt->blk[i];
 	}
-
-	krnl_bbt_pr(k_bbt);
 
 	return bbt;
 }
