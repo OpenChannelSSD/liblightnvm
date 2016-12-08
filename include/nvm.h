@@ -31,9 +31,16 @@
 
 #include <liblightnvm.h>
 
-#define NVM_MAGIC_OPCODE_ERASE 0x90     // NVM_OP_ERASE
-#define NVM_MAGIC_OPCODE_WRITE 0x91     // NVM_OP_PWRITE
-#define NVM_MAGIC_OPCODE_READ 0x92      // NVM_OP_PREAD
+/**
+ * NVMe command opcodes as defined by LigthNVM specification 1.2
+ */
+enum spec12_opcodes {
+	S12_OPC_SET_BBT = 0xF1,
+	S12_OPC_GET_BBT = 0xF2,
+	S12_OPC_ERASE = 0x90,
+	S12_OPC_WRITE = 0x91,
+	S12_OPC_READ = 0x92
+};
 
 struct nvm_dev {
 	char name[NVM_DEV_NAME_LEN];	///< Device name e.g. "nvme0n1"
