@@ -148,8 +148,18 @@ int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 {
 	struct nvm_passthru_vio ctl;
 	struct nvm_addr dev_addrs[naddrs];
-
 	int i, err;
+
+	switch(flags) {
+		case 0x0:
+		case 0x1:
+		case 0x2:
+			break;
+		default:
+			errno = EINVAL;
+			return -1;
+			break;
+	}
 
 	for (i = 0; i < naddrs; ++i) {	// Setup PPAs: Convert address format
 		dev_addrs[i] = nvm_addr_gen2dev(dev, addrs[i]);

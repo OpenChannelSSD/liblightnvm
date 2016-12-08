@@ -195,7 +195,7 @@ void nvm_addr_fmt_pr(struct nvm_addr_fmt *fmt)
 void nvm_addr_pr(struct nvm_addr addr)
 {
 	printf("(0x%016lx){ ch(%02d), lun(%02d), pl(%d), ",
-	       addr.ppa, addr.ppa, addr.g.ch, addr.g.lun, addr.g.pl);
+	       addr.ppa, addr.g.ch, addr.g.lun, addr.g.pl);
 	printf("blk(%04d), pg(%03d), sec(%d) }\n",
 	       addr.g.blk, addr.g.pg, addr.g.sec);
 }

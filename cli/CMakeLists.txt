@@ -9,6 +9,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 
 include_directories("${CMAKE_SOURCE}/include")
 
+set(HEADER_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/nvm_cli.h)
+
 set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/dev.c
 	${CMAKE_CURRENT_SOURCE_DIR}/bbt.c
@@ -23,8 +26,9 @@ set(SOURCE_FILES
 foreach(SRC_FN ${SOURCE_FILES})
 	get_filename_component(SRC_FN_WE ${SRC_FN} NAME_WE)
 	set(EXE_FN "nvm_${SRC_FN_WE}")
-	add_executable(${EXE_FN} ${SRC_FN})
-	target_link_libraries(${EXE_FN} udev lightnvm_a)
+    add_executable(${EXE_FN} ${SRC_FN} ${CMAKE_CURRENT_SOURCE_DIR}/nvm_cli.c)
+    target_include_directories(${EXE_FN} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+	target_link_libraries(${EXE_FN} lightnvm_a)
 
 	install(TARGETS ${EXE_FN} DESTINATION bin)
 endforeach()

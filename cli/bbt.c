@@ -6,15 +6,16 @@
 #include <string.h>
 #include <errno.h>
 #include <liblightnvm.h>
+#include "nvm_cli.h"
 
-int get(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
+int get(NVM_CLI_CMD_ARGS *args, int flags)
 {
 	NVM_BBT* bbt;
-	NVM_RET ret = {0, 0};
+	NVM_RET ret;
 
 	printf("** nvm_bbt_get(...):\n");
 
-	bbt = nvm_bbt_get(dev, addr, &ret);
+	bbt = nvm_bbt_get(args->dev, args->addrs[0], &ret);
 	if (!bbt) {
 		perror("nvm_bbt_get");
 		nvm_ret_pr(&ret);
@@ -29,122 +30,57 @@ int get(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
 	return 0;
 }
 
-int set(NVM_DEV dev, NVM_GEO geo, NVM_ADDR addr, int flags)
+int set(NVM_CLI_CMD_ARGS *args, int flags)
 {
 	return 0;
 }
 
-/* The rest is CLI boilerplate */
+int mark(NVM_CLI_CMD_ARGS *args, int flags)
+{
+	ssize_t err = 0;
+	NVM_RET ret;
 
-#define CLI_CMD_LEN 50
+	printf("** nvm_bbt_mark(...):\n");
+	for (int i = 0; i < args->naddrs; ++i) {
+		nvm_addr_pr(args->addrs[i]);
+	}
 
-typedef struct {
-	char name[CLI_CMD_LEN];
-	int (*func)(NVM_DEV dev, NVM_GEO geo, NVM_ADDR, int);
-	int argc;
-	int flags;
-} NVM_CLI_BBT_CMD;
+	err = nvm_bbt_mark(args->dev, args->addrs, args->naddrs, flags, &ret);
+	if (err) {
+		perror("nvm_addr_erase");
+		nvm_ret_pr(&ret);
+	}
 
-static NVM_CLI_BBT_CMD cmds[] = {
-	{"get", get, 5, 0x0},
-	{"set", set, 5, 0x0},
+	return err ? 1 : 0;
+}
+
+//
+// Remaining code is CLI boiler-plate
+//
+static NVM_CLI_CMD cmds[] = {
+	{"get", get, NVM_CLI_ARG_CH_LUN, 0x0},
+	{"set", set, NVM_CLI_ARG_CH_LUN, 0x0},
+	{"mark_f", mark, NVM_CLI_ARG_PPALIST, 0x0},
+	{"mark_b", mark, NVM_CLI_ARG_PPALIST, 0x1},
+	{"mark_g", mark, NVM_CLI_ARG_PPALIST, 0x2},
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
-static char *args[] = {
-	"dev_path",
-	"ch",
-	"lun",
-	"blk"
-};
-
-void _usage_pr(char *cli_name)
-{
-	int cmd;
-
-	printf("Usage:\n");
-	for (cmd = 0; cmd < ncmds; cmd++) {
-		int arg;
-		printf(" %s %6s", cli_name, cmds[cmd].name);
-		for (arg = 0; arg < cmds[cmd].argc-2; ++arg) {
-			printf(" %s", args[arg]);
-		}
-		printf("\n");
-	}
-}
 
 int main(int argc, char **argv)
 {
-	char cmd_name[CLI_CMD_LEN];
-	char dev_path[NVM_DEV_PATH_LEN+1];
-	int i, bounds, ret = 0;
+	NVM_CLI_CMD *cmd;
+	int ret = 0;
 
-	NVM_CLI_BBT_CMD *cmd = NULL;
-	
-	NVM_DEV dev;
-	NVM_GEO geo;
-	NVM_ADDR addr;
-
-	if (argc < 3) {
-		_usage_pr(argv[0]);
-		return -1;
-	}
-							// Get `cmd_name`
-	if (strlen(argv[1]) < 1 || strlen(argv[1]) > (CLI_CMD_LEN-1)) {
-		printf("Invalid cmd\n");
-		_usage_pr(argv[0]);
-		return -EINVAL;
-	}
-	memset(cmd_name, 0, sizeof(cmd_name));
-	strcpy(cmd_name, argv[1]);
-
-	for (i = 0; i < ncmds; ++i) {			// Get `cmd`
-		if (strcmp(cmd_name, cmds[i].name) == 0) {
-			cmd = &cmds[i];
-			break;
-		}
-	}
-	if (!cmd) {
-		printf("Invalid cmd(%s)\n", cmd_name);
-		_usage_pr(argv[0]);
-		return -EINVAL;
-	}
-
-	if (argc != cmd->argc) {			// Check argument count
-		printf("Invalid cmd(%s) argc(%d) != %d\n",
-			cmd_name, argc, cmd->argc);
-		_usage_pr(argv[0]);
-		return -1;
-	}
-
-	if (strlen(argv[2]) > NVM_DEV_PATH_LEN) {	// Get `dev_path`
-		printf("len(dev_path) > %d\n", NVM_DEV_PATH_LEN);
-		return -1;
-	}
-	strncpy(dev_path, argv[2], NVM_DEV_PATH_LEN);
-
-	dev = nvm_dev_open(dev_path);			// open `dev`
-	if (!dev) {
-		printf("FAILED: opening device, dev_path(%s)\n", dev_path);
-		return -EINVAL;
-	}
-
-	geo = nvm_dev_attr_geo(dev);
-
-	addr.ppa = 0;
-	addr.g.ch = atol(argv[3]);
-	addr.g.lun = atol(argv[4]);
-
-	bounds = nvm_addr_check(addr, geo);
-	if (bounds) {
-		printf("Invalid address: ");
-		nvm_addr_pr(addr);
-		printf("Exceeds:\n"); nvm_bounds_pr(bounds);
+	cmd = nvm_cli_setup(argc, argv, cmds, ncmds);
+	if (cmd) {
+		ret = cmd->func(&cmd->args, cmd->flags);
 	} else {
-		ret = cmd->func(dev, geo, addr, cmd->flags);
+		nvm_cli_usage(argv[0], "NVM bad-block-table (nvm_bbt_*)", cmds,
+			      ncmds);
 	}
-
-	nvm_dev_close(dev);				// close `dev`
+	
+	nvm_cli_teardown(cmd);
 
 	return ret != 0;
 }
