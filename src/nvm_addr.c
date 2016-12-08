@@ -177,7 +177,7 @@ ssize_t nvm_addr_mark(NVM_DEV dev, NVM_ADDR addrs[], int naddrs, uint16_t flags,
 		return -1;
 	}
 
-	return nvm_addr_cmd(dev, addrs, naddrs, NULL, NULL, flags, 0xF1, ret);
+	return nvm_bbt_mark(dev, addrs, naddrs, flags, ret);
 }
 
 void nvm_addr_fmt_pr(struct nvm_addr_fmt *fmt)
@@ -194,8 +194,8 @@ void nvm_addr_fmt_pr(struct nvm_addr_fmt *fmt)
 
 void nvm_addr_pr(struct nvm_addr addr)
 {
-	printf("(%016lx){ ch(%02d), lun(%02d), pl(%d), ",
-	       addr.ppa, addr.g.ch, addr.g.lun, addr.g.pl);
+	printf("(%016ld:0x%016lx){ ch(%02d), lun(%02d), pl(%d), ",
+	       addr.ppa, addr.ppa, addr.g.ch, addr.g.lun, addr.g.pl);
 	printf("blk(%04d), pg(%03d), sec(%d) }\n",
 	       addr.g.blk, addr.g.pg, addr.g.sec);
 }

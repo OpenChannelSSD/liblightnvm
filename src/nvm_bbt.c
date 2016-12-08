@@ -157,7 +157,7 @@ int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 
 	memset(&ctl, 0, sizeof(ctl));	// Setup the IOCTL
 	ctl.opcode = S12_OPC_SET_BBT;
-
+	ctl.control = flags;
 	ctl.nppas = naddrs - 1;		// Unnatural numbers: counting from zero
 	ctl.ppa_list = naddrs == 1 ? dev_addrs[0].ppa : (uint64_t)dev_addrs;
 
@@ -166,8 +166,12 @@ int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		ret->result = ctl.result;
 		ret->status = ctl.status;
 	}
+	if (err) {
+		errno = EIO;
+		return -1;
+	}
 
-	return err;
+	return 0;
 }
 
 void nvm_bbt_pr(struct nvm_bbt *bbt)
