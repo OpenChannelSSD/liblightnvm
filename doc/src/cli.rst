@@ -25,6 +25,16 @@ nvm_dev
    nvm_dev info dev_path
   
 
+nvm_bbt
+=======
+
+.. code-block:: bash
+
+  Usage:
+   nvm_bbt    get dev_path ch lun
+   nvm_bbt    set dev_path ch lun
+  
+
 nvm_addr
 ========
 
