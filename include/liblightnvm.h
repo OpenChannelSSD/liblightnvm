@@ -233,6 +233,8 @@ void nvm_ret_pr(NVM_RET *ret);
  *
  * @param dev The device on which to retrieve a bad-block-table from
  * @param addr Address of the LUN to retrieve bad-block-table for
+ * @param ret Pointer to structure in which to store lower-level status and
+ *            result.
  * @returns Pointer to the bad-block-table for the given LUN addr on dev. NULL
  * on error, errno set accordingly and ret filled with lower-level result codes.
  */
@@ -243,6 +245,8 @@ NVM_BBT* nvm_bbt_get(NVM_DEV dev, NVM_ADDR addr, NVM_RET *ret);
  *
  * @param dev The device on which to update a bad-block-table
  * @param bbt The bbt to write to device
+ * @param ret Pointer to structure in which to store lower-level status and
+ *            result.
  * @returns 0 on success. NULL on error, errno set accordingly and ret filled
  * with lower-level result codes.
  */
