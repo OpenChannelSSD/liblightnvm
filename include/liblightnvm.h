@@ -178,6 +178,11 @@ typedef struct nvm_geo {
 	size_t vpg_nbytes;	///< Number of bytes per virtual page
 } NVM_GEO;
 
+int nvm_ver_major(void);
+int nvm_ver_minor(void);
+int nvm_ver_patch(void);
+void nvm_ver_pr(void);
+
 /**
  * Prints a humanly readable description of given boundary mask
  */
