@@ -21,6 +21,8 @@ nvm_dev
 
 .. code-block:: bash
 
+  Usage:
+   nvm_dev info dev_path
   
 
 nvm_addr
