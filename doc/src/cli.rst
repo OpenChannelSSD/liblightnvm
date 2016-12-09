@@ -21,8 +21,9 @@ nvm_dev
 
 .. code-block:: bash
 
+  NVM Device (nvm_dev_*)
   Usage:
-   nvm_dev info dev_path
+   nvm_dev     info dev_path 
   
 
 nvm_bbt
@@ -30,9 +31,13 @@ nvm_bbt
 
 .. code-block:: bash
 
+  NVM bad-block-table (nvm_bbt_*)
   Usage:
-   nvm_bbt    get dev_path ch lun
-   nvm_bbt    set dev_path ch lun
+   nvm_bbt      get dev_path ch lun
+   nvm_bbt      set dev_path ch lun
+   nvm_bbt   mark_f dev_path ppa [ppa...]
+   nvm_bbt   mark_b dev_path ppa [ppa...]
+   nvm_bbt   mark_g dev_path ppa [ppa...]
   
 
 nvm_addr
@@ -40,17 +45,15 @@ nvm_addr
 
 .. code-block:: bash
 
+  NVM address (nvm_addr_*)
   Usage:
-   nvm_addr  erase dev_path ppa [ppa...]
-   nvm_addr  write dev_path ppa [ppa...]
-   nvm_addr write_m dev_path ppa [ppa...]
-   nvm_addr   read dev_path ppa [ppa...]
-   nvm_addr read_m dev_path ppa [ppa...]
-   nvm_addr  fmt_p dev_path ppa [ppa...]
-   nvm_addr  fmt_g dev_path ch lun pl blk pg sec
-   nvm_addr mark_f dev_path ppa [ppa...]
-   nvm_addr mark_b dev_path ppa [ppa...]
-   nvm_addr mark_g dev_path ppa [ppa...]
+   nvm_addr    erase dev_path ppa [ppa...]
+   nvm_addr    write dev_path ppa [ppa...]
+   nvm_addr     read dev_path ppa [ppa...]
+   nvm_addr  write_m dev_path ppa [ppa...]
+   nvm_addr   read_m dev_path ppa [ppa...]
+   nvm_addr    fmt_p dev_path ppa [ppa...]
+   nvm_addr    fmt_g dev_path ch lun pl blk pg sec
   
 
 nvm_vblk
@@ -58,22 +61,15 @@ nvm_vblk
 
 .. code-block:: bash
 
+  NVM Virtual Block (nvm_vblk_*)
   Usage:
-   nvm_vblk    get dev_path ch lun
-   nvm_vblk    put dev_path ch lun blk
-   nvm_vblk   read dev_path ch lun blk
-   nvm_vblk  write dev_path ch lun blk
-   nvm_vblk  erase dev_path ch lun blk
-   nvm_vblk  pread dev_path ch lun blk pg
-   nvm_vblk pwrite dev_path ch lun blk pg
-  OR using PPA (parts as above are extracted from address):
-   nvm_vblk    get dev_path ppa
-   nvm_vblk    put dev_path ppa
-   nvm_vblk   read dev_path ppa
-   nvm_vblk  write dev_path ppa
-   nvm_vblk  erase dev_path ppa
-   nvm_vblk  pread dev_path ppa
-   nvm_vblk pwrite dev_path ppa
+   nvm_vblk    erase dev_path ppa [ppa...]
+   nvm_vblk    write dev_path ppa [ppa...]
+   nvm_vblk     read dev_path ppa [ppa...]
+   nvm_vblk   pwrite dev_path ppa [ppa...]
+   nvm_vblk    pread dev_path ppa [ppa...]
+   nvm_vblk     gets dev_path ch lun
+   nvm_vblk      put dev_path ppa [ppa...]
   
 
 nvm_sblk
@@ -81,9 +77,10 @@ nvm_sblk
 
 .. code-block:: bash
 
+  NVM spanning block (nvm_sblk_*)
   Usage:
-   nvm_sblk  erase dev_path ch_bgn ch_end lun_bgn lun_end blk
-   nvm_sblk  write dev_path ch_bgn ch_end lun_bgn lun_end blk
-   nvm_sblk    pad dev_path ch_bgn ch_end lun_bgn lun_end blk
-   nvm_sblk   read dev_path ch_bgn ch_end lun_bgn lun_end blk
+   nvm_sblk    erase dev_path ch_bgn ch_end lun_bgn lun_end blk
+   nvm_sblk    write dev_path ch_bgn ch_end lun_bgn lun_end blk
+   nvm_sblk      pad dev_path ch_bgn ch_end lun_bgn lun_end blk
+   nvm_sblk     read dev_path ch_bgn ch_end lun_bgn lun_end blk
   
