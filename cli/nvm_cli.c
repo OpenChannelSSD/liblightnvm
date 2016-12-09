@@ -64,9 +64,11 @@ void nvm_cli_usage(const char *cli_name, const char *cli_description,
 		case NVM_CLI_ARG_SBLK:
 			printf("ch_bgn ch_end lun_bgn lun_end blk");
 			break;
+		case NVM_CLI_ARG_COUNT_OFFSET:
+			printf("count offset");
+			break;
 
 		case NVM_CLI_ARG_NONE:
-		default:
 			break;
 		}
 		printf("\n");
@@ -187,8 +189,12 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 			}
 			break;
 
+		case NVM_CLI_ARG_COUNT_OFFSET:
+			cmd->args.count = atol(argv[3]);
+			cmd->args.offset = atol(argv[4]);
+			break;
+
 		case NVM_CLI_ARG_NONE:
-		default:
 			break;
 	}
 

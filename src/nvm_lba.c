@@ -35,29 +35,6 @@
 #include <liblightnvm.h>
 #include <nvm.h>
 
-ssize_t nvm_lba_pread(struct nvm_dev *dev, void *buf, size_t count,
-		      off_t offset)
-{
-	if (count < 1) {
-		errno = EINVAL;
-		return -1;
-	}
-	if (offset < 0) {
-		errno = EINVAL;
-		return -1;
-	}
-	if (count % dev->geo.vpg_nbytes) {
-		errno = EINVAL;
-		return -1;
-	}
-	if (offset % dev->geo.vpg_nbytes) {
-		errno = EINVAL;
-		return -1;
-	}
-
-	return pread(dev->fd, buf, count, offset);
-}
-
 ssize_t nvm_lba_pwrite(struct nvm_dev *dev, const void *buf, size_t count,
 		       off_t offset)
 {
@@ -79,5 +56,28 @@ ssize_t nvm_lba_pwrite(struct nvm_dev *dev, const void *buf, size_t count,
 	}
 
 	return pwrite(dev->fd, buf, count, offset);
+}
+
+ssize_t nvm_lba_pread(struct nvm_dev *dev, void *buf, size_t count,
+		      off_t offset)
+{
+	if (count < 1) {
+		errno = EINVAL;
+		return -1;
+	}
+	if (offset < 0) {
+		errno = EINVAL;
+		return -1;
+	}
+	if (count % dev->geo.vpg_nbytes) {
+		errno = EINVAL;
+		return -1;
+	}
+	if (offset % dev->geo.vpg_nbytes) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	return pread(dev->fd, buf, count, offset);
 }
 
