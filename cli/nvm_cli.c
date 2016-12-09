@@ -159,6 +159,7 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 			cmd->args.addrs[0].g.pl = atoi(argv[5]);
 			cmd->args.addrs[0].g.lun = atoi(argv[4]);
 			cmd->args.addrs[0].g.ch = atoi(argv[3]);
+			cmd->args.naddrs = 1;
 			break;
 
 		case NVM_CLI_ARG_SBLK:
