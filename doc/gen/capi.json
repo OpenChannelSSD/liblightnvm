@@ -45,7 +45,19 @@
                 "nvm_addr_mark",
                 "nvm_addr_pr",
                 "nvm_addr_fmt_pr",
-                "nvm_addr_check"
+                "nvm_addr_check",
+                "nvm_addr_gen2dev"
+        ]
+},
+{
+        "name": "NVM_LBA",
+        "structs": [],
+        "typedefs": [],
+        "functions": [
+                "nvm_lba_pwrite",
+                "nvm_lba_pread",
+		"nvm_addr_gen2lba",
+		"nvm_addr_lba2gen"
         ]
 },
 {

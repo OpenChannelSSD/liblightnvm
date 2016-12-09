@@ -56,12 +56,23 @@ nvm_addr
    nvm_addr    fmt_g dev_path ch lun pl blk pg sec
   
 
+nvm_lba
+=======
+
+.. code-block:: bash
+
+  NVM logical-block-address (nvm_lba_*)
+  Usage:
+   nvm_lba   pwrite dev_path count offset
+   nvm_lba    pread dev_path count offset
+  
+
 nvm_vblk
 ========
 
 .. code-block:: bash
 
-  NVM Virtual Block (nvm_vblk_*)
+  NVM virtual block (nvm_vblk_*)
   Usage:
    nvm_vblk    erase dev_path ppa [ppa...]
    nvm_vblk    write dev_path ppa [ppa...]

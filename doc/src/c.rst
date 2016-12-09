@@ -105,8 +105,8 @@ nvm_bbt_pr
 
 
 
-Addressing
-==========
+Physical Addressing
+===================
 
 NVM_ADDR
 --------
@@ -154,6 +154,36 @@ nvm_addr_check
 --------------
 
 .. doxygenfunction:: nvm_addr_check
+
+nvm_addr_gen2dev
+----------------
+
+.. doxygenfunction:: nvm_addr_gen2dev
+
+
+
+Logical Addressing
+==================
+
+nvm_lba_pwrite
+--------------
+
+.. doxygenfunction:: nvm_lba_pwrite
+
+nvm_lba_pread
+-------------
+
+.. doxygenfunction:: nvm_lba_pread
+
+nvm_addr_gen2lba
+----------------
+
+.. doxygenfunction:: nvm_addr_gen2lba
+
+nvm_addr_lba2gen
+----------------
+
+.. doxygenfunction:: nvm_addr_lba2gen
 
 
 
