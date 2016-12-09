@@ -169,7 +169,13 @@ typedef struct nvm_geo {
 	size_t nblocks;		///< Number of blocks per plane
 	size_t npages;		///< Number of pages per block
 	size_t nsectors;	///< Number of sectors per page
+
 	size_t nbytes;		///< Number of bytes per sector
+	size_t page_nbytes;	///< Number of bytes in a page
+	size_t block_nbytes;	///< Number of bytes in a block
+	size_t plane_nbytes;	///< Number of bytes in plane
+	size_t lun_nbytes;	///< Number of bytes in a LUN
+	size_t channel_nbytes;	///< Number of bytes in a channel
 
 	size_t meta_nbytes;	///< Number of bytes for out-of-bound / metadata
 

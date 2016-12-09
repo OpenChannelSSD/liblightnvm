@@ -89,6 +89,15 @@ size_t nvm_addr_gen2lba(struct nvm_dev *dev, NVM_ADDR addr)
 {
 	size_t lba = 0;
 
+	// [ch][lun][pl][blk][pg][sec]~nbytes = offset
+
+	lba += dev->geo.channel_nbytes * addr.g.ch;
+	lba += dev->geo.lun_nbytes * addr.g.lun;
+	lba += dev->geo.plane_nbytes * addr.g.pl;
+	lba += dev->geo.block_nbytes * addr.g.blk;
+	lba += dev->geo.page_nbytes * addr.g.pg;
+	lba += dev->geo.nbytes * addr.g.sec;
+
 	return lba;
 }
 

@@ -294,6 +294,13 @@ static int dev_attr_fill(struct nvm_dev *dev)
 		dev->geo.meta_nbytes = 16;	// Naively hope this is right
 	}
 
+	/* Derive byte counts */
+	dev->geo.page_nbytes = dev->geo.nsectors * dev->geo.nbytes;
+	dev->geo.block_nbytes = dev->geo.npages * dev->geo.page_nbytes;
+	dev->geo.plane_nbytes = dev->geo.nblocks * dev->geo.block_nbytes;
+	dev->geo.lun_nbytes = dev->geo.nplanes * dev->geo.plane_nbytes;
+	dev->geo.channel_nbytes = dev->geo.nluns * dev->geo.lun_nbytes;
+
 	/* Derive total number of bytes on device */
 	dev->geo.tbytes = dev->geo.nchannels * dev->geo.nluns * \
 			  dev->geo.nplanes * dev->geo.nblocks * \
