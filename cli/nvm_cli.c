@@ -49,6 +49,9 @@ void nvm_cli_usage(const char *cli_name, const char *cli_description,
 		case NVM_CLI_ARG_PPALIST:
 			printf("ppa [ppa...]");
 			break;
+		case NVM_CLI_ARG_LBALIST:
+			printf("lba [lba...]");
+			break;
 		case NVM_CLI_ARG_CH_LUN:
 			printf("ch lun");
 			break;
@@ -189,6 +192,19 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 								16);
 			}
 			break;
+
+		case NVM_CLI_ARG_LBALIST:
+			if (argc < 4) {
+				printf("FAILED: Invalid argc\n");
+				return NULL;
+			}
+
+			cmd->args.nlbas = argc - 3;
+			for (int i = 0; i < cmd->args.nlbas; ++i) {
+				cmd->args.lbas[i] = atol(argv[i+3]);
+			}
+			break;
+
 
 		case NVM_CLI_ARG_COUNT_OFFSET:
 			cmd->args.count = atol(argv[3]);

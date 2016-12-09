@@ -5,6 +5,7 @@
 typedef enum nvm_cli_argtype {
 	NVM_CLI_ARG_NONE,
 	NVM_CLI_ARG_PPALIST,
+	NVM_CLI_ARG_LBALIST,
 	NVM_CLI_ARG_CH_LUN,
 	NVM_CLI_ARG_CH_LUN_BLK,
 	NVM_CLI_ARG_CH_LUN_BLK_PG,
@@ -20,6 +21,8 @@ typedef struct {
 	NVM_GEO sblk_geo;
 	NVM_ADDR addrs[1024];
 	int naddrs;
+	size_t lbas[1024];
+	int nlbas;
 	size_t count;
 	ssize_t offset;
 } NVM_CLI_CMD_ARGS;
