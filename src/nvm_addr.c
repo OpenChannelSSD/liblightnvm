@@ -85,6 +85,20 @@ inline struct nvm_addr nvm_addr_gen2dev(struct nvm_dev *dev,
 	return d_addr;
 }
 
+size_t nvm_addr_gen2lba(struct nvm_dev *dev, NVM_ADDR addr)
+{
+	size_t lba = 0;
+
+	return lba;
+}
+
+NVM_ADDR nvm_addr_lba2gen(struct nvm_dev *dev, size_t lba)
+{
+	NVM_ADDR addr;
+
+	return addr;
+}
+
 static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
 			    int len, void *data, void *meta, uint16_t flags,
 			    uint16_t opcode, struct nvm_return *ret)

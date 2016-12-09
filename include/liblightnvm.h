@@ -207,6 +207,28 @@ int nvm_addr_check(NVM_ADDR addr, NVM_GEO geo);
 NVM_ADDR nvm_addr_gen2dev(NVM_DEV dev, NVM_ADDR addr);
 
 /**
+ * TODO: Doc + Implement
+ */
+size_t nvm_addr_gen2lba(NVM_DEV dev, NVM_ADDR addr);
+
+/**
+ * TODO: Doc + Implement
+ */
+NVM_ADDR nvm_addr_lba2gen(NVM_DEV dev, size_t lba);
+
+/**
+ * TODO: Doc
+ */
+ssize_t nvm_lba_pread(NVM_DEV dev, void *buf, size_t count,
+		      off_t offset);
+
+/**
+ * TODO: Doc
+ */
+ssize_t nvm_lba_pwrite(NVM_DEV dev, const void *buf, size_t count,
+		       off_t offset);
+
+/**
  * Representation of bad-block-table
  *
  * Create and initialize by calling `nvm_bbt_get`
