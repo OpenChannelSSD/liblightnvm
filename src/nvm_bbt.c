@@ -68,6 +68,13 @@ void krnl_bbt_pr(struct krnl_bbt *bbt)
 	printf("tdresv(%u)\n", bbt->tdresv);
 	printf("thresv(%u)\n", bbt->thresv);
 	printf("rsvd2(..)\n");
+
+	printf("blk[] (notgood) {\n");
+	for (int i = 0; i < bbt->tblks; ++i) {
+		if (i)
+			printf("i(%d) = %u\n", i, bbt->blk[i]);
+	}
+	printf("}\n");
 }
 
 struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
