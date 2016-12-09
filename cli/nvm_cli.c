@@ -110,7 +110,7 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 
 	cmd->args.dev = nvm_dev_open(dev_path);		// Open device
 	if (!cmd->args.dev) {
-		printf("FAILED: Invalid argc\n");
+		perror("nvm_dev_open");
 		return NULL;
 	}
 
@@ -118,20 +118,6 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 	cmd->args.addrs[0].ppa = 0;
 
 	switch(cmd->argt) {				// Get variable params
-		case NVM_CLI_ARG_CH_LUN_PL_BLK_PG_SEC:
-			if (argc != 9) {
-				printf("FAILED: Invalid argc\n");
-				return NULL;
-			}
-
-			cmd->args.addrs[0].g.sec = atoi(argv[8]);
-			cmd->args.addrs[0].g.pg = atoi(argv[7]);
-			cmd->args.addrs[0].g.blk = atoi(argv[6]);
-			cmd->args.addrs[0].g.pl = atoi(argv[5]);
-			cmd->args.addrs[0].g.lun = atoi(argv[4]);
-			cmd->args.addrs[0].g.ch = atoi(argv[3]);
-			break;
-
 		case NVM_CLI_ARG_CH_LUN_BLK_PG:
 			if (argc < 7) {
 				printf("FAILED: Invalid argc\n");
@@ -159,8 +145,23 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 			cmd->args.naddrs = 1;
 			break;
 
+		case NVM_CLI_ARG_CH_LUN_PL_BLK_PG_SEC:
+			if (argc != 9) {
+				printf("FAILED: Invalid argc\n");
+				return NULL;
+			}
+
+			cmd->args.addrs[0].g.sec = atoi(argv[8]);
+			cmd->args.addrs[0].g.pg = atoi(argv[7]);
+			cmd->args.addrs[0].g.blk = atoi(argv[6]);
+			cmd->args.addrs[0].g.pl = atoi(argv[5]);
+			cmd->args.addrs[0].g.lun = atoi(argv[4]);
+			cmd->args.addrs[0].g.ch = atoi(argv[3]);
+			break;
+
 		case NVM_CLI_ARG_SBLK:
 			if (argc < 8) {
+				printf("WTF");
 				printf("FAILED: Invalid argc\n");
 				return NULL;
 			}
