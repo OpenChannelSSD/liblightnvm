@@ -40,7 +40,7 @@ void nvm_cli_usage(const char *cli_name, const char *cli_description,
 		   NVM_CLI_CMD cmds[], int ncmds)
 {
 	printf("%s\n", cli_description);
-	printf("Usage:\n");
+	printf("\nUsage:\n");
 
 	for (int i = 0; i < ncmds; ++i) {
 		printf(" %s %8s dev_path ", cli_name, cmds[i].name);
@@ -213,6 +213,18 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 
 		case NVM_CLI_ARG_NONE:
 			break;
+	}
+
+	// Verify that addresses are within device bounds
+	for (int i = 0; i < cmd->args.naddrs; ++i) {
+		int bounds = nvm_addr_check(cmd->args.addrs[i], cmd->args.geo);
+
+		if (bounds) {
+			nvm_addr_pr(cmd->args.addrs[i]);
+			printf("Exceeded:\n");
+			nvm_bounds_pr(bounds);
+			return NULL;
+		}
 	}
 
 	return cmd;
