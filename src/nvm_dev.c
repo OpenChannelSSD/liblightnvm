@@ -204,6 +204,8 @@ static int dev_attr_fill(struct nvm_dev *dev)
 {
 	struct udev *udev;
 	struct udev_device *udev_dev;
+	struct nvm_lba_map *map;
+	struct nvm_geo *geo;
 	int val;
 
 	udev = udev_new();
@@ -232,88 +234,89 @@ static int dev_attr_fill(struct nvm_dev *dev)
 	/*
 	 * Extract geometry from sysfs via libudev
 	 */
+	geo = &(dev->geo);
 
 	if (sysattr2int(udev_dev, "lightnvm/num_channels", &val)) {
 		NVM_DEBUG("ERR: num_channels for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
-	dev->geo.nchannels = val;
+	geo->nchannels = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/num_luns", &val)) {
 		NVM_DEBUG("ERR: num_luns for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
-	dev->geo.nluns = val;
+	geo->nluns = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/num_planes", &val)) {
 		NVM_DEBUG("ERR: num_planes for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
-	dev->geo.nplanes = val;
+	geo->nplanes = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/num_blocks", &val)) {
 		NVM_DEBUG("ERR: num_blocks for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
-	dev->geo.nblocks = val;
+	geo->nblocks = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/num_pages", &val)) {
 		NVM_DEBUG("ERR: num_pages for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
-	dev->geo.npages = val;
+	geo->npages = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/sec_per_pg", &val)) {
 		NVM_DEBUG("ERR: sec_per_pg for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
-	dev->geo.nsectors = val;
+	geo->nsectors = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/hw_sector_size", &val)) {
 		NVM_DEBUG("ERR: hw_sector_size for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
-	dev->geo.nbytes = val;
+	geo->nbytes = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/oob_sector_size", &val)) {
 		NVM_DEBUG("ERR: oob_sector_size dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
-	dev->geo.meta_nbytes = val;
-
-	// WARN: HOTFIX for reports of unrealisticly large oob area
-	if (dev->geo.meta_nbytes > 100) {
-		dev->geo.meta_nbytes = 16;	// Naively hope this is right
-	}
-
-	/* Derive byte counts */
-	dev->geo.page_nbytes = dev->geo.nsectors * dev->geo.nbytes;
-	dev->geo.block_nbytes = dev->geo.npages * dev->geo.page_nbytes;
-	dev->geo.plane_nbytes = dev->geo.nblocks * dev->geo.block_nbytes;
-	dev->geo.lun_nbytes = dev->geo.nplanes * dev->geo.plane_nbytes;
-	dev->geo.channel_nbytes = dev->geo.nluns * dev->geo.lun_nbytes;
-
-	/* Derive total number of bytes on device */
-	dev->geo.tbytes = dev->geo.nchannels * dev->geo.nluns * \
-			  dev->geo.nplanes * dev->geo.nblocks * \
-			  dev->geo.npages * dev->geo.nsectors * dev->geo.nbytes;
-
-	/* Derive number of bytes occupied by a virtual block/page */
-	dev->geo.vblk_nbytes = dev->geo.nplanes * dev->geo.npages * \
-				dev->geo.nsectors * dev->geo.nbytes;
-	dev->geo.vpg_nbytes = dev->geo.nplanes * dev->geo.nsectors * \
-				dev->geo.nbytes;
+	geo->meta_nbytes = val;
 
 	udev_device_unref(udev_dev);
 	udev_unref(udev);
+
+	// WARN: HOTFIX for reports of unrealisticly large OOB area
+	if (geo->meta_nbytes > 100) {
+		geo->meta_nbytes = 16;	// Naively hope this is right
+	}
+
+	/* Derive total number of bytes on device */
+	geo->tbytes = geo->nchannels * geo->nluns * geo->nplanes * \
+		      geo->nblocks * geo->npages * geo->nsectors * geo->nbytes;
+
+	/* Derive number of bytes occupied by a virtual block/page */
+	geo->vblk_nbytes = geo->nplanes * geo->npages * geo->nsectors * \
+			   geo->nbytes;
+	geo->vpg_nbytes = geo->nplanes * geo->nsectors * geo->nbytes;
+
+	map = &(dev->lba_map);	/* Derive widths for LBA mapping */
+
+	map->sector_nbytes = geo->nbytes;
+	map->plane_nbytes = geo->nsectors * map->sector_nbytes;
+	map->page_nbytes = geo->nplanes * map->plane_nbytes;
+	map->block_nbytes = geo->npages * map->page_nbytes;
+	map->lun_nbytes = geo->nblocks * map->block_nbytes;
+	map->channel_nbytes = geo->nluns * map->lun_nbytes;
 
 	return 0;
 }
@@ -334,6 +337,7 @@ void nvm_dev_pr(struct nvm_dev *dev)
 	printf("dev { path(%s), name(%s), fd(%d) }\n",
 	       dev->path, dev->name, dev->fd);
 	printf("dev-"); nvm_geo_pr(dev->geo);
+	printf("dev-"); nvm_lba_map_pr(&dev->lba_map);
 	printf("dev-"); nvm_addr_fmt_pr(&dev->fmt);
 }
 
@@ -434,4 +438,6 @@ void nvm_dev_close(struct nvm_dev *dev)
 		close(dev->fd);
 	free(dev);
 }
+
+
 

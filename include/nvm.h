@@ -42,11 +42,30 @@ enum spec12_opcodes {
 	S12_OPC_READ = 0x92
 };
 
+/**
+ * Representation of widths in LBA <-> Physical sector mapping
+ *
+ * Think of it as a multi-dimensional array in row-major ordered as:
+ *
+ * channels[]luns[]blocks[]pages[]planes[]sectors[] = sector_nbytes
+ *
+ * Contains the stride in bytes for each dimension of the geometry.
+ */
+typedef struct nvm_lba_map {
+	size_t channel_nbytes;	///< Number of bytes in a channel
+	size_t lun_nbytes;	///< Number of bytes in a LUN
+	size_t plane_nbytes;	///< Number of bytes in plane
+	size_t block_nbytes;	///< Number of bytes in a block
+	size_t page_nbytes;	///< Number of bytes in a page
+	size_t sector_nbytes;	///< Number of bytes in a sector
+} NVM_LBA_MAP;
+
 struct nvm_dev {
 	char name[NVM_DEV_NAME_LEN];	///< Device name e.g. "nvme0n1"
 	char path[NVM_DEV_PATH_LEN];	///< Device path e.g. "/dev/nvme0n1"
 	struct nvm_addr_fmt fmt;	///< Device address format
 	struct nvm_geo geo;		///< Device geometry
+	struct nvm_lba_map lba_map;
 	int fd;				///< Device fd / IOCTL handle
 };
 
@@ -65,5 +84,7 @@ struct nvm_sblk {
 	size_t pos_write;
 	size_t pos_read;
 };
+
+void nvm_lba_map_pr(struct nvm_lba_map* map);
 
 #endif /* __NVM_H */

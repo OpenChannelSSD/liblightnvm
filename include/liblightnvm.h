@@ -135,7 +135,7 @@ typedef struct nvm_addr {
 typedef struct nvm_addr_fmt {
 	union {
 		/**
-		 * Address formed as named fields
+		 * Address format formed as named fields
 		 */
 		struct {
 			uint8_t ch_ofz;   ///< Offset in bits for channel
@@ -153,7 +153,7 @@ typedef struct nvm_addr_fmt {
 		} n;
 
 		/**
-		 * Address formed as anonymous consecutive fields
+		 * Address format formed as anonymous consecutive fields
 		 */
 		uint8_t a[12];
 	};
@@ -169,13 +169,7 @@ typedef struct nvm_geo {
 	size_t nblocks;		///< Number of blocks per plane
 	size_t npages;		///< Number of pages per block
 	size_t nsectors;	///< Number of sectors per page
-
 	size_t nbytes;		///< Number of bytes per sector
-	size_t page_nbytes;	///< Number of bytes in a page
-	size_t block_nbytes;	///< Number of bytes in a block
-	size_t plane_nbytes;	///< Number of bytes in plane
-	size_t lun_nbytes;	///< Number of bytes in a LUN
-	size_t channel_nbytes;	///< Number of bytes in a channel
 
 	size_t meta_nbytes;	///< Number of bytes for out-of-bound / metadata
 
