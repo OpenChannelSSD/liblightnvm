@@ -104,6 +104,16 @@ size_t nvm_addr_gen2lba(struct nvm_dev *dev, NVM_ADDR addr)
 NVM_ADDR nvm_addr_lba2gen(struct nvm_dev *dev, size_t lba)
 {
 	NVM_ADDR addr;
+	struct nvm_lba_map *map = &dev->lba_map;
+
+	addr.ppa = 0;
+
+	addr.g.ch = lba / map->channel_nbytes;
+	addr.g.lun = (lba % map->channel_nbytes) / map->lun_nbytes;
+	addr.g.blk = (lba % map->lun_nbytes) / map->block_nbytes;
+	addr.g.pg = (lba % map->block_nbytes) / map->page_nbytes;
+	addr.g.pl = (lba % map->page_nbytes) / map->plane_nbytes;
+	addr.g.sec = (lba % map->plane_nbytes) / map->sector_nbytes;
 
 	return addr;
 }

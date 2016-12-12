@@ -207,23 +207,33 @@ int nvm_addr_check(NVM_ADDR addr, NVM_GEO geo);
 NVM_ADDR nvm_addr_gen2dev(NVM_DEV dev, NVM_ADDR addr);
 
 /**
- * TODO: Doc + Implement
+ * Maps the given generically formatted physical address to LBA offset.
  */
 size_t nvm_addr_gen2lba(NVM_DEV dev, NVM_ADDR addr);
 
 /**
- * TODO: Doc + Implement
+ * Maps the given LBA offset to the corresponding generically formatted physical
+ * address.
  */
 NVM_ADDR nvm_addr_lba2gen(NVM_DEV dev, size_t lba);
 
 /**
- * TODO: Doc
+ * Read up to `count` bytes from the given `device` starting at the given
+ * `offset` into the given buffer starting at `buf`.
+ *
+ * @note
+ * This is equivalent to libc pread/pwrite except it takes the opaque NVM_DEV
+ * instead of a FD.
  */
-ssize_t nvm_lba_pread(NVM_DEV dev, void *buf, size_t count,
-		      off_t offset);
+ssize_t nvm_lba_pread(NVM_DEV dev, void *buf, size_t count, off_t offset);
 
 /**
- * TODO: Doc
+ * Write up to `count` bytes from the buffer starting at `buf` to the given
+ * device `dev` at given `offset`.
+ *
+ * @note
+ * This is equivalent to libc pread/pwrite except it takes the opaque NVM_DEV
+ * instead of a FD.
  */
 ssize_t nvm_lba_pwrite(NVM_DEV dev, const void *buf, size_t count,
 		       off_t offset);
