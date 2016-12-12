@@ -72,7 +72,8 @@ void krnl_bbt_pr(struct krnl_bbt *bbt)
 	printf("blk[] (notgood) {\n");
 	for (int i = 0; i < bbt->tblks; ++i) {
 		if (i)
-			printf("i(%d) = %u\n", i, bbt->blk[i]);
+			printf("\n");
+		printf("i(%d) = %u", i, bbt->blk[i]);
 	}
 	printf("}\n");
 }
@@ -91,6 +92,7 @@ struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 		return NULL;
 	}
 
+	bbt->dev = dev;
 	bbt->addr = addr;
 	bbt->nblks = dev->geo.nblocks * dev->geo.nplanes;
 	bbt->blks = nvm_buf_alloc(dev->geo, sizeof(*bbt->blks) * bbt->nblks);
@@ -101,7 +103,7 @@ struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 	}
 
 	k_bbt = nvm_buf_alloc(dev->geo, sizeof(*k_bbt) + \
-			      sizeof(*(k_bbt->blk)) * bbt->nblks);
+					sizeof(*(k_bbt->blk)) * bbt->nblks);
 	if (!k_bbt) {
 		free(bbt->blks);
 		free(bbt);
@@ -199,11 +201,17 @@ void nvm_bbt_pr(struct nvm_bbt *bbt)
 	printf("  addr"); nvm_addr_pr(bbt->addr);
 	printf("  nblks(%lu) {", bbt->nblks);
 	nnotgood = 0;
-	for (i = 0; i < bbt->nblks; ++i) {
-		if (bbt->blks[i]) {
-			++nnotgood;
-			printf("\n    i(%d) = %u", i, bbt->blks[i]);
+	for (i = 0; i < bbt->nblks; i += bbt->dev->geo.nplanes) {
+		int vblk = i / bbt->dev->geo.nplanes;
+
+		printf("\n    vblk(%03d): [ ", vblk);
+		for (int blk = i; blk < (i+ bbt->dev->geo.nplanes); ++blk) {
+			printf("%u ", bbt->blks[i]);
+			if (bbt->blks[i]) {
+				++nnotgood;
+			}
 		}
+		printf("]");
 	}
 	printf("\n  }\n");
 	printf("  nnotgood(%d)\n", nnotgood);

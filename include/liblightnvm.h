@@ -248,6 +248,7 @@ ssize_t nvm_lba_pwrite(NVM_DEV dev, const void *buf, size_t count,
  * Update device by calling `nvm_bbt_set`
  */
 typedef struct nvm_bbt {
+	NVM_DEV dev;	///< Device on which the bbt belongs to
 	NVM_ADDR addr;	///< Address of the LUN the bad block table covers
 	uint8_t *blks;	///< Array containing block status for each block in LUN
 	uint64_t nblks;	///< Length of the bad block array
