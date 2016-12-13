@@ -38,30 +38,46 @@
 #include <nvm_debug.h>
 #include <nvm_omp.h>
 
-struct nvm_sblk *nvm_sblk_new(struct nvm_dev *dev,
-			      int ch_bgn, int ch_end,
-			      int lun_bgn, int lun_end,
-			      int blk)
+static inline int plane_access_mode(const int nplanes)
+{
+	switch(nplanes) {
+	case 4:
+		return NVM_MAGIC_FLAG_QUAD;
+	case 2:
+		return NVM_MAGIC_FLAG_DUAL;
+	default:
+		return NVM_MAGIC_FLAG_SNGL;
+	}
+}
+
+struct nvm_sblk *nvm_sblk_new(struct nvm_dev *dev, int ch_bgn, int ch_end,
+			      int lun_bgn, int lun_end, int blk)
 {
 	struct nvm_sblk *sblk;
 	struct nvm_geo dev_geo = nvm_dev_attr_geo(dev);
 
 	if (ch_bgn < 0 || ch_bgn > ch_end || ch_end >= dev_geo.nchannels) {
 		NVM_DEBUG("invalid channel span");
+		errno = EINVAL;
 		return NULL;
 	}
 	if (lun_bgn < 0 || lun_bgn > lun_end || lun_end >= dev_geo.nluns) {
 		NVM_DEBUG("invalid lun span");
+		errno = EINVAL;
 		return NULL;
 	}
 	if (blk < 0 || blk >= dev_geo.nblocks) {
 		NVM_DEBUG("invalid block");
+		errno = EINVAL;
 		return NULL;
 	}
 
 	sblk = malloc(sizeof(*sblk));
-	if (!sblk)
+	if (!sblk) {
+		NVM_DEBUG("sblk malloc failed");
+		errno = ENOMEM;
 		return NULL;
+	}
 
 	sblk->pos_write = 0;
 	sblk->pos_read = 0;
@@ -105,19 +121,13 @@ void nvm_sblk_free(struct nvm_sblk *sblk)
 
 ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 {
-	const struct nvm_geo geo = nvm_sblk_attr_geo(sblk);
-
-	const int nplanes = geo.nplanes;
+	size_t nerr = 0;
+	const int nplanes = nvm_sblk_attr_geo(sblk).nplanes;
 
 	const struct nvm_addr bgn = sblk->bgn;
 	const struct nvm_addr end = sblk->end;
 
-	ssize_t nerr = 0;
-
-	int PLANE_FLAG = 0x0;
-
-	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
-	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
+	const int PLANE_FLAG = plane_access_mode(nplanes);
 
 	#pragma omp parallel for schedule(static) collapse(2) reduction(+:nerr)
 	for (int ch = bgn.g.ch; ch <= end.g.ch; ++ch) {
@@ -144,7 +154,12 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 		}
 	}
 
-	return -nerr;
+	if (nerr) {
+		errno = EIO;
+		return -1;
+	}
+
+	return nvm_sblk_attr_geo(sblk).tbytes;
 }
 
 ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
@@ -174,26 +189,26 @@ ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
 
 	const int nthreads = nchannels * nluns;
 
-	ssize_t nerr = 0;
+	size_t nerr = 0;
 
-	int PLANE_FLAG = 0x0;
+	const int PLANE_FLAG = plane_access_mode(geo.nplanes);
 
 	const char *data;
+
+	if ((count % alignment) || (offset % alignment)) {	// Check align
+		errno = EINVAL;
+		return -1;
+	}
 
 	if (buf) {	// Use user-supplied buffer
 		data = buf;
 	} else {	// Allocate and use a padding buffer
 		data = nvm_buf_alloc(geo, NVM_CMD_NADDR * nbytes);
-		if (!data)
-			return -count;
+		if (!data) {
+			errno = ENOMEM;
+			return -1;
+		}
 	}
-
-	// Check alignment
-	if ((count % alignment) || (sblk->pos_write % alignment))
-		return -count;
-
-	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
-	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
 
 	#pragma omp parallel num_threads(nthreads) reduction(+:nerr)
 	{
@@ -235,17 +250,24 @@ ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
 		}
 	}
 
-	return nerr;
+	if (nerr) {
+		errno = EIO;
+		return -1;
+	}
+
+	return count;
 }
 
 ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 {
-	ssize_t nerr = nvm_sblk_pwrite(sblk, buf, count, sblk->pos_write);
+	ssize_t nbytes = nvm_sblk_pwrite(sblk, buf, count, sblk->pos_write);
 
-	if (!nerr)
-		sblk->pos_write += count;
+	if (nbytes < 0)
+		return nbytes;		// Propagate errno
+	
+	sblk->pos_write += nbytes;	// All is good, increment write position
 
-	return nerr;
+	return nbytes;			// Return number of bytes written
 }
 
 ssize_t nvm_sblk_pad(NVM_SBLK sblk)
@@ -282,14 +304,12 @@ ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
 
 	ssize_t nerr = 0;
 
-	int PLANE_FLAG = 0x0;
+	const int PLANE_FLAG = plane_access_mode(geo.nplanes);
 
 	if ((count % alignment) || (offset % alignment)) {	// Check align
-		return -count;
+		errno = EINVAL;
+		return -1;
 	}
-
-	PLANE_FLAG = (geo.nplanes == 4) ? NVM_MAGIC_FLAG_QUAD : PLANE_FLAG;
-	PLANE_FLAG = (geo.nplanes == 2) ? NVM_MAGIC_FLAG_DUAL : PLANE_FLAG;
 
 	#pragma omp parallel num_threads(nthreads) reduction(+:nerr)
 	{
@@ -327,17 +347,24 @@ ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
 		}
 	}
 
-	return -nerr;
+	if (nerr) {
+		errno = EIO;
+		return -1;
+	}
+
+	return count;
 }
 
 ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
 {
-	ssize_t nerr = nvm_sblk_pread(sblk, buf, count, sblk->pos_read);
+	ssize_t nbytes = nvm_sblk_pread(sblk, buf, count, sblk->pos_read);
 
-	if (!nerr)
-		sblk->pos_read += count;
+	if (nbytes < 0)
+		return nbytes;		// Propagate `errno`
 
-	return nerr;
+	sblk->pos_read += nbytes;	// All is good, increment read position
+
+	return nbytes;			// Return number of bytes read
 }
 
 struct nvm_addr nvm_sblk_attr_bgn(struct nvm_sblk *sblk)

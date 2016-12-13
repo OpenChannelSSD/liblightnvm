@@ -566,44 +566,94 @@ ssize_t nvm_vblk_read(NVM_VBLK vblk, void *buf, size_t count);
 
 
 /**
- * Create a new sblk.
+ * Allocate an sblk and initialize it
+ *
+ * @param dev The device on which the sblk resides
+ * @param ch_bgn Beginning of the channel span, as inclusive index
+ * @param ch_end End of the channel span, as inclusive index
+ * @param lun_bgn Beginning of the lun span, as inclusive index
+ * @param lun_end End of the lun span, as inclusive index
+ * @param blk Block index
+ *
+ * @returns On success, an opaque pointer to the initialized sblk is returned.
+ * On error, NULL and `errno` set to indicate the error.
  */
 NVM_SBLK nvm_sblk_new(NVM_DEV dev, int ch_bgn, int ch_end, int lun_bgn,
 		      int lun_end, int blk);
 
 /**
  * Destroy an sblk
+ *
+ * @param sblk The sblk to destroy
  */
 void nvm_sblk_free(NVM_SBLK sblk);
 
 /**
  * Erase an sblk
+ *
+ * @param sblk The sblk to erase
+ * @returns On success, the number of bytes erased is returned. On error, -1 is
+ * returned and `errno` set to indicate the error.
  */
 ssize_t nvm_sblk_erase(NVM_SBLK sblk);
 
 /**
- * Write content from buffer to sblk
+ * Write to an sblk
+ *
+ * @note
+ * buf must be aligned to device geometry, see NVM_GEO and nvm_buf_alloc
+ * count must be a multiple of min-size, see NVM_GEO
+ * do not mix use of nvm_sblk_pwrite with nvm_sblk_write on the same sblk
+ *
+ * @param sblk The sblk to write to
+ * @param buf Write content starting at buf
+ * @param count The number of bytes to write
+ * @returns On success, the number of bytes written is returned and sblk
+ * internal position is updated. On error, -1 is returned and `errno` set to
+ * indicate the error.
  */
 ssize_t nvm_sblk_write(NVM_SBLK sblk, const void *buf, size_t count);
 
 /**
- * Write content from buffer to sblk
+ * Write to an sblk at a given offset
+ *
+ * @note
+ * buf must be aligned to device geometry, see NVM_GEO and nvm_buf_alloc
+ * count must be a multiple of min-size, see NVM_GEO
+ * offset must be a multiple of min-size, see NVM_GEO
+ * do not mix use of nvm_sblk_pwrite with nvm_sblk_write on the same sblk
+ *
+ * @param sblk The sblk to write to
+ * @param buf Write content starting at buf
+ * @param count The number of bytes to write
+ * @param offset Start writing offset bytes within sblk
+ * @returns On success, the number of bytes written is returned. On error, -1 is
+ * returned and `errno` set to indicate the error.
  */
 ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
 			size_t offset);
 
 /**
- * Pad the sblk
+ * Pad the sblk with synthetic data
+ *
+ * @note
+ * Assumes that you have used nvm_sblk_write and now want to fill the remaining
+ * sblk in order to meet sblk constraints
+ *
+ * @param sblk The sblk to pad
+ * @returns On success, the number of bytes padded is returned and sblk internal
+ * position is updated. On error, -1 is returned and `errno` set to indicate the
+ * error.
  */
 ssize_t nvm_sblk_pad(NVM_SBLK sblk);
 
 /**
- * Read content from sblk to buffer
+ * Read from an sblk
  */
 ssize_t nvm_sblk_read(NVM_SBLK sblk, void *buf, size_t count);
 
 /**
- * Positioned read from sblk to buffer
+ * Read from an sblk at given offset
  */
 ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
 		       size_t offset);
