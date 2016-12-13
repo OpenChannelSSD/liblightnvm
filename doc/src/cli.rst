@@ -21,7 +21,7 @@ nvm_dev
 
 .. code-block:: bash
 
-  NVM Device (nvm_dev_*)
+  NVM Device (nvm_dev_*) -- Ver { major(0), minor(0), patch(1) }
   
   Usage:
    nvm_dev     info dev_path 
@@ -32,7 +32,7 @@ nvm_bbt
 
 .. code-block:: bash
 
-  NVM bad-block-table (nvm_bbt_*)
+  NVM bad-block-table (nvm_bbt_*) -- Ver { major(0), minor(0), patch(1) }
   
   Usage:
    nvm_bbt      get dev_path ch lun
@@ -49,7 +49,7 @@ nvm_addr
 
 .. code-block:: bash
 
-  NVM address (nvm_addr_*)
+  NVM address (nvm_addr_*) -- Ver { major(0), minor(0), patch(1) }
   
   Usage:
    nvm_addr    erase dev_path ppa [ppa...]
@@ -69,7 +69,7 @@ nvm_lba
 
 .. code-block:: bash
 
-  NVM logical-block-address (nvm_lba_*)
+  NVM logical-block-address (nvm_lba_*) -- Ver { major(0), minor(0), patch(1) }
   
   Usage:
    nvm_lba   pwrite dev_path count offset
@@ -81,7 +81,7 @@ nvm_vblk
 
 .. code-block:: bash
 
-  NVM virtual block (nvm_vblk_*)
+  NVM virtual block (nvm_vblk_*) -- Ver { major(0), minor(0), patch(1) }
   
   Usage:
    nvm_vblk    erase dev_path ppa [ppa...]
@@ -98,7 +98,7 @@ nvm_sblk
 
 .. code-block:: bash
 
-  NVM spanning block (nvm_sblk_*)
+  NVM spanning block (nvm_sblk_*) -- Ver { major(0), minor(0), patch(1) }
   
   Usage:
    nvm_sblk    erase dev_path ch_bgn ch_end lun_bgn lun_end blk
