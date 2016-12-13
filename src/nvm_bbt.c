@@ -95,7 +95,7 @@ struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 	bbt->dev = dev;
 	bbt->addr = addr;
 	bbt->nblks = dev->geo.nblocks * dev->geo.nplanes;
-	bbt->blks = nvm_buf_alloc(dev->geo, sizeof(*bbt->blks) * bbt->nblks);
+	bbt->blks = malloc(sizeof(*bbt->blks) * bbt->nblks);
 	if (!bbt->blks) {
 		free(bbt);
 		errno = ENOMEM;
@@ -147,9 +147,35 @@ struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 int nvm_bbt_set(struct nvm_dev *dev, struct nvm_bbt *bbt,
 		struct nvm_return *ret)
 {
-	// TODO: Use nvm_bbt_mark to update apply the bbt to device
-	errno = ENOTSUP;
-	return -1;
+	struct nvm_bbt *bbt_old;
+	int nupdates = 0;
+
+	bbt_old = nvm_bbt_get(dev, bbt->addr, ret);
+	if (!bbt_old)
+		return -1;			// Propagate `errno`
+
+	if (bbt->nblks != bbt_old->nblks) {
+		errno = EINVAL;
+		return -1;
+	}
+	
+	for (int i = 0; i < bbt->nblks; ++i) {	// Set only those which changed
+		if (bbt->blks[i] != bbt_old->blks[i]) {
+			struct nvm_addr addr;	// Construct block address
+
+			addr.ppa = bbt->addr.ppa;
+			addr.g.blk = i / dev->geo.nplanes;
+			addr.g.pl = i % dev->geo.nplanes;
+
+			if (nvm_bbt_mark(dev, &addr, 1, bbt->blks[i], ret)) {
+				return -1;	// Propagate `errno`
+			}
+
+			++nupdates;
+		}
+	}
+
+	return nupdates;
 }
 
 int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
