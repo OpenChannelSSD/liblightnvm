@@ -7,7 +7,7 @@
 
 int erase(NVM_CLI_CMD_ARGS *args, int flags)
 {
-	ssize_t err = 0;
+	int err = 0;
 
 	for (int i = 0; i < args->naddrs; ++i) {
 		NVM_VBLK vblk;
@@ -16,22 +16,25 @@ int erase(NVM_CLI_CMD_ARGS *args, int flags)
 		nvm_addr_pr(args->addrs[i]);
 
 		vblk = nvm_vblk_new_on_dev(args->dev, args->addrs[i]);
-		if (!vblk)
-			return ENOMEM;
+		if (!vblk) {
+			perror("nvm_vblk_new_on_dev");
+			return errno;
+		}
 
-		err = nvm_vblk_erase(vblk);
-		if (err)
-			printf("FAILED: nvm_vblk_erase err(%ld)\n", err);
+		if (nvm_vblk_erase(vblk) < 0) {
+			perror("nvm_vblk_erase");
+			err = errno;
+		}
 
 		nvm_vblk_free(vblk);
 	}
 
-	return err ? 1 : 0;
+	return err;
 }
 
 int write(NVM_CLI_CMD_ARGS *args, int flags)
 {
-	ssize_t err = 0;
+	int err = 0;
 
 	for (int i = 0; i < args->naddrs; ++i) {
 		NVM_VBLK vblk;
@@ -41,30 +44,34 @@ int write(NVM_CLI_CMD_ARGS *args, int flags)
 		nvm_addr_pr(args->addrs[i]);
 
 		vblk = nvm_vblk_new_on_dev(args->dev, args->addrs[i]);
-		if (!vblk)
-			return ENOMEM;
+		if (!vblk) {
+			perror("nvm_vblk_new_on_dev");
+			return errno;
+		}
 
 		buf = nvm_buf_alloc(args->geo, args->geo.vblk_nbytes);
 		if (!buf) {
+			perror("nvm_buf_alloc");
 			nvm_vblk_free(vblk);
 			return ENOMEM;
 		}
 		nvm_buf_fill(buf, args->geo.vblk_nbytes);
 
-		err = nvm_vblk_write(vblk, buf, args->geo.vblk_nbytes);
-		if (err)
-			printf("FAILED: nvm_vblk_write err(%ld)\n", err);
+		if (nvm_vblk_write(vblk, buf, args->geo.vblk_nbytes) < 0) {
+			err = errno;
+			perror("nvm_vblk_write");
+		}
 
 		free(buf);
 		nvm_vblk_free(vblk);
 	}
 
-	return err ? 1 : 0;
+	return err;
 }
 
 int pwrite(NVM_CLI_CMD_ARGS *args, int flags)
 {
-	ssize_t err = 0;
+	int err = 0;
 
 	for (int i = 0; i < args->naddrs; ++i) {
 		NVM_VBLK vblk;
@@ -75,30 +82,34 @@ int pwrite(NVM_CLI_CMD_ARGS *args, int flags)
 		nvm_addr_pr(args->addrs[i]);
 
 		vblk = nvm_vblk_new_on_dev(args->dev, args->addrs[i]);
-		if (!vblk)
+		if (!vblk) {
+			perror("nvm_vblk_new_on_dev");
 			return ENOMEM;
+		}
 
 		buf = nvm_buf_alloc(args->geo, args->geo.vpg_nbytes);
 		if (!buf) {
+			perror("nvm_buf_alloc");
 			nvm_vblk_free(vblk);
 			return ENOMEM;
 		}
 		nvm_buf_fill(buf, args->geo.vpg_nbytes);
 
-		err = nvm_vblk_pwrite(vblk, buf, args->geo.vpg_nbytes, offset);
-		if (err)
-			printf("FAILED: nvm_vblk_pwrite err(%ld)\n", err);
+		if (nvm_vblk_pwrite(vblk, buf, args->geo.vpg_nbytes, offset) < 0) {
+			perror("nvm_vblk_pwrite");
+			err = errno;
+		}
 
 		free(buf);
 		nvm_vblk_free(vblk);
 	}
 
-	return err ? 1 : 0;
+	return err;
 }
 
 int read(NVM_CLI_CMD_ARGS *args, int flags)
 {
-	ssize_t err = 0;
+	int err = 0;
 
 	for (int i = 0; i < args->naddrs; ++i) {
 		NVM_VBLK vblk;
@@ -108,18 +119,22 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 		nvm_addr_pr(args->addrs[i]);
 
 		vblk = nvm_vblk_new_on_dev(args->dev, args->addrs[i]);
-		if (!vblk)
+		if (!vblk) {
+			perror("nvm_vblk_new_on_dev");
 			return ENOMEM;
+		}
 
 		buf = nvm_buf_alloc(args->geo, args->geo.vblk_nbytes);
 		if (!buf) {
+			perror("nvm_buf_alloc");
 			nvm_vblk_free(vblk);
 			return ENOMEM;
 		}
 
-		err = nvm_vblk_read(vblk, buf, args->geo.vblk_nbytes);
-		if (err)
-			printf("FAILED: nvm_vblk_read err(%ld)\n", err);
+		if (nvm_vblk_read(vblk, buf, args->geo.vblk_nbytes) < 0) {
+			perror("nvm_vblk_read");
+			err = errno;
+		}
 
 		if (getenv("NVM_BUF_PR"))
 			nvm_buf_pr(buf, args->geo.vblk_nbytes);
@@ -128,12 +143,12 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 		nvm_vblk_free(vblk);
 	}
 
-	return err ? 1 : 0;
+	return err;
 }
 
 int pread(NVM_CLI_CMD_ARGS *args, int flags)
 {
-	ssize_t err = 0;
+	int err = 0;
 
 	for (int i = 0; i < args->naddrs; ++i) {
 		NVM_VBLK vblk;
@@ -144,19 +159,23 @@ int pread(NVM_CLI_CMD_ARGS *args, int flags)
 		nvm_addr_pr(args->addrs[i]);
 
 		vblk = nvm_vblk_new_on_dev(args->dev, args->addrs[i]);
-		if (!vblk)
+		if (!vblk) {
+			perror("nvm_vblk_new_on_dev");
 			return ENOMEM;
+		}
 
 		buf = nvm_buf_alloc(args->geo, args->geo.vpg_nbytes);
 		if (!buf) {
+			perror("nvm_buf_alloc");
 			nvm_vblk_free(vblk);
 			return ENOMEM;
 		}
 		nvm_buf_fill(buf, args->geo.vpg_nbytes);
 
-		err = nvm_vblk_pread(vblk, buf, args->geo.vpg_nbytes, offset);
-		if (err)
-			printf("FAILED: nvm_vblk_pread err(%ld)\n", err);
+		if (nvm_vblk_pread(vblk, buf, args->geo.vpg_nbytes, offset) < 0) {
+			perror("nvm_vblk_pread");
+			err = errno;
+		}
 
 		if (getenv("NVM_BUF_PR"))
 			nvm_buf_pr(buf, args->geo.vpg_nbytes);
@@ -165,12 +184,12 @@ int pread(NVM_CLI_CMD_ARGS *args, int flags)
 		nvm_vblk_free(vblk);
 	}
 
-	return err ? 1 : 0;
+	return err;
 }
 
 int get(NVM_CLI_CMD_ARGS *args, int flags)
 {
-	ssize_t err = 0;
+	int err = 0;
 
 	for (int i = 0; i < args->naddrs; ++i) {
 		NVM_VBLK vblk;
@@ -179,27 +198,28 @@ int get(NVM_CLI_CMD_ARGS *args, int flags)
 		nvm_addr_pr(args->addrs[i]);
 		
 		vblk = nvm_vblk_new();
-		if (!vblk)
+		if (!vblk) {
+			perror("nvm_vblk_new");
 			return ENOMEM;
+		}
 
-		err = nvm_vblk_gets(vblk, args->dev, args->addrs[i].g.ch,
-				    args->addrs[i].g.ch);
-		if (err) {
-			printf("FAILED: nvm_vblk_gets err(%ld)\n", err);
+		if (nvm_vblk_gets(vblk, args->dev, args->addrs[i].g.ch,
+				  args->addrs[i].g.ch)) {
+			perror("nvm_vblk_gets");
+			err = errno;
 		} else {
-			printf("GOT: ");
-			nvm_vblk_pr(vblk);
+			printf("GOT: "); nvm_vblk_pr(vblk);
 		}
 
 		nvm_vblk_free(vblk);
 	}
 
-	return err ? 1 : 0;
+	return err;
 }
 
 int put(NVM_CLI_CMD_ARGS *args, int flags)
 {
-	ssize_t err = 0;
+	int err = 0;
 	
 	for (int i = 0; i < args->naddrs; ++i) {
 		NVM_VBLK vblk;
@@ -208,18 +228,20 @@ int put(NVM_CLI_CMD_ARGS *args, int flags)
 		nvm_addr_pr(args->addrs[i]);
 
 		vblk = nvm_vblk_new_on_dev(args->dev, args->addrs[i]);
-		if (!vblk)
+		if (!vblk) {
+			perror("nvm_vblk_new_on_dev");
 			return ENOMEM;
+		}
 
-		err = nvm_vblk_put(vblk);
-		if (err) {
-			printf("FAILED: nvm_vblk_put err(%ld)\n", err);
+		if (nvm_vblk_put(vblk)) {
+			perror("nvm_vblk_put");
+			err = errno;
 		}
 
 		nvm_vblk_free(vblk);
 	}
 
-	return err ? 1 : 0;
+	return err;
 }
 
 /// CLI boiler-plate
