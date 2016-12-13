@@ -217,16 +217,18 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 	}
 
 	// Verify that addresses are within device bounds
-	for (int i = 0; i < cmd->args.naddrs; ++i) {
-		int bounds = nvm_addr_check(cmd->args.addrs[i], cmd->args.geo);
+	if (!getenv("NVM_CLI_NOVERIFY"))
+		for (int i = 0; i < cmd->args.naddrs; ++i) {
+			int bounds = nvm_addr_check(cmd->args.addrs[i],
+						    cmd->args.geo);
 
-		if (bounds) {
-			nvm_addr_pr(cmd->args.addrs[i]);
-			printf("Exceeded:\n");
-			nvm_bounds_pr(bounds);
-			return NULL;
+			if (bounds) {
+				nvm_addr_pr(cmd->args.addrs[i]);
+				printf("Exceeded:\n");
+				nvm_bounds_pr(bounds);
+				return NULL;
+			}
 		}
-	}
 
 	return cmd;
 }

@@ -14,6 +14,14 @@ manyfold:
 
 .. note:: This CLI is not meant to be tool for conditioning or initialitization of Open-Channel SSDs, for such purposes see `lvnm-tools <https://github.com/OpenChannelSSD/lnvm-tools>`_ and `NVMe CLI <https://github.com/linux-nvme/nvme-cli>`_
 
+Usage of the CLI is described by invoking the commands without arguments, as
+show below. And additionally by optionally defining the following environment
+variables:
+
+  * NVM_CLI_NOVERIFY -- When set, address verification is disabled
+  * NVM_BUF_PR -- When set, read commands will dump the buffer to stdout
+
+
 .. toctree::
 
 nvm_dev
