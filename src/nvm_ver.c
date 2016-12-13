@@ -17,7 +17,7 @@ int nvm_ver_patch(void)
 
 void nvm_ver_pr(void)
 {
-	printf("ver { major(%d), minor(%d), patch(%d) }",
+	printf("Ver { major(%d), minor(%d), patch(%d) }",
 	       nvm_ver_major(), nvm_ver_minor(), nvm_ver_patch());
 }
 

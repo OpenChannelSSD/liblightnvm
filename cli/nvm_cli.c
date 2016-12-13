@@ -39,8 +39,9 @@ void nvm_timer_pr(const char* tool)
 void nvm_cli_usage(const char *cli_name, const char *cli_description,
 		   NVM_CLI_CMD cmds[], int ncmds)
 {
-	printf("%s\n", cli_description);
-	printf("\nUsage:\n");
+	printf("%s -- ", cli_description);
+	nvm_ver_pr();
+	printf("\n\nUsage:\n");
 
 	for (int i = 0; i < ncmds; ++i) {
 		printf(" %s %8s dev_path ", cli_name, cmds[i].name);
