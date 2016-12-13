@@ -528,42 +528,46 @@ int nvm_vblk_put(NVM_VBLK vblk);
 /**
  * Erase an entire vblk
  *
- * @returns On success 0, on error -1 and *errno* set appropriately.
+ * @returns On success, the number of bytes erased is returned. On error, -1 is
+ * returned and `errno` set to indicate the error.
  */
 ssize_t nvm_vblk_erase(NVM_VBLK vblk);
 
 /**
- * Read 'count' bytes from 'vblk' starting at 'offset' into 'buf'
+ * Read from a vblk at given offset
  *
- * @returns On success 0, on error -1 and *errno* set appropriately.
+ * @returns On success, the number of bytes read is returned. On error, -1 is
+ * returned and `errno` set to indicate the error.
  */
 ssize_t nvm_vblk_pread(NVM_VBLK vblk, void *buf, size_t count, size_t offset);
 
 /**
- * Write 'count' bytes to 'vblk' starting at 'offset' from 'buf'
+ * Write to a vblk at given offset
  *
  * @note
- * Use this for controlling chunked writing, do NOT use for random access
+ * Use this for controlling "chunked" writing, do NOT use for random access
  *
- * @returns On success 0, on error -1 and *errno* set appropriately.
+ * @returns On success, the number of bytes written is returned. On error, -1 is
+ * returned and `errno` set to indicate the error.
  */
 ssize_t nvm_vblk_pwrite(NVM_VBLK vblk, const void *buf, size_t count,
 			size_t offset);
 
 /**
- * Write 'count' bytes to 'vblk' starting at 'offset' from 'buf'
+ * Write to vblk
  *
- * @returns On success 0, on error -1 and *errno* set appropriately.
+ * @returns On success, the number of bytes written is returned. On error, -1 is
+ * returned and `errno` set to indicate the error.
  */
 ssize_t nvm_vblk_write(NVM_VBLK vblk, const void *buf, size_t count);
 
 /**
- * Read the entire vblk, storing it into buf
+ * Read from a vblk
  *
- * @returns On success 0, on error -1 and *errno* set appropriately.
+ * @returns On success, the number of bytes read is returned. On error, -1 is
+ * returned and `errno` set to indicate the error.
  */
 ssize_t nvm_vblk_read(NVM_VBLK vblk, void *buf, size_t count);
-
 
 /**
  * Allocate an sblk and initialize it
