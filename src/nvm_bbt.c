@@ -84,6 +84,7 @@ struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 	struct nvm_passthru_vio ctl;
 	struct nvm_bbt *bbt;
 	struct krnl_bbt *k_bbt;
+	size_t krnl_bbt_sz;
 	int err, i;
 
 	bbt = malloc(sizeof(*bbt));
@@ -102,8 +103,8 @@ struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 		return NULL;
 	}
 
-	k_bbt = nvm_buf_alloc(dev->geo, sizeof(*k_bbt) + \
-					sizeof(*(k_bbt->blk)) * bbt->nblks);
+	krnl_bbt_sz = sizeof(*k_bbt) + sizeof(*(k_bbt->blk)) * bbt->nblks;
+	k_bbt = nvm_buf_alloc(dev->geo, krnl_bbt_sz);
 	if (!k_bbt) {
 		free(bbt->blks);
 		free(bbt);
@@ -114,7 +115,7 @@ struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 	memset(&ctl, 0, sizeof(ctl));	// Setup the IOCTL
 	ctl.opcode = S12_OPC_GET_BBT;
 	ctl.addr = (uint64_t)k_bbt;
-	ctl.data_len = bbt->nblks * sizeof(*bbt->blks);
+	ctl.data_len = krnl_bbt_sz;
 	ctl.ppa_list = nvm_addr_gen2dev(dev, addr).ppa;
 	ctl.nppas = 0;
 
