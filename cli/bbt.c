@@ -32,6 +32,51 @@ int get(NVM_CLI_CMD_ARGS *args, int flags)
 
 int set(NVM_CLI_CMD_ARGS *args, int flags)
 {
+	NVM_BBT* bbt;
+	NVM_RET ret;
+	int nupdates;
+
+	printf("** nvm_bbt_set(...):\n");
+
+	bbt = nvm_bbt_get(args->dev, args->addrs[0], &ret);	// Get bbt state
+	if (!bbt) {
+		perror("nvm_bbt_get");
+		nvm_ret_pr(&ret);
+		return 1;
+	}
+
+	printf("Current state:\n"); nvm_bbt_pr(bbt);
+
+	for (int i = 0; i < args->geo.nplanes; ++i) {	// Mark block 4
+		int offset = 4 * args->geo.nplanes + i - 1;
+		bbt->blks[offset] = NVM_MARK_BAD;
+	}
+
+	for (int i = 0; i < args->geo.nplanes; ++i) {	// Mark middle
+		int half = (bbt->nblks / args->geo.nplanes) / 2;
+		int offset = half * args->geo.nplanes + i;
+		bbt->blks[offset] = NVM_MARK_BAD;
+	}
+
+	for (int i = 0; i < args->geo.nplanes; ++i) {	// Mark fourth from last
+		int offset = bbt->nblks - 4 * args->geo.nplanes + i - 1;
+		bbt->blks[offset] = NVM_MARK_BAD;
+	}
+
+	printf("New state:\n"); nvm_bbt_pr(bbt);
+
+	nupdates = nvm_bbt_set(args->dev, bbt, &ret);	// Persist bbt on device
+	if (nupdates < 0) {
+		perror("nvm_bbt_set");
+		nvm_ret_pr(&ret);
+	} else {
+		printf("** nupdates(%d) successful\n", nupdates);
+	}
+
+	free(bbt->blks);
+	free(bbt);
+
+	return 0;
 	return 0;
 }
 
