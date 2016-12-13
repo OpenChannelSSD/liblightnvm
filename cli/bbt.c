@@ -47,20 +47,8 @@ int set(NVM_CLI_CMD_ARGS *args, int flags)
 
 	printf("Current state:\n"); nvm_bbt_pr(bbt);
 
-	for (int i = 0; i < args->geo.nplanes; ++i) {	// Mark block 4
-		int offset = 4 * args->geo.nplanes + i - 1;
-		bbt->blks[offset] = NVM_MARK_BAD;
-	}
-
-	for (int i = 0; i < args->geo.nplanes; ++i) {	// Mark middle
-		int half = (bbt->nblks / args->geo.nplanes) / 2;
-		int offset = half * args->geo.nplanes + i;
-		bbt->blks[offset] = NVM_MARK_BAD;
-	}
-
-	for (int i = 0; i < args->geo.nplanes; ++i) {	// Mark fourth from last
-		int offset = bbt->nblks - 4 * args->geo.nplanes + i - 1;
-		bbt->blks[offset] = NVM_MARK_BAD;
+	for (int i = 0; i < bbt->nblks; ++i) {
+		bbt->blks[i] = flags;
 	}
 
 	printf("New state:\n"); nvm_bbt_pr(bbt);
@@ -70,7 +58,7 @@ int set(NVM_CLI_CMD_ARGS *args, int flags)
 		perror("nvm_bbt_set");
 		nvm_ret_pr(&ret);
 	} else {
-		printf("** nupdates(%d) successful\n", nupdates);
+		printf("** SUCCESS -- nupdates(%d)\n", nupdates);
 	}
 
 	free(bbt->blks);
@@ -104,10 +92,12 @@ int mark(NVM_CLI_CMD_ARGS *args, int flags)
 //
 static NVM_CLI_CMD cmds[] = {
 	{"get", get, NVM_CLI_ARG_CH_LUN, 0x0},
-	{"set", set, NVM_CLI_ARG_CH_LUN, 0x0},
-	{"mark_f", mark, NVM_CLI_ARG_PPALIST, 0x0},
-	{"mark_b", mark, NVM_CLI_ARG_PPALIST, 0x1},
-	{"mark_g", mark, NVM_CLI_ARG_PPALIST, 0x2},
+	{"set_f", set, NVM_CLI_ARG_CH_LUN, NVM_MARK_GOOD},
+	{"set_b", set, NVM_CLI_ARG_CH_LUN, NVM_MARK_BAD},
+	{"set_g", set, NVM_CLI_ARG_CH_LUN, NVM_MARK_GBAD},
+	{"mark_f", mark, NVM_CLI_ARG_PPALIST, NVM_MARK_GOOD},
+	{"mark_b", mark, NVM_CLI_ARG_PPALIST, NVM_MARK_BAD},
+	{"mark_g", mark, NVM_CLI_ARG_PPALIST, NVM_MARK_GBAD},
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
