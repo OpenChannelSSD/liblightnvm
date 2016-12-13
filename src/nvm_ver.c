@@ -1,5 +1,4 @@
-#include <stdlib.h>
-#include <string.h>
+#include <stdio.h>
 
 int nvm_ver_major(void)
 {
