@@ -7,25 +7,25 @@
 
 int erase(NVM_CLI_CMD_ARGS *args, int flags)
 {
-	ssize_t err;
+	ssize_t res;
 
 	printf("** nvm_sblk_erase(...): sblk_tbytes(%lu)\n",
 	        args->sblk_geo.tbytes);
 	nvm_sblk_pr(args->sblk);
 
 	nvm_timer_start();
-	err = nvm_sblk_erase(args->sblk);
-	if (err)
-		printf("FAILED: nvm_sblk_erase err(%ld)\n", err);
+	res = nvm_sblk_erase(args->sblk);
+	if (res < 0)
+		perror("nvm_sblk_erase");
 	nvm_timer_stop();
 	nvm_timer_pr("nvm_sblk_erase");
 
-	return err ? 1 : 0;
+	return res < 0;
 }
 
 int write(NVM_CLI_CMD_ARGS *args, int flags)
 {
-	ssize_t err;
+	ssize_t ret;
 	char *buf;
 
 	printf("** nvm_sblk_write(...): sblk_tbytes(%lu)\n",
@@ -35,8 +35,8 @@ int write(NVM_CLI_CMD_ARGS *args, int flags)
 	nvm_timer_start();
 	buf = nvm_buf_alloc(args->sblk_geo, args->sblk_geo.tbytes);
 	if (!buf) {
-		printf("FAILED: allocating buf\n");
-		return ENOMEM;
+		perror("nvm_buf_alloc");
+		return errno;
 	}
 	nvm_timer_stop();
 	nvm_timer_pr("nvm_buf_alloc");
@@ -47,39 +47,38 @@ int write(NVM_CLI_CMD_ARGS *args, int flags)
 	nvm_timer_pr("nvm_buf_fill");
 
 	nvm_timer_start();
-	err = nvm_sblk_write(args->sblk, buf, args->sblk_geo.tbytes);
-	if (err)
-		printf("FAILED: nvm_sblk_write err(%ld)\n", err);
+	ret = nvm_sblk_write(args->sblk, buf, args->sblk_geo.tbytes);
+	if (ret < 0)
+		perror("nvm_sblk_write");
 	nvm_timer_stop();
 	nvm_timer_pr("nvm_sblk_write");
 
 	free(buf);
 
-	return err ? 1 : 0;
+	return ret < 0;
 }
 
 int pad(NVM_CLI_CMD_ARGS *args, int flags)
 {
-	ssize_t err;
+	ssize_t ret;
 
 	printf("** nvm_sblk_pad(...): sblk_tbytes(%lu)\n",
 	       args->sblk_geo.tbytes);
 	nvm_sblk_pr(args->sblk);
 
 	nvm_timer_start();
-	err = nvm_sblk_pad(args->sblk);
-	if (err) {
-		printf("FAILED: nvm_sblk_pad err(%ld)\n", err);
-	}
+	ret = nvm_sblk_pad(args->sblk);
+	if (ret < 0)
+		perror("nvm_sblk_pad");
 	nvm_timer_stop();
 	nvm_timer_pr("nvm_sblk_pad");
 
-	return err ? 1 : 0;
+	return ret < 0;
 }
 
 int read(NVM_CLI_CMD_ARGS *args, int flags)
 {
-	ssize_t err;
+	ssize_t ret;
 	char *buf;
 
 	printf("** nvm_sblk_read(...): sblk_tbytes(%lu)\n",
@@ -89,23 +88,22 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 	nvm_timer_start();
 	buf = nvm_buf_alloc(args->sblk_geo, args->sblk_geo.tbytes);
 	if (!buf) {
-		printf("FAILED: allocating buf\n");
-		return ENOMEM;
+		perror("nvm_buf_alloc");
+		return errno;
 	}
 	nvm_timer_stop();
 	nvm_timer_pr("nvm_buf_alloc");
 
 	nvm_timer_start();
-	err = nvm_sblk_read(args->sblk, buf, args->sblk_geo.tbytes);
-	if (err) {
-		printf("FAILED: nvm_sblk_read err(%ld)\n", err);
-	}
+	ret = nvm_sblk_read(args->sblk, buf, args->sblk_geo.tbytes);
+	if (ret < 0)
+		perror("nvm_sblk_read");
 	nvm_timer_stop();
 	nvm_timer_pr("nvm_sblk_read");
 
 	free(buf);
 
-	return err ? 1 : 0;
+	return ret < 0;
 }
 
 //
