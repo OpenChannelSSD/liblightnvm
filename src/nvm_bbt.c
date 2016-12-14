@@ -85,7 +85,7 @@ struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 	struct nvm_bbt *bbt;
 	struct krnl_bbt *k_bbt;
 	size_t krnl_bbt_sz;
-	int err, i;
+	int err;
 
 	bbt = malloc(sizeof(*bbt));
 	if (!bbt) {
@@ -138,7 +138,7 @@ struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 		return NULL;
 	}
 
-	for (i = 0; i < bbt->nblks; ++i) {
+	for (int i = 0; i < bbt->nblks; ++i) {
 		bbt->blks[i] = k_bbt->blk[i];
 	}
 
@@ -184,7 +184,7 @@ int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 {
 	struct nvm_passthru_vio ctl;
 	struct nvm_addr dev_addrs[naddrs];
-	int i, err;
+	int err;
 
 	switch(flags) {
 		case 0x0:
@@ -197,7 +197,7 @@ int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 			break;
 	}
 
-	for (i = 0; i < naddrs; ++i) {	// Setup PPAs: Convert address format
+	for (int i = 0; i < naddrs; ++i) {	// Setup PPAs: Convert format
 		dev_addrs[i] = nvm_addr_gen2dev(dev, addrs[i]);
 	}
 
@@ -222,13 +222,12 @@ int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 
 void nvm_bbt_pr(struct nvm_bbt *bbt)
 {
-	int i, nnotgood;
+	int nnotgood = 0;
 
 	printf("bbt {\n");
 	printf("  addr"); nvm_addr_pr(bbt->addr);
 	printf("  nblks(%lu) {", bbt->nblks);
-	nnotgood = 0;
-	for (i = 0; i < bbt->nblks; i += bbt->dev->geo.nplanes) {
+	for (int i = 0; i < bbt->nblks; i += bbt->dev->geo.nplanes) {
 		int vblk = i / bbt->dev->geo.nplanes;
 
 		printf("\n    vblk(%03d): [ ", vblk);

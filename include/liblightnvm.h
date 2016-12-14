@@ -1,5 +1,5 @@
 /*
- * User space I/O library for Open-channel SSDs
+ * User space I/O library for Open-Channel SSDs
  *
  * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
  * Copyright (C) 2015 Matias González <javier@cnexlabs.com>
@@ -268,8 +268,9 @@ void nvm_ret_pr(NVM_RET *ret);
  * @param addr Address of the LUN to retrieve bad-block-table for
  * @param ret Pointer to structure in which to store lower-level status and
  *            result.
- * @returns Pointer to the bad-block-table for the given LUN addr on dev. NULL
- * on error, errno set accordingly and ret filled with lower-level result codes.
+ * @returns On success, a pointer to the bad-block-table is returned. On error,
+ * NULL is returned, errno set to indicate the error and ret filled with
+ * lower-level result codes
  */
 NVM_BBT* nvm_bbt_get(NVM_DEV dev, NVM_ADDR addr, NVM_RET *ret);
 
@@ -280,8 +281,9 @@ NVM_BBT* nvm_bbt_get(NVM_DEV dev, NVM_ADDR addr, NVM_RET *ret);
  * @param bbt The bbt to write to device
  * @param ret Pointer to structure in which to store lower-level status and
  *            result.
- * @returns 0 on success. NULL on error, errno set accordingly and ret filled
- * with lower-level result codes.
+ * @returns On success, the number of updated entries is returned. On error, -1
+ * is returned, errno set to indicate the error and ret filled with with
+ * lower-level result codes
  */
 int nvm_bbt_set(NVM_DEV dev, NVM_BBT* bbt, NVM_RET *ret);
 
@@ -299,8 +301,8 @@ int nvm_bbt_set(NVM_DEV dev, NVM_BBT* bbt, NVM_RET *ret);
  * @param flags 0x0 = GOOD, 0x1 = BAD, 0x2 = GROWN_BAD, as well as access mode
  * @param ret Pointer to structure in which to store lower-level status and
  *            result.
- * @returns 0 on success. On error: returns -1, sets `errno` accordingly, and
- *          fills `ret` with lower-level result and status codes
+ * @returns On success, 0 is returned. On error, -1 is returned, errno set to
+ * indicate the error and ret filled with lower-level result codes
  */
 int nvm_bbt_mark(NVM_DEV dev, NVM_ADDR addrs[], int naddrs, uint16_t flags,
 		 NVM_RET* ret);
