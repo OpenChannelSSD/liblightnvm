@@ -181,7 +181,7 @@ ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
 
 	const int alignment = (nplanes * nsectors * nbytes);
 
-	const size_t spg_bgn = sblk->pos_write / alignment;
+	const size_t spg_bgn = offset / alignment;
 	const size_t spg_end = spg_bgn + (count / alignment);
 
 	const int NVM_OP_NADDR = nplanes * nsectors;
@@ -220,7 +220,7 @@ ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
 			const char *data_off;
 
 			if (buf)
-				data_off = data + spg * nbytes * NVM_CMD_NADDR;
+				data_off = data + spg * nbytes * NVM_CMD_NADDR - offset;
 			else
 				data_off = data;
 
@@ -319,7 +319,7 @@ ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
 		for (size_t spg = spg_bgn + tid; spg < spg_end; spg += nthreads) {
 			struct nvm_addr addrs[NVM_CMD_NADDR];
 
-			char *buf_off = buf + spg * nbytes * NVM_CMD_NADDR;
+			char *buf_off = buf + spg * nbytes * NVM_CMD_NADDR - offset;
 
 			// channels X luns X pages
 			int ch = (spg % nchannels) + ch_off;
