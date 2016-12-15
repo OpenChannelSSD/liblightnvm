@@ -43,7 +43,7 @@ void *nvm_buf_alloc(NVM_GEO geo, size_t nbytes)
 		return NULL;
 	}
 
-	ret = posix_memalign((void **)&buf, geo.nbytes, nbytes);
+	ret = posix_memalign((void **)&buf, geo.sector_nbytes, nbytes);
 	if (ret) {
 		errno = ret;
 		return NULL;

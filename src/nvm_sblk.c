@@ -109,7 +109,7 @@ struct nvm_sblk *nvm_sblk_new(struct nvm_dev *dev, int ch_bgn, int ch_end,
 	sblk->geo.tbytes = sblk->geo.nchannels * sblk->geo.nluns * \
 			   sblk->geo.nplanes * sblk->geo.nblocks * \
 			   sblk->geo.npages * sblk->geo.nsectors * \
-			   sblk->geo.nbytes;
+			   sblk->geo.sector_nbytes;
 
 	return sblk;
 }
@@ -177,7 +177,7 @@ ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
 	const int npages = geo.npages;
 	const int nplanes = geo.nplanes;
 	const int nsectors = geo.nsectors;
-	const int nbytes = geo.nbytes;
+	const int nbytes = geo.sector_nbytes;
 
 	const int alignment = (nplanes * nsectors * nbytes);
 
@@ -290,7 +290,7 @@ ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
 	const int npages = geo.npages;
 	const int nplanes = geo.nplanes;
 	const int nsectors = geo.nsectors;
-	const int nbytes = geo.nbytes;
+	const int nbytes = geo.sector_nbytes;
 
 	const int alignment = (nplanes * nsectors * nbytes);
 

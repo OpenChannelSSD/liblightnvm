@@ -151,7 +151,7 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
 	const struct nvm_geo geo = nvm_dev_attr_geo(vblk->dev);
 	const int naddrs = geo.nplanes * geo.nsectors;
 	struct nvm_addr addrs[naddrs];
-	const int align = naddrs * geo.nbytes;
+	const int align = naddrs * geo.sector_nbytes;
 	const int vpg_offset = offset / align;
 	size_t nbytes_written = 0;
 	const int PLANE_FLAG = plane_access_mode(geo.nplanes);
@@ -200,7 +200,7 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 	const struct nvm_geo geo = nvm_dev_attr_geo(vblk->dev);
 	const int len = geo.nplanes * geo.nsectors;
 	struct nvm_addr list[len];
-	const int align = len * geo.nbytes;
+	const int align = len * geo.sector_nbytes;
 	const int vpg_offset = offset / align;
 	size_t nbytes_read = 0;
 	int PLANE_FLAG = plane_access_mode(geo.nplanes);

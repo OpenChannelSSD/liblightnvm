@@ -64,7 +64,7 @@ int chunked_write(NVM_CLI_CMD_ARGS *args, int flags)
 	char *buf;
 	size_t buf_sz = args->sblk_geo.nchannels * args->sblk_geo.nluns \
 			* args->sblk_geo.nplanes * args->sblk_geo.nsectors \
-			* args->sblk_geo.nbytes;
+			* args->sblk_geo.sector_nbytes;
 	size_t nbytes_written = 0;
 
 	printf("** nvm_sblk_write(...): sblk_tbytes(%lu), buf_sz(%lu)\n",

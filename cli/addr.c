@@ -44,7 +44,7 @@ int write(NVM_CLI_CMD_ARGS *args, int flags)
 	int PLANE_FLAG;
 	ssize_t err = 0;
 
-	int buf_nbytes = args->naddrs * args->geo.nbytes;
+	int buf_nbytes = args->naddrs * args->geo.sector_nbytes;
 	char *buf = NULL;
 	int meta_tbytes = args->naddrs * args->geo.meta_nbytes;
 	char *meta = NULL;
@@ -109,7 +109,7 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 	int PLANE_FLAG;
 	ssize_t err = 0;
 
-	int buf_nbytes = args->naddrs * args->geo.nbytes;
+	int buf_nbytes = args->naddrs * args->geo.sector_nbytes;
 	char *buf = NULL;
 	int meta_tbytes = args->naddrs * args->geo.meta_nbytes;
 	char *meta = NULL;

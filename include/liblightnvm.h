@@ -169,11 +169,12 @@ typedef struct nvm_geo {
 	size_t nblocks;		///< Number of blocks per plane
 	size_t npages;		///< Number of pages per block
 	size_t nsectors;	///< Number of sectors per page
-	size_t nbytes;		///< Number of bytes per sector
 
+	size_t page_nbytes;	///< Number of bytes per page
+	size_t sector_nbytes;	///< Number of bytes per sector
 	size_t meta_nbytes;	///< Number of bytes for out-of-bound / metadata
 
-	size_t tbytes;		///< Total number of bytes on device
+	size_t tbytes;		///< Total number of bytes in geometry
 	size_t vblk_nbytes;	///< Number of bytes per virtual block
 	size_t vpg_nbytes;	///< Number of bytes per virtual page
 } NVM_GEO;

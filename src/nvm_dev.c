@@ -271,19 +271,19 @@ static int dev_attr_fill(struct nvm_dev *dev)
 	}
 	geo->npages = val;
 
-	if (sysattr2int(udev_dev, "lightnvm/sec_per_pg", &val)) {
-		NVM_DEBUG("ERR: sec_per_pg for dev->name(%s)\n", dev->name);
+	if (sysattr2int(udev_dev, "lightnvm/page_size", &val)) {
+		NVM_DEBUG("ERR: page_size for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
-	geo->nsectors = val;
+	geo->page_nbytes = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/hw_sector_size", &val)) {
 		NVM_DEBUG("ERR: hw_sector_size for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
-	geo->nbytes = val;
+	geo->sector_nbytes = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/oob_sector_size", &val)) {
 		NVM_DEBUG("ERR: oob_sector_size dev->name(%s)\n", dev->name);
@@ -300,18 +300,21 @@ static int dev_attr_fill(struct nvm_dev *dev)
 		geo->meta_nbytes = 16;	// Naively hope this is right
 	}
 
+	// Derive number of sectors
+	geo->nsectors = geo->page_nbytes / geo->sector_nbytes;
+
 	/* Derive total number of bytes on device */
 	geo->tbytes = geo->nchannels * geo->nluns * geo->nplanes * \
-		      geo->nblocks * geo->npages * geo->nsectors * geo->nbytes;
+		      geo->nblocks * geo->npages * geo->nsectors * geo->sector_nbytes;
 
 	/* Derive number of bytes occupied by a virtual block/page */
 	geo->vblk_nbytes = geo->nplanes * geo->npages * geo->nsectors * \
-			   geo->nbytes;
-	geo->vpg_nbytes = geo->nplanes * geo->nsectors * geo->nbytes;
+			   geo->sector_nbytes;
+	geo->vpg_nbytes = geo->nplanes * geo->nsectors * geo->sector_nbytes;
 
 	map = &(dev->lba_map);	/* Derive widths for LBA mapping */
 
-	map->sector_nbytes = geo->nbytes;
+	map->sector_nbytes = geo->sector_nbytes;
 	map->plane_nbytes = geo->nsectors * map->sector_nbytes;
 	map->page_nbytes = geo->nplanes * map->plane_nbytes;
 	map->block_nbytes = geo->npages * map->page_nbytes;
@@ -373,7 +376,7 @@ int nvm_dev_attr_nsectors(struct nvm_dev *dev)
 
 int nvm_dev_attr_nbytes(struct nvm_dev *dev)
 {
-	return dev->geo.nbytes;
+	return dev->geo.sector_nbytes;
 }
 
 int nvm_dev_attr_vblk_nbytes(struct nvm_dev *dev)

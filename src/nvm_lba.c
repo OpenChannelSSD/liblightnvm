@@ -38,12 +38,12 @@
 void nvm_lba_map_pr(struct nvm_lba_map* map)
 {
 	printf("lba_map {\n");
-	printf("  channel_nbytes(%lu)\n", map->channel_nbytes);
-	printf("  lun_nbytes(%lu)\n", map->lun_nbytes);
-	printf("  plane_nbytes(%lu)\n", map->plane_nbytes);
-	printf("  block_nbytes(%lu)\n", map->block_nbytes);
-	printf("  page_nbytes(%lu)\n", map->page_nbytes);
-	printf("  sector_nbytes(%lu)\n", map->sector_nbytes);
+	printf(" channel_nbytes(%lu)\n", map->channel_nbytes);
+	printf(" lun_nbytes(%lu)\n", map->lun_nbytes);
+	printf(" plane_nbytes(%lu)\n", map->plane_nbytes);
+	printf(" block_nbytes(%lu)\n", map->block_nbytes);
+	printf(" page_nbytes(%lu)\n", map->page_nbytes);
+	printf(" sector_nbytes(%lu)\n", map->sector_nbytes);
 	printf("}\n");
 }
 

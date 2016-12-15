@@ -89,7 +89,7 @@ size_t nvm_addr_gen2lba(struct nvm_dev *dev, NVM_ADDR addr)
 {
 	size_t lba = 0;
 
-	// [ch][lun][blk][pg][pl][sec]~nbytes = offset
+	// [ch][lun][blk][pg][pl][sec]~sector_nbytes = offset
 
 	lba += dev->lba_map.channel_nbytes * addr.g.ch;
 	lba += dev->lba_map.lun_nbytes * addr.g.lun;
@@ -137,7 +137,7 @@ static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
 	ctl.ppa_list = len == 1 ? dev_addrs[0].ppa : (uint64_t)dev_addrs;
 
 	ctl.addr = (uint64_t)data;	// Setup data
-	ctl.data_len = data ? dev->geo.nbytes * len : 0;
+	ctl.data_len = data ? dev->geo.sector_nbytes * len : 0;
 
 	ctl.metadata = (uint64_t)meta;	// Setup metadata
 	ctl.metadata_len = meta ? dev->geo.meta_nbytes * len : 0;

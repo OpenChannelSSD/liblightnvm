@@ -55,7 +55,7 @@ Which should output information similar to:
   dev { path(/dev/nvme0n1), name(nvme0n1), fd(3) }
   dev-geo {
    nchannels(16), nluns(8), nplanes(2), nblocks(1048),
-   npages(512), nsectors(4), nbytes(4096),
+   npages(512), nsectors(4), sector_nbytes(4096),
    meta_nbytes(16),
    vpg_nbytes(32768b:32Kb),
    vblk_nbytes(16777216b:16Mb),
