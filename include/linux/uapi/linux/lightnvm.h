@@ -122,8 +122,7 @@ struct nvm_ioctl_dev_factory {
 	__u32 flags;
 };
 
-struct nvm_user_vio
-{
+struct nvm_user_vio {
 	__u8 opcode;
 	__u8 flags;
 	__u16 control;
@@ -139,10 +138,10 @@ struct nvm_user_vio
 	__u32 rsvd3[3];
 };
 
-struct nvm_passthru_vio
-{
+struct nvm_passthru_vio {
 	__u8 opcode;
 	__u8 flags;
+	__u8 rsvd[2];
 	__u32 nsid;
 	__u32 cdw2;
 	__u32 cdw3;
@@ -160,7 +159,6 @@ struct nvm_passthru_vio
 	__u32 result;
 	__u32 timeout_ms;
 };
-
 
 /* The ioctl type, 'L', 0x20 - 0x2F documented in ioctl-number.txt */
 enum {
@@ -201,7 +199,7 @@ enum {
 
 #define NVME_NVM_IOCTL_IO_VIO		_IOWR(NVM_IOCTL, NVM_DEV_VIO_USER_CMD, \
 						struct nvm_passthru_vio)
-#define NVME_NVM_IOCTL_ADMIN_VIO	_IOWR(NVM_IOCTL, NVM_DEV_VIO_ADMIN_CMD, \
+#define NVME_NVM_IOCTL_ADMIN_VIO	_IOWR(NVM_IOCTL, NVM_DEV_VIO_ADMIN_CMD,\
 						struct nvm_passthru_vio)
 #define NVME_NVM_IOCTL_SUBMIT_VIO	_IOWR(NVM_IOCTL, NVM_DEV_VIO_CMD,\
 						struct nvm_user_vio)
