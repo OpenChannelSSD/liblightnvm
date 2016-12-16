@@ -38,18 +38,6 @@
 #include <nvm_debug.h>
 #include <nvm_omp.h>
 
-static inline int plane_access_mode(const int nplanes)
-{
-	switch(nplanes) {
-	case 4:
-		return NVM_MAGIC_FLAG_QUAD;
-	case 2:
-		return NVM_MAGIC_FLAG_DUAL;
-	default:
-		return NVM_MAGIC_FLAG_SNGL;
-	}
-}
-
 struct nvm_sblk *nvm_sblk_new(struct nvm_dev *dev, int ch_bgn, int ch_end,
 			      int lun_bgn, int lun_end, int blk)
 {
@@ -127,7 +115,7 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 	const struct nvm_addr bgn = sblk->bgn;
 	const struct nvm_addr end = sblk->end;
 
-	const int PLANE_FLAG = plane_access_mode(nplanes);
+	const int PMODE = nvm_dev_attr_pmode(sblk->dev);
 
 	#pragma omp parallel for schedule(static) collapse(2) reduction(+:nerr)
 	for (int ch = bgn.g.ch; ch <= end.g.ch; ++ch) {
@@ -146,7 +134,7 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 			}
 
 			err = nvm_addr_erase(sblk->dev, addrs, nplanes,
-                                             PLANE_FLAG, NULL);
+                                             PMODE, NULL);
 			if (err) {
 				NVM_DEBUG("FAILED: nvm_addr_erase err(%ld)", err);
 				++nerr;
@@ -191,7 +179,7 @@ ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
 
 	size_t nerr = 0;
 
-	const int PLANE_FLAG = plane_access_mode(geo.nplanes);
+	const int PMODE = nvm_dev_attr_pmode(sblk->dev);
 
 	const char *data;
 
@@ -242,7 +230,7 @@ ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
 
 			ssize_t err = nvm_addr_write(sblk->dev, addrs,
 						     NVM_CMD_NADDR, data_off,
-						     NULL, PLANE_FLAG, NULL);
+						     NULL, PMODE, NULL);
 			if (err) {
 				NVM_DEBUG("FAILED: nvm_addr_write e(%ld)", err);
 				++nerr;
@@ -304,7 +292,7 @@ ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
 
 	ssize_t nerr = 0;
 
-	const int PLANE_FLAG = plane_access_mode(geo.nplanes);
+	const int PMODE = nvm_dev_attr_pmode(sblk->dev);
 
 	if ((count % alignment) || (offset % alignment)) {	// Check align
 		errno = EINVAL;
@@ -339,7 +327,7 @@ ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
 
 			ssize_t err = nvm_addr_read(sblk->dev, addrs,
 						    NVM_CMD_NADDR, buf_off,
-						    NULL, PLANE_FLAG, NULL);
+						    NULL, PMODE, NULL);
 			if (err) {
 				NVM_DEBUG("FAILED: nvm_addr_read e(%ld)", err);
 				++nerr;

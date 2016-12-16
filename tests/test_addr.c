@@ -62,7 +62,7 @@ void _test_1ADDR(int use_meta)
 	NVM_RET ret;
 	ssize_t res;
 	size_t buf_w_nbytes, meta_w_nbytes, buf_r_nbytes, meta_r_nbytes;
-	int pmode = NVM_MAGIC_FLAG_SNGL;
+	int pmode = NVM_FLAG_PMODE_SNGL;
 	int failed = 1;
 
 	buf_w_nbytes = naddrs * geo.sector_nbytes;
@@ -348,20 +348,20 @@ exit_naddr:
 void test_NADDR_META0_SNGL(void)
 {
 	++blk_addr.g.blk;
-	_test_NADDR(0, NVM_MAGIC_FLAG_SNGL);
+	_test_NADDR(0, NVM_FLAG_PMODE_SNGL);
 }
 
 void test_NADDR_META1_SNGL(void)
 {
 	++blk_addr.g.blk;
-	_test_NADDR(1, NVM_MAGIC_FLAG_SNGL);
+	_test_NADDR(1, NVM_FLAG_PMODE_SNGL);
 }
 
 void test_NADDR_META0_DUAL(void)
 {
 	if (geo.nplanes >= 2) {
 		++blk_addr.g.blk;
-		_test_NADDR(0, NVM_MAGIC_FLAG_DUAL);
+		_test_NADDR(0, NVM_FLAG_PMODE_DUAL);
 	}
 }
 
@@ -369,7 +369,7 @@ void test_NADDR_META1_DUAL(void)
 {
 	if (geo.nplanes >= 2) {
 		++blk_addr.g.blk;
-		_test_NADDR(1, NVM_MAGIC_FLAG_DUAL);
+		_test_NADDR(1, NVM_FLAG_PMODE_DUAL);
 	}
 }
 
@@ -377,7 +377,7 @@ void test_NADDR_META0_QUAD(void)
 {
 	if (geo.nplanes >= 4) {
 		++blk_addr.g.blk;
-		_test_NADDR(0, NVM_MAGIC_FLAG_QUAD);
+		_test_NADDR(0, NVM_FLAG_PMODE_QUAD);
 	}
 }
 
@@ -385,7 +385,7 @@ void test_NADDR_META1_QUAD(void)
 {
 	if (geo.nplanes >= 4) {
 		++blk_addr.g.blk;
-		_test_NADDR(1, NVM_MAGIC_FLAG_QUAD);
+		_test_NADDR(1, NVM_FLAG_PMODE_QUAD);
 	}
 }
 

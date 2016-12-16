@@ -38,18 +38,6 @@
 #include <nvm.h>
 #include <nvm_debug.h>
 
-static inline int plane_access_mode(const int nplanes)
-{
-	switch(nplanes) {
-	case 4:
-		return NVM_MAGIC_FLAG_QUAD;
-	case 2:
-		return NVM_MAGIC_FLAG_DUAL;
-	default:
-		return NVM_MAGIC_FLAG_SNGL;
-	}
-}
-
 struct nvm_vblk *nvm_vblk_new(void)
 {
 	struct nvm_vblk *vblk;
@@ -132,14 +120,14 @@ ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 	struct nvm_geo geo = nvm_dev_attr_geo(vblk->dev);
 	const int naddrs = geo.nplanes;
 	struct nvm_addr addrs[naddrs];
-	const int PLANE_FLAG = plane_access_mode(geo.nplanes);
+	const int PMODE = nvm_dev_attr_pmode(vblk->dev);
 
 	for (int i = 0; i < naddrs; ++i) {
 		addrs[i].ppa = vblk->addr.ppa;
 		addrs[i].g.pl = i;
 	}
 
-	if (nvm_addr_erase(vblk->dev, addrs, naddrs, PLANE_FLAG, NULL))
+	if (nvm_addr_erase(vblk->dev, addrs, naddrs, PMODE, NULL))
 		return -1;		// Propagate errno
 
 	return geo.vblk_nbytes;
@@ -154,7 +142,7 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
 	const int align = naddrs * geo.sector_nbytes;
 	const int vpg_offset = offset / align;
 	size_t nbytes_written = 0;
-	const int PLANE_FLAG = plane_access_mode(geo.nplanes);
+	const int PMODE = nvm_dev_attr_pmode(vblk->dev);
 
 	if ((count % align) || (offset % align)) {
 		errno = EINVAL;
@@ -171,7 +159,7 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
 		}
 
 		if (nvm_addr_write(vblk->dev, addrs, naddrs,
-				   buf + nbytes_written, NULL, PLANE_FLAG,
+				   buf + nbytes_written, NULL, PMODE,
 				   NULL))
 			return -1;	// Propagate errno
 
@@ -203,7 +191,7 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 	const int align = len * geo.sector_nbytes;
 	const int vpg_offset = offset / align;
 	size_t nbytes_read = 0;
-	int PLANE_FLAG = plane_access_mode(geo.nplanes);
+	const int PMODE = nvm_dev_attr_pmode(vblk->dev);
 
 	if ((count % align) || (offset % align)) {
 		errno = EINVAL;
@@ -220,7 +208,7 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 		}
 
 		if (nvm_addr_read(vblk->dev, list, len, buf + nbytes_read, NULL,
-				  PLANE_FLAG, NULL))
+				  PMODE, NULL))
 			return -1;	// Progate errno
 
 		nbytes_read += align;

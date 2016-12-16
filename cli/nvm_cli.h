@@ -48,3 +48,15 @@ size_t nvm_timer_start(void);
 size_t nvm_timer_stop(void);
 double nvm_timer_elapsed(void);
 void nvm_timer_pr(const char* tool);
+
+/**
+ * Override plane_mode via ENV("NVM_CLI_PMODE")
+ *
+ * @note
+ * If nothing NVM_CLI_PMODE is not set, the device default is returned.
+ *
+ * @param dev Device to verify user-supplied plane_mode against
+ * @return On success, user-supplied plane_mode is returned. On error, -1 and
+ * errno set to indicate the error.
+ */
+int nvm_cli_pmode(struct nvm_dev *dev);

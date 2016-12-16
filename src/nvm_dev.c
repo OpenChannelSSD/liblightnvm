@@ -321,6 +321,22 @@ static int dev_attr_fill(struct nvm_dev *dev)
 	map->lun_nbytes = geo->nblocks * map->block_nbytes;
 	map->channel_nbytes = geo->nluns * map->lun_nbytes;
 
+	switch(geo->nplanes) {	// Derive a default plane mode
+		case 4:
+			dev->pmode = NVM_FLAG_PMODE_QUAD;
+			break;
+		case 2:
+			dev->pmode = NVM_FLAG_PMODE_DUAL;
+			break;
+		case 1:
+			dev->pmode = NVM_FLAG_PMODE_SNGL;
+			break;
+
+		default:
+			errno = EINVAL;
+			return -1;
+	}
+
 	return 0;
 }
 
@@ -337,8 +353,8 @@ struct nvm_dev *nvm_dev_new(void)
 
 void nvm_dev_pr(struct nvm_dev *dev)
 {
-	printf("dev { path(%s), name(%s), fd(%d) }\n",
-	       dev->path, dev->name, dev->fd);
+	printf("dev { path(%s), name(%s), fd(%d), pmode(%d) }\n",
+	       dev->path, dev->name, dev->fd, dev->pmode);
 	printf("dev-"); nvm_geo_pr(dev->geo);
 	printf("dev-"); nvm_lba_map_pr(&dev->lba_map);
 	printf("dev-"); nvm_addr_fmt_pr(&dev->fmt);
@@ -392,6 +408,11 @@ int nvm_dev_attr_vpage_nbytes(struct nvm_dev *dev)
 struct nvm_geo nvm_dev_attr_geo(struct nvm_dev *dev)
 {
 	return dev->geo;
+}
+
+int nvm_dev_attr_pmode(struct nvm_dev *dev)
+{
+        return dev->pmode;
 }
 
 struct nvm_dev *nvm_dev_open(const char *dev_path)

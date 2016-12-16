@@ -92,12 +92,12 @@ int mark(NVM_CLI_CMD_ARGS *args, int flags)
 //
 static NVM_CLI_CMD cmds[] = {
 	{"get", get, NVM_CLI_ARG_CH_LUN, 0x0},
-	{"set_f", set, NVM_CLI_ARG_CH_LUN, NVM_MARK_GOOD},
-	{"set_b", set, NVM_CLI_ARG_CH_LUN, NVM_MARK_BAD},
-	{"set_g", set, NVM_CLI_ARG_CH_LUN, NVM_MARK_GBAD},
-	{"mark_f", mark, NVM_CLI_ARG_PPALIST, NVM_MARK_GOOD},
-	{"mark_b", mark, NVM_CLI_ARG_PPALIST, NVM_MARK_BAD},
-	{"mark_g", mark, NVM_CLI_ARG_PPALIST, NVM_MARK_GBAD},
+	{"set_f", set, NVM_CLI_ARG_CH_LUN, NVM_BBT_GOOD},
+	{"set_b", set, NVM_CLI_ARG_CH_LUN, NVM_BBT_BAD},
+	{"set_g", set, NVM_CLI_ARG_CH_LUN, NVM_BBT_GBAD},
+	{"mark_f", mark, NVM_CLI_ARG_PPALIST, NVM_BBT_GOOD},
+	{"mark_b", mark, NVM_CLI_ARG_PPALIST, NVM_BBT_BAD},
+	{"mark_g", mark, NVM_CLI_ARG_PPALIST, NVM_BBT_GBAD},
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);

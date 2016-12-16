@@ -128,7 +128,7 @@ static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
 
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.opcode = opcode;
-	ctl.control = flags | NVM_MAGIC_FLAG_DEFAULT;
+	ctl.control = flags | NVM_FLAG_DEFAULT;
 
 	for (i = 0; i < len; ++i) {	// Setup PPAs: Convert address format
 		dev_addrs[i] = nvm_addr_gen2dev(dev, addrs[i]);

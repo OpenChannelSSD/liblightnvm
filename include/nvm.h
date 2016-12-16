@@ -65,7 +65,8 @@ struct nvm_dev {
 	char path[NVM_DEV_PATH_LEN];	///< Device path e.g. "/dev/nvme0n1"
 	struct nvm_addr_fmt fmt;	///< Device address format
 	struct nvm_geo geo;		///< Device geometry
-	struct nvm_lba_map lba_map;
+	struct nvm_lba_map lba_map;	///< Mapping for LBA format
+    	int pmode;			///< Default plane-mode I/O
 	int fd;				///< Device fd / IOCTL handle
 };
 

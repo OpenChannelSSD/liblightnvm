@@ -9,26 +9,21 @@
 int erase(NVM_CLI_CMD_ARGS *args, int flags)
 {
 	NVM_RET ret;
-	int PLANE_FLAG;
+	int PMODE;
 	ssize_t err = 0;
 
-	switch (args->geo.nplanes) {
-	case 4:
-		PLANE_FLAG = NVM_MAGIC_FLAG_QUAD;
-		break;
-	case 2:
-		PLANE_FLAG = NVM_MAGIC_FLAG_DUAL;
-		break;
-	default:
-		PLANE_FLAG = NVM_MAGIC_FLAG_SNGL;
+	PMODE = nvm_cli_pmode(args->dev);
+	if (PMODE < 0) {
+		perror("nvm_cli_pmode");
+		return EINVAL;
 	}
 
-	printf("** nvm_addr_erase(...):\n");
+	printf("** nvm_addr_erase(...) : pmode(0x%x)\n", PMODE);
 	for (int i = 0; i < args->naddrs; ++i) {
 		nvm_addr_pr(args->addrs[i]);
 	}
 
-	err = nvm_addr_erase(args->dev, args->addrs, args->naddrs, PLANE_FLAG,
+	err = nvm_addr_erase(args->dev, args->addrs, args->naddrs, PMODE,
 			     &ret);
 	if (err) {
 		perror("nvm_addr_erase");
@@ -41,24 +36,19 @@ int erase(NVM_CLI_CMD_ARGS *args, int flags)
 int write(NVM_CLI_CMD_ARGS *args, int flags)
 {
 	NVM_RET ret;
-	int PLANE_FLAG;
+	int PMODE;
 	ssize_t err = 0;
+
+	PMODE = nvm_cli_pmode(args->dev);
+	if (PMODE < 0) {
+		perror("nvm_cli_pmode");
+		return EINVAL;
+	}
 
 	int buf_nbytes = args->naddrs * args->geo.sector_nbytes;
 	char *buf = NULL;
 	int meta_tbytes = args->naddrs * args->geo.meta_nbytes;
 	char *meta = NULL;
-
-	switch (args->geo.nplanes) {
-	case 4:
-		PLANE_FLAG = NVM_MAGIC_FLAG_QUAD;
-		break;
-	case 2:
-		PLANE_FLAG = NVM_MAGIC_FLAG_DUAL;
-		break;
-	default:
-		PLANE_FLAG = NVM_MAGIC_FLAG_SNGL;
-	}
 
 	buf = nvm_buf_alloc(args->geo, buf_nbytes);	// data buffer
 	if (!buf)
@@ -75,7 +65,7 @@ int write(NVM_CLI_CMD_ARGS *args, int flags)
 			meta[i] = (i / args->naddrs) % args->naddrs + 65;
 	}
 
-	printf("** nvm_addr_write(...):\n");
+	printf("** nvm_addr_write(...) : pmode(0x%x)\n", PMODE);
 	for (int i = 0; i < args->naddrs; ++i) {
 		nvm_addr_pr(args->addrs[i]);
 	}
@@ -90,7 +80,7 @@ int write(NVM_CLI_CMD_ARGS *args, int flags)
 	}
 
 	err = nvm_addr_write(args->dev, args->addrs, args->naddrs, buf, meta,
-			     PLANE_FLAG, &ret);
+			     PMODE, &ret);
 	if (err) {
 		perror("nvm_addr_write");
 		nvm_ret_pr(&ret);
@@ -105,24 +95,19 @@ int write(NVM_CLI_CMD_ARGS *args, int flags)
 int read(NVM_CLI_CMD_ARGS *args, int flags)
 {
 	NVM_RET ret;
-	int PLANE_FLAG;
+	int PMODE;
 	ssize_t err = 0;
+
+	PMODE = nvm_cli_pmode(args->dev);
+	if (PMODE < 0) {
+		perror("nvm_cli_pmode");
+		return EINVAL;
+	}
 
 	int buf_nbytes = args->naddrs * args->geo.sector_nbytes;
 	char *buf = NULL;
 	int meta_tbytes = args->naddrs * args->geo.meta_nbytes;
 	char *meta = NULL;
-
-	switch (args->geo.nplanes) {
-	case 4:
-		PLANE_FLAG = NVM_MAGIC_FLAG_QUAD;
-		break;
-	case 2:
-		PLANE_FLAG = NVM_MAGIC_FLAG_DUAL;
-		break;
-	default:
-		PLANE_FLAG = NVM_MAGIC_FLAG_SNGL;
-	}
 
 	buf = nvm_buf_alloc(args->geo, buf_nbytes);	// data buffer
 	if (!buf)
@@ -136,13 +121,13 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 		}
 	}
 
-	printf("** nvm_addr_read(...): \n");
+	printf("** nvm_addr_read(...) : pmode(0x%x)\n", PMODE);
 	for (int i = 0; i < args->naddrs; ++i) {
 		nvm_addr_pr(args->addrs[i]);
 	}
 
 	err = nvm_addr_read(args->dev, args->addrs, args->naddrs, buf, meta,
-			    PLANE_FLAG, NULL);
+			    PMODE, NULL);
 	if (err) {
 		perror("nvm_addr_read");
 		nvm_ret_pr(&ret);
@@ -205,10 +190,10 @@ int cmd_from_lba(NVM_CLI_CMD_ARGS *args, int flags)
 //
 static NVM_CLI_CMD cmds[] = {
 	{"erase", erase, NVM_CLI_ARG_PPALIST, 0x0},
-	{"write", write, NVM_CLI_ARG_PPALIST, 0x0},
-	{"read", read, NVM_CLI_ARG_PPALIST, 0x0},
-	{"write_m", write, NVM_CLI_ARG_PPALIST, 0x1},
-	{"read_m", read, NVM_CLI_ARG_PPALIST, 0x1},
+	{"write", write, NVM_CLI_ARG_PPALIST, 0x1},
+	{"read", read, NVM_CLI_ARG_PPALIST, 0x1},
+	{"write_wm", write, NVM_CLI_ARG_PPALIST, 0x0},
+	{"read_wm", read, NVM_CLI_ARG_PPALIST, 0x0},
 	{"hex2gen", cmd_fmt, NVM_CLI_ARG_PPALIST, 0x0},
 	{"gen2hex", cmd_fmt, NVM_CLI_ARG_CH_LUN_PL_BLK_PG_SEC, 0x0},
 	{"hex2lba", cmd_to_lba, NVM_CLI_ARG_PPALIST, 0x0},

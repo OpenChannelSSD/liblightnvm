@@ -39,16 +39,12 @@ extern "C" {
 #define NVM_DEV_NAME_LEN 32
 #define NVM_DEV_PATH_LEN (NVM_DEV_NAME_LEN + 5)
 
-#define NVM_MAGIC_FLAG_SNGL 0x0		///< Single-plane
-#define NVM_MAGIC_FLAG_DUAL 0x1		///< Dual-plane (NVM_IO_DUAL_ACCESS)
-#define NVM_MAGIC_FLAG_QUAD 0x2		///< Quad-plane (NVM_IO_QUAD_ACCESS)
-#define NVM_MAGIC_FLAG_SCRBL 0x200	///< Scrambler ON/OFF: Context sensitive
+#define NVM_FLAG_PMODE_SNGL 0x0	///< Single-plane
+#define NVM_FLAG_PMODE_DUAL 0x1	///< Dual-plane (NVM_IO_DUAL_ACCESS)
+#define NVM_FLAG_PMODE_QUAD 0x2	///< Quad-plane (NVM_IO_QUAD_ACCESS)
+#define NVM_FLAG_SCRBL 0x200	///< Scrambler ON/OFF: Context sensitive
 
-#define NVM_MARK_GOOD 0x0	///< Block is free / good
-#define NVM_MARK_BAD 0x1	///< Block is bad
-#define NVM_MARK_GBAD 0x2	///< Block has grown bad
-
-#define NVM_MAGIC_FLAG_DEFAULT (NVM_MAGIC_FLAG_SNGL | NVM_MAGIC_FLAG_SCRBL);
+#define NVM_FLAG_DEFAULT (NVM_FLAG_PMODE_SNGL | NVM_FLAG_SCRBL);
 
 #define NVM_BLK_BITS (16)	///< Number of bits for block field
 #define NVM_PG_BITS  (16)	///< Number of bits for page field
@@ -56,6 +52,12 @@ extern "C" {
 #define NVM_PL_BITS  (8)	///< Number of bits for plane field
 #define NVM_LUN_BITS (8)	///< Number of bits for lun field
 #define NVM_CH_BITS  (7)	///< NUmber of bits for channel field
+
+enum nvm_bbt_mark {
+	NVM_BBT_GOOD = 0x0,	///< Block is free / good
+	NVM_BBT_BAD = 0x1,	///< Block is bad
+	NVM_BBT_GBAD = 0x2	///< Block has grown bad
+};
 
 enum nvm_bounds {
 	NVM_BOUNDS_CHANNEL = 1,
@@ -89,8 +91,8 @@ typedef struct nvm_sblk *NVM_SBLK;
  *
  */
 typedef struct nvm_return {
-    uint64_t status;    ///< NVMe command status / completion bits
-    uint32_t result;    ///< NVMe command error codes
+	uint64_t status;	///< NVMe command status / completion bits
+	uint32_t result;	///< NVMe command error codes
 } NVM_RET;
 
 /**
@@ -121,8 +123,8 @@ typedef struct nvm_addr {
 		} g;
 
 		struct {
-			uint64_t line        : 63;	///< Address line
-			uint64_t is_cached   : 1;	///< Cache hint?
+			uint64_t line		: 63;	///< Address line
+			uint64_t is_cached	: 1;	///< Cache hint?
 		} c;
 
 		uint64_t ppa;				///< Address as ppa
@@ -138,18 +140,18 @@ typedef struct nvm_addr_fmt {
 		 * Address format formed as named fields
 		 */
 		struct {
-			uint8_t ch_ofz;   ///< Offset in bits for channel
-			uint8_t ch_len;   ///< Nr. of bits representing channel
-			uint8_t lun_ofz;  ///< Offset in bits for lun
-			uint8_t lun_len;  ///< Nr. of bits representing lun
-			uint8_t pl_ofz;   ///< Offset in bits for plane
-			uint8_t pl_len;   ///< Nr. of bits representing plane
-			uint8_t blk_ofz;  ///< Offset in bits for block
-			uint8_t blk_len;  ///< Nr. of bits representing block
-			uint8_t pg_ofz;   ///< Offset in bits for page
-			uint8_t pg_len;   ///< Nr. of bits representing page
-			uint8_t sec_ofz;  ///< Offset in bits for sector
-			uint8_t sec_len;  ///< Nr. of bits representing sector
+			uint8_t ch_ofz;		///< Offset in bits for channel
+			uint8_t ch_len;		///< Nr. of bits repr. channel
+			uint8_t lun_ofz;	///< Offset in bits for lun
+			uint8_t lun_len;	///< Nr. of bits repr. lun
+			uint8_t pl_ofz;		///< Offset in bits for plane
+			uint8_t pl_len;		///< Nr. of bits repr. plane
+			uint8_t blk_ofz;	///< Offset in bits for block
+			uint8_t blk_len;	///< Nr. of bits repr. block
+			uint8_t pg_ofz;		///< Offset in bits for page
+			uint8_t pg_len;		///< Nr. of bits repr. page
+			uint8_t sec_ofz;	///< Offset in bits for sector
+			uint8_t sec_len;	///< Nr. of bits repr. sector
 		} n;
 
 		/**
@@ -342,6 +344,14 @@ void nvm_dev_close(NVM_DEV dev);
  * @param dev Handle of the device to print information about
  */
 void nvm_dev_pr(NVM_DEV dev);
+
+/**
+ * Returns the default plane_mode of the given device
+ *
+ * @param dev The device to obtain the default plane mode for
+ * @return On success, pmode flag is returned.
+ */
+int nvm_dev_attr_pmode(struct nvm_dev *dev);
 
 /**
  * Returns the geometry of the given device
