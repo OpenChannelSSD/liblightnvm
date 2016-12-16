@@ -79,22 +79,21 @@ int write(NVM_CLI_CMD_ARGS *args, int flags)
 	for (int i = 0; i < args->naddrs; ++i) {
 		nvm_addr_pr(args->addrs[i]);
 	}
-	
+
+	if (getenv("NVM_CLI_BUF_PR")) {
+		printf("** Writing buffer:\n");
+		nvm_buf_pr(buf, buf_nbytes);
+	}
+	if (meta && getenv("NVM_CLI_META_PR")) {
+		printf("** Writing meta:\n");
+		nvm_buf_pr(meta, meta_tbytes);
+	}
+
 	err = nvm_addr_write(args->dev, args->addrs, args->naddrs, buf, meta,
 			     PLANE_FLAG, &ret);
 	if (err) {
 		perror("nvm_addr_write");
 		nvm_ret_pr(&ret);
-	}
-
-	if (meta) {
-		printf("meta(%d) {", meta_tbytes);
-		for (int i = 0; i < meta_tbytes; ++i) {
-			if (i)
-				printf(",");
-			printf(" %c", meta[i]);
-		}
-		printf(" }\n");
 	}
 
 	free(buf);
@@ -149,17 +148,13 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 		nvm_ret_pr(&ret);
 	}
 	
-	if (getenv("NVM_BUF_PR")) {
+	if (getenv("NVM_CLI_BUF_PR")) {
+		printf("** Read buffer:\n");
 		nvm_buf_pr(buf, buf_nbytes);
-		if (meta) {
-			printf("meta {");
-			for (int i = 0; i < meta_tbytes; ++i) {
-				if (i)
-					printf(",");
-				printf(" %c", meta[i]);
-			}
-			printf(" }\n");
-		}
+	}
+	if (meta && getenv("NVM_CLI_META_PR")) {
+		printf("** Read meta:\n");
+		nvm_buf_pr(meta, meta_tbytes);
 	}
 
 	free(buf);
