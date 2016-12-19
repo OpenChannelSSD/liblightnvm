@@ -74,7 +74,7 @@ void nvm_cli_usage(const char *cli_name, const char *cli_description,
 	printf("\n\nUsage:\n");
 
 	for (int i = 0; i < ncmds; ++i) {
-		printf(" %s %8s dev_path ", cli_name, cmds[i].name);
+		printf(" %s %10s dev_path ", cli_name, cmds[i].name);
 
 		switch(cmds[i].argt) {
 		case NVM_CLI_ARG_PPALIST:

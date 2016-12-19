@@ -33,7 +33,7 @@ nvm_dev
   NVM Device (nvm_dev_*) -- Ver { major(0), minor(0), patch(1) }
   
   Usage:
-   nvm_dev     info dev_path 
+   nvm_dev       info dev_path 
   
 
 nvm_bbt
@@ -44,13 +44,13 @@ nvm_bbt
   NVM bad-block-table (nvm_bbt_*) -- Ver { major(0), minor(0), patch(1) }
   
   Usage:
-   nvm_bbt      get dev_path ch lun
-   nvm_bbt    set_f dev_path ch lun
-   nvm_bbt    set_b dev_path ch lun
-   nvm_bbt    set_g dev_path ch lun
-   nvm_bbt   mark_f dev_path ppa [ppa...]
-   nvm_bbt   mark_b dev_path ppa [ppa...]
-   nvm_bbt   mark_g dev_path ppa [ppa...]
+   nvm_bbt        get dev_path ch lun
+   nvm_bbt      set_f dev_path ch lun
+   nvm_bbt      set_b dev_path ch lun
+   nvm_bbt      set_g dev_path ch lun
+   nvm_bbt     mark_f dev_path ppa [ppa...]
+   nvm_bbt     mark_b dev_path ppa [ppa...]
+   nvm_bbt     mark_g dev_path ppa [ppa...]
   
 
 nvm_addr
@@ -61,16 +61,16 @@ nvm_addr
   NVM address (nvm_addr_*) -- Ver { major(0), minor(0), patch(1) }
   
   Usage:
-   nvm_addr    erase dev_path ppa [ppa...]
-   nvm_addr    write dev_path ppa [ppa...]
-   nvm_addr     read dev_path ppa [ppa...]
-   nvm_addr write_wm dev_path ppa [ppa...]
-   nvm_addr  read_wm dev_path ppa [ppa...]
-   nvm_addr  hex2gen dev_path ppa [ppa...]
-   nvm_addr  gen2hex dev_path ch lun pl blk pg sec
-   nvm_addr  hex2lba dev_path ppa [ppa...]
-   nvm_addr  gen2lba dev_path ch lun pl blk pg sec
-   nvm_addr  lba2gen dev_path lba [lba...]
+   nvm_addr      erase dev_path ppa [ppa...]
+   nvm_addr      write dev_path ppa [ppa...]
+   nvm_addr       read dev_path ppa [ppa...]
+   nvm_addr   write_wm dev_path ppa [ppa...]
+   nvm_addr    read_wm dev_path ppa [ppa...]
+   nvm_addr    hex2gen dev_path ppa [ppa...]
+   nvm_addr    gen2hex dev_path ch lun pl blk pg sec
+   nvm_addr    hex2lba dev_path ppa [ppa...]
+   nvm_addr    gen2lba dev_path ch lun pl blk pg sec
+   nvm_addr    lba2gen dev_path lba [lba...]
   
 
 nvm_lba
@@ -81,8 +81,8 @@ nvm_lba
   NVM logical-block-address (nvm_lba_*) -- Ver { major(0), minor(0), patch(1) }
   
   Usage:
-   nvm_lba   pwrite dev_path count offset
-   nvm_lba    pread dev_path count offset
+   nvm_lba     pwrite dev_path count offset
+   nvm_lba      pread dev_path count offset
   
 
 nvm_vblk
@@ -93,11 +93,15 @@ nvm_vblk
   NVM Virtual Block (nvm_vblk_*) -- Ver { major(0), minor(0), patch(1) }
   
   Usage:
-   nvm_vblk    erase dev_path ch_bgn ch_end lun_bgn lun_end blk
-   nvm_vblk    write dev_path ch_bgn ch_end lun_bgn lun_end blk
-   nvm_vblk      pad dev_path ch_bgn ch_end lun_bgn lun_end blk
-   nvm_vblk     read dev_path ch_bgn ch_end lun_bgn lun_end blk
-   nvm_vblk chunked_w dev_path ch_bgn ch_end lun_bgn lun_end blk
+   nvm_vblk      erase dev_path ppa [ppa...]
+   nvm_vblk       read dev_path ppa [ppa...]
+   nvm_vblk      write dev_path ppa [ppa...]
+   nvm_vblk        pad dev_path ppa [ppa...]
+   nvm_vblk span_erase dev_path ch_bgn ch_end lun_bgn lun_end blk
+   nvm_vblk  span_read dev_path ch_bgn ch_end lun_bgn lun_end blk
+   nvm_vblk span_write dev_path ch_bgn ch_end lun_bgn lun_end blk
+   nvm_vblk   span_pad dev_path ch_bgn ch_end lun_bgn lun_end blk
+   nvm_vblk write_chnk dev_path ch_bgn ch_end lun_bgn lun_end blk
   
 
 nvm_dblk
@@ -108,9 +112,9 @@ nvm_dblk
   NVM deprecated block (nvm_dblk_*) -- Ver { major(0), minor(0), patch(1) }
   
   Usage:
-   nvm_dblk    erase dev_path ppa [ppa...]
-   nvm_dblk    write dev_path ppa [ppa...]
-   nvm_dblk     read dev_path ppa [ppa...]
-   nvm_dblk   pwrite dev_path ppa [ppa...]
-   nvm_dblk    pread dev_path ppa [ppa...]
+   nvm_dblk      erase dev_path ppa [ppa...]
+   nvm_dblk      write dev_path ppa [ppa...]
+   nvm_dblk       read dev_path ppa [ppa...]
+   nvm_dblk     pwrite dev_path ppa [ppa...]
+   nvm_dblk      pread dev_path ppa [ppa...]
   

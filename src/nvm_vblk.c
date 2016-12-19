@@ -42,7 +42,7 @@ struct nvm_vblk *nvm_vblk_alloc_span(struct nvm_dev *dev, int ch_bgn,
                                      int ch_end,
                                      int lun_bgn, int lun_end, int blk)
 {
-	struct nvm_vblk *sblk;
+	struct nvm_vblk *vblk;
 	const struct nvm_geo *dev_geo = nvm_dev_attr_geo(dev);
 
 	if (ch_bgn < 0 || ch_bgn > ch_end || ch_end >= dev_geo->nchannels) {
@@ -61,46 +61,46 @@ struct nvm_vblk *nvm_vblk_alloc_span(struct nvm_dev *dev, int ch_bgn,
 		return NULL;
 	}
 
-	sblk = malloc(sizeof(*sblk));
-	if (!sblk) {
-		NVM_DEBUG("sblk malloc failed");
+	vblk = malloc(sizeof(*vblk));
+	if (!vblk) {
+		NVM_DEBUG("vblk malloc failed");
 		errno = ENOMEM;
 		return NULL;
 	}
 
-	sblk->pos_write = 0;
-	sblk->pos_read = 0;
+	vblk->pos_write = 0;
+	vblk->pos_read = 0;
 
-	sblk->dev = dev;
+	vblk->dev = dev;
 
-	sblk->bgn.g.ch = ch_bgn;	/* Construct span */
-	sblk->bgn.g.lun = lun_bgn;
-	sblk->bgn.g.blk = blk;
-	sblk->bgn.g.pl = 0;
-	sblk->bgn.g.pg = 0;
-	sblk->bgn.g.sec = 0;
+	vblk->bgn.g.ch = ch_bgn;	/* Construct span */
+	vblk->bgn.g.lun = lun_bgn;
+	vblk->bgn.g.blk = blk;
+	vblk->bgn.g.pl = 0;
+	vblk->bgn.g.pg = 0;
+	vblk->bgn.g.sec = 0;
 
-	sblk->end.g.ch = ch_end;
-	sblk->end.g.lun = lun_end;
-	sblk->end.g.blk = blk;
-	sblk->end.g.pl = dev_geo->nplanes - 1;
-	sblk->end.g.pg = dev_geo->npages - 1;
-	sblk->end.g.sec = dev_geo->nsectors - 1;
+	vblk->end.g.ch = ch_end;
+	vblk->end.g.lun = lun_end;
+	vblk->end.g.blk = blk;
+	vblk->end.g.pl = dev_geo->nplanes - 1;
+	vblk->end.g.pg = dev_geo->npages - 1;
+	vblk->end.g.sec = dev_geo->nsectors - 1;
 
-	sblk->geo = *dev_geo;		/* Inherit geometry from device */
+	vblk->geo = *dev_geo;		/* Inherit geometry from device */
 
 	/* Overwrite with channels and luns */
-	sblk->geo.nchannels = (sblk->end.g.ch - sblk->bgn.g.ch) + 1;
-	sblk->geo.nluns = (sblk->end.g.lun - sblk->bgn.g.lun) + 1;
-	sblk->geo.nblocks = 1; // For each ch/lun there is only one block
+	vblk->geo.nchannels = (vblk->end.g.ch - vblk->bgn.g.ch) + 1;
+	vblk->geo.nluns = (vblk->end.g.lun - vblk->bgn.g.lun) + 1;
+	vblk->geo.nblocks = 1; // For each ch/lun there is only one block
 
-	/* Derive total number of bytes in sblk */
-	sblk->geo.tbytes = sblk->geo.nchannels * sblk->geo.nluns * \
-			   sblk->geo.nplanes * sblk->geo.nblocks * \
-			   sblk->geo.npages * sblk->geo.nsectors * \
-			   sblk->geo.sector_nbytes;
+	/* Derive total number of bytes in vblk */
+	vblk->geo.tbytes = vblk->geo.nchannels * vblk->geo.nluns * \
+			   vblk->geo.nplanes * vblk->geo.nblocks * \
+			   vblk->geo.npages * vblk->geo.nsectors * \
+			   vblk->geo.sector_nbytes;
 
-	return sblk;
+	return vblk;
 }
 
 struct nvm_vblk *nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addr)

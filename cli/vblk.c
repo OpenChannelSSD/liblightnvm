@@ -58,7 +58,7 @@ int write(NVM_CLI_CMD_ARGS *args, int flags)
 	return ret < 0;
 }
 
-int chunked_write(NVM_CLI_CMD_ARGS *args, int flags)
+int write_chunked(NVM_CLI_CMD_ARGS *args, int flags)
 {
 	ssize_t ret = 0;
 	char *buf;
@@ -155,11 +155,15 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 // Remaining code is CLI boiler-plate
 //
 static NVM_CLI_CMD cmds[] = {
-	{"erase", erase, NVM_CLI_ARG_SPAN, 0x0},
-	{"write", write, NVM_CLI_ARG_SPAN, 0x0},
-	{"pad", pad, NVM_CLI_ARG_SPAN, 0x0},
-	{"read", read, NVM_CLI_ARG_SPAN, 0x0},
-	{"chunked_w", chunked_write, NVM_CLI_ARG_SPAN, 0x0},
+	{"erase", erase, NVM_CLI_ARG_PPALIST, 0x0},
+	{"read", read, NVM_CLI_ARG_PPALIST, 0x0},
+	{"write", write, NVM_CLI_ARG_PPALIST, 0x0},
+	{"pad", pad, NVM_CLI_ARG_PPALIST, 0x0},
+	{"span_erase", erase, NVM_CLI_ARG_SPAN, 0x0},
+	{"span_read", read, NVM_CLI_ARG_SPAN, 0x0},
+	{"span_write", write, NVM_CLI_ARG_SPAN, 0x0},
+	{"span_pad", pad, NVM_CLI_ARG_SPAN, 0x0},
+	{"write_chnk", write_chunked, NVM_CLI_ARG_SPAN, 0x0},
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
