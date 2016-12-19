@@ -117,8 +117,8 @@ int nvm_vblk_put(struct nvm_vblk *vblock)
 
 ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 {
-	struct nvm_geo geo = nvm_dev_attr_geo(vblk->dev);
-	const int naddrs = geo.nplanes;
+	const struct nvm_geo *geo = nvm_dev_attr_geo(vblk->dev);
+	const int naddrs = geo->nplanes;
 	struct nvm_addr addrs[naddrs];
 	const int PMODE = nvm_dev_attr_pmode(vblk->dev);
 
@@ -130,16 +130,16 @@ ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 	if (nvm_addr_erase(vblk->dev, addrs, naddrs, PMODE, NULL))
 		return -1;		// Propagate errno
 
-	return geo.vblk_nbytes;
+	return geo->vblk_nbytes;
 }
 
 ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
 			size_t count, size_t offset)
 {
-	const struct nvm_geo geo = nvm_dev_attr_geo(vblk->dev);
-	const int naddrs = geo.nplanes * geo.nsectors;
+	const struct nvm_geo *geo = nvm_dev_attr_geo(vblk->dev);
+	const int naddrs = geo->nplanes * geo->nsectors;
 	struct nvm_addr addrs[naddrs];
-	const int align = naddrs * geo.sector_nbytes;
+	const int align = naddrs * geo->sector_nbytes;
 	const int vpg_offset = offset / align;
 	size_t nbytes_written = 0;
 	const int PMODE = nvm_dev_attr_pmode(vblk->dev);
@@ -154,8 +154,8 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
 			addrs[i].ppa = vblk->addr.ppa;
 
 			addrs[i].g.pg = (nbytes_written / align) + vpg_offset;
-			addrs[i].g.sec = i % geo.nsectors;
-			addrs[i].g.pl = (i / geo.nsectors) % geo.nplanes;
+			addrs[i].g.sec = i % geo->nsectors;
+			addrs[i].g.pl = (i / geo->nsectors) % geo->nplanes;
 		}
 
 		if (nvm_addr_write(vblk->dev, addrs, naddrs,
@@ -185,10 +185,10 @@ ssize_t nvm_vblk_write(struct nvm_vblk *vblk, const void *buf, size_t count)
 ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 		       size_t offset)
 {
-	const struct nvm_geo geo = nvm_dev_attr_geo(vblk->dev);
-	const int len = geo.nplanes * geo.nsectors;
+	const struct nvm_geo *geo = nvm_dev_attr_geo(vblk->dev);
+	const int len = geo->nplanes * geo->nsectors;
 	struct nvm_addr list[len];
-	const int align = len * geo.sector_nbytes;
+	const int align = len * geo->sector_nbytes;
 	const int vpg_offset = offset / align;
 	size_t nbytes_read = 0;
 	const int PMODE = nvm_dev_attr_pmode(vblk->dev);
@@ -203,8 +203,8 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 			list[i].ppa = vblk->addr.ppa;
 
 			list[i].g.pg = (nbytes_read / align) + vpg_offset;
-			list[i].g.sec = i % geo.nsectors;
-			list[i].g.pl = (i / geo.nsectors) % geo.nplanes;
+			list[i].g.sec = i % geo->nsectors;
+			list[i].g.pl = (i / geo->nsectors) % geo->nplanes;
 		}
 
 		if (nvm_addr_read(vblk->dev, list, len, buf + nbytes_read, NULL,

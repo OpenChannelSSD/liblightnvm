@@ -355,7 +355,7 @@ void nvm_dev_pr(struct nvm_dev *dev)
 {
 	printf("dev { path(%s), name(%s), fd(%d), pmode(%d) }\n",
 	       dev->path, dev->name, dev->fd, dev->pmode);
-	printf("dev-"); nvm_geo_pr(dev->geo);
+	printf("dev-"); nvm_geo_pr(&dev->geo);
 	printf("dev-"); nvm_lba_map_pr(&dev->lba_map);
 	printf("dev-"); nvm_addr_fmt_pr(&dev->fmt);
 }
@@ -405,9 +405,9 @@ int nvm_dev_attr_vpage_nbytes(struct nvm_dev *dev)
 	return dev->geo.vpg_nbytes;
 }
 
-struct nvm_geo nvm_dev_attr_geo(struct nvm_dev *dev)
+const struct nvm_geo * nvm_dev_attr_geo(struct nvm_dev *dev)
 {
-	return dev->geo;
+	return &dev->geo;
 }
 
 int nvm_dev_attr_pmode(struct nvm_dev *dev)

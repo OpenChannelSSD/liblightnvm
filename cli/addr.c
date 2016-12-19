@@ -45,9 +45,9 @@ int write(NVM_CLI_CMD_ARGS *args, int flags)
 		return EINVAL;
 	}
 
-	int buf_nbytes = args->naddrs * args->geo.sector_nbytes;
+	int buf_nbytes = args->naddrs * args->geo->sector_nbytes;
 	char *buf = NULL;
-	int meta_tbytes = args->naddrs * args->geo.meta_nbytes;
+	int meta_tbytes = args->naddrs * args->geo->meta_nbytes;
 	char *meta = NULL;
 
 	buf = nvm_buf_alloc(args->geo, buf_nbytes);	// data buffer
@@ -104,9 +104,9 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 		return EINVAL;
 	}
 
-	int buf_nbytes = args->naddrs * args->geo.sector_nbytes;
+	int buf_nbytes = args->naddrs * args->geo->sector_nbytes;
 	char *buf = NULL;
-	int meta_tbytes = args->naddrs * args->geo.meta_nbytes;
+	int meta_tbytes = args->naddrs * args->geo->meta_nbytes;
 	char *meta = NULL;
 
 	buf = nvm_buf_alloc(args->geo, buf_nbytes);	// data buffer

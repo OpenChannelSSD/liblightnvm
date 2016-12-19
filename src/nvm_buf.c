@@ -33,7 +33,7 @@
 #include <liblightnvm.h>
 #include <nvm_debug.h>
 
-void *nvm_buf_alloc(struct nvm_geo geo, size_t nbytes)
+void *nvm_buf_alloc(const struct nvm_geo *geo, size_t nbytes)
 {
 	char *buf;
 	int ret;
@@ -43,7 +43,7 @@ void *nvm_buf_alloc(struct nvm_geo geo, size_t nbytes)
 		return NULL;
 	}
 
-	ret = posix_memalign((void **)&buf, geo.sector_nbytes, nbytes);
+	ret = posix_memalign((void **)&buf, geo->sector_nbytes, nbytes);
 	if (ret) {
 		errno = ret;
 		return NULL;

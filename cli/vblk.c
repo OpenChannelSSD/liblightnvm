@@ -49,15 +49,15 @@ int write(NVM_CLI_CMD_ARGS *args, int flags)
 			return errno;
 		}
 
-		buf = nvm_buf_alloc(args->geo, args->geo.vblk_nbytes);
+		buf = nvm_buf_alloc(args->geo, args->geo->vblk_nbytes);
 		if (!buf) {
 			perror("nvm_buf_alloc");
 			nvm_vblk_free(vblk);
 			return ENOMEM;
 		}
-		nvm_buf_fill(buf, args->geo.vblk_nbytes);
+		nvm_buf_fill(buf, args->geo->vblk_nbytes);
 
-		if (nvm_vblk_write(vblk, buf, args->geo.vblk_nbytes) < 0) {
+		if (nvm_vblk_write(vblk, buf, args->geo->vblk_nbytes) < 0) {
 			err = errno;
 			perror("nvm_vblk_write");
 		}
@@ -76,7 +76,7 @@ int pwrite(NVM_CLI_CMD_ARGS *args, int flags)
 	for (int i = 0; i < args->naddrs; ++i) {
 		struct nvm_vblk *vblk;
 		char *buf;
-		const size_t offset = args->geo.vpg_nbytes * args->addrs[i].g.pg;
+		const size_t offset = args->geo->vpg_nbytes * args->addrs[i].g.pg;
 
 		printf("** nvm_vblk_pwrite(...):\n");
 		nvm_addr_pr(args->addrs[i]);
@@ -87,15 +87,15 @@ int pwrite(NVM_CLI_CMD_ARGS *args, int flags)
 			return ENOMEM;
 		}
 
-		buf = nvm_buf_alloc(args->geo, args->geo.vpg_nbytes);
+		buf = nvm_buf_alloc(args->geo, args->geo->vpg_nbytes);
 		if (!buf) {
 			perror("nvm_buf_alloc");
 			nvm_vblk_free(vblk);
 			return ENOMEM;
 		}
-		nvm_buf_fill(buf, args->geo.vpg_nbytes);
+		nvm_buf_fill(buf, args->geo->vpg_nbytes);
 
-		if (nvm_vblk_pwrite(vblk, buf, args->geo.vpg_nbytes, offset) < 0) {
+		if (nvm_vblk_pwrite(vblk, buf, args->geo->vpg_nbytes, offset) < 0) {
 			perror("nvm_vblk_pwrite");
 			err = errno;
 		}
@@ -124,20 +124,20 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 			return ENOMEM;
 		}
 
-		buf = nvm_buf_alloc(args->geo, args->geo.vblk_nbytes);
+		buf = nvm_buf_alloc(args->geo, args->geo->vblk_nbytes);
 		if (!buf) {
 			perror("nvm_buf_alloc");
 			nvm_vblk_free(vblk);
 			return ENOMEM;
 		}
 
-		if (nvm_vblk_read(vblk, buf, args->geo.vblk_nbytes) < 0) {
+		if (nvm_vblk_read(vblk, buf, args->geo->vblk_nbytes) < 0) {
 			perror("nvm_vblk_read");
 			err = errno;
 		}
 
 		if (getenv("NVM_BUF_PR"))
-			nvm_buf_pr(buf, args->geo.vblk_nbytes);
+			nvm_buf_pr(buf, args->geo->vblk_nbytes);
 
 		free(buf);
 		nvm_vblk_free(vblk);
@@ -153,7 +153,7 @@ int pread(NVM_CLI_CMD_ARGS *args, int flags)
 	for (int i = 0; i < args->naddrs; ++i) {
 		struct nvm_vblk *vblk;
 		void *buf;
-		const size_t offset = args->geo.vpg_nbytes * args->addrs[i].g.pg;
+		const size_t offset = args->geo->vpg_nbytes * args->addrs[i].g.pg;
 
 		printf("** nvm_vblk_pread(...):\n");
 		nvm_addr_pr(args->addrs[i]);
@@ -164,21 +164,21 @@ int pread(NVM_CLI_CMD_ARGS *args, int flags)
 			return ENOMEM;
 		}
 
-		buf = nvm_buf_alloc(args->geo, args->geo.vpg_nbytes);
+		buf = nvm_buf_alloc(args->geo, args->geo->vpg_nbytes);
 		if (!buf) {
 			perror("nvm_buf_alloc");
 			nvm_vblk_free(vblk);
 			return ENOMEM;
 		}
-		nvm_buf_fill(buf, args->geo.vpg_nbytes);
+		nvm_buf_fill(buf, args->geo->vpg_nbytes);
 
-		if (nvm_vblk_pread(vblk, buf, args->geo.vpg_nbytes, offset) < 0) {
+		if (nvm_vblk_pread(vblk, buf, args->geo->vpg_nbytes, offset) < 0) {
 			perror("nvm_vblk_pread");
 			err = errno;
 		}
 
 		if (getenv("NVM_BUF_PR"))
-			nvm_buf_pr(buf, args->geo.vpg_nbytes);
+			nvm_buf_pr(buf, args->geo->vpg_nbytes);
 
 		free(buf);
 		nvm_vblk_free(vblk);

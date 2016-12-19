@@ -233,10 +233,10 @@ void nvm_bounds_pr(int mask);
  * Checks whether the given addr exceeds bounds of the given geometry
  *
  * @param addr The addr to check
- * @param geo The bounds to check against
+ * @param geo The geometric bounds to check the given address against
  * @returns A mask of exceeded boundaries
  */
-int nvm_addr_check(struct nvm_addr addr, struct nvm_geo geo);
+int nvm_addr_check(struct nvm_addr addr, const struct nvm_geo *geo);
 
 /**
  * Convert nvm_address from generic format to device specific format
@@ -351,7 +351,7 @@ void nvm_bbt_pr(struct nvm_bbt *bbt);
 /**
  * Prints human readable representation of the given geometry
  */
-void nvm_geo_pr(struct nvm_geo geo);
+void nvm_geo_pr(const struct nvm_geo *geo);
 
 /**
  * Creates a handle to given device path
@@ -394,7 +394,7 @@ int nvm_dev_attr_pmode(struct nvm_dev *dev);
  *
  * @returns The geometry (struct nvm_geo) of given device handle
  */
-struct nvm_geo nvm_dev_attr_geo(struct nvm_dev *dev);
+const struct nvm_geo *nvm_dev_attr_geo(struct nvm_dev *dev);
 
 /**
  * Allocate a buffer aligned to match the given geometry
@@ -408,7 +408,7 @@ struct nvm_geo nvm_dev_attr_geo(struct nvm_dev *dev);
  * @returns A pointer to the allocated memory. On error: NULL is returned and
  * `errno` set appropriatly
  */
-void *nvm_buf_alloc(struct nvm_geo geo, size_t nbytes);
+void *nvm_buf_alloc(const struct nvm_geo *geo, size_t nbytes);
 
 /**
  * Fills `buf` with chars A-Z
@@ -684,7 +684,7 @@ struct nvm_addr nvm_sblk_attr_end(struct nvm_sblk *sblk);
  *
  * @param sblk The entity to retrieve information from
  */
-struct nvm_geo nvm_sblk_attr_geo(struct nvm_sblk *sblk);
+const struct nvm_geo *nvm_sblk_attr_geo(struct nvm_sblk *sblk);
 
 /**
  * Retrieve the current cursor position for writes to the sblk

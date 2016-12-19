@@ -38,19 +38,19 @@ void nvm_timer_pr(const char* tool)
 
 int nvm_cli_pmode(struct nvm_dev *dev)
 {
-	struct nvm_geo geo = nvm_dev_attr_geo(dev);
+	const struct nvm_geo *geo = nvm_dev_attr_geo(dev);
 
 	char *pmode_env = getenv("NVM_CLI_PMODE");		// Check ENV
 	if (getenv("NVM_CLI_PMODE")) {
 		switch(atoi(pmode_env)) {
 			case 4:
-				if (geo.nplanes < 4) {	// Verify
+				if (geo->nplanes < 4) {	// Verify
 					errno = EINVAL;
 					return -1;
 				}
 				return NVM_FLAG_PMODE_QUAD;
 			case 2:
-				if (geo.nplanes < 2) {	// Verify
+				if (geo->nplanes < 2) {	// Verify
 					errno = EINVAL;
 					return -1;
 				}

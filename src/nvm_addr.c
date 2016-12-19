@@ -43,26 +43,26 @@ void nvm_ret_pr(struct nvm_ret *ret)
 	       ret->status);
 }
 
-int nvm_addr_check(struct nvm_addr addr, struct nvm_geo geo)
+int nvm_addr_check(struct nvm_addr addr, const struct nvm_geo *geo)
 {
 	int exceeded = 0;
 
-	if (addr.g.ch >= geo.nchannels) {
+	if (addr.g.ch >= geo->nchannels) {
 		exceeded |= NVM_BOUNDS_CHANNEL;
 	}
-	if (addr.g.lun >= geo.nluns) {
+	if (addr.g.lun >= geo->nluns) {
 		exceeded |= NVM_BOUNDS_LUN;
 	}
-	if (addr.g.pl >= geo.nplanes) {
+	if (addr.g.pl >= geo->nplanes) {
 		exceeded |= NVM_BOUNDS_PLANE;
 	}
-	if (addr.g.blk >= geo.nblocks) {
+	if (addr.g.blk >= geo->nblocks) {
 		exceeded |= NVM_BOUNDS_BLOCK;
 	}
-	if (addr.g.pg >= geo.npages) {
+	if (addr.g.pg >= geo->npages) {
 		exceeded |= NVM_BOUNDS_PAGE;
 	}
-	if (addr.g.sec >= geo.nsectors) {
+	if (addr.g.sec >= geo->nsectors) {
 		exceeded |= NVM_BOUNDS_SECTOR;
 	}
 
@@ -70,7 +70,7 @@ int nvm_addr_check(struct nvm_addr addr, struct nvm_geo geo)
 }
 
 inline struct nvm_addr nvm_addr_gen2dev(struct nvm_dev *dev,
-					       struct nvm_addr addr)
+					struct nvm_addr addr)
 {
 	struct nvm_addr d_addr;
 

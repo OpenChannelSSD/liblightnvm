@@ -42,19 +42,19 @@ struct nvm_sblk *nvm_sblk_new(struct nvm_dev *dev, int ch_bgn, int ch_end,
 			      int lun_bgn, int lun_end, int blk)
 {
 	struct nvm_sblk *sblk;
-	struct nvm_geo dev_geo = nvm_dev_attr_geo(dev);
+	const struct nvm_geo *dev_geo = nvm_dev_attr_geo(dev);
 
-	if (ch_bgn < 0 || ch_bgn > ch_end || ch_end >= dev_geo.nchannels) {
+	if (ch_bgn < 0 || ch_bgn > ch_end || ch_end >= dev_geo->nchannels) {
 		NVM_DEBUG("invalid channel span");
 		errno = EINVAL;
 		return NULL;
 	}
-	if (lun_bgn < 0 || lun_bgn > lun_end || lun_end >= dev_geo.nluns) {
+	if (lun_bgn < 0 || lun_bgn > lun_end || lun_end >= dev_geo->nluns) {
 		NVM_DEBUG("invalid lun span");
 		errno = EINVAL;
 		return NULL;
 	}
-	if (blk < 0 || blk >= dev_geo.nblocks) {
+	if (blk < 0 || blk >= dev_geo->nblocks) {
 		NVM_DEBUG("invalid block");
 		errno = EINVAL;
 		return NULL;
@@ -82,11 +82,11 @@ struct nvm_sblk *nvm_sblk_new(struct nvm_dev *dev, int ch_bgn, int ch_end,
 	sblk->end.g.ch = ch_end;
 	sblk->end.g.lun = lun_end;
 	sblk->end.g.blk = blk;
-	sblk->end.g.pl = dev_geo.nplanes - 1;
-	sblk->end.g.pg = dev_geo.npages - 1;
-	sblk->end.g.sec = dev_geo.nsectors - 1;
+	sblk->end.g.pl = dev_geo->nplanes - 1;
+	sblk->end.g.pg = dev_geo->npages - 1;
+	sblk->end.g.sec = dev_geo->nsectors - 1;
 
-	sblk->geo = dev_geo;		/* Inherit geometry from device */
+	sblk->geo = *dev_geo;		/* Inherit geometry from device */
 
 	/* Overwrite with channels and luns */
 	sblk->geo.nchannels = (sblk->end.g.ch - sblk->bgn.g.ch) + 1;
@@ -110,7 +110,7 @@ void nvm_sblk_free(struct nvm_sblk *sblk)
 ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 {
 	size_t nerr = 0;
-	const int nplanes = nvm_sblk_attr_geo(sblk).nplanes;
+	const int nplanes = nvm_sblk_attr_geo(sblk)->nplanes;
 
 	const struct nvm_addr bgn = sblk->bgn;
 	const struct nvm_addr end = sblk->end;
@@ -147,7 +147,7 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 		return -1;
 	}
 
-	return nvm_sblk_attr_geo(sblk).tbytes;
+	return nvm_sblk_attr_geo(sblk)->tbytes;
 }
 
 ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
@@ -155,17 +155,17 @@ ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
 {
 	const struct nvm_addr bgn = sblk->bgn;
 
-	const struct nvm_geo geo = nvm_sblk_attr_geo(sblk);
+	const struct nvm_geo *geo = nvm_sblk_attr_geo(sblk);
 
-	const int nchannels = geo.nchannels;
+	const int nchannels = geo->nchannels;
 	const int ch_off = bgn.g.ch;
-	const int nluns = geo.nluns;
+	const int nluns = geo->nluns;
 	const int lun_off = bgn.g.lun;
 
-	const int npages = geo.npages;
-	const int nplanes = geo.nplanes;
-	const int nsectors = geo.nsectors;
-	const int nbytes = geo.sector_nbytes;
+	const int npages = geo->npages;
+	const int nplanes = geo->nplanes;
+	const int nsectors = geo->nsectors;
+	const int nbytes = geo->sector_nbytes;
 
 	const int alignment = (nplanes * nsectors * nbytes);
 
@@ -268,17 +268,17 @@ ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
 {
 	const struct nvm_addr bgn = sblk->bgn;
 
-	const struct nvm_geo geo = nvm_sblk_attr_geo(sblk);
+	const struct nvm_geo *geo = nvm_sblk_attr_geo(sblk);
 
-	const int nchannels = geo.nchannels;
+	const int nchannels = geo->nchannels;
 	const int ch_off = bgn.g.ch;
-	const int nluns = geo.nluns;
+	const int nluns = geo->nluns;
 	const int lun_off = bgn.g.lun;
 
-	const int npages = geo.npages;
-	const int nplanes = geo.nplanes;
-	const int nsectors = geo.nsectors;
-	const int nbytes = geo.sector_nbytes;
+	const int npages = geo->npages;
+	const int nplanes = geo->nplanes;
+	const int nsectors = geo->nsectors;
+	const int nbytes = geo->sector_nbytes;
 
 	const int alignment = (nplanes * nsectors * nbytes);
 
@@ -365,9 +365,9 @@ struct nvm_addr nvm_sblk_attr_end(struct nvm_sblk *sblk)
 	return sblk->end;
 }
 
-struct nvm_geo nvm_sblk_attr_geo(struct nvm_sblk *sblk)
+const struct nvm_geo * nvm_sblk_attr_geo(struct nvm_sblk *sblk)
 {
-	return sblk->geo;
+	return &sblk->geo;
 }
 
 size_t nvm_sblk_attr_pos_write(struct nvm_sblk *sblk)
@@ -386,6 +386,6 @@ void nvm_sblk_pr(struct nvm_sblk *sblk)
 	printf(" bgn "); nvm_addr_pr(sblk->bgn);
 	printf(" end "); nvm_addr_pr(sblk->end);
 	printf("}\n");
-	printf("sblk-"); nvm_geo_pr(sblk->geo);
+	printf("sblk-"); nvm_geo_pr(&sblk->geo);
 }
 

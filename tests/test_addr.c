@@ -14,7 +14,7 @@ static int lun = 0;
 static int block = 10;
 
 static struct nvm_dev *dev;
-static struct nvm_geo geo;
+static const struct nvm_geo *geo;
 static struct nvm_addr blk_addr;
 
 size_t compare_buffers(char *expected, char *actual, size_t nbytes)
@@ -57,7 +57,7 @@ int teardown(void)
 void _test_1ADDR(int use_meta)
 {
 	char *buf_w = NULL, *buf_r = NULL, *meta_w = NULL, *meta_r = NULL;
-	const int naddrs = geo.nplanes * geo.nsectors;
+	const int naddrs = geo->nplanes * geo->nsectors;
 	struct nvm_addr addrs[naddrs];
 	struct nvm_ret ret;
 	ssize_t res;
@@ -65,10 +65,10 @@ void _test_1ADDR(int use_meta)
 	int pmode = NVM_FLAG_PMODE_SNGL;
 	int failed = 1;
 
-	buf_w_nbytes = naddrs * geo.sector_nbytes;
-	meta_w_nbytes = naddrs * geo.meta_nbytes;
-	buf_r_nbytes = geo.sector_nbytes;
-	meta_r_nbytes = geo.meta_nbytes;
+	buf_w_nbytes = naddrs * geo->sector_nbytes;
+	meta_w_nbytes = naddrs * geo->meta_nbytes;
+	buf_r_nbytes = geo->sector_nbytes;
+	meta_r_nbytes = geo->meta_nbytes;
 
 	buf_w = nvm_buf_alloc(geo, buf_w_nbytes);	// Setup buffers
 	if (!buf_w) {
@@ -87,16 +87,16 @@ void _test_1ADDR(int use_meta)
 	}
 	for (int i = 0; i < naddrs; ++i) {
 		char meta_descr[meta_w_nbytes];
-		int sec = i % geo.nsectors;
-		int pl = (i / geo.nsectors) % geo.nplanes;
+		int sec = i % geo->nsectors;
+		int pl = (i / geo->nsectors) % geo->nplanes;
 
 		sprintf(meta_descr, "[P(%02d),S(%02d)]", pl, sec);
-		if (strlen(meta_descr) > geo.meta_nbytes) {
+		if (strlen(meta_descr) > geo->meta_nbytes) {
 			CU_FAIL("Failed constructing meta buffer");
 			goto exit_naddr;
 		}
 
-		memcpy(meta_w + i * geo.meta_nbytes, meta_descr,
+		memcpy(meta_w + i * geo->meta_nbytes, meta_descr,
 		       strlen(meta_descr));
 	}
 
@@ -112,25 +112,25 @@ void _test_1ADDR(int use_meta)
 		goto exit_naddr;
 	}
 
-	for (int pl = 0; pl < geo.nplanes; ++pl) {	// Erase
+	for (int pl = 0; pl < geo->nplanes; ++pl) {	// Erase
 		addrs[pl].ppa = blk_addr.ppa;
 
 		addrs[pl].g.pl = pl;
 	}
 
-	res = nvm_addr_erase(dev, addrs, geo.nplanes, pmode, &ret);
+	res = nvm_addr_erase(dev, addrs, geo->nplanes, pmode, &ret);
 	if (res < 0) {
 		CU_FAIL("Erase failure");
 		goto exit_naddr;
 	}
 
-	for (int pg = 0; pg < geo.npages; ++pg) {	// Write
+	for (int pg = 0; pg < geo->npages; ++pg) {	// Write
 		for (int i = 0; i < naddrs; ++i) {
 			addrs[i].ppa = blk_addr.ppa;
 
 			addrs[i].g.pg = pg;
-			addrs[i].g.sec = i % geo.nsectors;
-			addrs[i].g.pl = (i / geo.nsectors) % geo.nplanes;
+			addrs[i].g.sec = i % geo->nsectors;
+			addrs[i].g.pl = (i / geo->nsectors) % geo->nplanes;
 		}
 		res = nvm_addr_write(dev, addrs, naddrs, buf_w,
 				     use_meta ? meta_w : NULL, pmode, &ret);
@@ -140,16 +140,16 @@ void _test_1ADDR(int use_meta)
 		}
 	}
 
-	for (int pg = 0; pg < geo.npages; ++pg) {		// Read
-		for (int pl = 0; pl < geo.nplanes; ++pl) {
-			for (int sec = 0; sec < geo.nsectors; ++sec) {
+	for (int pg = 0; pg < geo->npages; ++pg) {		// Read
+		for (int pl = 0; pl < geo->nplanes; ++pl) {
+			for (int sec = 0; sec < geo->nsectors; ++sec) {
 				struct nvm_addr addr;
 				size_t buf_diff = 0, meta_diff = 0;
 
-				int bw_offset = sec * geo.sector_nbytes + \
-					       pl * geo.nsectors * geo.sector_nbytes;
-				int mw_offset = sec * geo.meta_nbytes + \
-						pl * geo.nsectors * geo.meta_nbytes;
+				int bw_offset = sec * geo->sector_nbytes + \
+					       pl * geo->nsectors * geo->sector_nbytes;
+				int mw_offset = sec * geo->meta_nbytes + \
+						pl * geo->nsectors * geo->meta_nbytes;
 
 				addr.ppa = blk_addr.ppa;
 				addr.g.pg = pg;
@@ -208,15 +208,15 @@ void test_1ADDR_META1_SNGL(void)
 void _test_NADDR(int use_meta, int pmode)
 {
 	char *buf_w = NULL, *buf_r = NULL, *meta_w = NULL, *meta_r = NULL;
-	const int naddrs = geo.nplanes * geo.nsectors;
+	const int naddrs = geo->nplanes * geo->nsectors;
 	struct nvm_addr addrs[naddrs];
 	struct nvm_ret ret;
 	ssize_t res;
 	size_t buf_nbytes, meta_nbytes;
 	int failed = 1;
 
-	buf_nbytes = naddrs * geo.sector_nbytes;
-	meta_nbytes = naddrs * geo.meta_nbytes;
+	buf_nbytes = naddrs * geo->sector_nbytes;
+	meta_nbytes = naddrs * geo->meta_nbytes;
 
 	buf_w = nvm_buf_alloc(geo, buf_nbytes);	// Setup buffers
 	if (!buf_w) {
@@ -235,16 +235,16 @@ void _test_NADDR(int use_meta, int pmode)
 	}
 	for (int i = 0; i < naddrs; ++i) {
 		char meta_descr[meta_nbytes];
-		int sec = i % geo.nsectors;
-		int pl = (i / geo.nsectors) % geo.nplanes;
+		int sec = i % geo->nsectors;
+		int pl = (i / geo->nsectors) % geo->nplanes;
 
 		sprintf(meta_descr, "[P(%02d),S(%02d)]", pl, sec);
-		if (strlen(meta_descr) > geo.meta_nbytes) {
+		if (strlen(meta_descr) > geo->meta_nbytes) {
 			CU_FAIL("Failed constructing meta buffer");
 			goto exit_naddr;
 		}
 
-		memcpy(meta_w + i * geo.meta_nbytes, meta_descr,
+		memcpy(meta_w + i * geo->meta_nbytes, meta_descr,
 		       strlen(meta_descr));
 	}
 
@@ -260,24 +260,24 @@ void _test_NADDR(int use_meta, int pmode)
 		goto exit_naddr;
 	}
 
-	for (int pl = 0; pl < geo.nplanes; ++pl) {		// Erase
+	for (int pl = 0; pl < geo->nplanes; ++pl) {		// Erase
 		addrs[pl].ppa = blk_addr.ppa;
 
 		addrs[pl].g.pl = pl;
 	}
-	res = nvm_addr_erase(dev, addrs, geo.nplanes, pmode, &ret);
+	res = nvm_addr_erase(dev, addrs, geo->nplanes, pmode, &ret);
 	if (res < 0) {
 		CU_FAIL("Erase failure");
 		goto exit_naddr;
 	}
 
-	for (int pg = 0; pg < geo.npages; ++pg) {		// Write
+	for (int pg = 0; pg < geo->npages; ++pg) {		// Write
 		for (int i = 0; i < naddrs; ++i) {
 			addrs[i].ppa = blk_addr.ppa;
 
 			addrs[i].g.pg = pg;
-			addrs[i].g.sec = i % geo.nsectors;
-			addrs[i].g.pl = (i / geo.nsectors) % geo.nplanes;
+			addrs[i].g.sec = i % geo->nsectors;
+			addrs[i].g.pl = (i / geo->nsectors) % geo->nplanes;
 		}
 		res = nvm_addr_write(dev, addrs, naddrs, buf_w,
 				     use_meta ? meta_w : NULL, pmode, &ret);
@@ -287,15 +287,15 @@ void _test_NADDR(int use_meta, int pmode)
 		}
 	}
 
-	for (int pg = 0; pg < geo.npages; ++pg) {		// Read
+	for (int pg = 0; pg < geo->npages; ++pg) {		// Read
 		size_t buf_diff = 0, meta_diff = 0;
 
 		for (int i = 0; i < naddrs; ++i) {
 			addrs[i].ppa = blk_addr.ppa;
 
 			addrs[i].g.pg = pg;
-			addrs[i].g.pl = (i / geo.nsectors) % geo.nplanes;
-			addrs[i].g.sec = i % geo.nsectors;
+			addrs[i].g.pl = (i / geo->nsectors) % geo->nplanes;
+			addrs[i].g.sec = i % geo->nsectors;
 		}
 
 		memset(buf_r, 0, buf_nbytes);
@@ -359,7 +359,7 @@ void test_NADDR_META1_SNGL(void)
 
 void test_NADDR_META0_DUAL(void)
 {
-	if (geo.nplanes >= 2) {
+	if (geo->nplanes >= 2) {
 		++blk_addr.g.blk;
 		_test_NADDR(0, NVM_FLAG_PMODE_DUAL);
 	}
@@ -367,7 +367,7 @@ void test_NADDR_META0_DUAL(void)
 
 void test_NADDR_META1_DUAL(void)
 {
-	if (geo.nplanes >= 2) {
+	if (geo->nplanes >= 2) {
 		++blk_addr.g.blk;
 		_test_NADDR(1, NVM_FLAG_PMODE_DUAL);
 	}
@@ -375,7 +375,7 @@ void test_NADDR_META1_DUAL(void)
 
 void test_NADDR_META0_QUAD(void)
 {
-	if (geo.nplanes >= 4) {
+	if (geo->nplanes >= 4) {
 		++blk_addr.g.blk;
 		_test_NADDR(0, NVM_FLAG_PMODE_QUAD);
 	}
@@ -383,7 +383,7 @@ void test_NADDR_META0_QUAD(void)
 
 void test_NADDR_META1_QUAD(void)
 {
-	if (geo.nplanes >= 4) {
+	if (geo->nplanes >= 4) {
 		++blk_addr.g.blk;
 		_test_NADDR(1, NVM_FLAG_PMODE_QUAD);
 	}

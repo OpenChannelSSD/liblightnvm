@@ -28,21 +28,21 @@
 #include <stdio.h>
 #include <liblightnvm.h>
 
-void nvm_geo_pr(struct nvm_geo geo)
+void nvm_geo_pr(const struct nvm_geo *geo)
 {
 	printf("geo {\n");
 	printf(" nchannels(%lu), nluns(%lu), nplanes(%lu),\n",
-	       geo.nchannels, geo.nluns, geo.nplanes);
+	       geo->nchannels, geo->nluns, geo->nplanes);
 	printf(" nblocks(%lu), npages(%lu), nsectors(%lu),\n",
-	       geo.nblocks, geo.npages, geo.nsectors);
+	       geo->nblocks, geo->npages, geo->nsectors);
 	printf(" page_nbytes(%lu), sector_nbytes(%lu), meta_nbytes(%lu),\n",
-	       geo.page_nbytes, geo.sector_nbytes, geo.meta_nbytes);
+	       geo->page_nbytes, geo->sector_nbytes, geo->meta_nbytes);
 	printf(" tbytes(%lub:%luMb),\n",
-	       geo.tbytes, geo.tbytes >> 20);
+	       geo->tbytes, geo->tbytes >> 20);
 	printf(" vpg_nbytes(%lub:%luKb),\n",
-	       geo.vpg_nbytes, geo.vpg_nbytes >> 10);
+	       geo->vpg_nbytes, geo->vpg_nbytes >> 10);
 	printf(" vblk_nbytes(%lub:%luMb)\n",
-	       geo.vblk_nbytes, geo.vblk_nbytes >> 20);
+	       geo->vblk_nbytes, geo->vblk_nbytes >> 20);
 	printf("}\n");
 }
 

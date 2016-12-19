@@ -16,9 +16,9 @@ typedef enum nvm_cli_argtype {
 
 typedef struct {
 	struct nvm_dev *dev;
-	struct nvm_geo geo;
+	const struct nvm_geo *geo;
 	struct nvm_sblk *sblk;
-	struct nvm_geo sblk_geo;
+	const struct nvm_geo *sblk_geo;
 	struct nvm_addr addrs[1024];
 	int naddrs;
 	size_t lbas[1024];

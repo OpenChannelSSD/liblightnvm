@@ -104,7 +104,7 @@ struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 	}
 
 	krnl_bbt_sz = sizeof(*k_bbt) + sizeof(*(k_bbt->blk)) * bbt->nblks;
-	k_bbt = nvm_buf_alloc(dev->geo, krnl_bbt_sz);
+	k_bbt = nvm_buf_alloc(&dev->geo, krnl_bbt_sz);
 	if (!k_bbt) {
 		free(bbt->blks);
 		free(bbt);
