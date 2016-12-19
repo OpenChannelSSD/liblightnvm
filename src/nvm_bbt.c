@@ -237,9 +237,9 @@ void nvm_bbt_pr(struct nvm_bbt *bbt)
 	printf("  addr"); nvm_addr_pr(bbt->addr);
 	printf("  nblks(%lu) {", bbt->nblks);
 	for (int i = 0; i < bbt->nblks; i += bbt->dev->geo.nplanes) {
-		int vblk = i / bbt->dev->geo.nplanes;
+		int blk = i / bbt->dev->geo.nplanes;
 
-		printf("\n    vblk(%03d): [ ", vblk);
+		printf("\n    blk(%03d): [ ", blk);
 		for (int blk = i; blk < (i+ bbt->dev->geo.nplanes); ++blk) {
 			printf("%u ", bbt->blks[i]);
 			if (bbt->blks[i]) {

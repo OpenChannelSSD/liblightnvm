@@ -183,69 +183,8 @@ nvm_addr_lba2gen
 
 
 
-Virtual Block
-=============
-
-nvm_vblk
---------
-
-.. doxygenstruct:: nvm_vblk
-   :members:
-
-nvm_vblk_erase
---------------
-
-.. doxygenfunction:: nvm_vblk_erase
-
-nvm_vblk_write
---------------
-
-.. doxygenfunction:: nvm_vblk_write
-
-nvm_vblk_read
--------------
-
-.. doxygenfunction:: nvm_vblk_read
-
-nvm_vblk_pwrite
----------------
-
-.. doxygenfunction:: nvm_vblk_pwrite
-
-nvm_vblk_pread
---------------
-
-.. doxygenfunction:: nvm_vblk_pread
-
-nvm_vblk_attr_addr
-------------------
-
-.. doxygenfunction:: nvm_vblk_attr_addr
-
-nvm_vblk_pr
------------
-
-.. doxygenfunction:: nvm_vblk_pr
-
-nvm_vblk_alloc
---------------
-
-.. doxygenfunction:: nvm_vblk_alloc
-
-nvm_vblk_alloc_span
--------------------
-
-.. doxygenfunction:: nvm_vblk_alloc_span
-
-nvm_vblk_free
--------------
-
-.. doxygenfunction:: nvm_vblk_free
-
-
-
-Spanning Block
-==============
+Virtual Block (was spanning block)
+==================================
 
 nvm_sblk
 --------
@@ -258,15 +197,20 @@ nvm_sblk_erase
 
 .. doxygenfunction:: nvm_sblk_erase
 
+nvm_sblk_read
+-------------
+
+.. doxygenfunction:: nvm_sblk_read
+
 nvm_sblk_write
 --------------
 
 .. doxygenfunction:: nvm_sblk_write
 
-nvm_sblk_read
--------------
+nvm_sblk_pad
+------------
 
-.. doxygenfunction:: nvm_sblk_read
+.. doxygenfunction:: nvm_sblk_pad
 
 nvm_sblk_pread
 --------------
@@ -278,15 +222,15 @@ nvm_sblk_pwrite
 
 .. doxygenfunction:: nvm_sblk_pwrite
 
-nvm_sblk_pad
-------------
+nvm_sblk_alloc
+--------------
 
-.. doxygenfunction:: nvm_sblk_pad
+.. doxygenfunction:: nvm_sblk_alloc
 
-nvm_sblk_new
-------------
+nvm_sblk_alloc_span
+-------------------
 
-.. doxygenfunction:: nvm_sblk_new
+.. doxygenfunction:: nvm_sblk_alloc_span
 
 nvm_sblk_free
 -------------
@@ -318,5 +262,65 @@ nvm_sblk_attr_pos_write
 
 .. doxygenfunction:: nvm_sblk_attr_pos_write
 
+
+
+Deprecated block interface
+==========================
+
+nvm_dblk
+--------
+
+.. doxygenstruct:: nvm_dblk
+   :members:
+
+nvm_dblk_erase
+--------------
+
+.. doxygenfunction:: nvm_dblk_erase
+
+nvm_dblk_write
+--------------
+
+.. doxygenfunction:: nvm_dblk_write
+
+nvm_dblk_read
+-------------
+
+.. doxygenfunction:: nvm_dblk_read
+
+nvm_dblk_pwrite
+---------------
+
+.. doxygenfunction:: nvm_dblk_pwrite
+
+nvm_dblk_pread
+--------------
+
+.. doxygenfunction:: nvm_dblk_pread
+
+nvm_dblk_attr_addr
+------------------
+
+.. doxygenfunction:: nvm_dblk_attr_addr
+
+nvm_dblk_pr
+-----------
+
+.. doxygenfunction:: nvm_dblk_pr
+
+nvm_dblk_alloc
+--------------
+
+.. doxygenfunction:: nvm_dblk_alloc
+
+nvm_dblk_alloc_span
+-------------------
+
+.. doxygenfunction:: nvm_dblk_alloc_span
+
+nvm_dblk_free
+-------------
+
+.. doxygenfunction:: nvm_dblk_free
 
 

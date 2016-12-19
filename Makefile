@@ -61,6 +61,11 @@ all: clean default install
 .PHONY: dev
 dev: uninstall-pkg clean cli tests make-pkg install-pkg
 
+.PHONY: tags
+tags:
+	ctags * -R .
+	cscope -b `find . -name '*.c'` `find . -name '*.h'`
+
 #
 # Experimental section
 #
@@ -112,31 +117,3 @@ doc-publish:
 	cd $(BUILD_DIR)/ghpages && git push origin --delete gh-pages
 	cd $(BUILD_DIR)/ghpages && git push origin gh-pages
 
-#
-# Commands useful for development
-#
-.PHONY: tags
-tags:
-	ctags * -R .
-	cscope -b `find . -name '*.c'` `find . -name '*.h'`
-
-# Invoking tests ...
-test_dev:
-	sudo nvm_test_dev /dev/nvme0n1
-
-test_mbad:
-	sudo nvm_test_mbad /dev/nvme0n1
-
-test_vblk:
-	sudo nvm_test_vblk /dev/nvme0n1
-
-test_vblk_gp_n:
-	sudo nvm_test_vblk_gp_n /dev/nvme0n1
-
-test_concur:
-	sudo nvm_test_concur /dev/nvme0n1
-
-# ... all of them
-test: test_dev test_vblk test_vblk_gp_n test_mbad test_concur
-
-# ... all of them

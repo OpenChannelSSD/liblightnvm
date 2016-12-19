@@ -85,21 +85,6 @@ nvm_lba
    nvm_lba    pread dev_path count offset
   
 
-nvm_vblk
-========
-
-.. code-block:: bash
-
-  NVM virtual block (nvm_vblk_*) -- Ver { major(0), minor(0), patch(1) }
-  
-  Usage:
-   nvm_vblk    erase dev_path ppa [ppa...]
-   nvm_vblk    write dev_path ppa [ppa...]
-   nvm_vblk     read dev_path ppa [ppa...]
-   nvm_vblk   pwrite dev_path ppa [ppa...]
-   nvm_vblk    pread dev_path ppa [ppa...]
-  
-
 nvm_sblk
 ========
 
@@ -113,4 +98,19 @@ nvm_sblk
    nvm_sblk      pad dev_path ch_bgn ch_end lun_bgn lun_end blk
    nvm_sblk     read dev_path ch_bgn ch_end lun_bgn lun_end blk
    nvm_sblk chunked_w dev_path ch_bgn ch_end lun_bgn lun_end blk
+  
+
+nvm_dblk
+========
+
+.. code-block:: bash
+
+  NVM deprecated block (nvm_dblk_*) -- Ver { major(0), minor(0), patch(1) }
+  
+  Usage:
+   nvm_dblk    erase dev_path ppa [ppa...]
+   nvm_dblk    write dev_path ppa [ppa...]
+   nvm_dblk     read dev_path ppa [ppa...]
+   nvm_dblk   pwrite dev_path ppa [ppa...]
+   nvm_dblk    pread dev_path ppa [ppa...]
   

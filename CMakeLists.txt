@@ -42,7 +42,7 @@ set(SOURCE_FILES
 	src/nvm_lba.c
 	src/nvm_ver.c
 	src/nvm_addr.c
-	src/nvm_vblk.c
+	src/nvm_dblk.c
 	src/nvm_sblk.c
 	src/nvm_bounds.c
 )

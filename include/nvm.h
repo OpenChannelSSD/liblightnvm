@@ -66,11 +66,11 @@ struct nvm_dev {
 	struct nvm_addr_fmt fmt;	///< Device address format
 	struct nvm_geo geo;		///< Device geometry
 	struct nvm_lba_map lba_map;	///< Mapping for LBA format
-    	int pmode;			///< Default plane-mode I/O
+	int pmode;			///< Default plane-mode I/O
 	int fd;				///< Device fd / IOCTL handle
 };
 
-struct nvm_vblk {
+struct nvm_dblk {
 	struct nvm_dev *dev;
 	struct nvm_addr addr;
 	size_t pos_write;

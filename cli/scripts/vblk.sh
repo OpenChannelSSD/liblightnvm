@@ -32,7 +32,7 @@ do
 	echo "*"
 	echo "* vblk: $CMD"
 	echo "*"
-	CMD_STR="/usr/bin/time nvm_vblk $CMD $DEV_PATH $CH $LUN $BLK"
+	CMD_STR="/usr/bin/time nvm_deprecated_vblk $CMD $DEV_PATH $CH $LUN $BLK"
 	echo "Invoking cmd($CMD_STR)"
 	if [ $DRY -ne "1" ]; then
 		eval $CMD_STR

@@ -38,89 +38,90 @@
 #include <nvm.h>
 #include <nvm_debug.h>
 
-struct nvm_vblk *nvm_vblk_new(void)
+struct nvm_dblk *nvm_dblk_new(void)
 {
-	struct nvm_vblk *vblk;
+	struct nvm_dblk *dblk;
 
-	vblk = malloc(sizeof(*vblk));
-	if (!vblk) {
+	dblk = malloc(sizeof(*dblk));
+	if (!dblk) {
 		errno = ENOMEM;
 		return NULL;
 	}
 
-	vblk->dev = 0;
-	vblk->addr.ppa = 0;
-	vblk->pos_write = 0;
-	vblk->pos_read = 0;
+	dblk->dev = 0;
+	dblk->addr.ppa = 0;
+	dblk->pos_write = 0;
+	dblk->pos_read = 0;
 
-	return vblk;
+	return dblk;
 }
 
-struct nvm_vblk *nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addr)
+struct nvm_dblk *nvm_dblk_alloc(struct nvm_dev *dev,
+					   struct nvm_addr addr)
 {
-	struct nvm_vblk *vblk;
+	struct nvm_dblk *dblk;
 
-	vblk = malloc(sizeof(*vblk));
-	if (!vblk) {
+	dblk = malloc(sizeof(*dblk));
+	if (!dblk) {
 		errno = ENOMEM;
 		return NULL;
 	}
 
-	vblk->dev = dev;
-	vblk->addr = addr;
-	vblk->pos_write = 0;
-	vblk->pos_read = 0;
+	dblk->dev = dev;
+	dblk->addr = addr;
+	dblk->pos_write = 0;
+	dblk->pos_read = 0;
 
-	return vblk;
+	return dblk;
 }
 
-void nvm_vblk_free(struct nvm_vblk *vblk)
+void nvm_dblk_free(struct nvm_dblk *dblk)
 {
-	free(vblk);
+	free(dblk);
 }
 
-void nvm_vblk_pr(struct nvm_vblk *vblk)
+void nvm_dblk_pr(struct nvm_dblk *dblk)
 {
-	printf("vblk {");
-	printf("\n  dev(%p),", vblk->dev);
+	printf("dblk {");
+	printf("\n  dev(%p),", dblk->dev);
 	printf("\n  ");
-	nvm_addr_pr(vblk->addr);
+	nvm_addr_pr(dblk->addr);
 	printf("}\n");
 }
 
-struct nvm_addr nvm_vblk_attr_addr(struct nvm_vblk *vblk)
+struct nvm_addr nvm_dblk_attr_addr(struct nvm_dblk *dblk)
 {
-	return vblk->addr;
+	return dblk->addr;
 }
 
-ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
+ssize_t nvm_dblk_erase(struct nvm_dblk *dblk)
 {
-	const struct nvm_geo *geo = nvm_dev_attr_geo(vblk->dev);
+	const struct nvm_geo *geo = nvm_dev_attr_geo(dblk->dev);
 	const int naddrs = geo->nplanes;
 	struct nvm_addr addrs[naddrs];
-	const int PMODE = nvm_dev_attr_pmode(vblk->dev);
+	const int PMODE = nvm_dev_attr_pmode(dblk->dev);
 
 	for (int i = 0; i < naddrs; ++i) {
-		addrs[i].ppa = vblk->addr.ppa;
+		addrs[i].ppa = dblk->addr.ppa;
 		addrs[i].g.pl = i;
 	}
 
-	if (nvm_addr_erase(vblk->dev, addrs, naddrs, PMODE, NULL))
+	if (nvm_addr_erase(dblk->dev, addrs, naddrs, PMODE, NULL))
 		return -1;		// Propagate errno
 
 	return geo->vblk_nbytes;
 }
 
-ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
-			size_t count, size_t offset)
+ssize_t nvm_dblk_pwrite(struct nvm_dblk *dblk, const void *buf,
+				   size_t count, size_t offset)
 {
-	const struct nvm_geo *geo = nvm_dev_attr_geo(vblk->dev);
+	const struct nvm_geo *geo = nvm_dev_attr_geo(dblk->dev);
 	const int naddrs = geo->nplanes * geo->nsectors;
 	struct nvm_addr addrs[naddrs];
 	const int align = naddrs * geo->sector_nbytes;
 	const int vpg_offset = offset / align;
 	size_t nbytes_written = 0;
-	const int PMODE = nvm_dev_attr_pmode(vblk->dev);
+	const int PMODE = nvm_dev_attr_pmode(dblk->dev);
 
 	if ((count % align) || (offset % align)) {
 		errno = EINVAL;
@@ -129,14 +130,14 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
 
 	while (nbytes_written < count) {
 		for (int i = 0; i < naddrs; i++) {
-			addrs[i].ppa = vblk->addr.ppa;
+			addrs[i].ppa = dblk->addr.ppa;
 
 			addrs[i].g.pg = (nbytes_written / align) + vpg_offset;
 			addrs[i].g.sec = i % geo->nsectors;
 			addrs[i].g.pl = (i / geo->nsectors) % geo->nplanes;
 		}
 
-		if (nvm_addr_write(vblk->dev, addrs, naddrs,
+		if (nvm_addr_write(dblk->dev, addrs, naddrs,
 				   buf + nbytes_written, NULL, PMODE,
 				   NULL))
 			return -1;	// Propagate errno
@@ -147,29 +148,31 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf,
 	return nbytes_written;
 }
 
-ssize_t nvm_vblk_write(struct nvm_vblk *vblk, const void *buf, size_t count)
+ssize_t nvm_dblk_write(struct nvm_dblk *dblk, const void *buf,
+				  size_t count)
 {
-	const ssize_t nbytes = nvm_vblk_pwrite(vblk, buf, count,
-					       vblk->pos_write);
+	const ssize_t nbytes = nvm_dblk_pwrite(dblk, buf, count,
+							  dblk->pos_write);
 
 	if (nbytes < 0)
 		return -1;		// Propagate errno
 
-	vblk->pos_write += nbytes;
+	dblk->pos_write += nbytes;
 
 	return nbytes;
 }
 
-ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
-		       size_t offset)
+ssize_t nvm_dblk_pread(struct nvm_dblk *dblk, void *buf,
+				  size_t count,
+				  size_t offset)
 {
-	const struct nvm_geo *geo = nvm_dev_attr_geo(vblk->dev);
+	const struct nvm_geo *geo = nvm_dev_attr_geo(dblk->dev);
 	const int len = geo->nplanes * geo->nsectors;
 	struct nvm_addr list[len];
 	const int align = len * geo->sector_nbytes;
 	const int vpg_offset = offset / align;
 	size_t nbytes_read = 0;
-	const int PMODE = nvm_dev_attr_pmode(vblk->dev);
+	const int PMODE = nvm_dev_attr_pmode(dblk->dev);
 
 	if ((count % align) || (offset % align)) {
 		errno = EINVAL;
@@ -178,14 +181,14 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 
 	while (nbytes_read < count) {
 		for (int i = 0; i < len; i++) {
-			list[i].ppa = vblk->addr.ppa;
+			list[i].ppa = dblk->addr.ppa;
 
 			list[i].g.pg = (nbytes_read / align) + vpg_offset;
 			list[i].g.sec = i % geo->nsectors;
 			list[i].g.pl = (i / geo->nsectors) % geo->nplanes;
 		}
 
-		if (nvm_addr_read(vblk->dev, list, len, buf + nbytes_read, NULL,
+		if (nvm_addr_read(dblk->dev, list, len, buf + nbytes_read, NULL,
 				  PMODE, NULL))
 			return -1;	// Progate errno
 
@@ -195,14 +198,15 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 	return nbytes_read;
 }
 
-ssize_t nvm_vblk_read(struct nvm_vblk *vblk, void *buf, size_t count)
+ssize_t nvm_dblk_read(struct nvm_dblk *dblk, void *buf, size_t count)
 {
-	const ssize_t nbytes = nvm_vblk_pread(vblk, buf, count, vblk->pos_read);
+	const ssize_t nbytes = nvm_dblk_pread(dblk, buf, count,
+							 dblk->pos_read);
 
 	if (nbytes < 0)
 		return -1;		// Propagate errno
 
-	vblk->pos_read += nbytes;
+	dblk->pos_read += nbytes;
 
 	return nbytes;
 }

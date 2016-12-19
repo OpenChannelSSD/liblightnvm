@@ -203,7 +203,7 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 				return NULL;
 			}
 
-			cmd->args.sblk = nvm_sblk_new(cmd->args.dev,
+			cmd->args.sblk = nvm_sblk_alloc_span(cmd->args.dev,
 				atoi(argv[3]), atoi(argv[4]),
 				atoi(argv[5]), atoi(argv[6]),
 				atoi(argv[7])

@@ -65,38 +65,19 @@
 	]
 },
 {
-	"name": "nvm_vblk",
-	"structs": ["nvm_vblk"],
-	"typedefs": [],
-	"functions": [
-		"nvm_vblk_erase",
-		"nvm_vblk_write",
-		"nvm_vblk_read",
-		"nvm_vblk_pwrite",
-		"nvm_vblk_pread",
-
-		"nvm_vblk_attr_addr",
-		"nvm_vblk_pr",
-
-		"nvm_vblk_alloc",
-		"nvm_vblk_alloc_span",
-		"nvm_vblk_free"
-
-	]
-},
-{
 	"name": "nvm_sblk",
 	"structs": ["nvm_sblk"],
 	"typedefs": [],
 	"functions": [
 		"nvm_sblk_erase",
-		"nvm_sblk_write",
 		"nvm_sblk_read",
+		"nvm_sblk_write",
+		"nvm_sblk_pad",
 		"nvm_sblk_pread",
 		"nvm_sblk_pwrite",
-		"nvm_sblk_pad",
 
-		"nvm_sblk_new",
+		"nvm_sblk_alloc",
+		"nvm_sblk_alloc_span",
 		"nvm_sblk_free",
 		"nvm_sblk_pr",
 
@@ -105,4 +86,24 @@
 		"nvm_sblk_attr_pos_read",
 		"nvm_sblk_attr_pos_write"
 	]
-}]
+},
+{
+	"name": "nvm_dblk",
+	"structs": ["nvm_dblk"],
+	"typedefs": [],
+	"functions": [
+		"nvm_dblk_erase",
+		"nvm_dblk_write",
+		"nvm_dblk_read",
+		"nvm_dblk_pwrite",
+		"nvm_dblk_pread",
+
+		"nvm_dblk_attr_addr",
+		"nvm_dblk_pr",
+
+		"nvm_dblk_alloc",
+		"nvm_dblk_alloc_span",
+		"nvm_dblk_free"
+	]
+}
+]
