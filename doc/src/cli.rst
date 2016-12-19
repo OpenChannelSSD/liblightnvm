@@ -64,8 +64,8 @@ nvm_addr
    nvm_addr    erase dev_path ppa [ppa...]
    nvm_addr    write dev_path ppa [ppa...]
    nvm_addr     read dev_path ppa [ppa...]
-   nvm_addr  write_m dev_path ppa [ppa...]
-   nvm_addr   read_m dev_path ppa [ppa...]
+   nvm_addr write_wm dev_path ppa [ppa...]
+   nvm_addr  read_wm dev_path ppa [ppa...]
    nvm_addr  hex2gen dev_path ppa [ppa...]
    nvm_addr  gen2hex dev_path ch lun pl blk pg sec
    nvm_addr  hex2lba dev_path ppa [ppa...]
@@ -98,8 +98,6 @@ nvm_vblk
    nvm_vblk     read dev_path ppa [ppa...]
    nvm_vblk   pwrite dev_path ppa [ppa...]
    nvm_vblk    pread dev_path ppa [ppa...]
-   nvm_vblk     gets dev_path ch lun
-   nvm_vblk      put dev_path ppa [ppa...]
   
 
 nvm_sblk

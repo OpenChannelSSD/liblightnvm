@@ -33,7 +33,7 @@
 #include <liblightnvm.h>
 #include <nvm_debug.h>
 
-void *nvm_buf_alloc(NVM_GEO geo, size_t nbytes)
+void *nvm_buf_alloc(struct nvm_geo geo, size_t nbytes)
 {
 	char *buf;
 	int ret;

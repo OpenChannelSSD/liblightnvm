@@ -11,10 +11,10 @@ C API to interact with an Open-Channel SSDs from user space.
 Geometry
 ========
 
-NVM_GEO
+nvm_geo
 -------
 
-.. doxygenstruct:: NVM_GEO
+.. doxygenstruct:: nvm_geo
    :members:
 
 nvm_geo_pr
@@ -47,10 +47,11 @@ nvm_buf_pr
 Device Management
 =================
 
-NVM_DEV
+nvm_dev
 -------
 
-.. doxygentypedef:: NVM_DEV
+.. doxygenstruct:: nvm_dev
+   :members:
 
 nvm_dev_open
 ------------
@@ -77,10 +78,10 @@ nvm_dev_pr
 Bad Block Management
 ====================
 
-NVM_BBT
+nvm_bbt
 -------
 
-.. doxygenstruct:: NVM_BBT
+.. doxygenstruct:: nvm_bbt
    :members:
 
 nvm_bbt_get
@@ -108,16 +109,16 @@ nvm_bbt_pr
 Physical Addressing
 ===================
 
-NVM_ADDR
+nvm_addr
 --------
 
-.. doxygenstruct:: NVM_ADDR
+.. doxygenstruct:: nvm_addr
    :members:
 
-NVM_RET
+nvm_ret
 -------
 
-.. doxygenstruct:: NVM_RET
+.. doxygenstruct:: nvm_ret
    :members:
 
 nvm_addr_erase
@@ -134,11 +135,6 @@ nvm_addr_read
 -------------
 
 .. doxygenfunction:: nvm_addr_read
-
-nvm_addr_mark
--------------
-
-.. doxygenfunction:: nvm_addr_mark
 
 nvm_addr_pr
 -----------
@@ -190,10 +186,11 @@ nvm_addr_lba2gen
 Virtual Block
 =============
 
-NVM_VBLK
+nvm_vblk
 --------
 
-.. doxygentypedef:: NVM_VBLK
+.. doxygenstruct:: nvm_vblk
+   :members:
 
 nvm_vblk_erase
 --------------
@@ -220,21 +217,6 @@ nvm_vblk_pread
 
 .. doxygenfunction:: nvm_vblk_pread
 
-nvm_vblk_get
-------------
-
-.. doxygenfunction:: nvm_vblk_get
-
-nvm_vblk_gets
--------------
-
-.. doxygenfunction:: nvm_vblk_gets
-
-nvm_vblk_put
-------------
-
-.. doxygenfunction:: nvm_vblk_put
-
 nvm_vblk_attr_addr
 ------------------
 
@@ -245,15 +227,15 @@ nvm_vblk_pr
 
 .. doxygenfunction:: nvm_vblk_pr
 
-nvm_vblk_new
-------------
+nvm_vblk_alloc
+--------------
 
-.. doxygenfunction:: nvm_vblk_new
+.. doxygenfunction:: nvm_vblk_alloc
 
-nvm_vblk_new_on_dev
+nvm_vblk_alloc_span
 -------------------
 
-.. doxygenfunction:: nvm_vblk_new_on_dev
+.. doxygenfunction:: nvm_vblk_alloc_span
 
 nvm_vblk_free
 -------------
@@ -265,10 +247,11 @@ nvm_vblk_free
 Spanning Block
 ==============
 
-NVM_SBLK
+nvm_sblk
 --------
 
-.. doxygentypedef:: NVM_SBLK
+.. doxygenstruct:: nvm_sblk
+   :members:
 
 nvm_sblk_erase
 --------------

@@ -13,9 +13,9 @@ static int channel = 0;
 static int lun = 0;
 static int block = 10;
 
-static NVM_DEV dev;
-static NVM_GEO geo;
-static NVM_ADDR blk_addr;
+static struct nvm_dev *dev;
+static struct nvm_geo geo;
+static struct nvm_addr blk_addr;
 
 size_t compare_buffers(char *expected, char *actual, size_t nbytes)
 {
@@ -58,8 +58,8 @@ void _test_1ADDR(int use_meta)
 {
 	char *buf_w = NULL, *buf_r = NULL, *meta_w = NULL, *meta_r = NULL;
 	const int naddrs = geo.nplanes * geo.nsectors;
-	NVM_ADDR addrs[naddrs];
-	NVM_RET ret;
+	struct nvm_addr addrs[naddrs];
+	struct nvm_ret ret;
 	ssize_t res;
 	size_t buf_w_nbytes, meta_w_nbytes, buf_r_nbytes, meta_r_nbytes;
 	int pmode = NVM_FLAG_PMODE_SNGL;
@@ -143,7 +143,7 @@ void _test_1ADDR(int use_meta)
 	for (int pg = 0; pg < geo.npages; ++pg) {		// Read
 		for (int pl = 0; pl < geo.nplanes; ++pl) {
 			for (int sec = 0; sec < geo.nsectors; ++sec) {
-				NVM_ADDR addr;
+				struct nvm_addr addr;
 				size_t buf_diff = 0, meta_diff = 0;
 
 				int bw_offset = sec * geo.sector_nbytes + \
@@ -209,8 +209,8 @@ void _test_NADDR(int use_meta, int pmode)
 {
 	char *buf_w = NULL, *buf_r = NULL, *meta_w = NULL, *meta_r = NULL;
 	const int naddrs = geo.nplanes * geo.nsectors;
-	NVM_ADDR addrs[naddrs];
-	NVM_RET ret;
+	struct nvm_addr addrs[naddrs];
+	struct nvm_ret ret;
 	ssize_t res;
 	size_t buf_nbytes, meta_nbytes;
 	int failed = 1;

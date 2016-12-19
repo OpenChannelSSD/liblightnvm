@@ -79,7 +79,7 @@ void krnl_bbt_pr(struct krnl_bbt *bbt)
 }
 
 struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
-			    struct nvm_return *ret)
+			    struct nvm_ret *ret)
 {
 	struct nvm_passthru_vio ctl;
 	struct nvm_bbt *bbt;
@@ -146,7 +146,7 @@ struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 }
 
 int nvm_bbt_set(struct nvm_dev *dev, struct nvm_bbt *bbt,
-		struct nvm_return *ret)
+		struct nvm_ret *ret)
 {
 	struct nvm_bbt *bbt_old;
 	int nupdates = 0;
@@ -180,7 +180,7 @@ int nvm_bbt_set(struct nvm_dev *dev, struct nvm_bbt *bbt,
 }
 
 int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		 uint16_t flags, struct nvm_return *ret)
+		 uint16_t flags, struct nvm_ret *ret)
 {
 	struct nvm_passthru_vio ctl;
 	struct nvm_addr dev_addrs[naddrs];
@@ -218,6 +218,15 @@ int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 	}
 
 	return 0;
+}
+
+void nvm_bbt_free(struct nvm_bbt *bbt)
+{
+	if (!bbt)
+		return;
+
+	free(bbt->blks);
+	free(bbt);
 }
 
 void nvm_bbt_pr(struct nvm_bbt *bbt)

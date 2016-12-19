@@ -18,11 +18,7 @@ include_directories("${CMAKE_SOURCE_DIR}/include/linux/uapi")
 
 set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/test_dev.c
-	${CMAKE_CURRENT_SOURCE_DIR}/test_addr.c
-	${CMAKE_CURRENT_SOURCE_DIR}/test_mbad.c
-	${CMAKE_CURRENT_SOURCE_DIR}/test_vblk.c
-	${CMAKE_CURRENT_SOURCE_DIR}/test_vblk_gp_n.c
-	${CMAKE_CURRENT_SOURCE_DIR}/test_concur.c)
+	${CMAKE_CURRENT_SOURCE_DIR}/test_addr.c)
 
 #
 # We link against the lightnvm_a to avoid the runtime dependency on liblightnvm.

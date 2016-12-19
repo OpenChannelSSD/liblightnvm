@@ -11,7 +11,7 @@
 int cmd_pwrite(NVM_CLI_CMD_ARGS *args, int flags)
 {
 	ssize_t err = 0;
-	NVM_RET ret;
+	struct nvm_ret ret;
 	char *buf;
 
 	buf = nvm_buf_alloc(args->geo, args->count);
@@ -38,7 +38,7 @@ int cmd_pwrite(NVM_CLI_CMD_ARGS *args, int flags)
 int cmd_pread(NVM_CLI_CMD_ARGS *args, int flags)
 {
 	ssize_t err = 0;
-	NVM_RET ret;
+	struct nvm_ret ret;
 	char *buf;
 
 	buf = nvm_buf_alloc(args->geo, args->count);

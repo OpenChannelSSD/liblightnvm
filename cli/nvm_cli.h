@@ -11,15 +11,15 @@ typedef enum nvm_cli_argtype {
 	NVM_CLI_ARG_CH_LUN_BLK_PG,
 	NVM_CLI_ARG_CH_LUN_PL_BLK_PG_SEC,
 	NVM_CLI_ARG_SBLK,
-  NVM_CLI_ARG_COUNT_OFFSET,
+	NVM_CLI_ARG_COUNT_OFFSET,
 } NVM_CLI_CMD_ARGTYPE;
 
 typedef struct {
-	NVM_DEV dev;
-	NVM_GEO geo;
-	NVM_SBLK sblk;
-	NVM_GEO sblk_geo;
-	NVM_ADDR addrs[1024];
+	struct nvm_dev *dev;
+	struct nvm_geo geo;
+	struct nvm_sblk *sblk;
+	struct nvm_geo sblk_geo;
+	struct nvm_addr addrs[1024];
 	int naddrs;
 	size_t lbas[1024];
 	int nlbas;

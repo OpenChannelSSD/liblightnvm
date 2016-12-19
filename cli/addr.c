@@ -8,7 +8,7 @@
 
 int erase(NVM_CLI_CMD_ARGS *args, int flags)
 {
-	NVM_RET ret;
+	struct nvm_ret ret;
 	int PMODE;
 	ssize_t err = 0;
 
@@ -35,7 +35,7 @@ int erase(NVM_CLI_CMD_ARGS *args, int flags)
 
 int write(NVM_CLI_CMD_ARGS *args, int flags)
 {
-	NVM_RET ret;
+	struct nvm_ret ret;
 	int PMODE;
 	ssize_t err = 0;
 
@@ -94,7 +94,7 @@ int write(NVM_CLI_CMD_ARGS *args, int flags)
 
 int read(NVM_CLI_CMD_ARGS *args, int flags)
 {
-	NVM_RET ret;
+	struct nvm_ret ret;
 	int PMODE;
 	ssize_t err = 0;
 
@@ -174,7 +174,7 @@ int cmd_to_lba(NVM_CLI_CMD_ARGS *args, int flags)
 int cmd_from_lba(NVM_CLI_CMD_ARGS *args, int flags)
 {
 	for (int i = 0; i < args->nlbas; ++i) {
-		NVM_ADDR addr;
+		struct nvm_addr addr;
 
 		addr = nvm_addr_lba2gen(args->dev, args->lbas[i]);
 

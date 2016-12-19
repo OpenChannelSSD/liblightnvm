@@ -9,7 +9,7 @@ static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
 
 void test_DEV_OPEN_CLOSE(void)
 {
-	NVM_DEV dev;
+	struct nvm_dev *dev;
 
 	dev = nvm_dev_open(nvm_dev_path);
 	CU_ASSERT_PTR_NOT_NULL(dev);
@@ -24,7 +24,7 @@ void test_DEV_OPEN_CLOSE_N(void)
 	int i;
 
 	const int n = 10;
-	NVM_DEV dev[n];
+	struct nvm_dev *dev[n];
 
 	for(i=0; i<n; ++i) {
 		dev[i] = nvm_dev_open(nvm_dev_path);

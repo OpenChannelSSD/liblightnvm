@@ -10,14 +10,14 @@ int erase(NVM_CLI_CMD_ARGS *args, int flags)
 	int err = 0;
 
 	for (int i = 0; i < args->naddrs; ++i) {
-		NVM_VBLK vblk;
+		struct nvm_vblk *vblk;
 
 		printf("** nvm_vblk_erase(...):\n");
 		nvm_addr_pr(args->addrs[i]);
 
-		vblk = nvm_vblk_new_on_dev(args->dev, args->addrs[i]);
+		vblk = nvm_vblk_alloc(args->dev, args->addrs[i]);
 		if (!vblk) {
-			perror("nvm_vblk_new_on_dev");
+			perror("nvm_vblk_alloc");
 			return errno;
 		}
 
@@ -37,15 +37,15 @@ int write(NVM_CLI_CMD_ARGS *args, int flags)
 	int err = 0;
 
 	for (int i = 0; i < args->naddrs; ++i) {
-		NVM_VBLK vblk;
+		struct nvm_vblk *vblk;
 		char *buf;
 
 		printf("** nvm_vblk_write(...):\n");
 		nvm_addr_pr(args->addrs[i]);
 
-		vblk = nvm_vblk_new_on_dev(args->dev, args->addrs[i]);
+		vblk = nvm_vblk_alloc(args->dev, args->addrs[i]);
 		if (!vblk) {
-			perror("nvm_vblk_new_on_dev");
+			perror("nvm_vblk_alloc");
 			return errno;
 		}
 
@@ -74,16 +74,16 @@ int pwrite(NVM_CLI_CMD_ARGS *args, int flags)
 	int err = 0;
 
 	for (int i = 0; i < args->naddrs; ++i) {
-		NVM_VBLK vblk;
+		struct nvm_vblk *vblk;
 		char *buf;
 		const size_t offset = args->geo.vpg_nbytes * args->addrs[i].g.pg;
 
 		printf("** nvm_vblk_pwrite(...):\n");
 		nvm_addr_pr(args->addrs[i]);
 
-		vblk = nvm_vblk_new_on_dev(args->dev, args->addrs[i]);
+		vblk = nvm_vblk_alloc(args->dev, args->addrs[i]);
 		if (!vblk) {
-			perror("nvm_vblk_new_on_dev");
+			perror("nvm_vblk_alloc");
 			return ENOMEM;
 		}
 
@@ -112,15 +112,15 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 	int err = 0;
 
 	for (int i = 0; i < args->naddrs; ++i) {
-		NVM_VBLK vblk;
+		struct nvm_vblk *vblk;
 		void *buf;
 
 		printf("** nvm_vblk_read(...):\n");
 		nvm_addr_pr(args->addrs[i]);
 
-		vblk = nvm_vblk_new_on_dev(args->dev, args->addrs[i]);
+		vblk = nvm_vblk_alloc(args->dev, args->addrs[i]);
 		if (!vblk) {
-			perror("nvm_vblk_new_on_dev");
+			perror("nvm_vblk_alloc");
 			return ENOMEM;
 		}
 
@@ -151,16 +151,16 @@ int pread(NVM_CLI_CMD_ARGS *args, int flags)
 	int err = 0;
 
 	for (int i = 0; i < args->naddrs; ++i) {
-		NVM_VBLK vblk;
+		struct nvm_vblk *vblk;
 		void *buf;
 		const size_t offset = args->geo.vpg_nbytes * args->addrs[i].g.pg;
 
 		printf("** nvm_vblk_pread(...):\n");
 		nvm_addr_pr(args->addrs[i]);
 
-		vblk = nvm_vblk_new_on_dev(args->dev, args->addrs[i]);
+		vblk = nvm_vblk_alloc(args->dev, args->addrs[i]);
 		if (!vblk) {
-			perror("nvm_vblk_new_on_dev");
+			perror("nvm_vblk_alloc");
 			return ENOMEM;
 		}
 
@@ -187,63 +187,6 @@ int pread(NVM_CLI_CMD_ARGS *args, int flags)
 	return err;
 }
 
-int get(NVM_CLI_CMD_ARGS *args, int flags)
-{
-	int err = 0;
-
-	for (int i = 0; i < args->naddrs; ++i) {
-		NVM_VBLK vblk;
-
-		printf("** nvm_vblk_gets(...):");
-		nvm_addr_pr(args->addrs[i]);
-		
-		vblk = nvm_vblk_new();
-		if (!vblk) {
-			perror("nvm_vblk_new");
-			return ENOMEM;
-		}
-
-		if (nvm_vblk_gets(vblk, args->dev, args->addrs[i].g.ch,
-				  args->addrs[i].g.ch)) {
-			perror("nvm_vblk_gets");
-			err = errno;
-		} else {
-			printf("GOT: "); nvm_vblk_pr(vblk);
-		}
-
-		nvm_vblk_free(vblk);
-	}
-
-	return err;
-}
-
-int put(NVM_CLI_CMD_ARGS *args, int flags)
-{
-	int err = 0;
-	
-	for (int i = 0; i < args->naddrs; ++i) {
-		NVM_VBLK vblk;
-
-		printf("** nvm_vblk_put(...): ");
-		nvm_addr_pr(args->addrs[i]);
-
-		vblk = nvm_vblk_new_on_dev(args->dev, args->addrs[i]);
-		if (!vblk) {
-			perror("nvm_vblk_new_on_dev");
-			return ENOMEM;
-		}
-
-		if (nvm_vblk_put(vblk)) {
-			perror("nvm_vblk_put");
-			err = errno;
-		}
-
-		nvm_vblk_free(vblk);
-	}
-
-	return err;
-}
-
 /// CLI boiler-plate
 
 static NVM_CLI_CMD cmds[] = {
@@ -252,8 +195,6 @@ static NVM_CLI_CMD cmds[] = {
 	{"read", read, NVM_CLI_ARG_PPALIST, 0x0},
 	{"pwrite", pwrite, NVM_CLI_ARG_PPALIST, 0x0},
 	{"pread", pread, NVM_CLI_ARG_PPALIST, 0x0},
-	{"gets", get, NVM_CLI_ARG_CH_LUN, 0x0},
-	{"put", put, NVM_CLI_ARG_PPALIST, 0x0},
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);

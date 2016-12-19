@@ -56,7 +56,7 @@ struct nvm_vblk *nvm_vblk_new(void)
 	return vblk;
 }
 
-struct nvm_vblk *nvm_vblk_new_on_dev(NVM_DEV dev, NVM_ADDR addr)
+struct nvm_vblk *nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addr)
 {
 	struct nvm_vblk *vblk;
 

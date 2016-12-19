@@ -37,13 +37,13 @@
 #include <nvm.h>
 #include <nvm_debug.h>
 
-void nvm_ret_pr(NVM_RET *ret)
+void nvm_ret_pr(struct nvm_ret *ret)
 {
 	printf("nvm_ret { result(0x%x), status(%lu) }\n", ret->result,
 	       ret->status);
 }
 
-int nvm_addr_check(NVM_ADDR addr, NVM_GEO geo)
+int nvm_addr_check(struct nvm_addr addr, struct nvm_geo geo)
 {
 	int exceeded = 0;
 
@@ -85,7 +85,7 @@ inline struct nvm_addr nvm_addr_gen2dev(struct nvm_dev *dev,
 	return d_addr;
 }
 
-size_t nvm_addr_gen2lba(struct nvm_dev *dev, NVM_ADDR addr)
+size_t nvm_addr_gen2lba(struct nvm_dev *dev, struct nvm_addr addr)
 {
 	size_t lba = 0;
 
@@ -101,9 +101,9 @@ size_t nvm_addr_gen2lba(struct nvm_dev *dev, NVM_ADDR addr)
 	return lba;
 }
 
-NVM_ADDR nvm_addr_lba2gen(struct nvm_dev *dev, size_t lba)
+struct nvm_addr nvm_addr_lba2gen(struct nvm_dev *dev, size_t lba)
 {
-	NVM_ADDR addr;
+	struct nvm_addr addr;
 	struct nvm_lba_map *map = &dev->lba_map;
 
 	addr.ppa = 0;
@@ -120,7 +120,7 @@ NVM_ADDR nvm_addr_lba2gen(struct nvm_dev *dev, size_t lba)
 
 static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
 			    int len, void *data, void *meta, uint16_t flags,
-			    uint16_t opcode, struct nvm_return *ret)
+			    uint16_t opcode, struct nvm_ret *ret)
 {
 	struct nvm_user_vio ctl;
 	struct nvm_addr dev_addrs[len];
@@ -172,16 +172,16 @@ static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
 	}
 }
 
-ssize_t nvm_addr_erase(NVM_DEV dev, NVM_ADDR addrs[], int naddrs, uint16_t flags,
-		       NVM_RET *ret)
+ssize_t nvm_addr_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs, uint16_t flags,
+		       struct nvm_ret *ret)
 {
 	return nvm_addr_cmd(dev, addrs, naddrs, NULL, NULL, flags,
 			    S12_OPC_ERASE, ret);
 }
 
-ssize_t nvm_addr_write(struct nvm_dev *dev, NVM_ADDR addrs[], int naddrs,
+ssize_t nvm_addr_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		       const void *data, const void *meta, uint16_t flags,
-		       NVM_RET *ret)
+		       struct nvm_ret *ret)
 {
 	char *cdata = (char *)data;
         char *cmeta = (char *)meta;
@@ -190,27 +190,11 @@ ssize_t nvm_addr_write(struct nvm_dev *dev, NVM_ADDR addrs[], int naddrs,
 			    S12_OPC_WRITE, ret);
 }
 
-ssize_t nvm_addr_read(struct nvm_dev *dev, NVM_ADDR addrs[], int naddrs,
-		      void *data, void *meta, uint16_t flags, NVM_RET *ret)
+ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+		      void *data, void *meta, uint16_t flags, struct nvm_ret *ret)
 {
 	return nvm_addr_cmd(dev, addrs, naddrs, data, meta, flags,
 			    S12_OPC_READ, ret);
-}
-
-ssize_t nvm_addr_mark(NVM_DEV dev, NVM_ADDR addrs[], int naddrs, uint16_t flags,
-		      NVM_RET *ret)
-{
-	switch (flags) {
-	case 0x0:
-	case 0x1:
-	case 0x2:
-		break;
-	default:
-		errno = EINVAL;
-		return -1;
-	}
-
-	return nvm_bbt_mark(dev, addrs, naddrs, flags, ret);
 }
 
 void nvm_addr_fmt_pr(struct nvm_addr_fmt *fmt)
@@ -232,3 +216,4 @@ void nvm_addr_pr(struct nvm_addr addr)
 	printf("blk(%04d), pg(%03d), sec(%d) }\n",
 	       addr.g.blk, addr.g.pg, addr.g.sec);
 }
+

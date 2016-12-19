@@ -38,7 +38,7 @@ void nvm_timer_pr(const char* tool)
 
 int nvm_cli_pmode(struct nvm_dev *dev)
 {
-	NVM_GEO geo = nvm_dev_attr_geo(dev);
+	struct nvm_geo geo = nvm_dev_attr_geo(dev);
 
 	char *pmode_env = getenv("NVM_CLI_PMODE");		// Check ENV
 	if (getenv("NVM_CLI_PMODE")) {

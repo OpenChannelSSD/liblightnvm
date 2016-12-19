@@ -258,7 +258,7 @@ ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
 	return nbytes;			// Return number of bytes written
 }
 
-ssize_t nvm_sblk_pad(NVM_SBLK sblk)
+ssize_t nvm_sblk_pad(struct nvm_sblk *sblk)
 {
 	return nvm_sblk_write(sblk, NULL, sblk->geo.tbytes - sblk->pos_write);
 }
