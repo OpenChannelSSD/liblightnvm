@@ -93,28 +93,6 @@ struct nvm_addr nvm_vblk_attr_addr(struct nvm_vblk *vblk)
 	return vblk->addr;
 }
 
-int nvm_vblk_gets(struct nvm_vblk *vblock, struct nvm_dev *dev, uint32_t ch,
-		  uint32_t lun)
-{
-	// We no longer have provisioning in the kernel so we fail until
-	// we implement this somehow in the library
-	errno = ENXIO;
-	return -1;
-}
-
-int nvm_vblk_get(struct nvm_vblk *vblock, struct nvm_dev *dev)
-{
-	return nvm_vblk_gets(vblock, dev, 0, 0);
-}
-
-int nvm_vblk_put(struct nvm_vblk *vblock)
-{
-	// We no longer have provisioning in the kernel so we fail until
-	// we implement this somehow in the library
-	errno = ENXIO;
-	return -1;
-}
-
 ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 {
 	const struct nvm_geo *geo = nvm_dev_attr_geo(vblk->dev);
