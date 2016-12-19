@@ -95,7 +95,7 @@ void nvm_cli_usage(const char *cli_name, const char *cli_description,
 		case NVM_CLI_ARG_CH_LUN_PL_BLK_PG_SEC:
 			printf("ch lun pl blk pg sec");
 			break;
-		case NVM_CLI_ARG_SBLK:
+		case NVM_CLI_ARG_SPAN:
 			printf("ch_bgn ch_end lun_bgn lun_end blk");
 			break;
 		case NVM_CLI_ARG_COUNT_OFFSET:
@@ -196,19 +196,18 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 			cmd->args.naddrs = 1;
 			break;
 
-		case NVM_CLI_ARG_SBLK:
+		case NVM_CLI_ARG_SPAN:
 			if (argc < 8) {
-				printf("WTF");
 				printf("FAILED: Invalid argc\n");
 				return NULL;
 			}
 
-			cmd->args.sblk = nvm_sblk_alloc_span(cmd->args.dev,
+			cmd->args.vblk = nvm_vblk_alloc_span(cmd->args.dev,
 				atoi(argv[3]), atoi(argv[4]),
 				atoi(argv[5]), atoi(argv[6]),
 				atoi(argv[7])
 			);
-			cmd->args.sblk_geo = nvm_sblk_attr_geo(cmd->args.sblk);
+			cmd->args.vblk_geo = nvm_vblk_attr_geo(cmd->args.vblk);
 			break;
 
 		case NVM_CLI_ARG_PPALIST:
@@ -268,8 +267,8 @@ void nvm_cli_teardown(NVM_CLI_CMD *cmd)
 	if (!cmd)
 		return;
 
-	if (cmd->args.sblk) {
-		nvm_sblk_free(cmd->args.sblk);
+	if (cmd->args.vblk) {
+		nvm_vblk_free(cmd->args.vblk);
 	}
 	if (cmd->args.dev) {
 		nvm_dev_close(cmd->args.dev);

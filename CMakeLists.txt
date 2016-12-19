@@ -43,7 +43,7 @@ set(SOURCE_FILES
 	src/nvm_ver.c
 	src/nvm_addr.c
 	src/nvm_dblk.c
-	src/nvm_sblk.c
+	src/nvm_vblk.c
 	src/nvm_bounds.c
 )
 
@@ -99,7 +99,7 @@ set(CPACK_PACKAGE_VERSION_MINOR "${NVM_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${NVM_VERSION_PATCH}")
 set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CPACK_PACKAGE_VERSION}")
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "liblightnvm: Userspace I/O library for LightNVM")
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Javier González")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "LightNVM.io")
 if ("${CMAKE_VERSION}" VERSION_GREATER "2.8.7")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 endif()

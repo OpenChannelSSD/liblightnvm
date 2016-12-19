@@ -9,16 +9,16 @@ int erase(NVM_CLI_CMD_ARGS *args, int flags)
 {
 	ssize_t res;
 
-	printf("** nvm_sblk_erase(...): sblk_tbytes(%lu)\n",
-	        args->sblk_geo->tbytes);
-	nvm_sblk_pr(args->sblk);
+	printf("** nvm_vblk_erase(...): vblk_tbytes(%lu)\n",
+	        args->vblk_geo->tbytes);
+	nvm_vblk_pr(args->vblk);
 
 	nvm_timer_start();
-	res = nvm_sblk_erase(args->sblk);
+	res = nvm_vblk_erase(args->vblk);
 	if (res < 0)
-		perror("nvm_sblk_erase");
+		perror("nvm_vblk_erase");
 	nvm_timer_stop();
-	nvm_timer_pr("nvm_sblk_erase");
+	nvm_timer_pr("nvm_vblk_erase");
 
 	return res < 0;
 }
@@ -28,12 +28,12 @@ int write(NVM_CLI_CMD_ARGS *args, int flags)
 	ssize_t ret;
 	char *buf;
 
-	printf("** nvm_sblk_write(...): sblk_tbytes(%lu)\n",
-	       args->sblk_geo->tbytes);
-	nvm_sblk_pr(args->sblk);
+	printf("** nvm_vblk_write(...): vblk_tbytes(%lu)\n",
+	       args->vblk_geo->tbytes);
+	nvm_vblk_pr(args->vblk);
 	
 	nvm_timer_start();
-	buf = nvm_buf_alloc(args->sblk_geo, args->sblk_geo->tbytes);
+	buf = nvm_buf_alloc(args->vblk_geo, args->vblk_geo->tbytes);
 	if (!buf) {
 		perror("nvm_buf_alloc");
 		return errno;
@@ -42,16 +42,16 @@ int write(NVM_CLI_CMD_ARGS *args, int flags)
 	nvm_timer_pr("nvm_buf_alloc");
 
 	nvm_timer_start();
-	nvm_buf_fill(buf, args->sblk_geo->tbytes);
+	nvm_buf_fill(buf, args->vblk_geo->tbytes);
 	nvm_timer_stop();
 	nvm_timer_pr("nvm_buf_fill");
 
 	nvm_timer_start();
-	ret = nvm_sblk_write(args->sblk, buf, args->sblk_geo->tbytes);
+	ret = nvm_vblk_write(args->vblk, buf, args->vblk_geo->tbytes);
 	if (ret < 0)
-		perror("nvm_sblk_write");
+		perror("nvm_vblk_write");
 	nvm_timer_stop();
-	nvm_timer_pr("nvm_sblk_write");
+	nvm_timer_pr("nvm_vblk_write");
 
 	free(buf);
 
@@ -62,17 +62,17 @@ int chunked_write(NVM_CLI_CMD_ARGS *args, int flags)
 {
 	ssize_t ret = 0;
 	char *buf;
-	size_t buf_sz = args->sblk_geo->nchannels * args->sblk_geo->nluns \
-			* args->sblk_geo->nplanes * args->sblk_geo->nsectors \
-			* args->sblk_geo->sector_nbytes;
+	size_t buf_sz = args->vblk_geo->nchannels * args->vblk_geo->nluns \
+			* args->vblk_geo->nplanes * args->vblk_geo->nsectors \
+			* args->vblk_geo->sector_nbytes;
 	size_t nbytes_written = 0;
 
-	printf("** nvm_sblk_write(...): sblk_tbytes(%lu), buf_sz(%lu)\n",
-	       args->sblk_geo->tbytes, buf_sz);
-	nvm_sblk_pr(args->sblk);
+	printf("** nvm_vblk_write(...): vblk_tbytes(%lu), buf_sz(%lu)\n",
+	       args->vblk_geo->tbytes, buf_sz);
+	nvm_vblk_pr(args->vblk);
 	
 	nvm_timer_start();
-	buf = nvm_buf_alloc(args->sblk_geo, buf_sz);
+	buf = nvm_buf_alloc(args->vblk_geo, buf_sz);
 	if (!buf) {
 		perror("nvm_buf_alloc");
 		return errno;
@@ -87,16 +87,16 @@ int chunked_write(NVM_CLI_CMD_ARGS *args, int flags)
 
 	nvm_timer_start();
 	
-	while(nbytes_written < args->sblk_geo->tbytes) {
-		ret = nvm_sblk_write(args->sblk, buf, buf_sz);
+	while(nbytes_written < args->vblk_geo->tbytes) {
+		ret = nvm_vblk_write(args->vblk, buf, buf_sz);
 		if (ret < 0) {
-			perror("nvm_sblk_write");
+			perror("nvm_vblk_write");
 			break;
 		}
 		nbytes_written += ret;
 	}
 	nvm_timer_stop();
-	nvm_timer_pr("nvm_sblk_write");
+	nvm_timer_pr("nvm_vblk_write");
 
 	free(buf);
 
@@ -107,16 +107,16 @@ int pad(NVM_CLI_CMD_ARGS *args, int flags)
 {
 	ssize_t ret;
 
-	printf("** nvm_sblk_pad(...): sblk_tbytes(%lu)\n",
-	       args->sblk_geo->tbytes);
-	nvm_sblk_pr(args->sblk);
+	printf("** nvm_vblk_pad(...): vblk_tbytes(%lu)\n",
+	       args->vblk_geo->tbytes);
+	nvm_vblk_pr(args->vblk);
 
 	nvm_timer_start();
-	ret = nvm_sblk_pad(args->sblk);
+	ret = nvm_vblk_pad(args->vblk);
 	if (ret < 0)
-		perror("nvm_sblk_pad");
+		perror("nvm_vblk_pad");
 	nvm_timer_stop();
-	nvm_timer_pr("nvm_sblk_pad");
+	nvm_timer_pr("nvm_vblk_pad");
 
 	return ret < 0;
 }
@@ -126,12 +126,12 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 	ssize_t ret;
 	char *buf;
 
-	printf("** nvm_sblk_read(...): sblk_tbytes(%lu)\n",
-	       args->sblk_geo->tbytes);
-	nvm_sblk_pr(args->sblk);
+	printf("** nvm_vblk_read(...): vblk_tbytes(%lu)\n",
+	       args->vblk_geo->tbytes);
+	nvm_vblk_pr(args->vblk);
 
 	nvm_timer_start();
-	buf = nvm_buf_alloc(args->sblk_geo, args->sblk_geo->tbytes);
+	buf = nvm_buf_alloc(args->vblk_geo, args->vblk_geo->tbytes);
 	if (!buf) {
 		perror("nvm_buf_alloc");
 		return errno;
@@ -140,11 +140,11 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 	nvm_timer_pr("nvm_buf_alloc");
 
 	nvm_timer_start();
-	ret = nvm_sblk_read(args->sblk, buf, args->sblk_geo->tbytes);
+	ret = nvm_vblk_read(args->vblk, buf, args->vblk_geo->tbytes);
 	if (ret < 0)
-		perror("nvm_sblk_read");
+		perror("nvm_vblk_read");
 	nvm_timer_stop();
-	nvm_timer_pr("nvm_sblk_read");
+	nvm_timer_pr("nvm_vblk_read");
 
 	free(buf);
 
@@ -155,11 +155,11 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 // Remaining code is CLI boiler-plate
 //
 static NVM_CLI_CMD cmds[] = {
-	{"erase", erase, NVM_CLI_ARG_SBLK, 0x0},
-	{"write", write, NVM_CLI_ARG_SBLK, 0x0},
-	{"pad", pad, NVM_CLI_ARG_SBLK, 0x0},
-	{"read", read, NVM_CLI_ARG_SBLK, 0x0},
-	{"chunked_w", chunked_write, NVM_CLI_ARG_SBLK, 0x0},
+	{"erase", erase, NVM_CLI_ARG_SPAN, 0x0},
+	{"write", write, NVM_CLI_ARG_SPAN, 0x0},
+	{"pad", pad, NVM_CLI_ARG_SPAN, 0x0},
+	{"read", read, NVM_CLI_ARG_SPAN, 0x0},
+	{"chunked_w", chunked_write, NVM_CLI_ARG_SPAN, 0x0},
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
@@ -173,7 +173,7 @@ int main(int argc, char **argv)
 	if (cmd) {
 		ret = cmd->func(&cmd->args, cmd->flags);
 	} else {
-		nvm_cli_usage(argv[0], "NVM spanning block (nvm_sblk_*)", cmds,
+		nvm_cli_usage(argv[0], "NVM Virtual Block (nvm_vblk_*)", cmds,
 			      ncmds);
 	}
 	nvm_cli_teardown(cmd);

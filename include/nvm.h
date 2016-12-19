@@ -77,7 +77,7 @@ struct nvm_dblk {
 	size_t pos_read;
 };
 
-struct nvm_sblk {
+struct nvm_vblk {
 	struct nvm_dev *dev;
 	struct nvm_addr bgn;
 	struct nvm_addr end;

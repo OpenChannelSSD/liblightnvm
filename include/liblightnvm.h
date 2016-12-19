@@ -50,7 +50,7 @@ extern "C" {
 #define NVM_PG_BITS  (16)	///< Number of bits for page field
 #define NVM_SEC_BITS (8)	///< Number of bits for sector field
 #define NVM_PL_BITS  (8)	///< Number of bits for plane field
-#define NVM_LUN_BITS (8)	///< Number of bits for lun field
+#define NVM_LUN_BITS (8)	///< Number of bits for LUN field
 #define NVM_CH_BITS  (7)	///< NUmber of bits for channel field
 
 /**
@@ -76,9 +76,9 @@ struct nvm_dblk;
  * Span of multiple physical blocks accross LUNs, and channels can be created
  * when using `nvm_dblk_alloc_span`.
  *
- * @struct nvm_sblk
+ * @struct nvm_vblk
  */
-struct nvm_sblk;
+struct nvm_vblk;
 
 enum nvm_bounds {
 	NVM_BOUNDS_CHANNEL = 1,
@@ -118,7 +118,7 @@ struct nvm_addr {
 			uint64_t pg	: NVM_PG_BITS;	///< Page address
 			uint64_t sec	: NVM_SEC_BITS;	///< Sector address
 			uint64_t pl	: NVM_PL_BITS;	///< Plane address
-			uint64_t lun	: NVM_LUN_BITS;	///< Lun address
+			uint64_t lun	: NVM_LUN_BITS;	///< LUN address
 			uint64_t ch	: NVM_CH_BITS;	///< Channel address
 			uint64_t rsvd	: 1;		///< Reserved
 		} g;
@@ -143,8 +143,8 @@ struct nvm_addr_fmt {
 		struct {
 			uint8_t ch_ofz;		///< Offset in bits for channel
 			uint8_t ch_len;		///< Nr. of bits repr. channel
-			uint8_t lun_ofz;	///< Offset in bits for lun
-			uint8_t lun_len;	///< Nr. of bits repr. lun
+			uint8_t lun_ofz;	///< Offset in bits for LUN
+			uint8_t lun_len;	///< Nr. of bits repr. LUN
 			uint8_t pl_ofz;		///< Offset in bits for plane
 			uint8_t pl_len;		///< Nr. of bits repr. plane
 			uint8_t blk_ofz;	///< Offset in bits for block
@@ -167,8 +167,8 @@ struct nvm_addr_fmt {
  */
 struct nvm_geo {
 	size_t nchannels;	///< Number of channels on device
-	size_t nluns;		///< Number of luns per channel
-	size_t nplanes;		///< Number of planes per lun
+	size_t nluns;		///< Number of LUNs per channel
+	size_t nplanes;		///< Number of planes per LUN
 	size_t nblocks;		///< Number of blocks per plane
 	size_t npages;		///< Number of pages per block
 	size_t nsectors;	///< Number of sectors per page
@@ -571,158 +571,166 @@ ssize_t nvm_dblk_write(struct nvm_dblk *dblk, const void *buf,
 ssize_t nvm_dblk_read(struct nvm_dblk *dblk, void *buf, size_t count);
 
 /**
- * Allocate an sblk and initialize it
+ * Allocate a virtual block (spanning planes)  and initialize it
  *
- * @param dev The device on which the sblk resides
+ * @param dev The device on which the virtual block resides
  * @param addr Address of the virtual block
  *
- * @returns On success, an opaque pointer to the initialized sblk is returned.
+ * @returns On success, an opaque pointer to the initialized virtual block is returned.
  * On error, NULL and `errno` set to indicate the error.
  */
-struct nvm_sblk *nvm_sblk_alloc(struct nvm_dev *dev, struct nvm_addr addr);
+struct nvm_vblk *nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addr);
 
 /**
- * Allocate an sblk and initialize it
+ * Allocate an virtual block (spanning planes, channels, and LUNs) and
+ * initialize it
  *
- * @param dev The device on which the sblk resides
+ * @param dev The device on which the virtual block resides
  * @param ch_bgn Beginning of the channel span, as inclusive index
  * @param ch_end End of the channel span, as inclusive index
- * @param lun_bgn Beginning of the lun span, as inclusive index
- * @param lun_end End of the lun span, as inclusive index
+ * @param lun_bgn Beginning of the LUN span, as inclusive index
+ * @param lun_end End of the LUN span, as inclusive index
  * @param blk Block index
  *
- * @returns On success, an opaque pointer to the initialized sblk is returned.
+ * @returns On success, an opaque pointer to the initialized virtual block is returned.
  * On error, NULL and `errno` set to indicate the error.
  */
-struct nvm_sblk *nvm_sblk_alloc_span(struct nvm_dev *dev, int ch_bgn,
+struct nvm_vblk *nvm_vblk_alloc_span(struct nvm_dev *dev, int ch_bgn,
                                      int ch_end,
                                      int lun_bgn, int lun_end, int blk);
 
 /**
- * Destroy an sblk
+ * Destroy a virtual block
  *
- * @param sblk The sblk to destroy
+ * @param vblk The virtual block to destroy
  */
-void nvm_sblk_free(struct nvm_sblk *sblk);
+void nvm_vblk_free(struct nvm_vblk *vblk);
 
 /**
- * Erase an sblk
+ * Erase a virtual block
  *
- * @param sblk The sblk to erase
+ * @param vblk The virtual block to erase
  * @returns On success, the number of bytes erased is returned. On error, -1 is
  * returned and `errno` set to indicate the error.
  */
-ssize_t nvm_sblk_erase(struct nvm_sblk *sblk);
+ssize_t nvm_vblk_erase(struct nvm_vblk *vblk);
 
 /**
- * Write to an sblk
+ * Write to a virtual block
  *
  * @note
  * buf must be aligned to device geometry, see struct nvm_geo and nvm_buf_alloc
  * count must be a multiple of min-size, see struct nvm_geo
- * do not mix use of nvm_sblk_pwrite with nvm_sblk_write on the same sblk
+ * do not mix use of nvm_vblk_pwrite with nvm_vblk_write on the same virtual block
  *
- * @param sblk The sblk to write to
+ * @param vblk The virtual block to write to
  * @param buf Write content starting at buf
  * @param count The number of bytes to write
- * @returns On success, the number of bytes written is returned and sblk
+ * @returns On success, the number of bytes written is returned and vblk
  * internal position is updated. On error, -1 is returned and `errno` set to
  * indicate the error.
  */
-ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count);
+ssize_t nvm_vblk_write(struct nvm_vblk *vblk, const void *buf, size_t count);
 
 /**
- * Write to an sblk at a given offset
+ * Write to a virtual block at a given offset
  *
  * @note
  * buf must be aligned to device geometry, see struct nvm_geo and nvm_buf_alloc
  * count must be a multiple of min-size, see struct nvm_geo
  * offset must be a multiple of min-size, see struct nvm_geo
- * do not mix use of nvm_sblk_pwrite with nvm_sblk_write on the same sblk
+ * do not mix use of nvm_vblk_pwrite with nvm_vblk_write on the same virtual block
  *
- * @param sblk The sblk to write to
+ * @param vblk The virtual block to write to
  * @param buf Write content starting at buf
  * @param count The number of bytes to write
- * @param offset Start writing offset bytes within sblk
+ * @param offset Start writing offset bytes within virtual block
  * @returns On success, the number of bytes written is returned. On error, -1 is
  * returned and `errno` set to indicate the error.
  */
-ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
-			size_t offset);
+ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf, size_t count,
+                        size_t offset);
 
 /**
- * Pad the sblk with synthetic data
+ * Pad the virtual block with synthetic data
  *
  * @note
- * Assumes that you have used nvm_sblk_write and now want to fill the remaining
- * sblk in order to meet sblk constraints
+ * Assumes that you have used nvm_vblk_write and now want to fill the remaining
+ * virtual block in order to meet block write-before-read constraints
  *
- * @param sblk The sblk to pad
- * @returns On success, the number of bytes padded is returned and sblk internal
+ * @param vblk The virtual block to pad
+ * @returns On success, the number of bytes padded is returned and internal
  * position is updated. On error, -1 is returned and `errno` set to indicate the
  * error.
  */
-ssize_t nvm_sblk_pad(struct nvm_sblk *sblk);
+ssize_t nvm_vblk_pad(struct nvm_vblk *vblk);
 
 /**
- * Read from an sblk
+ * Read from a virtual block
  */
-ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count);
+ssize_t nvm_vblk_read(struct nvm_vblk *vblk, void *buf, size_t count);
 
 /**
- * Read from an sblk at given offset
+ * Read from a virtual block at given offset
  */
-ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
-		       size_t offset);
+ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
+                       size_t offset);
 
 /**
- * Retrieve the device associated with the given sblk
+ * Retrieve the device associated with the given virtual block
  *
- * @param sblk The entity to retrieve information from
+ * @param vblk The entity to retrieve information from
  */
-struct nvm_dev *nvm_sblk_attr_dev(struct nvm_sblk *sblk);
+struct nvm_dev *nvm_vblk_attr_dev(struct nvm_vblk *vblk);
 
 /**
- * Retrieve the address where the sblk begins
+ * Retrieve the address where the virtual block begins
  *
- * @param sblk The entity to retrieve information from
+ * @param vblk The entity to retrieve information from
  */
-struct nvm_addr nvm_sblk_attr_bgn(struct nvm_sblk *sblk);
+struct nvm_addr nvm_vblk_attr_addr(struct nvm_vblk *vblk);
 
 /**
- * Retrieve the address where the sblk ends
+ * Retrieve the address where the virtual block begins
  *
- * @param sblk The entity to retrieve information from
+ * @param vblk The entity to retrieve information from
  */
-struct nvm_addr nvm_sblk_attr_end(struct nvm_sblk *sblk);
+struct nvm_addr nvm_vblk_attr_bgn(struct nvm_vblk *vblk);
 
 /**
- * Retrieve the geometry of the given sblk
+ * Retrieve the address where the virtual block span ends
  *
- * @param sblk The entity to retrieve information from
+ * @param vblk The entity to retrieve information from
  */
-const struct nvm_geo *nvm_sblk_attr_geo(struct nvm_sblk *sblk);
+struct nvm_addr nvm_vblk_attr_end(struct nvm_vblk *vblk);
 
 /**
- * Retrieve the current cursor position for writes to the sblk
+ * Retrieve the geometry of the given virtual block
  *
- * @param sblk The entity to retrieve information from
+ * @param vblk The entity to retrieve information from
  */
-size_t nvm_sblk_attr_pos_write(struct nvm_sblk *sblk);
+const struct nvm_geo *nvm_vblk_attr_geo(struct nvm_vblk *vblk);
 
 /**
- * Retrieve the current cursor position for read to the sblk
+ * Retrieve the current cursor position for writes to the virtual block
  *
- * @param sblk The entity to retrieve information from
+ * @param vblk The entity to retrieve information from
  */
-size_t nvm_sblk_attr_pos_read(struct nvm_sblk *sblk);
+size_t nvm_vblk_attr_pos_write(struct nvm_vblk *vblk);
 
 /**
- * Print the sblk in a humanly readable form
+ * Retrieve the current cursor position for read to the virtual block
  *
- * @param sblk The entity to print information about
+ * @param vblk The entity to retrieve information from
  */
-void nvm_sblk_pr(struct nvm_sblk *sblk);
+size_t nvm_vblk_attr_pos_read(struct nvm_vblk *vblk);
+
+/**
+ * Print the virtual block in a humanly readable form
+ *
+ * @param vblk The entity to print information about
+ */
+void nvm_vblk_pr(struct nvm_vblk *vblk);
 
 #ifdef __cplusplus
 }

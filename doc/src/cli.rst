@@ -85,19 +85,19 @@ nvm_lba
    nvm_lba    pread dev_path count offset
   
 
-nvm_sblk
+nvm_vblk
 ========
 
 .. code-block:: bash
 
-  NVM spanning block (nvm_sblk_*) -- Ver { major(0), minor(0), patch(1) }
+  NVM Virtual Block (nvm_vblk_*) -- Ver { major(0), minor(0), patch(1) }
   
   Usage:
-   nvm_sblk    erase dev_path ch_bgn ch_end lun_bgn lun_end blk
-   nvm_sblk    write dev_path ch_bgn ch_end lun_bgn lun_end blk
-   nvm_sblk      pad dev_path ch_bgn ch_end lun_bgn lun_end blk
-   nvm_sblk     read dev_path ch_bgn ch_end lun_bgn lun_end blk
-   nvm_sblk chunked_w dev_path ch_bgn ch_end lun_bgn lun_end blk
+   nvm_vblk    erase dev_path ch_bgn ch_end lun_bgn lun_end blk
+   nvm_vblk    write dev_path ch_bgn ch_end lun_bgn lun_end blk
+   nvm_vblk      pad dev_path ch_bgn ch_end lun_bgn lun_end blk
+   nvm_vblk     read dev_path ch_bgn ch_end lun_bgn lun_end blk
+   nvm_vblk chunked_w dev_path ch_bgn ch_end lun_bgn lun_end blk
   
 
 nvm_dblk

@@ -18,7 +18,7 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/lba.c
 	${CMAKE_CURRENT_SOURCE_DIR}/addr.c
 	${CMAKE_CURRENT_SOURCE_DIR}/dblk.c
-	${CMAKE_CURRENT_SOURCE_DIR}/sblk.c)
+	${CMAKE_CURRENT_SOURCE_DIR}/vblk.c)
 
 #
 # We link against the lightnvm_a to avoid the runtime dependency on liblightnvm

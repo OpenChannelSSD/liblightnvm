@@ -38,11 +38,11 @@
 #include <nvm_debug.h>
 #include <nvm_omp.h>
 
-struct nvm_sblk *nvm_sblk_alloc_span(struct nvm_dev *dev, int ch_bgn,
+struct nvm_vblk *nvm_vblk_alloc_span(struct nvm_dev *dev, int ch_bgn,
                                      int ch_end,
                                      int lun_bgn, int lun_end, int blk)
 {
-	struct nvm_sblk *sblk;
+	struct nvm_vblk *sblk;
 	const struct nvm_geo *dev_geo = nvm_dev_attr_geo(dev);
 
 	if (ch_bgn < 0 || ch_bgn > ch_end || ch_end >= dev_geo->nchannels) {
@@ -103,20 +103,26 @@ struct nvm_sblk *nvm_sblk_alloc_span(struct nvm_dev *dev, int ch_bgn,
 	return sblk;
 }
 
-void nvm_sblk_free(struct nvm_sblk *sblk)
+struct nvm_vblk *nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addr)
 {
-	free(sblk);
+	return nvm_vblk_alloc_span(dev, addr.g.ch, addr.g.ch, addr.g.lun,
+				   addr.g.lun, addr.g.blk);
 }
 
-ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
+void nvm_vblk_free(struct nvm_vblk *vblk)
+{
+	free(vblk);
+}
+
+ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 {
 	size_t nerr = 0;
-	const int nplanes = nvm_sblk_attr_geo(sblk)->nplanes;
+	const int nplanes = nvm_vblk_attr_geo(vblk)->nplanes;
 
-	const struct nvm_addr bgn = sblk->bgn;
-	const struct nvm_addr end = sblk->end;
+	const struct nvm_addr bgn = vblk->bgn;
+	const struct nvm_addr end = vblk->end;
 
-	const int PMODE = nvm_dev_attr_pmode(sblk->dev);
+	const int PMODE = nvm_dev_attr_pmode(vblk->dev);
 
 	#pragma omp parallel for schedule(static) collapse(2) reduction(+:nerr)
 	for (int ch = bgn.g.ch; ch <= end.g.ch; ++ch) {
@@ -134,7 +140,7 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 				// sec is fixed and inherited from bgn (0)
 			}
 
-			err = nvm_addr_erase(sblk->dev, addrs, nplanes,
+			err = nvm_addr_erase(vblk->dev, addrs, nplanes,
                                              PMODE, NULL);
 			if (err) {
 				NVM_DEBUG("FAILED: nvm_addr_erase err(%ld)", err);
@@ -148,15 +154,15 @@ ssize_t nvm_sblk_erase(struct nvm_sblk *sblk)
 		return -1;
 	}
 
-	return nvm_sblk_attr_geo(sblk)->tbytes;
+	return nvm_vblk_attr_geo(vblk)->tbytes;
 }
 
-ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
+ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf, size_t count,
 			size_t offset)
 {
-	const struct nvm_addr bgn = sblk->bgn;
+	const struct nvm_addr bgn = vblk->bgn;
 
-	const struct nvm_geo *geo = nvm_sblk_attr_geo(sblk);
+	const struct nvm_geo *geo = nvm_vblk_attr_geo(vblk);
 
 	const int nchannels = geo->nchannels;
 	const int ch_off = bgn.g.ch;
@@ -180,7 +186,7 @@ ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
 
 	size_t nerr = 0;
 
-	const int PMODE = nvm_dev_attr_pmode(sblk->dev);
+	const int PMODE = nvm_dev_attr_pmode(vblk->dev);
 
 	const char *data;
 
@@ -229,7 +235,7 @@ ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
 				addrs[i].g.sec = i % nsectors;
 			}
 
-			ssize_t err = nvm_addr_write(sblk->dev, addrs,
+			ssize_t err = nvm_addr_write(vblk->dev, addrs,
 						     NVM_CMD_NADDR, data_off,
 						     NULL, PMODE, NULL);
 			if (err) {
@@ -247,29 +253,29 @@ ssize_t nvm_sblk_pwrite(struct nvm_sblk *sblk, const void *buf, size_t count,
 	return count;
 }
 
-ssize_t nvm_sblk_write(struct nvm_sblk *sblk, const void *buf, size_t count)
+ssize_t nvm_vblk_write(struct nvm_vblk *vblk, const void *buf, size_t count)
 {
-	ssize_t nbytes = nvm_sblk_pwrite(sblk, buf, count, sblk->pos_write);
+	ssize_t nbytes = nvm_vblk_pwrite(vblk, buf, count, vblk->pos_write);
 
 	if (nbytes < 0)
 		return nbytes;		// Propagate errno
 	
-	sblk->pos_write += nbytes;	// All is good, increment write position
+	vblk->pos_write += nbytes;	// All is good, increment write position
 
 	return nbytes;			// Return number of bytes written
 }
 
-ssize_t nvm_sblk_pad(struct nvm_sblk *sblk)
+ssize_t nvm_vblk_pad(struct nvm_vblk *vblk)
 {
-	return nvm_sblk_write(sblk, NULL, sblk->geo.tbytes - sblk->pos_write);
+	return nvm_vblk_write(vblk, NULL, vblk->geo.tbytes - vblk->pos_write);
 }
 
-ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
+ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 		       size_t offset)
 {
-	const struct nvm_addr bgn = sblk->bgn;
+	const struct nvm_addr bgn = vblk->bgn;
 
-	const struct nvm_geo *geo = nvm_sblk_attr_geo(sblk);
+	const struct nvm_geo *geo = nvm_vblk_attr_geo(vblk);
 
 	const int nchannels = geo->nchannels;
 	const int ch_off = bgn.g.ch;
@@ -293,7 +299,7 @@ ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
 
 	ssize_t nerr = 0;
 
-	const int PMODE = nvm_dev_attr_pmode(sblk->dev);
+	const int PMODE = nvm_dev_attr_pmode(vblk->dev);
 
 	if ((count % alignment) || (offset % alignment)) {	// Check align
 		errno = EINVAL;
@@ -326,7 +332,7 @@ ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
 				addrs[i].g.sec = i % nsectors;
 			}
 
-			ssize_t err = nvm_addr_read(sblk->dev, addrs,
+			ssize_t err = nvm_addr_read(vblk->dev, addrs,
 						    NVM_CMD_NADDR, buf_off,
 						    NULL, PMODE, NULL);
 			if (err) {
@@ -344,49 +350,54 @@ ssize_t nvm_sblk_pread(struct nvm_sblk *sblk, void *buf, size_t count,
 	return count;
 }
 
-ssize_t nvm_sblk_read(struct nvm_sblk *sblk, void *buf, size_t count)
+ssize_t nvm_vblk_read(struct nvm_vblk *vblk, void *buf, size_t count)
 {
-	ssize_t nbytes = nvm_sblk_pread(sblk, buf, count, sblk->pos_read);
+	ssize_t nbytes = nvm_vblk_pread(vblk, buf, count, vblk->pos_read);
 
 	if (nbytes < 0)
 		return nbytes;		// Propagate `errno`
 
-	sblk->pos_read += nbytes;	// All is good, increment read position
+	vblk->pos_read += nbytes;	// All is good, increment read position
 
 	return nbytes;			// Return number of bytes read
 }
 
-struct nvm_addr nvm_sblk_attr_bgn(struct nvm_sblk *sblk)
+struct nvm_addr nvm_vblk_attr_addr(struct nvm_vblk *vblk)
 {
-	return sblk->end;
+	return vblk->bgn;
 }
 
-struct nvm_addr nvm_sblk_attr_end(struct nvm_sblk *sblk)
+struct nvm_addr nvm_vblk_attr_bgn(struct nvm_vblk *vblk)
 {
-	return sblk->end;
+	return vblk->bgn;
 }
 
-const struct nvm_geo * nvm_sblk_attr_geo(struct nvm_sblk *sblk)
+struct nvm_addr nvm_vblk_attr_end(struct nvm_vblk *vblk)
 {
-	return &sblk->geo;
+	return vblk->end;
 }
 
-size_t nvm_sblk_attr_pos_write(struct nvm_sblk *sblk)
+const struct nvm_geo * nvm_vblk_attr_geo(struct nvm_vblk *vblk)
 {
-	return sblk->pos_write;
+	return &vblk->geo;
 }
 
-size_t nvm_sblk_attr_pos_read(struct nvm_sblk *sblk)
+size_t nvm_vblk_attr_pos_write(struct nvm_vblk *vblk)
 {
-	return sblk->pos_read;
+	return vblk->pos_write;
 }
 
-void nvm_sblk_pr(struct nvm_sblk *sblk)
+size_t nvm_vblk_attr_pos_read(struct nvm_vblk *vblk)
 {
-	printf("sblk {\n");
-	printf(" bgn "); nvm_addr_pr(sblk->bgn);
-	printf(" end "); nvm_addr_pr(sblk->end);
+	return vblk->pos_read;
+}
+
+void nvm_vblk_pr(struct nvm_vblk *vblk)
+{
+	printf("vblk {\n");
+	printf(" bgn "); nvm_addr_pr(vblk->bgn);
+	printf(" end "); nvm_addr_pr(vblk->end);
 	printf("}\n");
-	printf("sblk-"); nvm_geo_pr(&sblk->geo);
+	printf("vblk-"); nvm_geo_pr(&vblk->geo);
 }
 
