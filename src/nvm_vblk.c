@@ -39,8 +39,8 @@
 #include <nvm_omp.h>
 
 struct nvm_vblk *nvm_vblk_alloc_span(struct nvm_dev *dev, int ch_bgn,
-                                     int ch_end,
-                                     int lun_bgn, int lun_end, int blk)
+				     int ch_end, int lun_bgn, int lun_end,
+				     int blk)
 {
 	struct nvm_vblk *vblk;
 	const struct nvm_geo *dev_geo = nvm_dev_attr_geo(dev);

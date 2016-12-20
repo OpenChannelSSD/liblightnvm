@@ -202,12 +202,17 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 				return NULL;
 			}
 
-			cmd->args.vblk = nvm_vblk_alloc_span(cmd->args.dev,
-				atoi(argv[3]), atoi(argv[4]),
-				atoi(argv[5]), atoi(argv[6]),
-				atoi(argv[7])
-			);
-			cmd->args.vblk_geo = nvm_vblk_attr_geo(cmd->args.vblk);
+			cmd->args.addrs[0].ppa = 0;	// Span begins at
+			cmd->args.addrs[0].g.ch = atoi(argv[3]);
+			cmd->args.addrs[0].g.lun = atoi(argv[4]);
+			cmd->args.addrs[0].g.blk = atoi(argv[7]);
+
+			cmd->args.addrs[1].ppa = 0;	// Span ends at
+			cmd->args.addrs[1].g.ch = atoi(argv[5]);
+			cmd->args.addrs[1].g.lun = atoi(argv[6]);
+			cmd->args.addrs[1].g.blk = atoi(argv[7]);
+
+			cmd->args.naddrs = 2;
 			break;
 
 		case NVM_CLI_ARG_PPALIST:
@@ -267,9 +272,6 @@ void nvm_cli_teardown(NVM_CLI_CMD *cmd)
 	if (!cmd)
 		return;
 
-	if (cmd->args.vblk) {
-		nvm_vblk_free(cmd->args.vblk);
-	}
 	if (cmd->args.dev) {
 		nvm_dev_close(cmd->args.dev);
 	}
