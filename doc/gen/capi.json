@@ -34,12 +34,16 @@
 	"typedefs": [],
 	"functions": [
 		"nvm_addr_erase",
-		"nvm_addr_write",
 		"nvm_addr_read",
-		"nvm_addr_pr",
-		"nvm_addr_fmt_pr",
+		"nvm_addr_write",
+
 		"nvm_addr_check",
-		"nvm_addr_gen2dev"
+
+		"nvm_addr_gen2lba",
+		"nvm_addr_lba2gen",
+
+		"nvm_addr_fmt_pr",
+		"nvm_addr_pr"
 	]
 },
 {
@@ -47,10 +51,8 @@
 	"structs": [],
 	"typedefs": [],
 	"functions": [
-		"nvm_lba_pwrite",
 		"nvm_lba_pread",
-		"nvm_addr_gen2lba",
-		"nvm_addr_lba2gen"
+		"nvm_lba_pwrite"
 	]
 },
 {

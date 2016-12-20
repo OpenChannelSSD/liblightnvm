@@ -60,6 +60,36 @@ typedef struct nvm_lba_map {
 	size_t sector_nbytes;	///< Number of bytes in a sector
 } NVM_LBA_MAP;
 
+/**
+ * Encoding descriptor for address formats
+ */
+struct nvm_addr_fmt {
+	union {
+		/**
+		 * Address format formed as named fields
+		 */
+		struct {
+			uint8_t ch_ofz;		///< Offset in bits for channel
+			uint8_t ch_len;		///< Nr. of bits repr. channel
+			uint8_t lun_ofz;	///< Offset in bits for LUN
+			uint8_t lun_len;	///< Nr. of bits repr. LUN
+			uint8_t pl_ofz;		///< Offset in bits for plane
+			uint8_t pl_len;		///< Nr. of bits repr. plane
+			uint8_t blk_ofz;	///< Offset in bits for block
+			uint8_t blk_len;	///< Nr. of bits repr. block
+			uint8_t pg_ofz;		///< Offset in bits for page
+			uint8_t pg_len;		///< Nr. of bits repr. page
+			uint8_t sec_ofz;	///< Offset in bits for sector
+			uint8_t sec_len;	///< Nr. of bits repr. sector
+		} n;
+
+		/**
+		 * Address format formed as anonymous consecutive fields
+		 */
+		uint8_t a[12];
+	};
+};
+
 struct nvm_dev {
 	char name[NVM_DEV_NAME_LEN];	///< Device name e.g. "nvme0n1"
 	char path[NVM_DEV_PATH_LEN];	///< Device path e.g. "/dev/nvme0n1"
@@ -87,5 +117,21 @@ struct nvm_vblk {
 };
 
 void nvm_lba_map_pr(struct nvm_lba_map* map);
+
+/**
+ * Convert nvm_address from generic format to device specific format
+ *
+ * @param dev The device which address format to convert to
+ * @param addr The address to convert
+ * @returns Address formatted to device
+ */
+struct nvm_addr nvm_addr_gen2dev(struct nvm_dev *dev, struct nvm_addr addr);
+
+/**
+ * Prints a humanly readable representation of the give address format
+ *
+ * @param fmt The address format to porint
+ */
+void nvm_addr_fmt_pr(struct nvm_addr_fmt* fmt);
 
 #endif /* __NVM_H */

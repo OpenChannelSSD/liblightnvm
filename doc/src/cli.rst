@@ -101,20 +101,4 @@ nvm_vblk
    nvm_vblk  span_read dev_path ch_bgn ch_end lun_bgn lun_end blk
    nvm_vblk span_write dev_path ch_bgn ch_end lun_bgn lun_end blk
    nvm_vblk   span_pad dev_path ch_bgn ch_end lun_bgn lun_end blk
-   nvm_vblk write_chnk dev_path ch_bgn ch_end lun_bgn lun_end blk
-  
-
-nvm_dblk
-========
-
-.. code-block:: bash
-
-  NVM deprecated block (nvm_dblk_*) -- Ver { major(0), minor(0), patch(1) }
-  
-  Usage:
-   nvm_dblk      erase dev_path ppa [ppa...]
-   nvm_dblk      write dev_path ppa [ppa...]
-   nvm_dblk       read dev_path ppa [ppa...]
-   nvm_dblk     pwrite dev_path ppa [ppa...]
-   nvm_dblk      pread dev_path ppa [ppa...]
   

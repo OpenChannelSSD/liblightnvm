@@ -93,10 +93,9 @@ struct nvm_ret {
 /**
  * Encapsulation of generic physical nvm addressing
  *
- * The kernel translates the generic physical address represented by this
- * structure to device specific address formats. Although the user need not
- * worry about device specific address formats the user has to know and respect
- * addressing within device specific geometric boundaries.
+ * Although the user need not worry about device specific address formats the
+ * user has to know and respect addressing within device specific geometric
+ * boundaries.
  *
  * For that purpose one can use the `struct nvm_geo` of an `struct nvm_dev` to
  * obtain device specific geometries.
@@ -122,36 +121,6 @@ struct nvm_addr {
 		} c;
 
 		uint64_t ppa;				///< Address as ppa
-	};
-};
-
-/**
- * Encoding descriptor for address formats
- */
-struct nvm_addr_fmt {
-	union {
-		/**
-		 * Address format formed as named fields
-		 */
-		struct {
-			uint8_t ch_ofz;		///< Offset in bits for channel
-			uint8_t ch_len;		///< Nr. of bits repr. channel
-			uint8_t lun_ofz;	///< Offset in bits for LUN
-			uint8_t lun_len;	///< Nr. of bits repr. LUN
-			uint8_t pl_ofz;		///< Offset in bits for plane
-			uint8_t pl_len;		///< Nr. of bits repr. plane
-			uint8_t blk_ofz;	///< Offset in bits for block
-			uint8_t blk_len;	///< Nr. of bits repr. block
-			uint8_t pg_ofz;		///< Offset in bits for page
-			uint8_t pg_len;		///< Nr. of bits repr. page
-			uint8_t sec_ofz;	///< Offset in bits for sector
-			uint8_t sec_len;	///< Nr. of bits repr. sector
-		} n;
-
-		/**
-		 * Address format formed as anonymous consecutive fields
-		 */
-		uint8_t a[12];
 	};
 };
 
@@ -230,15 +199,6 @@ void nvm_bounds_pr(int mask);
  * @returns A mask of exceeded boundaries
  */
 int nvm_addr_check(struct nvm_addr addr, const struct nvm_geo *geo);
-
-/**
- * Convert nvm_address from generic format to device specific format
- *
- * @param dev The device which address format to convert to
- * @param addr The address to convert
- * @returns Address formatted to device
- */
-struct nvm_addr nvm_addr_gen2dev(struct nvm_dev *dev, struct nvm_addr addr);
 
 /**
  * Maps the given generically formatted physical address to LBA offset.
@@ -495,13 +455,6 @@ ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
  * @param addr The address to print
  */
 void nvm_addr_pr(struct nvm_addr addr);
-
-/**
- * Prints a humanly readable representation of the give address format
- *
- * @param fmt The address format to porint
- */
-void nvm_addr_fmt_pr(struct nvm_addr_fmt* fmt);
 
 /**
  * Allocate a virtual block (spanning planes)  and initialize it

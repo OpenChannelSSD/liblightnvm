@@ -126,25 +126,15 @@ nvm_addr_erase
 
 .. doxygenfunction:: nvm_addr_erase
 
-nvm_addr_write
---------------
-
-.. doxygenfunction:: nvm_addr_write
-
 nvm_addr_read
 -------------
 
 .. doxygenfunction:: nvm_addr_read
 
-nvm_addr_pr
------------
+nvm_addr_write
+--------------
 
-.. doxygenfunction:: nvm_addr_pr
-
-nvm_addr_fmt_pr
----------------
-
-.. doxygenfunction:: nvm_addr_fmt_pr
+.. doxygenfunction:: nvm_addr_write
 
 nvm_addr_check
 --------------
@@ -156,21 +146,6 @@ nvm_addr_gen2dev
 
 .. doxygenfunction:: nvm_addr_gen2dev
 
-
-
-Logical Addressing
-==================
-
-nvm_lba_pwrite
---------------
-
-.. doxygenfunction:: nvm_lba_pwrite
-
-nvm_lba_pread
--------------
-
-.. doxygenfunction:: nvm_lba_pread
-
 nvm_addr_gen2lba
 ----------------
 
@@ -180,6 +155,31 @@ nvm_addr_lba2gen
 ----------------
 
 .. doxygenfunction:: nvm_addr_lba2gen
+
+nvm_addr_fmt_pr
+---------------
+
+.. doxygenfunction:: nvm_addr_fmt_pr
+
+nvm_addr_pr
+-----------
+
+.. doxygenfunction:: nvm_addr_pr
+
+
+
+Logical Addressing
+==================
+
+nvm_lba_pread
+-------------
+
+.. doxygenfunction:: nvm_lba_pread
+
+nvm_lba_pwrite
+--------------
+
+.. doxygenfunction:: nvm_lba_pwrite
 
 
 
@@ -261,66 +261,5 @@ nvm_vblk_attr_pos_write
 -----------------------
 
 .. doxygenfunction:: nvm_vblk_attr_pos_write
-
-
-
-Deprecated block interface
-==========================
-
-nvm_dblk
---------
-
-.. doxygenstruct:: nvm_dblk
-   :members:
-
-nvm_dblk_erase
---------------
-
-.. doxygenfunction:: nvm_dblk_erase
-
-nvm_dblk_write
---------------
-
-.. doxygenfunction:: nvm_dblk_write
-
-nvm_dblk_read
--------------
-
-.. doxygenfunction:: nvm_dblk_read
-
-nvm_dblk_pwrite
----------------
-
-.. doxygenfunction:: nvm_dblk_pwrite
-
-nvm_dblk_pread
---------------
-
-.. doxygenfunction:: nvm_dblk_pread
-
-nvm_dblk_attr_addr
-------------------
-
-.. doxygenfunction:: nvm_dblk_attr_addr
-
-nvm_dblk_pr
------------
-
-.. doxygenfunction:: nvm_dblk_pr
-
-nvm_dblk_alloc
---------------
-
-.. doxygenfunction:: nvm_dblk_alloc
-
-nvm_dblk_alloc_span
--------------------
-
-.. doxygenfunction:: nvm_dblk_alloc_span
-
-nvm_dblk_free
--------------
-
-.. doxygenfunction:: nvm_dblk_free
 
 
