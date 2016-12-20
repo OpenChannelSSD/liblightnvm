@@ -11,7 +11,7 @@
 int get(NVM_CLI_CMD_ARGS *args, int flags)
 {
 	struct nvm_bbt* bbt;
-	struct nvm_ret ret;
+	struct nvm_ret ret = {0,0};
 
 	printf("** nvm_bbt_get(...):\n");
 
@@ -31,7 +31,7 @@ int get(NVM_CLI_CMD_ARGS *args, int flags)
 int set(NVM_CLI_CMD_ARGS *args, int flags)
 {
 	struct nvm_bbt* bbt;
-	struct nvm_ret ret;
+	struct nvm_ret ret = {0,0};
 	int nupdates;
 
 	printf("** nvm_bbt_set(...):\n");
@@ -67,16 +67,15 @@ int set(NVM_CLI_CMD_ARGS *args, int flags)
 int mark(NVM_CLI_CMD_ARGS *args, int flags)
 {
 	ssize_t err = 0;
-	struct nvm_ret ret;
+	struct nvm_ret ret = {0,0};
 
 	printf("** nvm_bbt_mark(...):\n");
-	for (int i = 0; i < args->naddrs; ++i) {
+	for (int i = 0; i < args->naddrs; ++i)
 		nvm_addr_pr(args->addrs[i]);
-	}
 
 	err = nvm_bbt_mark(args->dev, args->addrs, args->naddrs, flags, &ret);
 	if (err) {
-		perror("nvm_addr_erase");
+		perror("nvm_bbt_mark");
 		nvm_ret_pr(&ret);
 	}
 

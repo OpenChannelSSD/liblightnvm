@@ -29,6 +29,7 @@ int setup(void)
 	lun_addr.g.ch = channel;
 	lun_addr.g.lun = lun;
 
+//	return nvm_addr_check(lun_addr, geo);
 	return 0;
 }
 
@@ -43,6 +44,53 @@ int teardown(void)
 // using nvm_bbt_get
 void test_BBT_GET_SET_GET(void)
 {
+	struct nvm_bbt *bbt_exp, *bbt_act;
+	int res;
+
+	nvm_addr_pr(lun_addr);
+
+	bbt_exp = nvm_bbt_get(dev, lun_addr, NULL);
+	if (!bbt_exp) {
+		CU_FAIL("nvm_bbt_get -- prior to nvm_bbt_set");
+		return;
+	}
+
+	// Check that we have the expected number of blocks
+	CU_ASSERT_EQUAL(bbt_exp->nblks, geo->nplanes * geo->nblocks);
+
+	for (int i = 1; i < 5; ++i) {		// Flip state of four blocks
+		for (int pl = 0; pl < geo->nplanes; ++pl) {
+			int idx = (geo->nblocks/(i*2)) + pl;
+			if (bbt_exp->blks[idx])
+				bbt_exp->blks[idx] = NVM_BBT_FREE;
+			else
+				bbt_exp->blks[idx] = NVM_BBT_HBAD;
+		}
+	}
+
+	res = nvm_bbt_set(dev, bbt_exp, NULL);	// Persist changes
+	if (res < 0) {
+		CU_FAIL("nvm_bbt_set");
+		nvm_bbt_free(bbt_exp);
+		return;
+	}
+
+	bbt_act = nvm_bbt_get(dev, lun_addr, NULL);
+	if (!bbt_act) {
+		CU_FAIL("nvm_bbt_get -- after nvm_bbt_set")
+		nvm_bbt_free(bbt_exp);
+		return;
+	}
+
+	CU_ASSERT_EQUAL(bbt_exp->nblks, bbt_act->nblks);	// Verify bbt
+
+	for (int blk = 0; blk < bbt_act->nblks; ++blk) {
+		CU_ASSERT_EQUAL(bbt_exp->blks[blk], bbt_act->blks[blk]);
+	}
+
+	nvm_bbt_free(bbt_act);
+	nvm_bbt_free(bbt_exp);
+
 	return;
 }
 
@@ -69,7 +117,6 @@ int main(int argc, char **argv)
 		strncpy(nvm_dev_path, argv[1], NVM_DEV_PATH_LEN);
 		break;
 	}
-
 	CU_pSuite pSuite = NULL;
 
 	if (CUE_SUCCESS != CU_initialize_registry())
