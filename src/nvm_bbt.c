@@ -240,7 +240,7 @@ void nvm_bbt_pr(struct nvm_bbt *bbt)
 	for (int i = 0; i < bbt->nblks; i += bbt->dev->geo.nplanes) {
 		int blk = i / bbt->dev->geo.nplanes;
 
-		printf("\n    blk(%03d): [ ", blk);
+		printf("\n    blk(%04d): [ ", blk);
 		for (int blk = i; blk < (i+ bbt->dev->geo.nplanes); ++blk) {
 			//printf("%u ", bbt->blks[i]);
 			nvm_bbt_state_pr(bbt->blks[i]);
