@@ -232,7 +232,7 @@ void nvm_bbt_free(struct nvm_bbt *bbt)
 
 void nvm_bbt_pr(struct nvm_bbt *bbt)
 {
-	int nnotgood = 0;
+	int nnotfree = 0;
 
 	printf("bbt {\n");
 	printf("  addr"); nvm_addr_pr(bbt->addr);
@@ -246,13 +246,13 @@ void nvm_bbt_pr(struct nvm_bbt *bbt)
 			nvm_bbt_state_pr(bbt->blks[i]);
 			printf(" ");
 			if (bbt->blks[i]) {
-				++nnotgood;
+				++nnotfree;
 			}
 		}
 		printf("]");
 	}
 	printf("\n  }\n");
-	printf("  nnotgood(%d)\n", nnotgood);
+	printf("  #notfree(%d)\n", nnotfree);
 	printf("}\n");
 }
 
