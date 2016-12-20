@@ -204,11 +204,11 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 
 			cmd->args.addrs[0].ppa = 0;	// Span begins at
 			cmd->args.addrs[0].g.ch = atoi(argv[3]);
-			cmd->args.addrs[0].g.lun = atoi(argv[4]);
+			cmd->args.addrs[0].g.lun = atoi(argv[5]);
 			cmd->args.addrs[0].g.blk = atoi(argv[7]);
 
 			cmd->args.addrs[1].ppa = 0;	// Span ends at
-			cmd->args.addrs[1].g.ch = atoi(argv[5]);
+			cmd->args.addrs[1].g.ch = atoi(argv[4]);
 			cmd->args.addrs[1].g.lun = atoi(argv[6]);
 			cmd->args.addrs[1].g.blk = atoi(argv[7]);
 
