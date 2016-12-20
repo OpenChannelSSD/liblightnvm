@@ -48,9 +48,13 @@ nvm_bbt
    nvm_bbt      set_f dev_path ch lun
    nvm_bbt      set_b dev_path ch lun
    nvm_bbt      set_g dev_path ch lun
+   nvm_bbt      set_d dev_path ch lun
+   nvm_bbt      set_h dev_path ch lun
    nvm_bbt     mark_f dev_path ppa [ppa...]
    nvm_bbt     mark_b dev_path ppa [ppa...]
    nvm_bbt     mark_g dev_path ppa [ppa...]
+   nvm_bbt     mark_d dev_path ppa [ppa...]
+   nvm_bbt     mark_h dev_path ppa [ppa...]
   
 
 nvm_addr

@@ -153,9 +153,11 @@ struct nvm_geo {
  * Representation of valid values of bad-block-table states
  */
 enum nvm_bbt_state {
-	NVM_BBT_GOOD = 0x0,	///< Block is free / good
+	NVM_BBT_FREE = 0x0,	///< Block is free AKA good
 	NVM_BBT_BAD = 0x1,	///< Block is bad
-	NVM_BBT_GBAD = 0x2	///< Block has grown bad
+	NVM_BBT_GBAD = 0x2,	///< Block has grown bad
+	NVM_BBT_DBAD = 0x4,	///< Device has marked block bad
+	NVM_BBT_HBAD = 0x8	///< Host has marked block bad
 };
 
 /**
@@ -308,6 +310,12 @@ void nvm_bbt_free(struct nvm_bbt *bbt);
  * @param bbt The bad-block-table to print
  */
 void nvm_bbt_pr(struct nvm_bbt *bbt);
+
+
+/**
+ * Prints a humanly readable representation of the given bad-block-table state
+ */
+void nvm_bbt_state_pr(int state);
 
 /**
  * Prints human readable representation of the given geometry

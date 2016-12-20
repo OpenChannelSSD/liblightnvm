@@ -187,14 +187,15 @@ int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 	int err;
 
 	switch(flags) {
-		case 0x0:
-		case 0x1:
-		case 0x2:
-			break;
-		default:
-			errno = EINVAL;
-			return -1;
-			break;
+	case NVM_BBT_FREE:
+	case NVM_BBT_BAD:
+	case NVM_BBT_DBAD:
+	case NVM_BBT_GBAD:
+	case NVM_BBT_HBAD:
+		break;
+	default:
+		errno = EINVAL;
+		return -1;
 	}
 
 	for (int i = 0; i < naddrs; ++i) {	// Setup PPAs: Convert format
@@ -241,7 +242,9 @@ void nvm_bbt_pr(struct nvm_bbt *bbt)
 
 		printf("\n    blk(%03d): [ ", blk);
 		for (int blk = i; blk < (i+ bbt->dev->geo.nplanes); ++blk) {
-			printf("%u ", bbt->blks[i]);
+			//printf("%u ", bbt->blks[i]);
+			nvm_bbt_state_pr(bbt->blks[i]);
+			printf(" ");
 			if (bbt->blks[i]) {
 				++nnotgood;
 			}
@@ -253,3 +256,26 @@ void nvm_bbt_pr(struct nvm_bbt *bbt)
 	printf("}\n");
 }
 
+void nvm_bbt_state_pr(int state)
+{
+	switch(state) {
+	case NVM_BBT_FREE:
+		printf("FREE(%d)", state);
+		break;
+	case NVM_BBT_BAD:
+		printf(" BAD(%d)", state);
+		break;
+	case NVM_BBT_GBAD:
+		printf("GBAD(%d)", state);
+		break;
+	case NVM_BBT_DBAD:
+		printf("DBAD(%d)", state);
+		break;
+	case NVM_BBT_HBAD:
+		printf("HBAD(%d)", state);
+		break;
+	default:
+		printf("EINVAL(%d)", state);
+		break;
+	}
+}

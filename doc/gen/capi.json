@@ -69,7 +69,8 @@
 		"nvm_bbt_set",
 		"nvm_bbt_mark",
 		"nvm_bbt_free",
-		"nvm_bbt_pr"
+		"nvm_bbt_pr",
+		"nvm_bbt_state_pr"
 	]
 },
 {

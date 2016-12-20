@@ -107,6 +107,11 @@ nvm_bbt_pr
 
 .. doxygenfunction:: nvm_bbt_pr
 
+nvm_bbt_state_pr
+----------------
+
+.. doxygenfunction:: nvm_bbt_state_pr
+
 
 
 Physical Addressing
