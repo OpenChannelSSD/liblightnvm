@@ -42,7 +42,6 @@
 		"nvm_addr_gen2lba",
 		"nvm_addr_lba2gen",
 
-		"nvm_addr_fmt_pr",
 		"nvm_addr_pr"
 	]
 },
@@ -63,6 +62,7 @@
 		"nvm_bbt_get",
 		"nvm_bbt_set",
 		"nvm_bbt_mark",
+		"nvm_bbt_free",
 		"nvm_bbt_pr"
 	]
 },
@@ -83,6 +83,8 @@
 		"nvm_vblk_free",
 		"nvm_vblk_pr",
 
+		"nvm_vblk_attr_addr",
+		"nvm_vblk_attr_bgn",
 		"nvm_vblk_attr_end",
 		"nvm_vblk_attr_geo",
 		"nvm_vblk_attr_pos_read",

@@ -125,7 +125,9 @@ struct nvm_addr {
 };
 
 /**
- * Representation of geometry of devices and spanning blocks.
+ * Representation of device and virtual block geometry
+ *
+ * @see nvm_dev_attr_geo, nvm_vblk_attr_geo
  */
 struct nvm_geo {
 	size_t nchannels;	///< Number of channels on device
@@ -153,15 +155,13 @@ enum nvm_bbt_mark {
 /**
  * Representation of bad-block-table
  *
- * Create and initialize by calling `nvm_bbt_get`
- * Destroy by calling `free`
- * Print it with `nvm_bbt_pr`
- * Update it by accessing blks[] after `nvm_bbt_get`
- * Update device by calling `nvm_bbt_set`
+ * The bad-block-table describes block-state of a given LUN
+ *
+ * @see nvm_bbt_get, nvm_bbt_set, nvm_bbt_mark, nvm_bbt_free, and nvm_bbt_pr
  */
 struct nvm_bbt {
-	struct nvm_dev *dev;	///< Device on which the bbt belongs to
-	struct nvm_addr addr;	///< LUN address the bad block table covers
+	struct nvm_dev *dev;	///< Device on which the bbt resides
+	struct nvm_addr addr;	///< Address of the LUN described by the bbt
 	uint8_t *blks;	///< Array containing block status for each block in LUN
 	uint64_t nblks;	///< Length of the bad block array
 };

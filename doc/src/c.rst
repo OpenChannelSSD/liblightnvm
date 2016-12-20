@@ -99,6 +99,11 @@ nvm_bbt_mark
 
 .. doxygenfunction:: nvm_bbt_mark
 
+nvm_bbt_free
+------------
+
+.. doxygenfunction:: nvm_bbt_free
+
 nvm_bbt_pr
 ----------
 
@@ -141,11 +146,6 @@ nvm_addr_check
 
 .. doxygenfunction:: nvm_addr_check
 
-nvm_addr_gen2dev
-----------------
-
-.. doxygenfunction:: nvm_addr_gen2dev
-
 nvm_addr_gen2lba
 ----------------
 
@@ -155,11 +155,6 @@ nvm_addr_lba2gen
 ----------------
 
 .. doxygenfunction:: nvm_addr_lba2gen
-
-nvm_addr_fmt_pr
----------------
-
-.. doxygenfunction:: nvm_addr_fmt_pr
 
 nvm_addr_pr
 -----------
@@ -241,6 +236,16 @@ nvm_vblk_pr
 -----------
 
 .. doxygenfunction:: nvm_vblk_pr
+
+nvm_vblk_attr_addr
+------------------
+
+.. doxygenfunction:: nvm_vblk_attr_addr
+
+nvm_vblk_attr_bgn
+-----------------
+
+.. doxygenfunction:: nvm_vblk_attr_bgn
 
 nvm_vblk_attr_end
 -----------------
