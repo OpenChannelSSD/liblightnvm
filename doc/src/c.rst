@@ -6,8 +6,6 @@
 
 C API to interact with an Open-Channel SSDs from user space.
 
-.. toctree::
-
 Geometry
 ========
 
@@ -266,5 +264,6 @@ nvm_vblk_attr_pos_write
 -----------------------
 
 .. doxygenfunction:: nvm_vblk_attr_pos_write
+
 
 

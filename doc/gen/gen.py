@@ -50,6 +50,14 @@ def gen_capi(jsn, tmpl):
                 "", ""
             ])
 
+        for enum in sect["enums"]:
+            rst += "\n".join([
+                enum,
+                "-" * len(enum), "",
+                ".. doxygenenum:: %s" % enum,
+                "", ""
+            ])
+
         for func in sect["functions"]:
             rst += "\n".join([
                 func,

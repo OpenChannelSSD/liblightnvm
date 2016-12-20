@@ -26,6 +26,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/**
+ * @file liblightnvm.h
+ */
 #ifndef __LIBLIGHTNVM_H
 #define __LIBLIGHTNVM_H
 
@@ -146,7 +149,10 @@ struct nvm_geo {
 	size_t vpg_nbytes;	///< Number of bytes per virtual page
 };
 
-enum nvm_bbt_mark {
+/**
+ * Representation of valid values of bad-block-table states
+ */
+enum nvm_bbt_state {
 	NVM_BBT_GOOD = 0x0,	///< Block is free / good
 	NVM_BBT_BAD = 0x1,	///< Block is bad
 	NVM_BBT_GBAD = 0x2	///< Block has grown bad
@@ -274,6 +280,8 @@ int nvm_bbt_set(struct nvm_dev *dev, struct nvm_bbt* bbt, struct nvm_ret *ret);
  * The addresses given to this function are interpreted as block addresses, in
  * contrast to `nvm_addr_write`, and `nvm_addr_read` which interpret addresses
  * and sector addresses.
+ *
+ * @see `enum nvm_bbt_state`
  *
  * @param dev Handle to the device on which to mark
  * @param addrs Array of memory address

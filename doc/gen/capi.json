@@ -3,6 +3,7 @@
 	"name": "nvm_geo",
 	"structs": ["nvm_geo"],
 	"typedefs": [],
+	"enums": [],
 	"functions": [
 		"nvm_geo_pr"
 	]
@@ -11,6 +12,7 @@
 	"name": "nvm_buf",
 	"structs": [],
 	"typedefs": [],
+	"enums": [],
 	"functions": [
 		"nvm_buf_alloc",
 		"nvm_buf_fill",
@@ -21,6 +23,7 @@
 	"name": "nvm_dev",
 	"structs": ["nvm_dev"],
 	"typedefs": [],
+	"enums": [],
 	"functions": [
 		"nvm_dev_open",
 		"nvm_dev_close",
@@ -32,6 +35,7 @@
 	"name": "nvm_addr",
 	"structs": ["nvm_addr", "nvm_ret"],
 	"typedefs": [],
+	"enums": [],
 	"functions": [
 		"nvm_addr_erase",
 		"nvm_addr_read",
@@ -49,6 +53,7 @@
 	"name": "nvm_lba",
 	"structs": [],
 	"typedefs": [],
+	"enums": [],
 	"functions": [
 		"nvm_lba_pread",
 		"nvm_lba_pwrite"
@@ -58,6 +63,7 @@
 	"name": "nvm_bbt",
 	"structs": ["nvm_bbt"],
 	"typedefs": [],
+	"enums": [],
 	"functions": [
 		"nvm_bbt_get",
 		"nvm_bbt_set",
@@ -70,6 +76,7 @@
 	"name": "nvm_vblk",
 	"structs": ["nvm_vblk"],
 	"typedefs": [],
+	"enums": [],
 	"functions": [
 		"nvm_vblk_erase",
 		"nvm_vblk_read",
