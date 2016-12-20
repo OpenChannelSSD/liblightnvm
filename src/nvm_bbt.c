@@ -87,6 +87,11 @@ struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 	size_t krnl_bbt_sz;
 	int err;
 
+	if (nvm_addr_check(addr, &dev->geo)) {
+		errno = EINVAL;
+		return NULL;
+	}
+
 	bbt = malloc(sizeof(*bbt));
 	if (!bbt) {
 		errno = ENOMEM;
@@ -151,6 +156,15 @@ int nvm_bbt_set(struct nvm_dev *dev, struct nvm_bbt *bbt,
 	struct nvm_bbt *bbt_old;
 	int nupdates = 0;
 
+	if (!bbt) {
+		errno = EINVAL;
+		return -1;
+	}
+	if (nvm_addr_check(bbt->addr, &dev->geo)) {
+		errno = EINVAL;
+		return -1;
+	}
+
 	bbt_old = nvm_bbt_get(dev, bbt->addr, ret);
 	if (!bbt_old)
 		return -1;			// Propagate `errno`
@@ -161,19 +175,20 @@ int nvm_bbt_set(struct nvm_dev *dev, struct nvm_bbt *bbt,
 	}
 	
 	for (int i = 0; i < bbt->nblks; ++i) {	// Set only those which changed
-		if (bbt->blks[i] != bbt_old->blks[i]) {
-			struct nvm_addr addr;	// Construct block address
+		if (bbt->blks[i] == bbt_old->blks[i])
+			continue;
 
-			addr.ppa = bbt->addr.ppa;
-			addr.g.blk = i / dev->geo.nplanes;
-			addr.g.pl = i % dev->geo.nplanes;
+		struct nvm_addr addr;	// Construct block address
 
-			if (nvm_bbt_mark(dev, &addr, 1, bbt->blks[i], ret)) {
-				return -1;	// Propagate `errno`
-			}
+		addr.ppa = bbt->addr.ppa;
+		addr.g.blk = i / dev->geo.nplanes;
+		addr.g.pl = i % dev->geo.nplanes;
 
-			++nupdates;
+		if (nvm_bbt_mark(dev, &addr, 1, bbt->blks[i], ret)) {
+			return -1;	// Propagate `errno`
 		}
+
+		++nupdates;
 	}
 
 	return nupdates;
@@ -199,6 +214,10 @@ int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 	}
 
 	for (int i = 0; i < naddrs; ++i) {	// Setup PPAs: Convert format
+		if (nvm_addr_check(addrs[i], &dev->geo)) {
+			errno = EINVAL;
+			return -1;
+		}
 		dev_addrs[i] = nvm_addr_gen2dev(dev, addrs[i]);
 	}
 
