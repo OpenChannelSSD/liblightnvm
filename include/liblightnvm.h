@@ -61,20 +61,13 @@ extern "C" {
 struct nvm_dev;
 
 /**
- * Deprecated block interface
- *
- * @struct nvm_dblk
- */
-struct nvm_dblk;
-
-/**
  * Virtual block abstraction
  *
  * Facilitates a libc-like read/write and a system-like `pread`/`pwrite`
  * interface to perform I/O on multiple blocks on physical NVM. Span defaults to
- * multiple physical blocks across planes when allocated with `nvm_dblk_alloc`.
+ * multiple physical blocks across planes when allocated with `nvm_vblk_alloc`.
  * Span of multiple physical blocks accross LUNs, and channels can be created
- * when using `nvm_dblk_alloc_span`.
+ * when using `nvm_vblk_alloc_span`.
  *
  * @struct nvm_vblk
  */
@@ -509,66 +502,6 @@ void nvm_addr_pr(struct nvm_addr addr);
  * @param fmt The address format to porint
  */
 void nvm_addr_fmt_pr(struct nvm_addr_fmt* fmt);
-
-struct nvm_dblk *nvm_dblk_new(void);
-struct nvm_dblk *nvm_dblk_alloc(struct nvm_dev *dev,
-                                           struct nvm_addr addr);
-struct nvm_dblk *nvm_dblk_alloc_span(struct nvm_dev *dev, int ch_bgn,
-                                                int ch_end, int lun_bgn,
-                                                int lun_end,
-                                                int blk);
-void nvm_dblk_free(struct nvm_dblk *dblk);
-void nvm_dblk_pr(struct nvm_dblk *dblk);
-
-struct nvm_addr nvm_dblk_attr_addr(struct nvm_dblk *dblk);
-
-/**
- * Erase an entire dblk
- *
- * @returns On success, the number of bytes erased is returned. On error, -1 is
- * returned and `errno` set to indicate the error.
- */
-ssize_t nvm_dblk_erase(struct nvm_dblk *dblk);
-
-/**
- * Read from a dblk at given offset
- *
- * @returns On success, the number of bytes read is returned. On error, -1 is
- * returned and `errno` set to indicate the error.
- */
-ssize_t nvm_dblk_pread(struct nvm_dblk *dblk, void *buf,
-                                  size_t count,
-                                  size_t offset);
-
-/**
- * Write to a dblk at given offset
- *
- * @note
- * Use this for controlling "chunked" writing, do NOT use for random access
- *
- * @returns On success, the number of bytes written is returned. On error, -1 is
- * returned and `errno` set to indicate the error.
- */
-ssize_t nvm_dblk_pwrite(struct nvm_dblk *dblk, const void *buf,
-                                   size_t count,
-                                   size_t offset);
-
-/**
- * Write to dblk
- *
- * @returns On success, the number of bytes written is returned. On error, -1 is
- * returned and `errno` set to indicate the error.
- */
-ssize_t nvm_dblk_write(struct nvm_dblk *dblk, const void *buf,
-                                  size_t count);
-
-/**
- * Read from a dblk
- *
- * @returns On success, the number of bytes read is returned. On error, -1 is
- * returned and `errno` set to indicate the error.
- */
-ssize_t nvm_dblk_read(struct nvm_dblk *dblk, void *buf, size_t count);
 
 /**
  * Allocate a virtual block (spanning planes)  and initialize it

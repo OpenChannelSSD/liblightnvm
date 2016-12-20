@@ -28,11 +28,5 @@
         "uses": [
             "nvm_dev_open", "nvm_dev_close", "nvm_dev_pr"
         ]
-},
-{
-        "name": "nvm_dblk",
-        "uses": [
-            "nvm_dev_open", "nvm_dev_close", "nvm_dev_pr"
-        ]
 }
 ]

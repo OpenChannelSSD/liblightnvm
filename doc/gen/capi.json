@@ -86,24 +86,5 @@
 		"nvm_vblk_attr_pos_read",
 		"nvm_vblk_attr_pos_write"
 	]
-},
-{
-	"name": "nvm_dblk",
-	"structs": ["nvm_dblk"],
-	"typedefs": [],
-	"functions": [
-		"nvm_dblk_erase",
-		"nvm_dblk_write",
-		"nvm_dblk_read",
-		"nvm_dblk_pwrite",
-		"nvm_dblk_pread",
-
-		"nvm_dblk_attr_addr",
-		"nvm_dblk_pr",
-
-		"nvm_dblk_alloc",
-		"nvm_dblk_alloc_span",
-		"nvm_dblk_free"
-	]
 }
 ]
