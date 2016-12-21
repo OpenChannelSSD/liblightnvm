@@ -213,6 +213,11 @@ int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		return -1;
 	}
 
+	if (naddrs > NVM_NADDR_MAX) {
+		errno = EINVAL;
+		return -1;
+	}
+
 	for (int i = 0; i < naddrs; ++i) {	// Setup PPAs: Convert format
 		if (nvm_addr_check(addrs[i], &dev->geo)) {
 			errno = EINVAL;
