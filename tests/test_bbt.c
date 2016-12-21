@@ -16,6 +16,13 @@ static struct nvm_dev *dev;
 static const struct nvm_geo *geo;
 static struct nvm_addr lun_addr;
 
+// States used when verifying that bad-block-table can be set
+static enum nvm_bbt_state states[] = {
+	NVM_BBT_FREE,
+	NVM_BBT_HBAD
+};
+static int nstates = sizeof(states) / sizeof(states[0]);
+
 int setup(void)
 {
 	dev = nvm_dev_open(nvm_dev_path);
@@ -29,8 +36,7 @@ int setup(void)
 	lun_addr.g.ch = channel;
 	lun_addr.g.lun = lun;
 
-//	return nvm_addr_check(lun_addr, geo);
-	return 0;
+	return nvm_addr_check(lun_addr, geo);
 }
 
 int teardown(void)
@@ -40,9 +46,182 @@ int teardown(void)
 	return 0;
 }
 
-// Get BBT, change it, then persist it using nvm_bbt_set and verify it
-// using nvm_bbt_get
-void test_BBT_GET_SET_GET(void)
+/**
+ * Test that we can get a valid bad-block-table from a device
+ */
+void test_BBT_GET(void)
+{
+	struct nvm_bbt *bbt;
+
+	bbt = nvm_bbt_get(dev, lun_addr, NULL);
+	// Verify that we can call it
+	CU_ASSERT_PTR_NOT_NULL(bbt);
+	if (!bbt)
+		return;
+
+	// Verify that it contains the expected number of blocks
+	CU_ASSERT_EQUAL(bbt->nblks, geo->nplanes * geo->nblocks);
+	if (bbt->nblks != geo->nplanes * geo->nblocks) {
+		nvm_bbt_free(bbt);
+		CU_FAIL("Unexpected value of bbt->nblks");
+		return;
+	}
+
+	// Verify that it contains valid states
+	for (int i = 0; i < bbt->nblks; ++i) {
+		switch(bbt->blks[i]) {
+			case NVM_BBT_FREE:
+			case NVM_BBT_BAD:
+			case NVM_BBT_GBAD:
+			case NVM_BBT_HBAD:
+			case NVM_BBT_DBAD:
+				CU_PASS("Valid bbt->blks[i]");
+				break;
+			default:
+				nvm_bbt_free(bbt);
+				CU_FAIL("Invalid value bbt->blks[i]");
+				return;
+		}
+	}
+
+	nvm_bbt_free(bbt);
+
+	return;
+}
+
+//
+// Test that we can set bbt using `nvm_bbt_mark` with multiple addresses in a
+// single command
+//
+// @note
+// We do not want to change state of all blocks so we spread them out and change
+// only "NVM_ADDR_MAX / geo->nplanes" number of blocks
+//
+// @warn
+// This will alter the state of the bad-block-table on the device.
+// It will most likely leave the bad-block-table in a different state than
+// it was in before running this test
+//
+void test_BBT_MARK_NADDR(void)
+{
+	const int nblks = NVM_NADDR_MAX / (geo->nplanes);	// Spanning plns
+	struct nvm_addr addrs[nblks];
+	const int ofz = 4;
+	const int skip = geo->nblocks / (nblks + ofz);	// Spread them out
+
+	CU_ASSERT(nblks);
+	CU_ASSERT(ofz);
+	CU_ASSERT((ofz + nblks) < geo->nblocks);
+
+	for (int state_i = 0; state_i < nstates; ++state_i) {
+		struct nvm_bbt *bbt;
+		int res;
+
+		// Construct addresses to change state for
+		for (int i = 0; i < nblks; i += geo->nplanes) {
+			const int blk = i * skip + ofz;
+
+			for (int pl = 0; pl < geo->nplanes; ++pl) {
+				addrs[i + pl].ppa = lun_addr.ppa;
+				addrs[i + pl].g.blk = blk;
+				addrs[i + pl].g.pl = pl;
+			}
+		}
+
+		// Persist bbt state for nblks
+		res = nvm_bbt_mark(dev, addrs, nblks, states[state_i], NULL);
+		CU_ASSERT(!res);
+
+		// Retrieve persisted state
+		bbt = nvm_bbt_get(dev, lun_addr, NULL);
+		CU_ASSERT_PTR_NOT_NULL(bbt);
+
+		// Verify that the state is as expected
+		for (int i = 0; i < nblks; ++i) {
+			int idx = addrs[i].g.blk * geo->nplanes + addrs[i].g.pl;
+			CU_ASSERT_EQUAL(bbt->blks[idx], states[state_i]);
+			if (bbt->blks[idx] != states[state_i]) {
+				CU_FAIL("Unexpected bad-block-table state");
+				break;
+			}
+		}
+		nvm_bbt_free(bbt);
+	}
+	
+	return;
+}
+
+//
+// Test that we can set bbt using `nvm_bbt_mark` with one address and multiple
+// commands
+//
+// @note
+// We do not want to change state of all blocks so we spread them out and change
+// only "NVM_ADDR_MAX / geo->nplanes" number of blocks
+//
+// @warn
+// This will alter the state of the bad-block-table on the device.
+// It will most likely leave the bad-block-table in a different state than
+// it was in before running this test
+//
+void test_BBT_MARK_1ADDR(void)
+{
+	const int nblks = NVM_NADDR_MAX / (geo->nplanes);	// Spanning plns
+	struct nvm_addr addrs[nblks];
+	const int ofz = 4;
+	const int skip = geo->nblocks / (nblks + ofz);	// Spread them out
+
+	CU_ASSERT(nblks);
+	CU_ASSERT(ofz);
+	CU_ASSERT((ofz + nblks) < geo->nblocks);
+
+	for (int state_i = 0; state_i < nstates; ++state_i) {
+		struct nvm_bbt *bbt;
+		int res;
+
+		// Construct addresses to change state for
+		for (int i = 0; i < nblks; i += geo->nplanes) {
+			const int blk = i * skip + ofz;
+
+			for (int pl = 0; pl < geo->nplanes; ++pl) {
+				addrs[i + pl].ppa = lun_addr.ppa;
+				addrs[i + pl].g.blk = blk;
+				addrs[i + pl].g.pl = pl;
+
+				// Persist bbt state for nblks
+				res = nvm_bbt_mark(dev, &addrs[i + pl], 1,
+						   states[state_i], NULL);
+				CU_ASSERT(!res);
+			}
+		}
+
+		// Retrieve persisted state
+		bbt = nvm_bbt_get(dev, lun_addr, NULL);
+		CU_ASSERT_PTR_NOT_NULL(bbt);
+
+		// Verify that the state is as expected
+		for (int i = 0; i < nblks; ++i) {
+			int idx = addrs[i].g.blk * geo->nplanes + addrs[i].g.pl;
+			CU_ASSERT_EQUAL(bbt->blks[idx], states[state_i]);
+			if (bbt->blks[idx] != states[state_i]) {
+				CU_FAIL("Unexpected bad-block-table state");
+				break;
+			}
+		}
+		nvm_bbt_free(bbt);
+	}
+	
+	return;
+}
+
+// Test that we can set bbt using `nvm_bbt_set`
+//
+// @warn
+// This will alter the state of the bad-block-table on the device.
+// It will most likely leave the bad-block-table in a different state than
+// it was in before running this test
+//
+void test_BBT_SET(void)
 {
 	struct nvm_bbt *bbt_exp, *bbt_act;
 	int res;
@@ -84,18 +263,15 @@ void test_BBT_GET_SET_GET(void)
 
 	for (int blk = 0; blk < bbt_act->nblks; ++blk) {
 		CU_ASSERT_EQUAL(bbt_exp->blks[blk], bbt_act->blks[blk]);
+		if (bbt_exp->blks[blk] != bbt_act->blks[blk]) {
+			CU_FAIL("Unexpected bad-block-table state");
+			break;
+		}
 	}
 
 	nvm_bbt_free(bbt_act);
 	nvm_bbt_free(bbt_exp);
 
-	return;
-}
-
-// Mark some blocks using nvm_bbt_mark, then use get to verify that the
-// change persisted
-void test_BBT_MARK_GET(void)
-{
 	return;
 }
 
@@ -127,8 +303,10 @@ int main(int argc, char **argv)
 	}
 
 	if (
-	(NULL == CU_add_test(pSuite, "BBT get -> set -> get", test_BBT_GET_SET_GET)) ||
-	(NULL == CU_add_test(pSuite, "BBT mark -> get", test_BBT_MARK_GET)) ||
+	(NULL == CU_add_test(pSuite, "nvm_bbt_get", test_BBT_GET)) ||
+	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (naddr)", test_BBT_MARK_NADDR)) ||
+	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (1addr)", test_BBT_MARK_1ADDR)) ||
+	(NULL == CU_add_test(pSuite, "nvm_bbt_set", test_BBT_SET)) ||
 	0)
 	{
 		CU_cleanup_registry();
