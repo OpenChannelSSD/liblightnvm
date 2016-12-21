@@ -47,8 +47,6 @@ void test_BBT_GET_SET_GET(void)
 	struct nvm_bbt *bbt_exp, *bbt_act;
 	int res;
 
-	nvm_addr_pr(lun_addr);
-
 	bbt_exp = nvm_bbt_get(dev, lun_addr, NULL);
 	if (!bbt_exp) {
 		CU_FAIL("nvm_bbt_get -- prior to nvm_bbt_set");
