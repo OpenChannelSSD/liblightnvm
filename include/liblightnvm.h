@@ -475,6 +475,11 @@ ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 void nvm_addr_pr(struct nvm_addr addr);
 
 /**
+ * Prints a humanly readable representation of the given list of addresses
+ */
+void nvm_addrs_pr(struct nvm_addr addr[], unsigned int naddrs);
+
+/**
  * Allocate a virtual block (spanning planes)  and initialize it
  *
  * @param dev The device on which the virtual block resides

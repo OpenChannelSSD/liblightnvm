@@ -215,3 +215,12 @@ void nvm_addr_pr(struct nvm_addr addr)
 	       addr.g.blk, addr.g.pg, addr.g.sec);
 }
 
+void nvm_addrs_pr(struct nvm_addr addr[], unsigned int naddrs)
+{
+	printf("naddrs(%d) {\n", naddrs);
+	for (int i = 0; i < naddrs; ++i) {
+		printf(" %02d: ", i); nvm_addr_pr(addr[i]);
+	}
+	printf("}\n");
+}
+
