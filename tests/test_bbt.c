@@ -109,9 +109,9 @@ void test_BBT_MARK_NADDR(void)
 	const int ofz = 4;
 	const int skip = geo->nblocks / (nblks + ofz);	// Spread them out
 
-	CU_ASSERT(nblks);
-	CU_ASSERT(ofz);
-	CU_ASSERT((ofz + nblks) < geo->nblocks);
+	CU_ASSERT_FATAL(nblks);
+	CU_ASSERT_FATAL(ofz);
+	CU_ASSERT_FATAL((ofz + nblks) < geo->nblocks);
 
 	for (int state_i = 0; state_i < nstates; ++state_i) {
 		struct nvm_bbt *bbt;
@@ -127,14 +127,27 @@ void test_BBT_MARK_NADDR(void)
 				addrs[i + pl].g.pl = pl;
 			}
 		}
+		for (int i = 0; i < nblks; ++i) {
+			if (nvm_addr_check(addrs[i], geo)) {
+				CU_FAIL("Invalid addresses");
+				return;
+			}
+		}
 
 		// Persist bbt state for nblks
 		res = nvm_bbt_mark(dev, addrs, nblks, states[state_i], NULL);
 		CU_ASSERT(!res);
+		if (!res) {
+			CU_FAIL("FAILED: nvm_bbt_mark");
+			return;
+		}
 
 		// Retrieve persisted state
 		bbt = nvm_bbt_get(dev, lun_addr, NULL);
 		CU_ASSERT_PTR_NOT_NULL(bbt);
+		if (!bbt) {
+			CU_FAIL("FAILED: nvm_bbt_get");
+		}
 
 		// Verify that the state is as expected
 		for (int i = 0; i < nblks; ++i) {
