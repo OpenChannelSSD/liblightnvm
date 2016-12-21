@@ -39,6 +39,8 @@ extern "C" {
 #include <stdint.h>
 #include <sys/types.h>
 
+#define NVM_NADDR_MAX 64
+
 #define NVM_DEV_NAME_LEN 32
 #define NVM_DEV_PATH_LEN (NVM_DEV_NAME_LEN + 5)
 

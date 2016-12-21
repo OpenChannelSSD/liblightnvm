@@ -126,6 +126,11 @@ static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
 	struct nvm_addr dev_addrs[len];
 	int i, err;
 
+	if (len > NVM_NADDR_MAX) {
+		errno = EINVAL;
+		return -1;
+	}
+
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.opcode = opcode;
 	ctl.control = flags | NVM_FLAG_DEFAULT;
@@ -143,14 +148,7 @@ static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
 	ctl.metadata_len = meta ? dev->geo.meta_nbytes * len : 0;
 
 	err = ioctl(dev->fd, NVME_NVM_IOCTL_SUBMIT_VIO, &ctl);
-#ifdef NVM_DEBUG_ENABLED
-	if (err || ctl.result || ctl.status) {
-		NVM_DEBUG("err(%d), ctl: result(0x%x), status(%llu), nppas(%d)",
-			  err, ctl.result, ctl.status, ctl.nppas);
-		for (i = 0; i < len; ++i)
-			nvm_addr_pr(addrs[i]);
-	}
-#endif
+
 	if (ret) {
 		ret->result = ctl.result;
 		ret->status = ctl.status;
