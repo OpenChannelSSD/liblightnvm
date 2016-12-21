@@ -90,19 +90,73 @@ void test_BBT_GET(void)
 }
 
 //
-// Test that we can set bbt using `nvm_bbt_mark` with multiple addresses in a
-// single command
-//
-// @note
-// We do not want to change state of all blocks so we spread them out and change
-// only "NVM_ADDR_MAX / geo->nplanes" number of blocks
+// Test that we can set bbt using `nvm_bbt_mark`
 //
 // @warn
-// This will alter the state of the bad-block-table on the device.
-// It will most likely leave the bad-block-table in a different state than
-// it was in before running this test
+// This will alter the state of the bad-block-table on the device. It will most
+// likely leave the bad-block-table in a different state than it was in before
+// running this test
 //
-void test_BBT_MARK_NADDR(void)
+void _test_BBT_MARK_NADDR(unsigned int naddr_pr_call)
+{
+	const int nblks = NVM_NADDR_MAX;
+	
+	const int nvblks = nblks / geo->nplanes;
+	const int vblk_ofz = 4;
+	const int vblk_skip = (geo->nblocks - vblk_ofz) / nvblks;
+
+	struct nvm_addr addrs[nblks];
+
+	for (int i = 0; i < nblks; i += geo->nplanes) {	// Construct addresses
+		int vblk = vblk_ofz + (i / geo->nplanes) * vblk_skip;
+		for (int pl = 0; pl < geo->nplanes; ++pl) {
+			addrs[i + pl].ppa = lun_addr.ppa;
+			addrs[i + pl].g.blk = vblk;
+			addrs[i + pl].g.pl = pl;
+		}
+	}
+	nvm_addrs_pr(addrs, nblks);
+	
+	for (int i = 0; i < nblks; ++i) {	// Verify constructed addrs
+		if (nvm_addr_check(addrs[i], geo)) {
+			CU_FAIL("FAILED: Constructing addresses");
+			return;
+		}
+	}
+
+	// Persist the results using "NVM_NADDR_MAX / naddr_pr_call" calls
+	// to nvm_bbt_mark.
+	for (int addr_ofz = 0; addr_ofz < nblks; addr_ofz += naddr_pr_call) {
+		nvm_bbt_mark(dev, &addrs[addr_ofz], naddr_pr_call, NVM_BBT_FREE, NULL);
+	}
+
+	// TODO: Use nvm_bbt_get to retrieve list then verify
+	
+	return;
+}
+
+void test_BBT_MARK_NADDR_MAX(void)
+{
+	_test_BBT_MARK_NADDR(NVM_NADDR_MAX);
+}
+
+void test_BBT_MARK_NADDR_MAX2(void)
+{
+	_test_BBT_MARK_NADDR(NVM_NADDR_MAX / 2);
+}
+
+void test_BBT_MARK_NADDR_MAX4(void)
+{
+	_test_BBT_MARK_NADDR(NVM_NADDR_MAX / 4);
+}
+
+void test_BBT_MARK_NADDR_1(void)
+{
+	_test_BBT_MARK_NADDR(1);
+}
+
+/*
+void test_BBT_MARK_NADDR_MAX(void)
 {
 	const int nblks = NVM_NADDR_MAX / (geo->nplanes);	// Spanning plns
 	struct nvm_addr addrs[nblks];
@@ -162,7 +216,7 @@ void test_BBT_MARK_NADDR(void)
 	}
 	
 	return;
-}
+}*/
 
 //
 // Test that we can set bbt using `nvm_bbt_mark` with one address and multiple
@@ -177,7 +231,8 @@ void test_BBT_MARK_NADDR(void)
 // It will most likely leave the bad-block-table in a different state than
 // it was in before running this test
 //
-void test_BBT_MARK_1ADDR(void)
+/*
+void test_BBT_MARK_NADDR_1(void)
 {
 	const int nblks = NVM_NADDR_MAX / (geo->nplanes);	// Spanning plns
 	struct nvm_addr addrs[nblks];
@@ -225,7 +280,7 @@ void test_BBT_MARK_1ADDR(void)
 	}
 	
 	return;
-}
+}*/
 
 // Test that we can set bbt using `nvm_bbt_set`
 //
@@ -316,10 +371,12 @@ int main(int argc, char **argv)
 	}
 
 	if (
-	(NULL == CU_add_test(pSuite, "nvm_bbt_get", test_BBT_GET)) ||
-	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (naddr)", test_BBT_MARK_NADDR)) ||
-	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (1addr)", test_BBT_MARK_1ADDR)) ||
-	(NULL == CU_add_test(pSuite, "nvm_bbt_set", test_BBT_SET)) ||
+	//(NULL == CU_add_test(pSuite, "nvm_bbt_get", test_BBT_GET)) ||
+	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (NADDR=MAX)", test_BBT_MARK_NADDR_MAX)) ||
+	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (NADDR=MAX/2)", test_BBT_MARK_NADDR_MAX2)) ||
+	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (NADDR=MAX/4)", test_BBT_MARK_NADDR_MAX4)) ||
+	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (NADDR=1)", test_BBT_MARK_NADDR_1)) ||
+	//(NULL == CU_add_test(pSuite, "nvm_bbt_set", test_BBT_SET)) ||
 	0)
 	{
 		CU_cleanup_registry();
