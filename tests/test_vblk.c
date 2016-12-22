@@ -25,7 +25,6 @@ char *buf_w, *buf_r;
 int setup(void)
 {
 	dev = nvm_dev_open(nvm_dev_path);
-	CU_ASSERT_PTR_NOT_NULL(dev);
 	if (!dev) {
 		perror("nvm_dev_open");
 		return -1;
@@ -44,6 +43,7 @@ int setup(void)
 		perror("nvm_buf_alloc");
 		return -1;
 	}
+	nvm_buf_fill(buf_w, vblk_geo->tbytes);
 
 	buf_r = nvm_buf_alloc(dev_geo, vblk_geo->tbytes);
 	if (!buf_r) {
@@ -89,12 +89,14 @@ void test_VBLK_ERWR(void)
 		return;
 	}
 
-	res = nvm_vblk_read(vblk, buf_w, vblk_geo->tbytes);	// EXPECT: OK
+	res = nvm_vblk_read(vblk, buf_r, vblk_geo->tbytes);	// EXPECT: OK
 	CU_ASSERT(res >= 0);
 	if (res < 0) {
 		CU_FAIL("FAILED: nvm_vblk_write");
 		return;
 	}
+
+	CU_ASSERT_NSTRING_EQUAL(buf_w, buf_r, vblk_geo->tbytes);
 }
 
 int main(int argc, char **argv)
