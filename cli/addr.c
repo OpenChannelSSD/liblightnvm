@@ -157,34 +157,6 @@ int cmd_fmt(NVM_CLI_CMD_ARGS *args, int flags)
 	return 0;
 }
 
-int cmd_to_lba(NVM_CLI_CMD_ARGS *args, int flags)
-{
-	for (int i = 0; i < args->naddrs; ++i) {
-		uint64_t lba;
-
-		lba = nvm_addr_gen2lba(args->dev, args->addrs[i]);
-
-		printf("lba(%lu) = ", lba);
-		nvm_addr_pr(args->addrs[i]);
-	}
-
-	return 0;
-}
-
-int cmd_from_lba(NVM_CLI_CMD_ARGS *args, int flags)
-{
-	for (int i = 0; i < args->nlbas; ++i) {
-		struct nvm_addr addr;
-
-		addr = nvm_addr_lba2gen(args->dev, args->lbas[i]);
-
-		printf("lba(%lu) = ", args->lbas[i]);
-		nvm_addr_pr(addr);
-	}
-
-	return 0;
-}
-
 //
 // Remaining code is CLI boiler-plate
 //
@@ -194,11 +166,13 @@ static NVM_CLI_CMD cmds[] = {
 	{"read", read, NVM_CLI_ARG_PPALIST, 0x1},
 	{"write_wm", write, NVM_CLI_ARG_PPALIST, 0x0},
 	{"read_wm", read, NVM_CLI_ARG_PPALIST, 0x0},
-	{"hex2gen", cmd_fmt, NVM_CLI_ARG_PPALIST, 0x0},
-	{"gen2hex", cmd_fmt, NVM_CLI_ARG_CH_LUN_PL_BLK_PG_SEC, 0x0},
-	{"hex2lba", cmd_to_lba, NVM_CLI_ARG_PPALIST, 0x0},
-	{"gen2lba", cmd_to_lba, NVM_CLI_ARG_CH_LUN_PL_BLK_PG_SEC, 0x0},
+	{"from_hex", cmd_fmt, NVM_CLI_ARG_PPALIST, 0x0},
+	{"from_geo", cmd_fmt, NVM_CLI_ARG_CH_LUN_PL_BLK_PG_SEC, 0x0},
+	/*
+	{"hex2lba", cmd_gen2off, NVM_CLI_ARG_PPALIST, 0x0},
+	{"geo2lba", cmd_gen2off, NVM_CLI_ARG_CH_LUN_PL_BLK_PG_SEC, 0x0},
 	{"lba2gen", cmd_from_lba, NVM_CLI_ARG_LBALIST, 0x0}
+	*/
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);

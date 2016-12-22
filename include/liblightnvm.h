@@ -475,15 +475,22 @@ uint64_t nvm_addr_gen2dev(struct nvm_dev *dev, struct nvm_addr addr);
 struct nvm_addr nvm_addr_dev2gen(struct nvm_dev *dev, uint64_t);
 
 /**
- * Maps the given generically formatted physical address to LBA offset.
+ * Converts a given physical address on generic-format to byte offset
+ *
+ * @param dev Handle to device which mapping information to use
+ * @param addr The address to convert
+ * @return Address as byte offset
  */
-uint64_t nvm_addr_gen2lba(struct nvm_dev *dev, struct nvm_addr addr);
+uint64_t nvm_addr_gen2off(struct nvm_dev *dev, struct nvm_addr addr);
 
 /**
- * Maps the given LBA offset to the corresponding generically formatted physical
- * address.
+ * Converts a given byte offset to physical address on generic-format
+ *
+ * @param dev Handle to device which mapping information to use
+ * @param off
+ * @return Address on generic-format
  */
-struct nvm_addr nvm_addr_lba2gen(struct nvm_dev *dev, size_t lba);
+struct nvm_addr nvm_addr_off2gen(struct nvm_dev *dev, size_t off);
 
 /**
  * Prints a humanly readable representation of the given address

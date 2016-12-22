@@ -152,12 +152,12 @@ nvm_addr_check
 nvm_addr_gen2lba
 ----------------
 
-.. doxygenfunction:: nvm_addr_gen2lba
+.. doxygenfunction:: nvm_addr_gen2off
 
 nvm_addr_lba2gen
 ----------------
 
-.. doxygenfunction:: nvm_addr_lba2gen
+.. doxygenfunction:: nvm_addr_off2gen
 
 nvm_addr_pr
 -----------
