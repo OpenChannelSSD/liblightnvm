@@ -70,11 +70,8 @@ nvm_addr
    nvm_addr       read dev_path ppa [ppa...]
    nvm_addr   write_wm dev_path ppa [ppa...]
    nvm_addr    read_wm dev_path ppa [ppa...]
-   nvm_addr    hex2gen dev_path ppa [ppa...]
-   nvm_addr    gen2hex dev_path ch lun pl blk pg sec
-   nvm_addr    hex2lba dev_path ppa [ppa...]
-   nvm_addr    gen2lba dev_path ch lun pl blk pg sec
-   nvm_addr    lba2gen dev_path lba [lba...]
+   nvm_addr   from_hex dev_path ppa [ppa...]
+   nvm_addr   from_geo dev_path ch lun pl blk pg sec
   
 
 nvm_lba

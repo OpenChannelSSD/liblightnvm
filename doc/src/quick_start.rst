@@ -52,22 +52,30 @@ Which should output information similar to:
 .. code-block:: bash
 
   ** Device information  -- nvm_dev_pr **
-  dev { path(/dev/nvme0n1), name(nvme0n1), fd(3) }
+  dev { path(/dev/nvme0n1), name(nvme0n1), fd(3), ssw(12), pmode(1) }
   dev-geo {
-   nchannels(16), nluns(8), nplanes(2), nblocks(1048),
-   npages(512), nsectors(4), sector_nbytes(4096),
-   meta_nbytes(16),
+   nchannels(16), nluns(8), nplanes(2),
+   nblocks(1020), npages(512), nsectors(4),
+   page_nbytes(16384), sector_nbytes(4096), meta_nbytes(16),
+   tbytes(2190433320960b:2088960Mb),
    vpg_nbytes(32768b:32Kb),
-   vblk_nbytes(16777216b:16Mb),
-   total_nbytes(2250562863104b:2146304Mb)
+   vblk_nbytes(16777216b:16Mb)
   }
   dev-fmt {
-   ch_ofz(0), ch_len(4),
-   lun_ofz(7), lun_len(3),
-   pl_ofz(6), pl_len(1),
-   blk_ofz(19), blk_len(12),
-   pg_ofz(10), pg_len(9),
-   sec_ofz(4), sec_len(2)
+    ch_ofz(25),  ch_len(04), 
+   lun_ofz(22), lun_len(03), 
+    pl_ofz(02),  pl_len(01), 
+   blk_ofz(12), blk_len(10), 
+    pg_ofz(03),  pg_len(09), 
+   sec_ofz(00), sec_len(02), 
+  }
+  dev-fmt-mask {
+    ch(0000000000000000000000000000000000011110000000000000000000000000),
+   lun(0000000000000000000000000000000000000001110000000000000000000000),
+    pl(0000000000000000000000000000000000000000000000000000000000000100),
+   blk(0000000000000000000000000000000000000000001111111111000000000000),
+    pg(0000000000000000000000000000000000000000000000000000111111111000),
+   sec(0000000000000000000000000000000000000000000000000000000000000011)
   }
 
 .. tip:: If the above does not suffice to get you started then have a look at the :ref:`sec-prereqs` for detailed information about what you need to setup an environment.

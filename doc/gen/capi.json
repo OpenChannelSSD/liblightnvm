@@ -43,8 +43,14 @@
 
 		"nvm_addr_check",
 
+		"nvm_addr_gen2dev",
+		"nvm_addr_dev2gen",
+
 		"nvm_addr_gen2lba",
 		"nvm_addr_lba2gen",
+
+		"nvm_addr_gen2off",
+		"nvm_addr_off2gen",
 
 		"nvm_addr_pr"
 	]

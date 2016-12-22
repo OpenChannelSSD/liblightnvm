@@ -149,12 +149,32 @@ nvm_addr_check
 
 .. doxygenfunction:: nvm_addr_check
 
+nvm_addr_gen2dev
+----------------
+
+.. doxygenfunction:: nvm_addr_gen2dev
+
+nvm_addr_dev2gen
+----------------
+
+.. doxygenfunction:: nvm_addr_dev2gen
+
 nvm_addr_gen2lba
+----------------
+
+.. doxygenfunction:: nvm_addr_gen2lba
+
+nvm_addr_lba2gen
+----------------
+
+.. doxygenfunction:: nvm_addr_lba2gen
+
+nvm_addr_gen2off
 ----------------
 
 .. doxygenfunction:: nvm_addr_gen2off
 
-nvm_addr_lba2gen
+nvm_addr_off2gen
 ----------------
 
 .. doxygenfunction:: nvm_addr_off2gen
