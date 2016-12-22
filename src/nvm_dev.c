@@ -158,7 +158,7 @@ static int sysattr2int(struct udev_device *dev, const char *attr, int *val)
 }
 
 static int sysattr2fmt(struct udev_device *dev, const char *attr,
-		   struct nvm_addr_fmt  *fmt)
+		   struct nvm_addr_fmt  *fmt, struct nvm_addr_fmt_mask *mask)
 {
 	const char *dev_path;
 	char path[4096];
@@ -191,10 +191,16 @@ static int sysattr2fmt(struct udev_device *dev, const char *attr,
 	}
 
 	for (i = 0; i < 12; ++i) {
-		buf_fmt[0] = buf[2 + i*2];
-		buf_fmt[1] = buf[2 + i*2 + 1];
+		buf_fmt[0] = buf[2 + i*2];	// offset in bits
+		buf_fmt[1] = buf[2 + i*2 + 1];	// number of bits
 		buf_fmt[2] = '\0';
 		fmt->a[i] = strtol(buf_fmt, NULL, 16);
+
+		if ((i % 2)) {
+			// i-1 = offset
+			// i = width
+			mask->a[i/2] = (((uint64_t)1<< fmt->a[i])-1) << fmt->a[i-1];
+		}
 	}
 
 	return 0;
@@ -225,7 +231,7 @@ static int dev_attr_fill(struct nvm_dev *dev)
 	}
 
 	/* Extract ppa_format from sysfs via libudev */
-	if (sysattr2fmt(udev_dev, "lightnvm/ppa_format", &dev->fmt)) {
+	if (sysattr2fmt(udev_dev, "lightnvm/ppa_format", &dev->fmt, &dev->mask)) {
 		NVM_DEBUG("FAILED: ppa_format for name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
@@ -358,6 +364,7 @@ void nvm_dev_pr(struct nvm_dev *dev)
 	printf("dev-"); nvm_geo_pr(&dev->geo);
 	printf("dev-"); nvm_lba_map_pr(&dev->lba_map);
 	printf("dev-"); nvm_addr_fmt_pr(&dev->fmt);
+	printf("dev-"); nvm_addr_fmt_mask_pr(&dev->mask);
 }
 
 int nvm_dev_attr_nchannels(struct nvm_dev *dev)

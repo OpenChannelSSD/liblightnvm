@@ -90,10 +90,38 @@ struct nvm_addr_fmt {
 	};
 };
 
+/**
+ * Masks for removing bit information from a formatted address
+ *
+ * E.g. "addr & mask.n.ch" returns the bits representing the channel,
+ * this value can then be shifted to obtain the numerical value.
+ */
+struct nvm_addr_fmt_mask {
+	union {
+		/**
+		 * Address format masks formed as named fields
+		 */
+		struct {
+			uint64_t ch;	///< Mask for channel bits
+			uint64_t lun;	///< Mask for lun bits
+			uint64_t pl;	///< Mask for pl bits
+			uint64_t blk;	///< Mask for blk bits
+			uint64_t pg;	///< Mask for page bits
+			uint64_t sec;	///< Mask for sector bits
+		} n;
+
+		/**
+		 * Address format formed as anonymous consecutive fields
+		 */
+		uint64_t a[6];
+	};
+};
+
 struct nvm_dev {
 	char name[NVM_DEV_NAME_LEN];	///< Device name e.g. "nvme0n1"
 	char path[NVM_DEV_PATH_LEN];	///< Device path e.g. "/dev/nvme0n1"
 	struct nvm_addr_fmt fmt;	///< Device address format
+	struct nvm_addr_fmt_mask mask;	///< Device address format mask
 	struct nvm_geo geo;		///< Device geometry
 	struct nvm_lba_map lba_map;	///< Mapping for LBA format
 	int pmode;			///< Default plane-mode I/O
@@ -130,8 +158,15 @@ struct nvm_addr nvm_addr_gen2dev(struct nvm_dev *dev, struct nvm_addr addr);
 /**
  * Prints a humanly readable representation of the give address format
  *
- * @param fmt The address format to porint
+ * @param fmt The address format to print
  */
 void nvm_addr_fmt_pr(struct nvm_addr_fmt* fmt);
+
+/**
+ * Prints a humanly readable representation of the give address format mask
+ *
+ * @param fmt The address format mask to print
+ */
+void nvm_addr_fmt_mask_pr(struct nvm_addr_fmt_mask* fmt);
 
 #endif /* __NVM_H */

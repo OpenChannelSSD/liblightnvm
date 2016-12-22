@@ -197,13 +197,31 @@ ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 void nvm_addr_fmt_pr(struct nvm_addr_fmt *fmt)
 {
 	printf("fmt {\n");
-	printf(" ch_ofz(%d), ch_len(%d)", fmt->n.ch_ofz, fmt->n.ch_len);
-	printf(",\n lun_ofz(%d), lun_len(%d)", fmt->n.lun_ofz, fmt->n.lun_len);
-	printf(",\n pl_ofz(%d), pl_len(%d)", fmt->n.pl_ofz, fmt->n.pl_len);
-	printf(",\n blk_ofz(%d), blk_len(%d)", fmt->n.blk_ofz, fmt->n.blk_len);
-	printf(",\n pg_ofz(%d), pg_len(%d)", fmt->n.pg_ofz, fmt->n.pg_len);
-	printf(",\n sec_ofz(%d), sec_len(%d)", fmt->n.sec_ofz, fmt->n.sec_len);
-	printf("\n}\n");
+	printf("  ch_ofz(%02d),  ch_len(%02d), \n",
+	       fmt->n.ch_ofz, fmt->n.ch_len);
+	printf(" lun_ofz(%02d), lun_len(%02d), \n",
+	       fmt->n.lun_ofz, fmt->n.lun_len);
+	printf("  pl_ofz(%02d),  pl_len(%02d), \n",
+	       fmt->n.pl_ofz, fmt->n.pl_len);
+	printf(" blk_ofz(%02d), blk_len(%02d), \n",
+	       fmt->n.blk_ofz, fmt->n.blk_len);
+	printf("  pg_ofz(%02d),  pg_len(%02d), \n",
+	       fmt->n.pg_ofz, fmt->n.pg_len);
+	printf(" sec_ofz(%02d), sec_len(%02d), \n",
+	       fmt->n.sec_ofz, fmt->n.sec_len);
+	printf("}\n");
+}
+
+void nvm_addr_fmt_mask_pr(struct nvm_addr_fmt_mask *mask)
+{
+	printf("fmt-mask {\n");
+	printf("  ch(0x%016lx),\n", mask->n.ch);
+	printf(" lun(0x%016lx),\n", mask->n.lun);
+	printf("  pl(0x%016lx),\n", mask->n.pl);
+	printf(" blk(0x%016lx),\n", mask->n.blk);
+	printf("  pg(0x%016lx),\n", mask->n.pg);
+	printf(" sec(0x%016lx)\n", mask->n.sec);
+	printf("}\n");
 }
 
 void nvm_addr_pr(struct nvm_addr addr)
