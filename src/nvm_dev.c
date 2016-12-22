@@ -206,11 +206,20 @@ static int sysattr2fmt(struct udev_device *dev, const char *attr,
 	return 0;
 }
 
+uint64_t ilog2(uint64_t x)
+{
+  uint64_t val = 0;
+
+  while (x >>= 1)
+	val++;
+
+  return val;
+}
+
 static int dev_attr_fill(struct nvm_dev *dev)
 {
 	struct udev *udev;
 	struct udev_device *udev_dev;
-	struct nvm_lba_map *map;
 	struct nvm_geo *geo;
 	int val;
 
@@ -318,16 +327,11 @@ static int dev_attr_fill(struct nvm_dev *dev)
 			   geo->sector_nbytes;
 	geo->vpg_nbytes = geo->nplanes * geo->nsectors * geo->sector_nbytes;
 
-	map = &(dev->lba_map);	/* Derive widths for LBA mapping */
+	/* Derive the sector-shift-width for LBA mapping */
+	dev->ssw = ilog2(geo->sector_nbytes);
 
-	map->sector_nbytes = geo->sector_nbytes;
-	map->plane_nbytes = geo->nsectors * map->sector_nbytes;
-	map->page_nbytes = geo->nplanes * map->plane_nbytes;
-	map->block_nbytes = geo->npages * map->page_nbytes;
-	map->lun_nbytes = geo->nblocks * map->block_nbytes;
-	map->channel_nbytes = geo->nluns * map->lun_nbytes;
-
-	switch(geo->nplanes) {	// Derive a default plane mode
+	/* Derive a default plane mode */
+	switch(geo->nplanes) {
 		case 4:
 			dev->pmode = NVM_FLAG_PMODE_QUAD;
 			break;
@@ -359,10 +363,9 @@ struct nvm_dev *nvm_dev_new(void)
 
 void nvm_dev_pr(struct nvm_dev *dev)
 {
-	printf("dev { path(%s), name(%s), fd(%d), pmode(%d) }\n",
-	       dev->path, dev->name, dev->fd, dev->pmode);
+	printf("dev { path(%s), name(%s), fd(%d), ssw(%lu), pmode(%d) }\n",
+	       dev->path, dev->name, dev->fd, dev->ssw, dev->pmode);
 	printf("dev-"); nvm_geo_pr(&dev->geo);
-	printf("dev-"); nvm_lba_map_pr(&dev->lba_map);
 	printf("dev-"); nvm_addr_fmt_pr(&dev->fmt);
 	printf("dev-"); nvm_addr_fmt_mask_pr(&dev->mask);
 }

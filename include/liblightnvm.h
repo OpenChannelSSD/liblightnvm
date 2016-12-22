@@ -460,8 +460,8 @@ int nvm_addr_check(struct nvm_addr addr, const struct nvm_geo *geo);
  * Converts a given physical address generic-format to device-format
  *
  * @param dev The device which address format to convert to
- * @param addr The address to convert
- * @return Address on device-format
+ * @param addr The physical address on generic-format to convert
+ * @return Physical address on device-format
  */
 uint64_t nvm_addr_gen2dev(struct nvm_dev *dev, struct nvm_addr addr);
 
@@ -469,17 +469,17 @@ uint64_t nvm_addr_gen2dev(struct nvm_dev *dev, struct nvm_addr addr);
  * Converts a given physical address on device-format to generic-format
  *
  * @param dev The device which address format to convert from
- * @param addr The address to convert
- * @return Address on generic-format
+ * @param addr The physical address on device-format to convert
+ * @return Physical address on generic-format
  */
-struct nvm_addr nvm_addr_dev2gen(struct nvm_dev *dev, uint64_t);
+struct nvm_addr nvm_addr_dev2gen(struct nvm_dev *dev, uint64_t addr);
 
 /**
  * Converts a given physical address on generic-format to byte offset
  *
  * @param dev Handle to device which mapping information to use
- * @param addr The address to convert
- * @return Address as byte offset
+ * @param addr The physical address on generic-format to convert
+ * @return Logical address as byte offset
  */
 uint64_t nvm_addr_gen2off(struct nvm_dev *dev, struct nvm_addr addr);
 
@@ -487,10 +487,28 @@ uint64_t nvm_addr_gen2off(struct nvm_dev *dev, struct nvm_addr addr);
  * Converts a given byte offset to physical address on generic-format
  *
  * @param dev Handle to device which mapping information to use
- * @param off
- * @return Address on generic-format
+ * @param off Logical address as byte offset to convert
+ * @return Physical address on generic-format
  */
-struct nvm_addr nvm_addr_off2gen(struct nvm_dev *dev, size_t off);
+struct nvm_addr nvm_addr_off2gen(struct nvm_dev *dev, uint64_t off);
+
+/**
+ * Converts a given physical address on generic-format to LBA offset
+ *
+ * @param dev Handle to device which mapping information to use
+ * @param addr The physical address on generic-format to convert
+ * @return Logical address as LBA offset
+ */
+uint64_t nvm_addr_gen2lba(struct nvm_dev *dev, struct nvm_addr addr);
+
+/**
+ * Converts a given LBA offset to physical address on generic-format
+ *
+ * @param dev Handle to device which mapping information to use
+ * @param off Logical address as LBA offset to convert
+ * @return Physical address on generic-format
+ */
+struct nvm_addr nvm_addr_lba2gen(struct nvm_dev *dev, uint64_t off);
 
 /**
  * Prints a humanly readable representation of the given address

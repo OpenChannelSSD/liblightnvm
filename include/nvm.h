@@ -31,6 +31,8 @@
 
 #include <liblightnvm.h>
 
+#define UNIVERSAL_SECT_SH 9
+
 /**
  * NVMe command opcodes as defined by LigthNVM specification 1.2
  */
@@ -123,7 +125,7 @@ struct nvm_dev {
 	struct nvm_addr_fmt fmt;	///< Device address format
 	struct nvm_addr_fmt_mask mask;	///< Device address format mask
 	struct nvm_geo geo;		///< Device geometry
-	struct nvm_lba_map lba_map;	///< Mapping for LBA format
+	uint64_t ssw;			///< Bit-width for LBA fmt conversion
 	int pmode;			///< Default plane-mode I/O
 	int fd;				///< Device fd / IOCTL handle
 };

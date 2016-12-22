@@ -83,51 +83,39 @@ inline uint64_t nvm_addr_gen2dev(struct nvm_dev *dev, struct nvm_addr addr)
 	return d_addr;
 }
 
+uint64_t nvm_addr_gen2off(struct nvm_dev *dev, struct nvm_addr addr)
+{
+	return nvm_addr_gen2dev(dev, addr) << dev->ssw;
+}
+
+uint64_t nvm_addr_gen2lba(struct nvm_dev *dev, struct nvm_addr addr)
+{
+	return nvm_addr_gen2off(dev, addr) >> UNIVERSAL_SECT_SH;
+}
+
 inline struct nvm_addr nvm_addr_dev2gen(struct nvm_dev *dev, uint64_t addr)
 {
 	struct nvm_addr gen;
 
-	gen.ppa  = (addr & dev->mask.n.ch) >> dev->fmt.n.ch_ofz;
-	gen.ppa |= (addr & dev->mask.n.lun) >> dev->fmt.n.lun_ofz;
-	gen.ppa |= (addr & dev->mask.n.pl) >> dev->fmt.n.pl_ofz;
-	gen.ppa |= (addr & dev->mask.n.blk) >> dev->fmt.n.blk_ofz;
-	gen.ppa |= (addr & dev->mask.n.pg) >> dev->fmt.n.pg_ofz;
-	gen.ppa |= (addr & dev->mask.n.sec) >> dev->fmt.n.sec_ofz;
+	gen.ppa = 0;
+	gen.g.ch = (addr & dev->mask.n.ch) >> dev->fmt.n.ch_ofz;
+	gen.g.lun |= (addr & dev->mask.n.lun) >> dev->fmt.n.lun_ofz;
+	gen.g.pl|= (addr & dev->mask.n.pl) >> dev->fmt.n.pl_ofz;
+	gen.g.blk |= (addr & dev->mask.n.blk) >> dev->fmt.n.blk_ofz;
+	gen.g.pg |= (addr & dev->mask.n.pg) >> dev->fmt.n.pg_ofz;
+	gen.g.sec |= (addr & dev->mask.n.sec) >> dev->fmt.n.sec_ofz;
 
 	return gen;
 }
 
-uint64_t nvm_addr_gen2off(struct nvm_dev *dev, struct nvm_addr addr)
-{
-	size_t lba = 0;
-
-	// [ch][lun][blk][pg][pl][sec]~sector_nbytes = offset
-
-	lba += dev->lba_map.channel_nbytes * addr.g.ch;
-	lba += dev->lba_map.lun_nbytes * addr.g.lun;
-	lba += dev->lba_map.plane_nbytes * addr.g.pl;
-	lba += dev->lba_map.block_nbytes * addr.g.blk;
-	lba += dev->lba_map.page_nbytes * addr.g.pg;
-	lba += dev->lba_map.sector_nbytes * addr.g.sec;
-
-	return lba;
-}
-
 struct nvm_addr nvm_addr_off2gen(struct nvm_dev *dev, size_t off)
 {
-	struct nvm_addr addr;
-	struct nvm_lba_map *map = &dev->lba_map;
+	return nvm_addr_dev2gen(dev, off >> dev->ssw);
+}
 
-	addr.ppa = 0;
-
-	addr.g.ch = off / map->channel_nbytes;
-	addr.g.lun = (off % map->channel_nbytes) / map->lun_nbytes;
-	addr.g.blk = (off % map->lun_nbytes) / map->block_nbytes;
-	addr.g.pg = (off % map->block_nbytes) / map->page_nbytes;
-	addr.g.pl = (off % map->page_nbytes) / map->plane_nbytes;
-	addr.g.sec = (off % map->plane_nbytes) / map->sector_nbytes;
-
-	return addr;
+struct nvm_addr nvm_addr_lba2gen(struct nvm_dev *dev, uint64_t off)
+{
+	return nvm_addr_off2gen(dev, off << UNIVERSAL_SECT_SH);
 }
 
 static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
