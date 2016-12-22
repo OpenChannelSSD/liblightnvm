@@ -69,8 +69,7 @@ int nvm_addr_check(struct nvm_addr addr, const struct nvm_geo *geo)
 	return exceeded;
 }
 
-inline uint64_t nvm_addr_gen2dev(struct nvm_dev *dev,
-                                 struct nvm_addr addr)
+inline uint64_t nvm_addr_gen2dev(struct nvm_dev *dev, struct nvm_addr addr)
 {
 	uint64_t d_addr = 0;
 
@@ -82,6 +81,20 @@ inline uint64_t nvm_addr_gen2dev(struct nvm_dev *dev,
 	d_addr |= ((uint64_t)addr.g.sec) << dev->fmt.n.sec_ofz;
 
 	return d_addr;
+}
+
+inline struct nvm_addr nvm_addr_dev2gen(struct nvm_dev *dev, uint64_t addr)
+{
+	struct nvm_addr gen;
+
+	gen.ppa  = (addr & dev->mask.n.ch) >> dev->fmt.n.ch_ofz;
+	gen.ppa |= (addr & dev->mask.n.lun) >> dev->fmt.n.lun_ofz;
+	gen.ppa |= (addr & dev->mask.n.pl) >> dev->fmt.n.pl_ofz;
+	gen.ppa |= (addr & dev->mask.n.blk) >> dev->fmt.n.blk_ofz;
+	gen.ppa |= (addr & dev->mask.n.pg) >> dev->fmt.n.pg_ofz;
+	gen.ppa |= (addr & dev->mask.n.sec) >> dev->fmt.n.sec_ofz;
+
+	return gen;
 }
 
 uint64_t nvm_addr_gen2off(struct nvm_dev *dev, struct nvm_addr addr)
