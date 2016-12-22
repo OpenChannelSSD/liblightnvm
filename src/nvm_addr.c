@@ -72,20 +72,19 @@ int nvm_addr_check(struct nvm_addr addr, const struct nvm_geo *geo)
 inline struct nvm_addr nvm_addr_gen2dev(struct nvm_dev *dev,
 					struct nvm_addr addr)
 {
-	struct nvm_addr d_addr;
+	uint64_t d_addr = 0;
 
-	d_addr.ppa = 0;
-	d_addr.ppa |= ((uint64_t)addr.g.ch) << dev->fmt.n.ch_ofz;
-	d_addr.ppa |= ((uint64_t)addr.g.lun) << dev->fmt.n.lun_ofz;
-	d_addr.ppa |= ((uint64_t)addr.g.pl) << dev->fmt.n.pl_ofz;
-	d_addr.ppa |= ((uint64_t)addr.g.blk) << dev->fmt.n.blk_ofz;
-	d_addr.ppa |= ((uint64_t)addr.g.pg) << dev->fmt.n.pg_ofz;
-	d_addr.ppa |= ((uint64_t)addr.g.sec) << dev->fmt.n.sec_ofz;
+	d_addr |= ((uint64_t)addr.g.ch) << dev->fmt.n.ch_ofz;
+	d_addr |= ((uint64_t)addr.g.lun) << dev->fmt.n.lun_ofz;
+	d_addr |= ((uint64_t)addr.g.pl) << dev->fmt.n.pl_ofz;
+	d_addr |= ((uint64_t)addr.g.blk) << dev->fmt.n.blk_ofz;
+	d_addr |= ((uint64_t)addr.g.pg) << dev->fmt.n.pg_ofz;
+	d_addr |= ((uint64_t)addr.g.sec) << dev->fmt.n.sec_ofz;
 
 	return d_addr;
 }
 
-size_t nvm_addr_gen2lba(struct nvm_dev *dev, struct nvm_addr addr)
+uint64_t nvm_addr_gen2lba(struct nvm_dev *dev, struct nvm_addr addr)
 {
 	size_t lba = 0;
 
@@ -123,7 +122,7 @@ static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
 			    uint16_t opcode, struct nvm_ret *ret)
 {
 	struct nvm_user_vio ctl;
-	struct nvm_addr dev_addrs[len];
+	uint64_t dev_addrs[len];
 	int i, err;
 
 	if (len > NVM_NADDR_MAX) {
@@ -139,7 +138,7 @@ static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
 		dev_addrs[i] = nvm_addr_gen2dev(dev, addrs[i]);
 	}
 	ctl.nppas = len - 1;		// Unnatural numbers: counting from zero
-	ctl.ppa_list = len == 1 ? dev_addrs[0].ppa : (uint64_t)dev_addrs;
+	ctl.ppa_list = len == 1 ? dev_addrs[0] : (uint64_t)dev_addrs;
 
 	ctl.addr = (uint64_t)data;	// Setup data
 	ctl.data_len = data ? dev->geo.sector_nbytes * len : 0;

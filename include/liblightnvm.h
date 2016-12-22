@@ -202,26 +202,6 @@ void nvm_ver_pr(void);
 void nvm_bounds_pr(int mask);
 
 /**
- * Checks whether the given addr exceeds bounds of the given geometry
- *
- * @param addr The addr to check
- * @param geo The geometric bounds to check the given address against
- * @returns A mask of exceeded boundaries
- */
-int nvm_addr_check(struct nvm_addr addr, const struct nvm_geo *geo);
-
-/**
- * Maps the given generically formatted physical address to LBA offset.
- */
-size_t nvm_addr_gen2lba(struct nvm_dev *dev, struct nvm_addr addr);
-
-/**
- * Maps the given LBA offset to the corresponding generically formatted physical
- * address.
- */
-struct nvm_addr nvm_addr_lba2gen(struct nvm_dev *dev, size_t lba);
-
-/**
  * Read up to `count` bytes from the given `device` starting at the given
  * `offset` into the given buffer starting at `buf`.
  *
@@ -466,6 +446,26 @@ ssize_t nvm_addr_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		      void *buf, void *meta, uint16_t flags,
 		      struct nvm_ret *ret);
+
+/**
+ * Checks whether the given address exceeds bounds of the given geometry
+ *
+ * @param addr The addr to check
+ * @param geo The geometric bounds to check the given address against
+ * @returns A mask of exceeded boundaries
+ */
+int nvm_addr_check(struct nvm_addr addr, const struct nvm_geo *geo);
+
+/**
+ * Maps the given generically formatted physical address to LBA offset.
+ */
+uint64_t nvm_addr_gen2lba(struct nvm_dev *dev, struct nvm_addr addr);
+
+/**
+ * Maps the given LBA offset to the corresponding generically formatted physical
+ * address.
+ */
+struct nvm_addr nvm_addr_lba2gen(struct nvm_dev *dev, size_t lba);
 
 /**
  * Prints a humanly readable representation of the given address

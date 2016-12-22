@@ -160,7 +160,7 @@ int cmd_fmt(NVM_CLI_CMD_ARGS *args, int flags)
 int cmd_to_lba(NVM_CLI_CMD_ARGS *args, int flags)
 {
 	for (int i = 0; i < args->naddrs; ++i) {
-		size_t lba;
+		uint64_t lba;
 
 		lba = nvm_addr_gen2lba(args->dev, args->addrs[i]);
 

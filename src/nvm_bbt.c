@@ -121,7 +121,7 @@ struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 	ctl.opcode = S12_OPC_GET_BBT;
 	ctl.addr = (uint64_t)k_bbt;
 	ctl.data_len = krnl_bbt_sz;
-	ctl.ppa_list = nvm_addr_gen2dev(dev, addr).ppa;
+	ctl.ppa_list = nvm_addr_gen2dev(dev, addr);
 	ctl.nppas = 0;
 
 	err = ioctl(dev->fd, NVME_NVM_IOCTL_ADMIN_VIO, &ctl);
@@ -198,7 +198,7 @@ int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		 uint16_t flags, struct nvm_ret *ret)
 {
 	struct nvm_passthru_vio ctl;
-	struct nvm_addr dev_addrs[naddrs];
+	uint64_t dev_addrs[naddrs];
 	int err;
 
 	switch(flags) {
@@ -230,7 +230,7 @@ int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 	ctl.opcode = S12_OPC_SET_BBT;
 	ctl.control = flags;
 	ctl.nppas = naddrs - 1;		// Unnatural numbers: counting from zero
-	ctl.ppa_list = naddrs == 1 ? dev_addrs[0].ppa : (uint64_t)dev_addrs;
+	ctl.ppa_list = naddrs == 1 ? dev_addrs[0] : (uint64_t)dev_addrs;
 
 	err = ioctl(dev->fd, NVME_NVM_IOCTL_ADMIN_VIO, &ctl);
 	if (ret) {			// Fill return-codes when available
