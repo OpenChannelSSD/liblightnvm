@@ -19,7 +19,7 @@ static struct nvm_addr lun_addr;
 // States used when verifying that bad-block-table can be set
 static enum nvm_bbt_state states[] = {
 	NVM_BBT_FREE,
-	NVM_BBT_HBAD
+	NVM_BBT_HMRK
 };
 static int nstates = sizeof(states) / sizeof(states[0]);
 
@@ -73,8 +73,8 @@ void test_BBT_GET(void)
 			case NVM_BBT_FREE:
 			case NVM_BBT_BAD:
 			case NVM_BBT_GBAD:
-			case NVM_BBT_HBAD:
-			case NVM_BBT_DBAD:
+			case NVM_BBT_HMRK:
+			case NVM_BBT_DMRK:
 				break;
 			default:
 				nvm_bbt_free(bbt);
@@ -206,7 +206,7 @@ void test_BBT_SET(void)
 			if (bbt_exp->blks[idx])
 				bbt_exp->blks[idx] = NVM_BBT_FREE;
 			else
-				bbt_exp->blks[idx] = NVM_BBT_HBAD;
+				bbt_exp->blks[idx] = NVM_BBT_HMRK;
 		}
 	}
 

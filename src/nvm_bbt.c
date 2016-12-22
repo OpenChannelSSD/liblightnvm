@@ -204,9 +204,9 @@ int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 	switch(flags) {
 	case NVM_BBT_FREE:
 	case NVM_BBT_BAD:
-	case NVM_BBT_DBAD:
+	case NVM_BBT_DMRK:
 	case NVM_BBT_GBAD:
-	case NVM_BBT_HBAD:
+	case NVM_BBT_HMRK:
 		break;
 	default:
 		errno = EINVAL;
@@ -292,10 +292,10 @@ void nvm_bbt_state_pr(int state)
 	case NVM_BBT_GBAD:
 		printf("GBAD(%d)", state);
 		break;
-	case NVM_BBT_DBAD:
+	case NVM_BBT_DMRK:
 		printf("DBAD(%d)", state);
 		break;
-	case NVM_BBT_HBAD:
+	case NVM_BBT_HMRK:
 		printf("HBAD(%d)", state);
 		break;
 	default:

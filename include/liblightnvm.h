@@ -158,8 +158,8 @@ enum nvm_bbt_state {
 	NVM_BBT_FREE = 0x0,	///< Block is free AKA good
 	NVM_BBT_BAD = 0x1,	///< Block is bad
 	NVM_BBT_GBAD = 0x2,	///< Block has grown bad
-	NVM_BBT_DBAD = 0x4,	///< Device has marked block bad
-	NVM_BBT_HBAD = 0x8	///< Host has marked block bad
+	NVM_BBT_DMRK = 0x4,	///< Block has been marked by device side
+	NVM_BBT_HMRK = 0x8	///< Block has been marked by host side
 };
 
 /**

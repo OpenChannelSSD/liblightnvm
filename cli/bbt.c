@@ -90,13 +90,13 @@ static NVM_CLI_CMD cmds[] = {
 	{"set_f", set, NVM_CLI_ARG_CH_LUN, NVM_BBT_FREE},
 	{"set_b", set, NVM_CLI_ARG_CH_LUN, NVM_BBT_BAD},
 	{"set_g", set, NVM_CLI_ARG_CH_LUN, NVM_BBT_GBAD},
-	{"set_d", set, NVM_CLI_ARG_CH_LUN, NVM_BBT_DBAD},
-	{"set_h", set, NVM_CLI_ARG_CH_LUN, NVM_BBT_HBAD},
+	{"set_d", set, NVM_CLI_ARG_CH_LUN, NVM_BBT_DMRK},
+	{"set_h", set, NVM_CLI_ARG_CH_LUN, NVM_BBT_HMRK},
 	{"mark_f", mark, NVM_CLI_ARG_PPALIST, NVM_BBT_FREE},
 	{"mark_b", mark, NVM_CLI_ARG_PPALIST, NVM_BBT_BAD},
 	{"mark_g", mark, NVM_CLI_ARG_PPALIST, NVM_BBT_GBAD},
-	{"mark_d", mark, NVM_CLI_ARG_PPALIST, NVM_BBT_DBAD},
-	{"mark_h", mark, NVM_CLI_ARG_PPALIST, NVM_BBT_HBAD},
+	{"mark_d", mark, NVM_CLI_ARG_PPALIST, NVM_BBT_DMRK},
+	{"mark_h", mark, NVM_CLI_ARG_PPALIST, NVM_BBT_HMRK},
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
