@@ -147,15 +147,6 @@ struct nvm_vblk {
 void nvm_lba_map_pr(struct nvm_lba_map* map);
 
 /**
- * Convert nvm_address from generic format to device specific format
- *
- * @param dev The device which address format to convert to
- * @param addr The address to convert
- * @returns Address formatted to device
- */
-struct nvm_addr nvm_addr_gen2dev(struct nvm_dev *dev, struct nvm_addr addr);
-
-/**
  * Prints a humanly readable representation of the give address format
  *
  * @param fmt The address format to print

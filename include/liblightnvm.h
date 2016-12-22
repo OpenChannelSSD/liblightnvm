@@ -457,6 +457,24 @@ ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 int nvm_addr_check(struct nvm_addr addr, const struct nvm_geo *geo);
 
 /**
+ * Converts a given physical address generic-format to device-format
+ *
+ * @param dev The device which address format to convert to
+ * @param addr The address to convert
+ * @return Address on device-format
+ */
+uint64_t nvm_addr_gen2dev(struct nvm_dev *dev, struct nvm_addr addr);
+
+/**
+ * Converts a given physical address on device-format to generic-format
+ *
+ * @param dev The device which address format to convert from
+ * @param addr The address to convert
+ * @return Address on generic-format
+ */
+struct nvm_addr nvm_addr_dev2gen(struct nvm_dev *dev, uint64_t);
+
+/**
  * Maps the given generically formatted physical address to LBA offset.
  */
 uint64_t nvm_addr_gen2lba(struct nvm_dev *dev, struct nvm_addr addr);

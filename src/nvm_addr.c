@@ -69,8 +69,8 @@ int nvm_addr_check(struct nvm_addr addr, const struct nvm_geo *geo)
 	return exceeded;
 }
 
-inline struct nvm_addr nvm_addr_gen2dev(struct nvm_dev *dev,
-					struct nvm_addr addr)
+inline uint64_t nvm_addr_gen2dev(struct nvm_dev *dev,
+                                 struct nvm_addr addr)
 {
 	uint64_t d_addr = 0;
 
