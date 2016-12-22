@@ -213,15 +213,83 @@ void nvm_addr_fmt_pr(struct nvm_addr_fmt *fmt)
 	printf("}\n");
 }
 
+#define MASK_STR_FMT "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
+
+#define MASK_TO_STR(mask) \
+	(mask & 0x8000000000000000 ? '1' : '0'), \
+	(mask & 0x4000000000000000 ? '1' : '0'), \
+	(mask & 0x2000000000000000 ? '1' : '0'), \
+	(mask & 0x1000000000000000 ? '1' : '0'), \
+	(mask & 0x800000000000000 ? '1' : '0'), \
+	(mask & 0x400000000000000 ? '1' : '0'), \
+	(mask & 0x200000000000000 ? '1' : '0'), \
+	(mask & 0x100000000000000 ? '1' : '0'), \
+	(mask & 0x80000000000000 ? '1' : '0'), \
+	(mask & 0x40000000000000 ? '1' : '0'), \
+	(mask & 0x20000000000000 ? '1' : '0'), \
+	(mask & 0x10000000000000 ? '1' : '0'), \
+	(mask & 0x8000000000000 ? '1' : '0'), \
+	(mask & 0x4000000000000 ? '1' : '0'), \
+	(mask & 0x2000000000000 ? '1' : '0'), \
+	(mask & 0x1000000000000 ? '1' : '0'), \
+	(mask & 0x800000000000 ? '1' : '0'), \
+	(mask & 0x400000000000 ? '1' : '0'), \
+	(mask & 0x200000000000 ? '1' : '0'), \
+	(mask & 0x100000000000 ? '1' : '0'), \
+	(mask & 0x80000000000 ? '1' : '0'), \
+	(mask & 0x40000000000 ? '1' : '0'), \
+	(mask & 0x20000000000 ? '1' : '0'), \
+	(mask & 0x10000000000 ? '1' : '0'), \
+	(mask & 0x8000000000 ? '1' : '0'), \
+	(mask & 0x4000000000 ? '1' : '0'), \
+	(mask & 0x2000000000 ? '1' : '0'), \
+	(mask & 0x1000000000 ? '1' : '0'), \
+	(mask & 0x800000000 ? '1' : '0'), \
+	(mask & 0x400000000 ? '1' : '0'), \
+	(mask & 0x200000000 ? '1' : '0'), \
+	(mask & 0x100000000 ? '1' : '0'), \
+	(mask & 0x80000000 ? '1' : '0'), \
+	(mask & 0x40000000 ? '1' : '0'), \
+	(mask & 0x20000000 ? '1' : '0'), \
+	(mask & 0x10000000 ? '1' : '0'), \
+	(mask & 0x8000000 ? '1' : '0'), \
+	(mask & 0x4000000 ? '1' : '0'), \
+	(mask & 0x2000000 ? '1' : '0'), \
+	(mask & 0x1000000 ? '1' : '0'), \
+	(mask & 0x800000 ? '1' : '0'), \
+	(mask & 0x400000 ? '1' : '0'), \
+	(mask & 0x200000 ? '1' : '0'), \
+	(mask & 0x100000 ? '1' : '0'), \
+	(mask & 0x80000 ? '1' : '0'), \
+	(mask & 0x40000 ? '1' : '0'), \
+	(mask & 0x20000 ? '1' : '0'), \
+	(mask & 0x10000 ? '1' : '0'), \
+	(mask & 0x8000 ? '1' : '0'), \
+	(mask & 0x4000 ? '1' : '0'), \
+	(mask & 0x2000 ? '1' : '0'), \
+	(mask & 0x1000 ? '1' : '0'), \
+	(mask & 0x800 ? '1' : '0'), \
+	(mask & 0x400 ? '1' : '0'), \
+	(mask & 0x200 ? '1' : '0'), \
+	(mask & 0x100 ? '1' : '0'), \
+	(mask & 0x80 ? '1' : '0'), \
+	(mask & 0x40 ? '1' : '0'), \
+	(mask & 0x20 ? '1' : '0'), \
+	(mask & 0x10 ? '1' : '0'), \
+	(mask & 0x8 ? '1' : '0'), \
+	(mask & 0x4 ? '1' : '0'), \
+	(mask & 0x2 ? '1' : '0'), \
+	(mask & 0x1 ? '1' : '0')
+
 void nvm_addr_fmt_mask_pr(struct nvm_addr_fmt_mask *mask)
 {
 	printf("fmt-mask {\n");
-	printf("  ch(0x%016lx),\n", mask->n.ch);
-	printf(" lun(0x%016lx),\n", mask->n.lun);
-	printf("  pl(0x%016lx),\n", mask->n.pl);
-	printf(" blk(0x%016lx),\n", mask->n.blk);
-	printf("  pg(0x%016lx),\n", mask->n.pg);
-	printf(" sec(0x%016lx)\n", mask->n.sec);
+	printf("  ch("MASK_STR_FMT"),\n", MASK_TO_STR(mask->n.ch));
+	printf(" lun("MASK_STR_FMT"),\n", MASK_TO_STR(mask->n.lun));
+	printf("  pl("MASK_STR_FMT"),\n", MASK_TO_STR(mask->n.pl));
+	printf(" blk("MASK_STR_FMT"),\n", MASK_TO_STR(mask->n.blk));
+	printf("  pg("MASK_STR_FMT"),\n", MASK_TO_STR(mask->n.pg));
+	printf(" sec("MASK_STR_FMT")\n", MASK_TO_STR(mask->n.sec));
 	printf("}\n");
 }
 
