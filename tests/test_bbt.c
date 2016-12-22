@@ -63,7 +63,7 @@ void test_BBT_GET(void)
 	CU_ASSERT_EQUAL(bbt->nblks, geo->nplanes * geo->nblocks);
 	if (bbt->nblks != geo->nplanes * geo->nblocks) {
 		nvm_bbt_free(bbt);
-		CU_FAIL("Unexpected value of bbt->nblks");
+		CU_FAIL("FAILED: Unexpected value of bbt->nblks");
 		return;
 	}
 
@@ -75,11 +75,10 @@ void test_BBT_GET(void)
 			case NVM_BBT_GBAD:
 			case NVM_BBT_HBAD:
 			case NVM_BBT_DBAD:
-				CU_PASS("Valid bbt->blks[i]");
 				break;
 			default:
 				nvm_bbt_free(bbt);
-				CU_FAIL("Invalid value bbt->blks[i]");
+				CU_FAIL("FAILED: Invalid value bbt->blks[i]");
 				return;
 		}
 	}
@@ -91,6 +90,11 @@ void test_BBT_GET(void)
 
 //
 // Test that we can set bbt using `nvm_bbt_mark`
+//
+// @note
+// The test changes the state of NVM_NADDR_MAX number of blocks nstates times.
+// Verified is done by retrieving the bbt and comparing actual state with
+// expected state.
 //
 // @warn
 // This will alter the state of the bad-block-table on the device. It will most
@@ -115,7 +119,6 @@ void _test_BBT_MARK_NADDR(unsigned int naddr_pr_call)
 			addrs[i + pl].g.pl = pl;
 		}
 	}
-	nvm_addrs_pr(addrs, nblks);
 	
 	for (int i = 0; i < nblks; ++i) {	// Verify constructed addrs
 		if (nvm_addr_check(addrs[i], geo)) {
@@ -124,13 +127,34 @@ void _test_BBT_MARK_NADDR(unsigned int naddr_pr_call)
 		}
 	}
 
-	// Persist the results using "NVM_NADDR_MAX / naddr_pr_call" calls
-	// to nvm_bbt_mark.
-	for (int addr_ofz = 0; addr_ofz < nblks; addr_ofz += naddr_pr_call) {
-		nvm_bbt_mark(dev, &addrs[addr_ofz], naddr_pr_call, NVM_BBT_FREE, NULL);
-	}
+	for (int st_i = 0; st_i < nstates; ++st_i) {
+		struct nvm_bbt *bbt;
 
-	// TODO: Use nvm_bbt_get to retrieve list then verify
+		// Persist the results using "NVM_NADDR_MAX / naddr_pr_call"
+		// number of calls to nvm_bbt_mark
+		for (int ofz = 0; ofz < nblks; ofz += naddr_pr_call) {
+			nvm_bbt_mark(dev, &addrs[ofz], naddr_pr_call,
+				     states[st_i], NULL);
+		}
+
+		bbt = nvm_bbt_get(dev, lun_addr, NULL);
+		CU_ASSERT_PTR_NOT_NULL(bbt);
+		if (!bbt) {
+			CU_FAIL("FAILED: Retrieving bbt for verification");
+			return;
+		}
+
+		for (int i = 0; i < nblks; ++i) {	// Verify state
+			int idx = addrs[i].g.blk * geo->nplanes + addrs[i].g.pl;
+			CU_ASSERT_EQUAL(bbt->blks[idx], states[st_i]);
+			if (bbt->blks[idx] != states[st_i]) {
+				CU_FAIL("FAILED: Unexpected value of bbt");
+				break;
+			}
+		}
+
+		nvm_bbt_free(bbt);
+	}
 	
 	return;
 }
@@ -155,133 +179,6 @@ void test_BBT_MARK_NADDR_1(void)
 	_test_BBT_MARK_NADDR(1);
 }
 
-/*
-void test_BBT_MARK_NADDR_MAX(void)
-{
-	const int nblks = NVM_NADDR_MAX / (geo->nplanes);	// Spanning plns
-	struct nvm_addr addrs[nblks];
-	const int ofz = 4;
-	const int skip = geo->nblocks / (nblks + ofz);	// Spread them out
-
-	CU_ASSERT_FATAL(nblks);
-	CU_ASSERT_FATAL(ofz);
-	CU_ASSERT_FATAL((ofz + nblks) < geo->nblocks);
-
-	for (int state_i = 0; state_i < nstates; ++state_i) {
-		struct nvm_bbt *bbt;
-		int res;
-
-		// Construct addresses to change state for
-		for (int i = 0; i < nblks; i += geo->nplanes) {
-			const int blk = i * skip + ofz;
-
-			for (int pl = 0; pl < geo->nplanes; ++pl) {
-				addrs[i + pl].ppa = lun_addr.ppa;
-				addrs[i + pl].g.blk = blk;
-				addrs[i + pl].g.pl = pl;
-			}
-		}
-		for (int i = 0; i < nblks; ++i) {
-			if (nvm_addr_check(addrs[i], geo)) {
-				CU_FAIL("Invalid addresses");
-				return;
-			}
-		}
-
-		// Persist bbt state for nblks
-		res = nvm_bbt_mark(dev, addrs, nblks, states[state_i], NULL);
-		CU_ASSERT(!res);
-		if (!res) {
-			CU_FAIL("FAILED: nvm_bbt_mark");
-			return;
-		}
-
-		// Retrieve persisted state
-		bbt = nvm_bbt_get(dev, lun_addr, NULL);
-		CU_ASSERT_PTR_NOT_NULL(bbt);
-		if (!bbt) {
-			CU_FAIL("FAILED: nvm_bbt_get");
-		}
-
-		// Verify that the state is as expected
-		for (int i = 0; i < nblks; ++i) {
-			int idx = addrs[i].g.blk * geo->nplanes + addrs[i].g.pl;
-			CU_ASSERT_EQUAL(bbt->blks[idx], states[state_i]);
-			if (bbt->blks[idx] != states[state_i]) {
-				CU_FAIL("Unexpected bad-block-table state");
-				break;
-			}
-		}
-		nvm_bbt_free(bbt);
-	}
-	
-	return;
-}*/
-
-//
-// Test that we can set bbt using `nvm_bbt_mark` with one address and multiple
-// commands
-//
-// @note
-// We do not want to change state of all blocks so we spread them out and change
-// only "NVM_ADDR_MAX / geo->nplanes" number of blocks
-//
-// @warn
-// This will alter the state of the bad-block-table on the device.
-// It will most likely leave the bad-block-table in a different state than
-// it was in before running this test
-//
-/*
-void test_BBT_MARK_NADDR_1(void)
-{
-	const int nblks = NVM_NADDR_MAX / (geo->nplanes);	// Spanning plns
-	struct nvm_addr addrs[nblks];
-	const int ofz = 4;
-	const int skip = geo->nblocks / (nblks + ofz);	// Spread them out
-
-	CU_ASSERT(nblks);
-	CU_ASSERT(ofz);
-	CU_ASSERT((ofz + nblks) < geo->nblocks);
-
-	for (int state_i = 0; state_i < nstates; ++state_i) {
-		struct nvm_bbt *bbt;
-		int res;
-
-		// Construct addresses to change state for
-		for (int i = 0; i < nblks; i += geo->nplanes) {
-			const int blk = i * skip + ofz;
-
-			for (int pl = 0; pl < geo->nplanes; ++pl) {
-				addrs[i + pl].ppa = lun_addr.ppa;
-				addrs[i + pl].g.blk = blk;
-				addrs[i + pl].g.pl = pl;
-
-				// Persist bbt state for nblks
-				res = nvm_bbt_mark(dev, &addrs[i + pl], 1,
-						   states[state_i], NULL);
-				CU_ASSERT(!res);
-			}
-		}
-
-		// Retrieve persisted state
-		bbt = nvm_bbt_get(dev, lun_addr, NULL);
-		CU_ASSERT_PTR_NOT_NULL(bbt);
-
-		// Verify that the state is as expected
-		for (int i = 0; i < nblks; ++i) {
-			int idx = addrs[i].g.blk * geo->nplanes + addrs[i].g.pl;
-			CU_ASSERT_EQUAL(bbt->blks[idx], states[state_i]);
-			if (bbt->blks[idx] != states[state_i]) {
-				CU_FAIL("Unexpected bad-block-table state");
-				break;
-			}
-		}
-		nvm_bbt_free(bbt);
-	}
-	
-	return;
-}*/
-
 // Test that we can set bbt using `nvm_bbt_set`
 //
 // @warn
@@ -296,7 +193,7 @@ void test_BBT_SET(void)
 
 	bbt_exp = nvm_bbt_get(dev, lun_addr, NULL);
 	if (!bbt_exp) {
-		CU_FAIL("nvm_bbt_get -- prior to nvm_bbt_set");
+		CU_FAIL("FAILED: nvm_bbt_get -- prior to nvm_bbt_set");
 		return;
 	}
 
@@ -315,14 +212,14 @@ void test_BBT_SET(void)
 
 	res = nvm_bbt_set(dev, bbt_exp, NULL);	// Persist changes
 	if (res < 0) {
-		CU_FAIL("nvm_bbt_set");
+		CU_FAIL("FAILED: nvm_bbt_set");
 		nvm_bbt_free(bbt_exp);
 		return;
 	}
 
 	bbt_act = nvm_bbt_get(dev, lun_addr, NULL);
 	if (!bbt_act) {
-		CU_FAIL("nvm_bbt_get -- after nvm_bbt_set")
+		CU_FAIL("FAILED: nvm_bbt_get -- after nvm_bbt_set")
 		nvm_bbt_free(bbt_exp);
 		return;
 	}
@@ -332,7 +229,7 @@ void test_BBT_SET(void)
 	for (int blk = 0; blk < bbt_act->nblks; ++blk) {
 		CU_ASSERT_EQUAL(bbt_exp->blks[blk], bbt_act->blks[blk]);
 		if (bbt_exp->blks[blk] != bbt_act->blks[blk]) {
-			CU_FAIL("Unexpected bad-block-table state");
+			CU_FAIL("FAILED: Unexpected value of bbt");
 			break;
 		}
 	}
@@ -371,12 +268,12 @@ int main(int argc, char **argv)
 	}
 
 	if (
-	//(NULL == CU_add_test(pSuite, "nvm_bbt_get", test_BBT_GET)) ||
+	(NULL == CU_add_test(pSuite, "nvm_bbt_get", test_BBT_GET)) ||
 	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (NADDR=MAX)", test_BBT_MARK_NADDR_MAX)) ||
 	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (NADDR=MAX/2)", test_BBT_MARK_NADDR_MAX2)) ||
 	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (NADDR=MAX/4)", test_BBT_MARK_NADDR_MAX4)) ||
 	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (NADDR=1)", test_BBT_MARK_NADDR_1)) ||
-	//(NULL == CU_add_test(pSuite, "nvm_bbt_set", test_BBT_SET)) ||
+	(NULL == CU_add_test(pSuite, "nvm_bbt_set", test_BBT_SET)) ||
 	0)
 	{
 		CU_cleanup_registry();
