@@ -65,7 +65,34 @@ int teardown(void)
 	return 0;
 }
 
-void test_VBLK_ERWR(void)
+void test_VBLK_PE_PW_PR(void)
+{
+	ssize_t res = 0;
+
+	res = nvm_vblk_erase(vblk);				// EXPECT: OK
+	CU_ASSERT(res >= 0);
+	if (res < 0) {
+		CU_FAIL("FAILED: Erasing vblk");
+	}
+	
+	res = nvm_vblk_write(vblk, buf_w, vblk_geo->tbytes);	// EXPECT: OK
+	CU_ASSERT(res >= 0);
+	if (res < 0) {
+		CU_FAIL("FAILED: nvm_vblk_write");
+		return;
+	}
+
+	res = nvm_vblk_read(vblk, buf_r, vblk_geo->tbytes);	// EXPECT: OK
+	CU_ASSERT(res >= 0);
+	if (res < 0) {
+		CU_FAIL("FAILED: nvm_vblk_write");
+		return;
+	}
+
+	CU_ASSERT_NSTRING_EQUAL(buf_w, buf_r, vblk_geo->tbytes);
+}
+
+void test_VBLK_PE_PR_PW_PR(void)
 {
 	ssize_t res = 0;
 
@@ -133,7 +160,8 @@ int main(int argc, char **argv)
 	}
 
 	if (
-	(NULL == CU_add_test(pSuite, "nvm_vblk_erwr", test_VBLK_ERWR)) ||
+	(NULL == CU_add_test(pSuite, "nvm_vblk_PE_PR_PW_PR", test_VBLK_PE_PR_PW_PR)) ||
+	(NULL == CU_add_test(pSuite, "nvm_vblk_PE_PR_PW_PR", test_VBLK_PE_PR_PW_PR)) ||
 	0)
 	{
 		CU_cleanup_registry();
