@@ -22,7 +22,6 @@ static const struct nvm_geo *geo;
 struct nvm_addr bgn;
 struct nvm_addr end;
 char *buf_w, *buf_r;
-size_t nblks;
 size_t nbytes;
 
 int setup(void)
