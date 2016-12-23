@@ -160,7 +160,7 @@ int main(int argc, char **argv)
 	}
 
 	if (
-	(NULL == CU_add_test(pSuite, "nvm_vblk_PE_PR_PW_PR", test_VBLK_PE_PR_PW_PR)) ||
+	(NULL == CU_add_test(pSuite, "nvm_vblk_PE_PW_PR", test_VBLK_PE_PW_PR)) ||
 	(NULL == CU_add_test(pSuite, "nvm_vblk_PE_PR_PW_PR", test_VBLK_PE_PR_PW_PR)) ||
 	0)
 	{
