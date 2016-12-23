@@ -13,7 +13,6 @@ static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
 // Managed by setup/teardown and used by tests
 static struct nvm_dev *dev;
 static const struct nvm_geo *geo;
-static struct nvm_addr addr;
 
 size_t compare_buffers(char *expected, char *actual, size_t nbytes)
 {
@@ -37,15 +36,6 @@ int setup(void)
 	}
 	geo = nvm_dev_attr_geo(dev);
 
-	// Construct an arbitrary address somewhat in the middle of the geometry
-	addr.ppa = 0;
-	addr.g.ch = (geo->nchannels-1) / 2;
-	addr.g.lun = (geo->nluns-1) / 2;
-	addr.g.pl = (geo->nplanes-1) / 2;
-	addr.g.blk = (geo->nblocks-1) / 2;
-	addr.g.pg = (geo->npages-1) / 2;
-	addr.g.sec = (geo->nsectors-1) / 2;
-
 	return 0;
 }
 
@@ -57,49 +47,76 @@ int teardown(void)
 	return 0;
 }
 
+void _test_FMT_CONV(int func)
+{
+	size_t tsecs = geo->nchannels * geo->nluns * geo->nplanes *
+		       geo->nblocks * geo->npages * geo->nsectors;
+
+	for (int sec = 0; sec < tsecs; ++sec) {
+		struct nvm_addr expected;
+		struct nvm_addr actual;
+		uint64_t conv;
+		int res;
+
+		expected.ppa = 0;
+		expected.g.sec = sec % geo->nsectors;
+		expected.g.pg = (sec / geo->nsectors ) % geo->npages;
+		expected.g.blk = ((sec / geo->nsectors) / geo->npages ) % geo->nblocks;
+		expected.g.pl = (((sec / geo->nsectors) / geo->npages ) / geo->nblocks) % geo->nplanes;
+		expected.g.lun = ((((sec / geo->nsectors) / geo->npages ) / geo->nblocks) / geo->nplanes) % geo->nluns;
+		expected.g.ch = (((((sec / geo->nsectors) / geo->npages ) / geo->nblocks) / geo->nplanes) / geo->nluns) % geo->nchannels;
+
+		res = nvm_addr_check(expected, geo);
+		CU_ASSERT(!res)
+
+		switch (func) {
+		case 0:
+			conv = nvm_addr_gen2dev(dev, expected);
+			actual = nvm_addr_dev2gen(dev, conv);
+			break;
+		case 1:
+			conv = nvm_addr_gen2off(dev, expected);
+			actual = nvm_addr_off2gen(dev, conv);
+			break;
+		case 2:
+			conv = nvm_addr_gen2lba(dev, expected);
+			actual = nvm_addr_lba2gen(dev, conv);
+			break;
+		default:
+			CU_FAIL("Invalid format");
+			return;
+		}
+
+		CU_ASSERT_EQUAL(actual.ppa, expected.ppa);
+		if (actual.ppa != expected.ppa) {
+			printf("Expected: "); nvm_addr_pr(expected);
+			printf("Got:      "); nvm_addr_pr(actual);
+		}
+	}
+}
+
+/**
+ * Tests: gen <-> dev
+ */
 void test_FMT_GEN_DEV(void)
 {
-	uint64_t conv;
-	struct nvm_addr actual;
-	
-	conv = nvm_addr_gen2dev(dev, addr);
-	actual = nvm_addr_dev2gen(dev, conv);
-
-	CU_ASSERT_EQUAL(actual.ppa, addr.ppa);
-	if (actual.ppa != addr.ppa) {
-		printf("Expected: "); nvm_addr_pr(addr);
-		printf("Got:      "); nvm_addr_pr(actual);
-	}
+	_test_FMT_CONV(0);
 }
 
+/**
+ * Tests: gen <-> off
+ */
 void test_FMT_GEN_OFF(void)
 {
-	uint64_t conv;
-	struct nvm_addr actual;
-	
-	conv = nvm_addr_gen2off(dev, addr);
-	actual = nvm_addr_off2gen(dev, conv);
-
-	CU_ASSERT_EQUAL(actual.ppa, addr.ppa);
-	if (actual.ppa != addr.ppa) {
-		printf("Expected: "); nvm_addr_pr(addr);
-		printf("Got:      "); nvm_addr_pr(actual);
-	}
+	_test_FMT_CONV(1);
 }
 
+/**
+ * Tests: gen <-> LBA
+ */
 void test_FMT_GEN_LBA(void)
 {
-	uint64_t conv;
-	struct nvm_addr actual;
-	
-	conv = nvm_addr_gen2lba(dev, addr);
-	actual = nvm_addr_lba2gen(dev, conv);
-
-	CU_ASSERT_EQUAL(actual.ppa, addr.ppa);
-	if (actual.ppa != addr.ppa) {
-		printf("Expected: "); nvm_addr_pr(addr);
-		printf("Got:      "); nvm_addr_pr(actual);
-	}
+	_test_FMT_CONV(2);
 }
 
 int main(int argc, char **argv)
