@@ -20,8 +20,8 @@ def main():
 
     results = []
 
-    for ch in CHANNELS:
-        for lun in LUNS:
+    for lun in LUNS:
+        for ch in CHANNELS:
             span = [str(x) for x in [0, ch, 0, lun, BLK]]
 
             for cli in CLI:
