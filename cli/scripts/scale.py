@@ -20,35 +20,37 @@ def main():
 
     results = []
 
-    for lun in LUNS:
-        for ch in CHANNELS:
-            span = [str(x) for x in [0, ch, 0, lun, BLK]]
+    for punit in xrange(0, NCHANNELS * NLUNS):
+        ch = punit % NCHANNELS
+        lun = punit % NLUNS
 
-            for cli in CLI:
-                op = cli.replace("span_", "")
+        span = [str(x) for x in [0, ch, 0, lun, BLK]]
 
-                punits = ch * NLUNS + (lun + 1)
+        for cli in CLI:
+            op = cli.replace("span_", "")
 
-                REGEX = "nvm_vblk_%s.*elapsed wall-clock: (\d+\.\d+)" % op
 
-                cmd = ["nvm_vblk", cli, DEV] + span
+            REGEX = "nvm_vblk_%s.*elapsed wall-clock: (\d+\.\d+)" % op
 
-                if DRY:
-                    print(cmd)
-                    continue
+            cmd = ["nvm_vblk", cli, DEV] + span
 
-                process = Popen(cmd, stdout=PIPE, stderr=PIPE)
-                out, err = process.communicate()
+            if DRY:
+                print(cmd)
+                continue
 
-                matches = list(re.finditer(REGEX, out))
-                if len(matches) != 1:
-                    print("SHOULD NOT HAPPEN")
+            process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+            out, err = process.communicate()
 
-                wc = float(matches[0].group(1))
+            matches = list(re.finditer(REGEX, out))
+            if len(matches) != 1:
+                print("SHOULD NOT HAPPEN")
 
-                result = (op, punits, "0-%d" % ch, "0-%d" % lun, wc)
-                results.append(result)
-                print("RAN: %s" % pprint.pformat(result))
+            wc = float(matches[0].group(1))
+
+            result = (op, punit+1, "0-%d" % ch, "0-%d" % lun, wc)
+            results.append(result)
+
+            print("RAN: %s" % pprint.pformat(result))
 
     results = sorted(results)
 
