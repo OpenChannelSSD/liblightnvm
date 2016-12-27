@@ -170,8 +170,8 @@ static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
 	}
 }
 
-ssize_t nvm_addr_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs, uint16_t flags,
-		       struct nvm_ret *ret)
+ssize_t nvm_addr_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+		       uint16_t flags, struct nvm_ret *ret)
 {
 	return nvm_addr_cmd(dev, addrs, naddrs, NULL, NULL, flags,
 			    S12_OPC_ERASE, ret);
@@ -189,7 +189,8 @@ ssize_t nvm_addr_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 }
 
 ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		      void *data, void *meta, uint16_t flags, struct nvm_ret *ret)
+		      void *data, void *meta, uint16_t flags,
+		      struct nvm_ret *ret)
 {
 	return nvm_addr_cmd(dev, addrs, naddrs, data, meta, flags,
 			    S12_OPC_READ, ret);

@@ -77,11 +77,11 @@ void nvm_cli_usage(const char *cli_name, const char *cli_description,
 		printf(" %s %10s dev_path ", cli_name, cmds[i].name);
 
 		switch(cmds[i].argt) {
-		case NVM_CLI_ARG_PPALIST:
-			printf("ppa [ppa...]");
+		case NVM_CLI_ARG_ADDRLIST:
+			printf("addr [addr...]");
 			break;
-		case NVM_CLI_ARG_LBALIST:
-			printf("lba [lba...]");
+		case NVM_CLI_ARG_INTLIST:
+			printf("num [num...]");
 			break;
 		case NVM_CLI_ARG_CH_LUN:
 			printf("ch lun");
@@ -215,7 +215,7 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 			cmd->args.naddrs = 2;
 			break;
 
-		case NVM_CLI_ARG_PPALIST:
+		case NVM_CLI_ARG_ADDRLIST:
 			if (argc < 4) {
 				printf("FAILED: Invalid argc\n");
 				return NULL;
@@ -228,7 +228,7 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 			}
 			break;
 
-		case NVM_CLI_ARG_LBALIST:
+		case NVM_CLI_ARG_INTLIST:
 			if (argc < 4) {
 				printf("FAILED: Invalid argc\n");
 				return NULL;

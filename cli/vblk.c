@@ -305,10 +305,10 @@ int span_pad(NVM_CLI_CMD_ARGS *args, int flags)
 // Remaining code is CLI boiler-plate
 //
 static NVM_CLI_CMD cmds[] = {
-	{"erase", erase, NVM_CLI_ARG_PPALIST, 0x0},
-	{"read", read, NVM_CLI_ARG_PPALIST, 0x0},
-	{"write", write, NVM_CLI_ARG_PPALIST, 0x0},
-	{"pad", pad, NVM_CLI_ARG_PPALIST, 0x0},
+	{"erase", erase, NVM_CLI_ARG_ADDRLIST, 0x0},
+	{"read", read, NVM_CLI_ARG_ADDRLIST, 0x0},
+	{"write", write, NVM_CLI_ARG_ADDRLIST, 0x0},
+	{"pad", pad, NVM_CLI_ARG_ADDRLIST, 0x0},
 	{"span_erase", span_erase, NVM_CLI_ARG_SPAN, 0x0},
 	{"span_read", span_read, NVM_CLI_ARG_SPAN, 0x0},
 	{"span_write", span_write, NVM_CLI_ARG_SPAN, 0x0},

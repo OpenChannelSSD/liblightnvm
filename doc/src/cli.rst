@@ -50,11 +50,11 @@ nvm_bbt
    nvm_bbt      set_g dev_path ch lun
    nvm_bbt      set_d dev_path ch lun
    nvm_bbt      set_h dev_path ch lun
-   nvm_bbt     mark_f dev_path ppa [ppa...]
-   nvm_bbt     mark_b dev_path ppa [ppa...]
-   nvm_bbt     mark_g dev_path ppa [ppa...]
-   nvm_bbt     mark_d dev_path ppa [ppa...]
-   nvm_bbt     mark_h dev_path ppa [ppa...]
+   nvm_bbt     mark_f dev_path addr [addr...]
+   nvm_bbt     mark_b dev_path addr [addr...]
+   nvm_bbt     mark_g dev_path addr [addr...]
+   nvm_bbt     mark_d dev_path addr [addr...]
+   nvm_bbt     mark_h dev_path addr [addr...]
   
 
 nvm_addr
@@ -65,13 +65,16 @@ nvm_addr
   NVM address (nvm_addr_*) -- Ver { major(0), minor(0), patch(1) }
   
   Usage:
-   nvm_addr      erase dev_path ppa [ppa...]
-   nvm_addr      write dev_path ppa [ppa...]
-   nvm_addr       read dev_path ppa [ppa...]
-   nvm_addr   write_wm dev_path ppa [ppa...]
-   nvm_addr    read_wm dev_path ppa [ppa...]
-   nvm_addr   from_hex dev_path ppa [ppa...]
+   nvm_addr      erase dev_path addr [addr...]
+   nvm_addr      write dev_path addr [addr...]
+   nvm_addr       read dev_path addr [addr...]
+   nvm_addr   write_wm dev_path addr [addr...]
+   nvm_addr    read_wm dev_path addr [addr...]
+   nvm_addr   from_hex dev_path addr [addr...]
    nvm_addr   from_geo dev_path ch lun pl blk pg sec
+   nvm_addr    gen2dev dev_path addr [addr...]
+   nvm_addr    gen2lba dev_path addr [addr...]
+   nvm_addr    gen2off dev_path addr [addr...]
   
 
 nvm_lba
@@ -94,10 +97,10 @@ nvm_vblk
   NVM Virtual Block (nvm_vblk_*) -- Ver { major(0), minor(0), patch(1) }
   
   Usage:
-   nvm_vblk      erase dev_path ppa [ppa...]
-   nvm_vblk       read dev_path ppa [ppa...]
-   nvm_vblk      write dev_path ppa [ppa...]
-   nvm_vblk        pad dev_path ppa [ppa...]
+   nvm_vblk      erase dev_path addr [addr...]
+   nvm_vblk       read dev_path addr [addr...]
+   nvm_vblk      write dev_path addr [addr...]
+   nvm_vblk        pad dev_path addr [addr...]
    nvm_vblk span_erase dev_path ch_bgn ch_end lun_bgn lun_end blk
    nvm_vblk  span_read dev_path ch_bgn ch_end lun_bgn lun_end blk
    nvm_vblk span_write dev_path ch_bgn ch_end lun_bgn lun_end blk

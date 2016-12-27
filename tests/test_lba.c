@@ -72,6 +72,9 @@ int teardown(void)
 	return 0;
 }
 
+/**
+ * Test that nvm_lba_pwrite / nvm_lba_pread works as expected.
+ */
 void test_VBLK_PE_LW_LR(void)
 {
 	for (int ch = bgn.g.ch; ch <= end.g.ch; ++ch) {

@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+from __future__ import print_function
+from subprocess import Popen, PIPE
+import argparse
+import pprint
+import csv
+import re
+
+NCHANNELS=1
+NLUNS=4
+
+DEV="/dev/nvme0n1"
+CHANNELS=range(0, NCHANNELS)
+LUNS=range(0, NLUNS)
+BLK=20
+CLI=["span_erase", "span_write", "span_read"]
+
+def main():
+
+    results = []
+
+    for ch in CHANNELS:
+        for lun in LUNS:
+            span = [str(x) for x in [0, ch, 0, lun, BLK]]
+
+            for cli in CLI:
+                op = cli.replace("span_", "")
+
+                punits = (ch + 1) * (lun + 1)
+
+                REGEX = "nvm_vblk_%s.*elapsed wall-clock: (\d+\.\d+)" % op
+
+                cmd = ["nvm_vblk", cli, DEV] + span
+                process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+                out, err = process.communicate()
+
+                matches = list(re.finditer(REGEX, out))
+                if len(matches) != 1:
+                    print("SHOULD NOT HAPPEN")
+
+                wc = float(matches[0].group(1))
+
+                results.append((op, punits, ch, lun, wc))
+
+    results = sorted(results)
+
+    with open("/tmp/lun_scale.csv", "wb") as csv_fd:
+        csv_writer = csv.writer(csv_fd)
+        csv_writer.writerows(results)
+
+if __name__ == "__main__":
+    main()

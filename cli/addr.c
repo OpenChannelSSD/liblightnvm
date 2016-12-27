@@ -150,8 +150,70 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 
 int cmd_fmt(NVM_CLI_CMD_ARGS *args, int flags)
 {
-	for (int i = 0; i < args->naddrs; ++i) {
+	for (int i = 0; i < args->naddrs; ++i)
 		nvm_addr_pr(args->addrs[i]);
+
+	return 0;
+}
+
+int cmd_gen2dev(NVM_CLI_CMD_ARGS *args, int flags)
+{
+	for (int i = 0; i < args->naddrs; ++i) {
+		printf("gen-addr"); nvm_addr_pr(args->addrs[i]);
+		printf("dev-addr(0x%016lx)\n",
+		       nvm_addr_gen2dev(args->dev, args->addrs[i]));
+	}
+
+	return 0;
+}
+
+int cmd_gen2lba(NVM_CLI_CMD_ARGS *args, int flags)
+{
+	for (int i = 0; i < args->naddrs; ++i) {
+		printf("gen-addr"); nvm_addr_pr(args->addrs[i]);
+		printf("lba-addr(%064ld)\n",
+		       nvm_addr_gen2lba(args->dev, args->addrs[i]));
+	}
+
+	return 0;
+}
+
+int cmd_gen2off(NVM_CLI_CMD_ARGS *args, int flags)
+{
+	for (int i = 0; i < args->naddrs; ++i) {
+		printf("gen-addr"); nvm_addr_pr(args->addrs[i]);
+		printf("off-addr(%064ld)\n",
+		       nvm_addr_gen2off(args->dev, args->addrs[i]));
+	}
+
+	return 0;
+}
+
+int cmd_dev2gen(NVM_CLI_CMD_ARGS *args, int flags)
+{
+	for (int i = 0; i < args->nlbas; ++i) {
+		printf("dev-addr(%064ld)\n", args->lbas[i]);
+		nvm_addr_pr(nvm_addr_dev2gen(args->dev, args->lbas[i]));
+	}
+
+	return 0;
+}
+
+int cmd_lba2gen(NVM_CLI_CMD_ARGS *args, int flags)
+{
+	for (int i = 0; i < args->nlbas; ++i) {
+		printf("lba-addr(%064ld)\n", args->lbas[i]);
+		nvm_addr_pr(nvm_addr_lba2gen(args->dev, args->lbas[i]));
+	}
+
+	return 0;
+}
+
+int cmd_off2gen(NVM_CLI_CMD_ARGS *args, int flags)
+{
+	for (int i = 0; i < args->nlbas; ++i) {
+		printf("off-addr(%064ld)\n", args->lbas[i]);
+		nvm_addr_pr(nvm_addr_off2gen(args->dev, args->lbas[i]));
 	}
 
 	return 0;
@@ -161,18 +223,19 @@ int cmd_fmt(NVM_CLI_CMD_ARGS *args, int flags)
 // Remaining code is CLI boiler-plate
 //
 static NVM_CLI_CMD cmds[] = {
-	{"erase", erase, NVM_CLI_ARG_PPALIST, 0x0},
-	{"write", write, NVM_CLI_ARG_PPALIST, 0x1},
-	{"read", read, NVM_CLI_ARG_PPALIST, 0x1},
-	{"write_wm", write, NVM_CLI_ARG_PPALIST, 0x0},
-	{"read_wm", read, NVM_CLI_ARG_PPALIST, 0x0},
-	{"from_hex", cmd_fmt, NVM_CLI_ARG_PPALIST, 0x0},
+	{"erase", erase, NVM_CLI_ARG_ADDRLIST, 0x0},
+	{"write", write, NVM_CLI_ARG_ADDRLIST, 0x1},
+	{"read", read, NVM_CLI_ARG_ADDRLIST, 0x1},
+	{"write_wm", write, NVM_CLI_ARG_ADDRLIST, 0x0},
+	{"read_wm", read, NVM_CLI_ARG_ADDRLIST, 0x0},
+	{"from_hex", cmd_fmt, NVM_CLI_ARG_ADDRLIST, 0x0},
 	{"from_geo", cmd_fmt, NVM_CLI_ARG_CH_LUN_PL_BLK_PG_SEC, 0x0},
-	/*
-	{"hex2lba", cmd_gen2off, NVM_CLI_ARG_PPALIST, 0x0},
-	{"geo2lba", cmd_gen2off, NVM_CLI_ARG_CH_LUN_PL_BLK_PG_SEC, 0x0},
-	{"lba2gen", cmd_from_lba, NVM_CLI_ARG_LBALIST, 0x0}
-	*/
+	{"gen2dev", cmd_gen2dev, NVM_CLI_ARG_ADDRLIST, 0x0},
+	{"gen2lba", cmd_gen2lba, NVM_CLI_ARG_ADDRLIST, 0x0},
+	{"gen2off", cmd_gen2off, NVM_CLI_ARG_ADDRLIST, 0x0},
+	{"dev2gen", cmd_dev2gen, NVM_CLI_ARG_INTLIST, 0x0},
+	{"lba2gen", cmd_lba2gen, NVM_CLI_ARG_INTLIST, 0x0},
+	{"off2gen", cmd_off2gen, NVM_CLI_ARG_INTLIST, 0x0},
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
