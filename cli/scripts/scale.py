@@ -33,22 +33,22 @@ def main():
 
                 cmd = ["nvm_vblk", cli, DEV] + span
 
-            if DRY:
-                print(cmd)
-                continue
+                if DRY:
+                    print(cmd)
+                    continue
 
-            process = Popen(cmd, stdout=PIPE, stderr=PIPE)
-            out, err = process.communicate()
+                process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+                out, err = process.communicate()
 
-            matches = list(re.finditer(REGEX, out))
-            if len(matches) != 1:
-                print("SHOULD NOT HAPPEN")
+                matches = list(re.finditer(REGEX, out))
+                if len(matches) != 1:
+                    print("SHOULD NOT HAPPEN")
 
-            wc = float(matches[0].group(1))
+                wc = float(matches[0].group(1))
 
-            result = (op, punits, "0-%d" % ch, "0-%d" % lun, wc)
-            results.append(result)
-            print("RAN: %s" % pprint.pformat(result))
+                result = (op, punits, "0-%d" % ch, "0-%d" % lun, wc)
+                results.append(result)
+                print("RAN: %s" % pprint.pformat(result))
 
     results = sorted(results)
 
