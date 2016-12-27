@@ -22,7 +22,7 @@ def main():
 
     for punit in xrange(0, NCHANNELS * NLUNS):
         ch = punit % NCHANNELS
-        lun = punit % NLUNS
+        lun = (punit / NCHANNELS) %  NLUNS
 
         span = [str(x) for x in [0, ch, 0, lun, BLK]]
 
