@@ -1,5 +1,5 @@
 /*
- * sblock - Spanning block functions
+ * vblock - Virtual block functions
  *
  * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
  * Copyright (C) 2015 Matias Bjørling <matias@cnexlabs.com>
@@ -38,75 +38,68 @@
 #include <nvm_debug.h>
 #include <nvm_omp.h>
 
-struct nvm_vblk *nvm_vblk_alloc_span(struct nvm_dev *dev, int ch_bgn,
-				     int ch_end, int lun_bgn, int lun_end,
-				     int blk)
+struct nvm_vblk* nvm_vblk_alloc_set(struct nvm_dev *dev,
+				    struct nvm_addr addrs[], int naddrs)
 {
 	struct nvm_vblk *vblk;
-	const struct nvm_geo *dev_geo = nvm_dev_attr_geo(dev);
-
-	if (ch_bgn < 0 || ch_bgn > ch_end || ch_end >= dev_geo->nchannels) {
-		NVM_DEBUG("invalid channel span");
-		errno = EINVAL;
-		return NULL;
-	}
-	if (lun_bgn < 0 || lun_bgn > lun_end || lun_end >= dev_geo->nluns) {
-		NVM_DEBUG("invalid lun span");
-		errno = EINVAL;
-		return NULL;
-	}
-	if (blk < 0 || blk >= dev_geo->nblocks) {
-		NVM_DEBUG("invalid block");
-		errno = EINVAL;
-		return NULL;
-	}
+	const struct nvm_geo *geo = nvm_dev_attr_geo(dev);
 
 	vblk = malloc(sizeof(*vblk));
 	if (!vblk) {
-		NVM_DEBUG("vblk malloc failed");
 		errno = ENOMEM;
 		return NULL;
 	}
 
+	for (int i = 0; i < naddrs; ++i) {
+		if (nvm_addr_check(addrs[i], geo)) {
+			errno = EINVAL;
+			free(vblk);
+			return NULL;
+		}
+
+		vblk->addrs[i].ppa = addrs[i].ppa;
+	}
+
+	vblk->naddrs = naddrs;
+	vblk->dev = dev;
 	vblk->pos_write = 0;
 	vblk->pos_read = 0;
-
-	vblk->dev = dev;
-
-	vblk->bgn.g.ch = ch_bgn;	/* Construct span */
-	vblk->bgn.g.lun = lun_bgn;
-	vblk->bgn.g.blk = blk;
-	vblk->bgn.g.pl = 0;
-	vblk->bgn.g.pg = 0;
-	vblk->bgn.g.sec = 0;
-
-	vblk->end.g.ch = ch_end;
-	vblk->end.g.lun = lun_end;
-	vblk->end.g.blk = blk;
-	vblk->end.g.pl = dev_geo->nplanes - 1;
-	vblk->end.g.pg = dev_geo->npages - 1;
-	vblk->end.g.sec = dev_geo->nsectors - 1;
-
-	vblk->geo = *dev_geo;		/* Inherit geometry from device */
-
-	/* Overwrite with channels and luns */
-	vblk->geo.nchannels = (vblk->end.g.ch - vblk->bgn.g.ch) + 1;
-	vblk->geo.nluns = (vblk->end.g.lun - vblk->bgn.g.lun) + 1;
-	vblk->geo.nblocks = 1; // For each ch/lun there is only one block
-
-	/* Derive total number of bytes in vblk */
-	vblk->geo.tbytes = vblk->geo.nchannels * vblk->geo.nluns * \
-			   vblk->geo.nplanes * vblk->geo.nblocks * \
-			   vblk->geo.npages * vblk->geo.nsectors * \
-			   vblk->geo.sector_nbytes;
+	vblk->nbytes = vblk->naddrs * geo->nplanes * geo->npages *
+		       geo->nsectors * geo->sector_nbytes;
 
 	return vblk;
 }
 
 struct nvm_vblk *nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addr)
 {
-	return nvm_vblk_alloc_span(dev, addr.g.ch, addr.g.ch, addr.g.lun,
-				   addr.g.lun, addr.g.blk);
+	return nvm_vblk_alloc_set(dev, &addr, 1);
+}
+
+struct nvm_vblk *nvm_vblk_alloc_line(struct nvm_dev *dev, int ch_bgn,
+                                     int ch_end, int lun_bgn, int lun_end,
+                                     int blk)
+{
+	struct nvm_vblk *vblk;
+	const struct nvm_geo *geo = nvm_dev_attr_geo(dev);
+	
+	vblk = nvm_vblk_alloc_set(dev, NULL, 0);
+	if (!vblk)
+		return NULL;	// Propagate errno
+
+	for (int ch = ch_bgn; ch <= ch_end; ++ch) {
+		for (int lun = lun_bgn; lun <= lun_end; ++lun) {
+			vblk->addrs[vblk->naddrs].ppa = 0;
+			vblk->addrs[vblk->naddrs].g.ch = ch;
+			vblk->addrs[vblk->naddrs].g.lun = lun;
+			vblk->addrs[vblk->naddrs].g.blk = blk;
+			++(vblk->naddrs);
+		}
+	}
+
+	vblk->nbytes = vblk->naddrs * geo->nplanes * geo->npages *
+		       geo->nsectors * geo->sector_nbytes;
+
+	return vblk;
 }
 
 void nvm_vblk_free(struct nvm_vblk *vblk)
@@ -117,35 +110,24 @@ void nvm_vblk_free(struct nvm_vblk *vblk)
 ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 {
 	size_t nerr = 0;
-	const int nplanes = nvm_vblk_attr_geo(vblk)->nplanes;
+	const struct nvm_geo *geo = nvm_dev_attr_geo(vblk->dev);
+	const int nplanes = geo->nplanes;
+	const int PMODE = vblk->dev->pmode;
+	
+	#pragma omp parallel for schedule(static) reduction(+:nerr)
+	for (int i = 0; i < vblk->naddrs; ++i) {
+		struct nvm_addr addrs[nplanes];
+		ssize_t err;
 
-	const struct nvm_addr bgn = vblk->bgn;
-	const struct nvm_addr end = vblk->end;
+		for (int i = 0; i < nplanes; ++i) {
+			addrs[i].ppa = vblk->addrs[i].ppa;
+			addrs[i].g.pl = i % nplanes;
+		}
 
-	const int PMODE = nvm_dev_attr_pmode(vblk->dev);
-
-	#pragma omp parallel for schedule(static) collapse(2) reduction(+:nerr)
-	for (int ch = bgn.g.ch; ch <= end.g.ch; ++ch) {
-		for (int lun = bgn.g.lun; lun <= end.g.lun; ++lun) {
-			struct nvm_addr addrs[nplanes];
-			ssize_t err;
-
-			for (int i = 0; i < nplanes; ++i) {
-				addrs[i].ppa = bgn.ppa;
-				addrs[i].g.ch = ch;
-				addrs[i].g.lun = lun;
-				addrs[i].g.pl = i % nplanes;
-				// blk is fixed and inherited from bgn
-				// pg is fixed and inherited from bgn (0)
-				// sec is fixed and inherited from bgn (0)
-			}
-
-			err = nvm_addr_erase(vblk->dev, addrs, nplanes,
-                                             PMODE, NULL);
-			if (err) {
-				NVM_DEBUG("FAILED: nvm_addr_erase err(%ld)", err);
-				++nerr;
-			}
+		err = nvm_addr_erase(vblk->dev, addrs, nplanes, PMODE, NULL);
+		if (err) {
+			NVM_DEBUG("FAILED: nvm_addr_erase err(%ld)", err);
+			++nerr;
 		}
 	}
 
@@ -154,41 +136,31 @@ ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 		return -1;
 	}
 
-	return nvm_vblk_attr_geo(vblk)->tbytes;
+	return vblk->nbytes;
 }
 
 ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf, size_t count,
 			size_t offset)
 {
-	const struct nvm_addr bgn = vblk->bgn;
-
-	const struct nvm_geo *geo = nvm_vblk_attr_geo(vblk);
-
-	const int nchannels = geo->nchannels;
-	const int ch_off = bgn.g.ch;
-	const int nluns = geo->nluns;
-	const int lun_off = bgn.g.lun;
-
-	const int npages = geo->npages;
-	const int nplanes = geo->nplanes;
-	const int nsectors = geo->nsectors;
-	const int nbytes = geo->sector_nbytes;
-
-	const int alignment = (nplanes * nsectors * nbytes);
-
-	const size_t spg_bgn = offset / alignment;
-	const size_t spg_end = spg_bgn + (count / alignment);
-
-	const int NVM_OP_NADDR = nplanes * nsectors;
-	const int NVM_CMD_NADDR = NVM_OP_NADDR;
-
-	const int nthreads = nchannels * nluns;
-
 	size_t nerr = 0;
-
 	const int PMODE = nvm_dev_attr_pmode(vblk->dev);
 
+	const struct nvm_geo *geo = nvm_dev_attr_geo(vblk->dev);
+
+	const int alignment = geo->nplanes * geo->nsectors * geo->sector_nbytes;
+
+	const size_t bgn = offset / alignment;
+	const size_t end = bgn + (count / alignment);
+
+	const int NVM_OP_NADDR = geo->nplanes * geo->nsectors;
+	const int NVM_CMD_NADDR = NVM_OP_NADDR;
+
 	const char *data;
+
+	if (offset + count > vblk->nbytes) {			// Check bounds
+		errno = EINVAL;
+		return -1;
+	}
 
 	if ((count % alignment) || (offset % alignment)) {	// Check align
 		errno = EINVAL;
@@ -198,41 +170,37 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf, size_t count,
 	if (buf) {	// Use user-supplied buffer
 		data = buf;
 	} else {	// Allocate and use a padding buffer
-		data = nvm_buf_alloc(geo, NVM_CMD_NADDR * nbytes);
+		data = nvm_buf_alloc(geo, NVM_CMD_NADDR * geo->sector_nbytes);
 		if (!data) {
 			errno = ENOMEM;
 			return -1;
 		}
 	}
 
-	#pragma omp parallel num_threads(nthreads) reduction(+:nerr)
+	#pragma omp parallel num_threads(vblk->naddrs) reduction(+:nerr)
 	{
 		const int tid = omp_get_thread_num();
 
 		#pragma omp barrier
-		for (size_t spg = spg_bgn + tid; spg < spg_end; spg += nthreads) {
+		for (size_t spg = bgn + tid; spg < end; spg += vblk->naddrs) {
 			struct nvm_addr addrs[NVM_CMD_NADDR];
 			const char *data_off;
 
 			if (buf)
-				data_off = data + spg * nbytes * NVM_CMD_NADDR - offset;
+				data_off = data + spg * geo->sector_nbytes * NVM_CMD_NADDR - offset;
 			else
 				data_off = data;
 
 			// channels X luns X pages
-			int ch = (spg % nchannels) + ch_off;
-			int lun = ((spg / nchannels) % nluns) + lun_off;
-			int vpg = ((spg / nchannels) / nluns) % npages;
+			int idx = spg % vblk->naddrs;
+			int vpg = (spg / vblk->naddrs) % geo->npages;
 
 			// Unroll: nplane X nsector
 			for (int i = 0; i < NVM_CMD_NADDR; ++i) {
-				addrs[i].ppa = bgn.ppa;
-				addrs[i].g.ch = ch;
-				addrs[i].g.lun = lun;
+				addrs[i].ppa = vblk->addrs[idx].ppa;
 				addrs[i].g.pg = vpg;
-				addrs[i].g.pl = (i / nsectors) % nplanes;
-				// blk is fixed and inherited from bgn
-				addrs[i].g.sec = i % nsectors;
+				addrs[i].g.pl = (i / geo->nsectors) % geo->nplanes;
+				addrs[i].g.sec = i % geo->nsectors;
 			}
 
 			ssize_t err = nvm_addr_write(vblk->dev, addrs,
@@ -267,76 +235,63 @@ ssize_t nvm_vblk_write(struct nvm_vblk *vblk, const void *buf, size_t count)
 
 ssize_t nvm_vblk_pad(struct nvm_vblk *vblk)
 {
-	return nvm_vblk_write(vblk, NULL, vblk->geo.tbytes - vblk->pos_write);
+	return nvm_vblk_write(vblk, NULL, vblk->nbytes - vblk->pos_write);
 }
 
 ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 		       size_t offset)
 {
-	const struct nvm_addr bgn = vblk->bgn;
+	size_t nerr = 0;
+	const int PMODE = nvm_dev_attr_pmode(vblk->dev);
 
-	const struct nvm_geo *geo = nvm_vblk_attr_geo(vblk);
+	const struct nvm_geo *geo = nvm_dev_attr_geo(vblk->dev);
 
-	const int nchannels = geo->nchannels;
-	const int ch_off = bgn.g.ch;
-	const int nluns = geo->nluns;
-	const int lun_off = bgn.g.lun;
+	const int alignment = geo->nplanes * geo->nsectors * geo->sector_nbytes;
 
-	const int npages = geo->npages;
-	const int nplanes = geo->nplanes;
-	const int nsectors = geo->nsectors;
-	const int nbytes = geo->sector_nbytes;
+	const size_t bgn = offset / alignment;
+	const size_t end = bgn + (count / alignment);
 
-	const int alignment = (nplanes * nsectors * nbytes);
-
-	const size_t spg_bgn = offset / alignment;
-	const size_t spg_end = spg_bgn + (count / alignment);
-
-	const int NVM_OP_NADDR = nplanes * nsectors;
+	const int NVM_OP_NADDR = geo->nplanes * geo->nsectors;
 	const int NVM_CMD_NADDR = NVM_OP_NADDR;
 
-	const int nthreads = nchannels * nluns;
-
-	ssize_t nerr = 0;
-
-	const int PMODE = nvm_dev_attr_pmode(vblk->dev);
+	if (offset + count > vblk->nbytes) {			// Check bounds
+		errno = EINVAL;
+		return -1;
+	}
 
 	if ((count % alignment) || (offset % alignment)) {	// Check align
 		errno = EINVAL;
 		return -1;
 	}
 
-	#pragma omp parallel num_threads(nthreads) reduction(+:nerr)
+	#pragma omp parallel num_threads(vblk->naddrs) reduction(+:nerr)
 	{
 		const int tid = omp_get_thread_num();
 
 		#pragma omp barrier
-		for (size_t spg = spg_bgn + tid; spg < spg_end; spg += nthreads) {
+		for (size_t spg = bgn + tid; spg < end; spg += vblk->naddrs) {
 			struct nvm_addr addrs[NVM_CMD_NADDR];
+			char *buf_off;
 
-			char *buf_off = buf + spg * nbytes * NVM_CMD_NADDR - offset;
+			buf_off = buf + spg * geo->sector_nbytes * NVM_CMD_NADDR - offset;
 
 			// channels X luns X pages
-			int ch = (spg % nchannels) + ch_off;
-			int lun = ((spg / nchannels) % nluns) + lun_off;
-			int vpg = ((spg / nchannels) / nluns) % npages;
+			int idx = spg % vblk->naddrs;
+			int vpg = (spg / vblk->naddrs) % geo->npages;
 
 			// Unroll: nplane X nsector
 			for (int i = 0; i < NVM_CMD_NADDR; ++i) {
-				addrs[i].ppa = bgn.ppa;
-				addrs[i].g.ch = ch;
-				addrs[i].g.lun = lun;
+				addrs[i].ppa = vblk->addrs[idx].ppa;
 				addrs[i].g.pg = vpg;
-				addrs[i].g.pl = (i / nsectors) % nplanes;
-				// blk is fixed and inherited from bgn
-				addrs[i].g.sec = i % nsectors;
+				addrs[i].g.pl = (i / geo->nsectors) % geo->nplanes;
+				addrs[i].g.sec = i % geo->nsectors;
 			}
 
 			ssize_t err = nvm_addr_read(vblk->dev, addrs,
-						    NVM_CMD_NADDR, buf_off,
-						    NULL, PMODE, NULL);
+						     NVM_CMD_NADDR, buf_off,
+						     NULL, PMODE, NULL);
 			if (err) {
-				NVM_DEBUG("FAILED: nvm_addr_read e(%ld)", err);
+				NVM_DEBUG("FAILED: nvm_addr_write e(%ld)", err);
 				++nerr;
 			}
 		}
@@ -362,29 +317,19 @@ ssize_t nvm_vblk_read(struct nvm_vblk *vblk, void *buf, size_t count)
 	return nbytes;			// Return number of bytes read
 }
 
-struct nvm_addr nvm_vblk_attr_addr(struct nvm_vblk *vblk)
+struct nvm_addr *nvm_vblk_attr_addrs(struct nvm_vblk *vblk)
 {
-	return vblk->bgn;
+	return vblk->addrs;
 }
 
-struct nvm_addr nvm_vblk_attr_bgn(struct nvm_vblk *vblk)
+int nvm_vblk_attr_naddrs(struct nvm_vblk *vblk)
 {
-	return vblk->bgn;
+	return vblk->naddrs;
 }
 
-struct nvm_addr nvm_vblk_attr_end(struct nvm_vblk *vblk)
+size_t nvm_vblk_attr_nbytes(struct nvm_vblk *vblk)
 {
-	return vblk->end;
-}
-
-const struct nvm_geo * nvm_vblk_attr_geo(struct nvm_vblk *vblk)
-{
-	return &vblk->geo;
-}
-
-size_t nvm_vblk_attr_pos_write(struct nvm_vblk *vblk)
-{
-	return vblk->pos_write;
+	return vblk->nbytes;
 }
 
 size_t nvm_vblk_attr_pos_read(struct nvm_vblk *vblk)
@@ -392,12 +337,16 @@ size_t nvm_vblk_attr_pos_read(struct nvm_vblk *vblk)
 	return vblk->pos_read;
 }
 
+size_t nvm_vblk_attr_pos_write(struct nvm_vblk *vblk)
+{
+	return vblk->pos_write;
+}
+
 void nvm_vblk_pr(struct nvm_vblk *vblk)
 {
 	printf("vblk {\n");
-	printf(" bgn "); nvm_addr_pr(vblk->bgn);
-	printf(" end "); nvm_addr_pr(vblk->end);
+	printf(" nbytes(%lu),\n", vblk->nbytes);
 	printf("}\n");
-	printf("vblk-"); nvm_geo_pr(&vblk->geo);
+	printf("vblk-"); nvm_addrs_pr(vblk->addrs, vblk->naddrs);
 }
 

@@ -95,7 +95,7 @@ void nvm_cli_usage(const char *cli_name, const char *cli_description,
 		case NVM_CLI_ARG_CH_LUN_PL_BLK_PG_SEC:
 			printf("ch lun pl blk pg sec");
 			break;
-		case NVM_CLI_ARG_SPAN:
+		case NVM_CLI_ARG_LINE:
 			printf("ch_bgn ch_end lun_bgn lun_end blk");
 			break;
 		case NVM_CLI_ARG_COUNT_OFFSET:
@@ -196,7 +196,7 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 			cmd->args.naddrs = 1;
 			break;
 
-		case NVM_CLI_ARG_SPAN:
+		case NVM_CLI_ARG_LINE:
 			if (argc < 8) {
 				printf("FAILED: Invalid argc\n");
 				return NULL;

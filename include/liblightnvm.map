@@ -15,7 +15,7 @@ LIBLIGHTNVM_0.1 {
 		nvm_addr_pr,
 
 		nvm_vblk_alloc,
-		nvm_vblk_alloc_span,
+		nvm_vblk_alloc_line,
 		nvm_vblk_free,
 		nvm_vblk_attr_geo,
 		nvm_vblk_pr,

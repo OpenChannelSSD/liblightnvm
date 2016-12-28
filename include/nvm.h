@@ -201,18 +201,11 @@ struct nvm_dev {
 	int fd;				///< Device fd / IOCTL handle
 };
 
-struct nvm_dblk {
-	struct nvm_dev *dev;
-	struct nvm_addr addr;
-	size_t pos_write;
-	size_t pos_read;
-};
-
 struct nvm_vblk {
 	struct nvm_dev *dev;
-	struct nvm_addr bgn;
-	struct nvm_addr end;
-	struct nvm_geo geo;
+	struct nvm_addr addrs[128];
+	int naddrs;
+	size_t nbytes;
 	size_t pos_write;
 	size_t pos_read;
 };

@@ -18,7 +18,8 @@ static int blk = 0;
 
 // Managed by setup/teardown and used by tests
 static struct nvm_dev *dev;
-static const struct nvm_geo *dev_geo, *vblk_geo;
+static const struct nvm_geo *geo;
+size_t nbytes;
 struct nvm_vblk *vblk;
 char *buf_w, *buf_r;
 
@@ -29,23 +30,23 @@ int setup(void)
 		perror("nvm_dev_open");
 		return -1;
 	}
-	dev_geo = nvm_dev_attr_geo(dev);
+	geo = nvm_dev_attr_geo(dev);
 
-	vblk = nvm_vblk_alloc_span(dev, ch_bgn, ch_end, lun_bgn, lun_end, blk);
+	vblk = nvm_vblk_alloc_line(dev, ch_bgn, ch_end, lun_bgn, lun_end, blk);
 	if (!vblk) {
-		perror("nvm_vblk_alloc_span");
+		perror("nvm_vblk_alloc_line");
 		return -1;
 	}
-	vblk_geo = nvm_vblk_attr_geo(vblk);
+	nbytes = nvm_vblk_attr_nbytes(vblk);
 
-	buf_w = nvm_buf_alloc(dev_geo, vblk_geo->tbytes);
+	buf_w = nvm_buf_alloc(geo, nbytes);
 	if (!buf_w) {
 		perror("nvm_buf_alloc");
 		return -1;
 	}
-	nvm_buf_fill(buf_w, vblk_geo->tbytes);
+	nvm_buf_fill(buf_w, nbytes);
 
-	buf_r = nvm_buf_alloc(dev_geo, vblk_geo->tbytes);
+	buf_r = nvm_buf_alloc(geo, nbytes);
 	if (!buf_r) {
 		perror("nvm_buf_alloc");
 		return -1;
@@ -56,7 +57,7 @@ int setup(void)
 
 int teardown(void)
 {
-	dev_geo = NULL;
+	geo = NULL;
 	nvm_vblk_free(vblk);
 	nvm_dev_close(dev);
 	free(buf_r);
@@ -75,21 +76,21 @@ void test_VBLK_PE_PW_PR(void)
 		CU_FAIL("FAILED: Erasing vblk");
 	}
 	
-	res = nvm_vblk_write(vblk, buf_w, vblk_geo->tbytes);	// EXPECT: OK
+	res = nvm_vblk_write(vblk, buf_w, nbytes);	// EXPECT: OK
 	CU_ASSERT(res >= 0);
 	if (res < 0) {
 		CU_FAIL("FAILED: nvm_vblk_write");
 		return;
 	}
 
-	res = nvm_vblk_read(vblk, buf_r, vblk_geo->tbytes);	// EXPECT: OK
+	res = nvm_vblk_read(vblk, buf_r, nbytes);	// EXPECT: OK
 	CU_ASSERT(res >= 0);
 	if (res < 0) {
 		CU_FAIL("FAILED: nvm_vblk_write");
 		return;
 	}
 
-	CU_ASSERT_NSTRING_EQUAL(buf_w, buf_r, vblk_geo->tbytes);
+	CU_ASSERT_NSTRING_EQUAL(buf_w, buf_r, nbytes);
 }
 
 void test_VBLK_PE_PR_PW_PR(void)
@@ -102,28 +103,28 @@ void test_VBLK_PE_PR_PW_PR(void)
 		CU_FAIL("FAILED: Erasing vblk");
 	}
 
-	res = nvm_vblk_read(vblk, buf_r, vblk_geo->tbytes);	// EXPECT: Fail
+	res = nvm_vblk_read(vblk, buf_r, nbytes);	// EXPECT: Fail
 	CU_ASSERT(res < 0);
 	if (res >=  0) {
 		CU_FAIL("FAILED: nvm_vblk_read OK of NON-written vblk -> should fail");
 		return;
 	}
 	
-	res = nvm_vblk_write(vblk, buf_w, vblk_geo->tbytes);	// EXPECT: OK
+	res = nvm_vblk_write(vblk, buf_w, nbytes);	// EXPECT: OK
 	CU_ASSERT(res >= 0);
 	if (res < 0) {
 		CU_FAIL("FAILED: nvm_vblk_write");
 		return;
 	}
 
-	res = nvm_vblk_read(vblk, buf_r, vblk_geo->tbytes);	// EXPECT: OK
+	res = nvm_vblk_read(vblk, buf_r, nbytes);	// EXPECT: OK
 	CU_ASSERT(res >= 0);
 	if (res < 0) {
 		CU_FAIL("FAILED: nvm_vblk_write");
 		return;
 	}
 
-	CU_ASSERT_NSTRING_EQUAL(buf_w, buf_r, vblk_geo->tbytes);
+	CU_ASSERT_NSTRING_EQUAL(buf_w, buf_r, nbytes);
 }
 
 int main(int argc, char **argv)

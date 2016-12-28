@@ -69,10 +69,15 @@ struct nvm_dev;
  * Virtual block abstraction
  *
  * Facilitates a libc-like read/write and a system-like `pread`/`pwrite`
- * interface to perform I/O on multiple blocks on physical NVM. Span defaults to
- * multiple physical blocks across planes when allocated with `nvm_vblk_alloc`.
- * Span of multiple physical blocks accross LUNs, and channels can be created
- * when using `nvm_vblk_alloc_span`.
+ * interface to perform I/O on a virtual block spanning multiple blocks of
+ * physical NVM.
+ *
+ * Consult the `nvm_vblk_alloc`, `nvm_vblk_alloc_span`, and `nvm_vblk_alloc_set`
+ * for the different spans.
+ *
+ * @see nvm_vblk_alloc
+ * @see nvm_vblk_span
+ * @see nvm_vblk_set
  *
  * @struct nvm_vblk
  */
@@ -522,20 +527,20 @@ void nvm_addr_pr(struct nvm_addr addr);
  */
 void nvm_addrs_pr(struct nvm_addr addr[], unsigned int naddrs);
 
+
 /**
- * Allocate a virtual block (spanning planes)  and initialize it
+ * Allocate a virtual block (spanning planes)
  *
  * @param dev The device on which the virtual block resides
  * @param addr Address of the virtual block
  *
- * @returns On success, an opaque pointer to the initialized virtual block is returned.
- * On error, NULL and `errno` set to indicate the error.
+ * @returns On success, an opaque pointer to the initialized virtual block is
+ * returned. On error, NULL and `errno` set to indicate the error.
  */
 struct nvm_vblk *nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addr);
 
 /**
- * Allocate an virtual block (spanning planes, channels, and LUNs) and
- * initialize it
+ * Allocate a virtual block (spanning planes, channels, and LUNs)
  *
  * @param dev The device on which the virtual block resides
  * @param ch_bgn Beginning of the channel span, as inclusive index
@@ -544,12 +549,25 @@ struct nvm_vblk *nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addr);
  * @param lun_end End of the LUN span, as inclusive index
  * @param blk Block index
  *
- * @returns On success, an opaque pointer to the initialized virtual block is returned.
- * On error, NULL and `errno` set to indicate the error.
+ * @returns On success, an opaque pointer to the initialized virtual block is
+ * returned.  On error, NULL and `errno` set to indicate the error.
  */
-struct nvm_vblk *nvm_vblk_alloc_span(struct nvm_dev *dev, int ch_bgn,
-                                     int ch_end,
-                                     int lun_bgn, int lun_end, int blk);
+struct nvm_vblk *nvm_vblk_alloc_line(struct nvm_dev *dev, int ch_bgn,
+                                     int ch_end, int lun_bgn, int lun_end,
+                                     int blk);
+
+/**
+ * Allocate a virtual block, spanning a given set of physical blocks
+ *
+ * @param dev The device on which the virtual block resides
+ * @param addrs Set of block-addresses forming the virtual block
+ * @param naddrs The number of addresses in the address-set
+ *
+ * @returns On success, an opaque pointer to the initialized virtual block is
+ * returned. On error, NULL and `errno` set to indicate the error.
+ */
+struct nvm_vblk *nvm_vblk_alloc_set(struct nvm_dev *dev,
+                                    struct nvm_addr addrs[], int naddrs);
 
 /**
  * Destroy a virtual block
@@ -636,39 +654,20 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 struct nvm_dev *nvm_vblk_attr_dev(struct nvm_vblk *vblk);
 
 /**
- * Retrieve the address where the virtual block begins
+ * Retrieve the set of addresses defining the virtual block
  *
  * @param vblk The entity to retrieve information from
  */
-struct nvm_addr nvm_vblk_attr_addr(struct nvm_vblk *vblk);
+struct nvm_addr *nvm_vblk_attr_addrs(struct nvm_vblk *vblk);
 
 /**
- * Retrieve the address where the virtual block begins
+ * Retrieve the number of address in the address set of the virtual block
  *
  * @param vblk The entity to retrieve information from
  */
-struct nvm_addr nvm_vblk_attr_bgn(struct nvm_vblk *vblk);
+int nvm_vblk_attr_naddrs(struct nvm_vblk *vblk);
 
-/**
- * Retrieve the address where the virtual block span ends
- *
- * @param vblk The entity to retrieve information from
- */
-struct nvm_addr nvm_vblk_attr_end(struct nvm_vblk *vblk);
-
-/**
- * Retrieve the geometry of the given virtual block
- *
- * @param vblk The entity to retrieve information from
- */
-const struct nvm_geo *nvm_vblk_attr_geo(struct nvm_vblk *vblk);
-
-/**
- * Retrieve the current cursor position for writes to the virtual block
- *
- * @param vblk The entity to retrieve information from
- */
-size_t nvm_vblk_attr_pos_write(struct nvm_vblk *vblk);
+size_t nvm_vblk_attr_nbytes(struct nvm_vblk *vblk);
 
 /**
  * Retrieve the current cursor position for read to the virtual block
@@ -676,6 +675,13 @@ size_t nvm_vblk_attr_pos_write(struct nvm_vblk *vblk);
  * @param vblk The entity to retrieve information from
  */
 size_t nvm_vblk_attr_pos_read(struct nvm_vblk *vblk);
+
+/**
+ * Retrieve the current cursor position for writes to the virtual block
+ *
+ * @param vblk The entity to retrieve information from
+ */
+size_t nvm_vblk_attr_pos_write(struct nvm_vblk *vblk);
 
 /**
  * Print the virtual block in a humanly readable form
