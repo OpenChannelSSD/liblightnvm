@@ -93,14 +93,13 @@
 		"nvm_vblk_pwrite",
 
 		"nvm_vblk_alloc",
-		"nvm_vblk_alloc_span",
+		"nvm_vblk_alloc_set",
+		"nvm_vblk_alloc_line",
 		"nvm_vblk_free",
 		"nvm_vblk_pr",
 
-		"nvm_vblk_attr_addr",
-		"nvm_vblk_attr_bgn",
-		"nvm_vblk_attr_end",
-		"nvm_vblk_attr_geo",
+		"nvm_vblk_attr_addrs",
+		"nvm_vblk_attr_naddrs",
 		"nvm_vblk_attr_pos_read",
 		"nvm_vblk_attr_pos_write"
 	]

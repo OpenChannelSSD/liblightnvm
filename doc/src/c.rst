@@ -245,10 +245,15 @@ nvm_vblk_alloc
 
 .. doxygenfunction:: nvm_vblk_alloc
 
-nvm_vblk_alloc_span
+nvm_vblk_alloc_set
+------------------
+
+.. doxygenfunction:: nvm_vblk_alloc_set
+
+nvm_vblk_alloc_line
 -------------------
 
-.. doxygenfunction:: nvm_vblk_alloc_span
+.. doxygenfunction:: nvm_vblk_alloc_line
 
 nvm_vblk_free
 -------------
@@ -260,25 +265,15 @@ nvm_vblk_pr
 
 .. doxygenfunction:: nvm_vblk_pr
 
-nvm_vblk_attr_addr
-------------------
+nvm_vblk_attr_addrs
+-------------------
 
-.. doxygenfunction:: nvm_vblk_attr_addr
+.. doxygenfunction:: nvm_vblk_attr_addrs
 
-nvm_vblk_attr_bgn
------------------
+nvm_vblk_attr_naddrs
+--------------------
 
-.. doxygenfunction:: nvm_vblk_attr_bgn
-
-nvm_vblk_attr_end
------------------
-
-.. doxygenfunction:: nvm_vblk_attr_end
-
-nvm_vblk_attr_geo
------------------
-
-.. doxygenfunction:: nvm_vblk_attr_geo
+.. doxygenfunction:: nvm_vblk_attr_naddrs
 
 nvm_vblk_attr_pos_read
 ----------------------
