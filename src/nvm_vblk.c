@@ -345,7 +345,7 @@ size_t nvm_vblk_attr_pos_write(struct nvm_vblk *vblk)
 void nvm_vblk_pr(struct nvm_vblk *vblk)
 {
 	printf("vblk {\n");
-	printf(" nbytes(%lu),\n", vblk->nbytes);
+	printf(" nbytes(%lub:%luMb),\n", vblk->nbytes, vblk->nbytes >> 20);
 	printf("}\n");
 	printf("vblk-"); nvm_addrs_pr(vblk->addrs, vblk->naddrs);
 }
