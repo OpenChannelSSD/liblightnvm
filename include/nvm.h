@@ -208,6 +208,7 @@ struct nvm_vblk {
 	size_t nbytes;
 	size_t pos_write;
 	size_t pos_read;
+	int nthreads;
 };
 
 void nvm_lba_map_pr(struct nvm_lba_map* map);
