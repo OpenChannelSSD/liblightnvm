@@ -18,6 +18,14 @@ DRY=False
 
 def main():
 
+    for tlun in xrange(10, NCHANNELS * NLUNS):
+        ch = tlun % NCHANNELS
+        lun = (tlun / NCHANNELS) % NLUNS
+
+        print(tlun, ch, lun)
+
+    return
+
     results = []
 
     cfg = [(0, 0)] + [(ch, NLUNS-1) for ch in list(xrange(0, NCHANNELS))]
@@ -47,7 +55,7 @@ def main():
 
             wc = float(matches[0].group(1))
 
-            result = (op, punits + 1, "0-%d" % ch, "0-%d" % lun, wc)
+            result = (op, punits, "0-%d" % ch, "0-%d" % lun, wc)
             results.append(result)
 
             print("RAN: %s" % pprint.pformat(result))
