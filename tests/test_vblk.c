@@ -66,7 +66,7 @@ int teardown(void)
 	return 0;
 }
 
-void test_VBLK_PE_PW_PR(void)
+void _test_VBLK(int test_expected_read_fail)
 {
 	ssize_t res = 0;
 
@@ -74,6 +74,15 @@ void test_VBLK_PE_PW_PR(void)
 	CU_ASSERT(res >= 0);
 	if (res < 0) {
 		CU_FAIL("FAILED: Erasing vblk");
+	}
+
+	if (test_expected_read_fail) {
+		res = nvm_vblk_read(vblk, buf_r, nbytes);	// EXPECT: Fail
+		CU_ASSERT(res < 0);
+		if (res >=  0) {
+			CU_FAIL("FAILED: nvm_vblk_read OK of NON-written vblk -> should fail");
+			return;
+		}
 	}
 	
 	res = nvm_vblk_write(vblk, buf_w, nbytes);	// EXPECT: OK
@@ -86,45 +95,21 @@ void test_VBLK_PE_PW_PR(void)
 	res = nvm_vblk_read(vblk, buf_r, nbytes);	// EXPECT: OK
 	CU_ASSERT(res >= 0);
 	if (res < 0) {
-		CU_FAIL("FAILED: nvm_vblk_write");
+		CU_FAIL("FAILED: nvm_vblk_read");
 		return;
 	}
 
 	CU_ASSERT_NSTRING_EQUAL(buf_w, buf_r, nbytes);
 }
 
+void test_VBLK_PE_PW_PR(void)
+{
+	_test_VBLK(0);
+}
+
 void test_VBLK_PE_PR_PW_PR(void)
 {
-	ssize_t res = 0;
-
-	res = nvm_vblk_erase(vblk);				// EXPECT: OK
-	CU_ASSERT(res >= 0);
-	if (res < 0) {
-		CU_FAIL("FAILED: Erasing vblk");
-	}
-
-	res = nvm_vblk_read(vblk, buf_r, nbytes);	// EXPECT: Fail
-	CU_ASSERT(res < 0);
-	if (res >=  0) {
-		CU_FAIL("FAILED: nvm_vblk_read OK of NON-written vblk -> should fail");
-		return;
-	}
-	
-	res = nvm_vblk_write(vblk, buf_w, nbytes);	// EXPECT: OK
-	CU_ASSERT(res >= 0);
-	if (res < 0) {
-		CU_FAIL("FAILED: nvm_vblk_write");
-		return;
-	}
-
-	res = nvm_vblk_read(vblk, buf_r, nbytes);	// EXPECT: OK
-	CU_ASSERT(res >= 0);
-	if (res < 0) {
-		CU_FAIL("FAILED: nvm_vblk_write");
-		return;
-	}
-
-	CU_ASSERT_NSTRING_EQUAL(buf_w, buf_r, nbytes);
+	_test_VBLK(1);
 }
 
 int main(int argc, char **argv)

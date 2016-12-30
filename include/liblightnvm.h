@@ -565,6 +565,9 @@ void nvm_vblk_free(struct nvm_vblk *vblk);
 /**
  * Erase a virtual block
  *
+ * @note
+ * Erasing a vblk will reset internal position pointers
+ *
  * @param vblk The virtual block to erase
  * @returns On success, the number of bytes erased is returned. On error, -1 is
  * returned and `errno` set to indicate the error.

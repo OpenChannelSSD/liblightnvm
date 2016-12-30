@@ -203,8 +203,8 @@ struct nvm_dev {
 
 struct nvm_vblk {
 	struct nvm_dev *dev;
-	struct nvm_addr addrs[128];
-	int naddrs;
+	struct nvm_addr blks[128];
+	int nblks;
 	size_t nbytes;
 	size_t pos_write;
 	size_t pos_read;
