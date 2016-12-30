@@ -61,10 +61,10 @@ nvm_dev_close
 
 .. doxygenfunction:: nvm_dev_close
 
-nvm_dev_attr_geo
-----------------
+nvm_dev_get_geo
+---------------
 
-.. doxygenfunction:: nvm_dev_attr_geo
+.. doxygenfunction:: nvm_dev_get_geo
 
 nvm_dev_pr
 ----------
@@ -245,11 +245,6 @@ nvm_vblk_alloc
 
 .. doxygenfunction:: nvm_vblk_alloc
 
-nvm_vblk_alloc_set
-------------------
-
-.. doxygenfunction:: nvm_vblk_alloc_set
-
 nvm_vblk_alloc_line
 -------------------
 
@@ -265,25 +260,35 @@ nvm_vblk_pr
 
 .. doxygenfunction:: nvm_vblk_pr
 
-nvm_vblk_attr_addrs
+nvm_vblk_get_addrs
+------------------
+
+.. doxygenfunction:: nvm_vblk_get_addrs
+
+nvm_vblk_get_naddrs
 -------------------
 
-.. doxygenfunction:: nvm_vblk_attr_addrs
+.. doxygenfunction:: nvm_vblk_get_naddrs
 
-nvm_vblk_attr_naddrs
---------------------
+nvm_vblk_get_pos_read
+---------------------
 
-.. doxygenfunction:: nvm_vblk_attr_naddrs
+.. doxygenfunction:: nvm_vblk_get_pos_read
 
-nvm_vblk_attr_pos_read
+nvm_vblk_get_pos_write
 ----------------------
 
-.. doxygenfunction:: nvm_vblk_attr_pos_read
+.. doxygenfunction:: nvm_vblk_get_pos_write
 
-nvm_vblk_attr_pos_write
------------------------
+nvm_vblk_get_nthreads
+---------------------
 
-.. doxygenfunction:: nvm_vblk_attr_pos_write
+.. doxygenfunction:: nvm_vblk_get_nthreads
+
+nvm_vblk_set_nthreads
+---------------------
+
+.. doxygenfunction:: nvm_vblk_set_nthreads
 
 
 

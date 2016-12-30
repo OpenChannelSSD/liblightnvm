@@ -415,12 +415,12 @@ int nvm_dev_attr_vpage_nbytes(struct nvm_dev *dev)
 	return dev->geo.vpg_nbytes;
 }
 
-const struct nvm_geo * nvm_dev_attr_geo(struct nvm_dev *dev)
+const struct nvm_geo * nvm_dev_get_geo(struct nvm_dev *dev)
 {
 	return &dev->geo;
 }
 
-int nvm_dev_attr_pmode(struct nvm_dev *dev)
+int nvm_dev_get_pmode(struct nvm_dev *dev)
 {
         return dev->pmode;
 }

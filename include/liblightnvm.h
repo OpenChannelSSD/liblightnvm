@@ -72,12 +72,10 @@ struct nvm_dev;
  * interface to perform I/O on a virtual block spanning multiple blocks of
  * physical NVM.
  *
- * Consult the `nvm_vblk_alloc`, `nvm_vblk_alloc_span`, and `nvm_vblk_alloc_set`
- * for the different spans.
+ * Consult the `nvm_vblk_alloc`, `nvm_vblk_alloc_line` for the different spans
  *
  * @see nvm_vblk_alloc
- * @see nvm_vblk_span
- * @see nvm_vblk_set
+ * @see nvm_vblk_alloc_line
  *
  * @struct nvm_vblk
  */
@@ -137,7 +135,7 @@ struct nvm_addr {
 /**
  * Representation of device and virtual block geometry
  *
- * @see nvm_dev_attr_geo, nvm_vblk_attr_geo
+ * @see nvm_dev_get_geo, nvm_vblk_get_geo
  */
 struct nvm_geo {
 	size_t nchannels;	///< Number of channels on device
@@ -338,7 +336,7 @@ void nvm_dev_pr(struct nvm_dev *dev);
  * @param dev The device to obtain the default plane mode for
  * @return On success, pmode flag is returned.
  */
-int nvm_dev_attr_pmode(struct nvm_dev *dev);
+int nvm_dev_get_pmode(struct nvm_dev *dev);
 
 /**
  * Returns the geometry of the given device
@@ -350,7 +348,7 @@ int nvm_dev_attr_pmode(struct nvm_dev *dev);
  *
  * @returns The geometry (struct nvm_geo) of given device handle
  */
-const struct nvm_geo *nvm_dev_attr_geo(struct nvm_dev *dev);
+const struct nvm_geo *nvm_dev_get_geo(struct nvm_dev *dev);
 
 /**
  * Allocate a buffer aligned to match the given geometry
@@ -527,17 +525,18 @@ void nvm_addr_pr(struct nvm_addr addr);
  */
 void nvm_addrs_pr(struct nvm_addr addr[], unsigned int naddrs);
 
-
 /**
- * Allocate a virtual block (spanning planes)
+ * Allocate a virtual block, spanning a given set of physical blocks
  *
  * @param dev The device on which the virtual block resides
- * @param addr Address of the virtual block
+ * @param addrs Set of block-addresses forming the virtual block
+ * @param naddrs The number of addresses in the address-set
  *
  * @returns On success, an opaque pointer to the initialized virtual block is
  * returned. On error, NULL and `errno` set to indicate the error.
  */
-struct nvm_vblk *nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addr);
+struct nvm_vblk *nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addrs[],
+				int naddrs);
 
 /**
  * Allocate a virtual block (spanning planes, channels, and LUNs)
@@ -553,21 +552,8 @@ struct nvm_vblk *nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addr);
  * returned.  On error, NULL and `errno` set to indicate the error.
  */
 struct nvm_vblk *nvm_vblk_alloc_line(struct nvm_dev *dev, int ch_bgn,
-                                     int ch_end, int lun_bgn, int lun_end,
-                                     int blk);
-
-/**
- * Allocate a virtual block, spanning a given set of physical blocks
- *
- * @param dev The device on which the virtual block resides
- * @param addrs Set of block-addresses forming the virtual block
- * @param naddrs The number of addresses in the address-set
- *
- * @returns On success, an opaque pointer to the initialized virtual block is
- * returned. On error, NULL and `errno` set to indicate the error.
- */
-struct nvm_vblk *nvm_vblk_alloc_set(struct nvm_dev *dev,
-                                    struct nvm_addr addrs[], int naddrs);
+				     int ch_end, int lun_bgn, int lun_end,
+				     int blk);
 
 /**
  * Destroy a virtual block
@@ -619,7 +605,7 @@ ssize_t nvm_vblk_write(struct nvm_vblk *vblk, const void *buf, size_t count);
  * returned and `errno` set to indicate the error.
  */
 ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf, size_t count,
-                        size_t offset);
+			size_t offset);
 
 /**
  * Pad the virtual block with synthetic data
@@ -651,44 +637,46 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
  *
  * @param vblk The entity to retrieve information from
  */
-struct nvm_dev *nvm_vblk_attr_dev(struct nvm_vblk *vblk);
+struct nvm_dev *nvm_vblk_get_dev(struct nvm_vblk *vblk);
 
 /**
  * Retrieve the set of addresses defining the virtual block
  *
  * @param vblk The entity to retrieve information from
  */
-struct nvm_addr *nvm_vblk_attr_addrs(struct nvm_vblk *vblk);
+struct nvm_addr *nvm_vblk_get_addrs(struct nvm_vblk *vblk);
 
 /**
  * Retrieve the number of addresses in the address set of the virtual block
  *
  * @param vblk The entity to retrieve information from
  */
-int nvm_vblk_attr_naddrs(struct nvm_vblk *vblk);
+int nvm_vblk_get_naddrs(struct nvm_vblk *vblk);
 
 int nvm_vblk_set_nthreads(struct nvm_vblk *vblk, int nthreads);
+
+int nvm_vblk_get_nthreads(struct nvm_vblk *vblk);
 
 /**
  * Retrieve the size, in bytes, of a given virtual block
  *
  * @param vblk The entity to retrieve information from
  */
-size_t nvm_vblk_attr_nbytes(struct nvm_vblk *vblk);
+size_t nvm_vblk_get_nbytes(struct nvm_vblk *vblk);
 
 /**
  * Retrieve the current cursor position for read to the virtual block
  *
  * @param vblk The entity to retrieve information from
  */
-size_t nvm_vblk_attr_pos_read(struct nvm_vblk *vblk);
+size_t nvm_vblk_get_pos_read(struct nvm_vblk *vblk);
 
 /**
  * Retrieve the current cursor position for writes to the virtual block
  *
  * @param vblk The entity to retrieve information from
  */
-size_t nvm_vblk_attr_pos_write(struct nvm_vblk *vblk);
+size_t nvm_vblk_get_pos_write(struct nvm_vblk *vblk);
 
 /**
  * Print the virtual block in a humanly readable form

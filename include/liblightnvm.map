@@ -3,7 +3,7 @@ LIBLIGHTNVM_0.1 {
 
 		nvm_dev_open,
 		nvm_dev_close,
-		nvm_dev_attr_geo,
+		nvm_dev_get_geo,
 		nvm_dev_pr,
 
 		nvm_geo_pr,

@@ -31,7 +31,7 @@ int setup(void)
 		perror("nvm_dev_open");
 		return -1;
 	}
-	geo = nvm_dev_attr_geo(dev);
+	geo = nvm_dev_get_geo(dev);
 
 	nbytes = geo->sector_nbytes * geo->nsectors * geo->npages *
 		geo->nplanes;
@@ -87,7 +87,7 @@ void test_VBLK_PE_LW_LR(void)
 				addr.g.lun = lun;
 				addr.g.blk = blk;
 
-				vblk = nvm_vblk_alloc(dev, addr);
+				vblk = nvm_vblk_alloc(dev, &addr, 1);
 				nvm_vblk_erase(vblk);
 				free(vblk);
 

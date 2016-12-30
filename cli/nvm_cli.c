@@ -38,7 +38,7 @@ void nvm_timer_pr(const char* tool)
 
 int nvm_cli_pmode(struct nvm_dev *dev)
 {
-	const struct nvm_geo *geo = nvm_dev_attr_geo(dev);
+	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
 
 	char *pmode_env = getenv("NVM_CLI_PMODE");		// Check ENV
 	if (getenv("NVM_CLI_PMODE")) {
@@ -63,7 +63,7 @@ int nvm_cli_pmode(struct nvm_dev *dev)
 		}
 	}
 
-	return nvm_dev_attr_pmode(dev);
+	return nvm_dev_get_pmode(dev);
 }
 
 void nvm_cli_usage(const char *cli_name, const char *cli_description,
@@ -150,7 +150,7 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 		return NULL;
 	}
 
-	cmd->args.geo = nvm_dev_attr_geo(cmd->args.dev);// Get geometry
+	cmd->args.geo = nvm_dev_get_geo(cmd->args.dev);// Get geometry
 	cmd->args.addrs[0].ppa = 0;
 
 	switch(cmd->argt) {				// Get variable params

@@ -30,14 +30,14 @@ int setup(void)
 		perror("nvm_dev_open");
 		return -1;
 	}
-	geo = nvm_dev_attr_geo(dev);
+	geo = nvm_dev_get_geo(dev);
 
 	vblk = nvm_vblk_alloc_line(dev, ch_bgn, ch_end, lun_bgn, lun_end, blk);
 	if (!vblk) {
 		perror("nvm_vblk_alloc_line");
 		return -1;
 	}
-	nbytes = nvm_vblk_attr_nbytes(vblk);
+	nbytes = nvm_vblk_get_nbytes(vblk);
 
 	buf_w = nvm_buf_alloc(geo, nbytes);
 	if (!buf_w) {

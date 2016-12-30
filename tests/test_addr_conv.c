@@ -34,7 +34,7 @@ int setup(void)
 		perror("nvm_dev_open");
 		CU_ASSERT_PTR_NOT_NULL(dev);
 	}
-	geo = nvm_dev_attr_geo(dev);
+	geo = nvm_dev_get_geo(dev);
 
 	return 0;
 }
