@@ -9,21 +9,21 @@ class AddrGDesc(ctypes.Structure):
     """Wrapper for anonymous member NVM_ADDR.g """
 
     _fields_ = [
-	("blk", ctypes.c_uint64, 16),
-	("pg", ctypes.c_uint64, 16),
-	("sec", ctypes.c_uint64, 8),
-	("pl", ctypes.c_uint64, 8),
-	("lun", ctypes.c_uint64, 8),
-	("ch", ctypes.c_uint64, 7),
-	("rsvd", ctypes.c_uint64, 1),
+        ("blk", ctypes.c_uint64, 16),
+        ("pg", ctypes.c_uint64, 16),
+        ("sec", ctypes.c_uint64, 8),
+        ("pl", ctypes.c_uint64, 8),
+        ("lun", ctypes.c_uint64, 8),
+        ("ch", ctypes.c_uint64, 7),
+        ("rsvd", ctypes.c_uint64, 1),
     ]
 
 class AddrCDesc(ctypes.Structure):
     """Wrapper for anonymous member NVM_ADDR.c """
 
     _fields_ = [
-	("line", ctypes.c_uint64, 63),
-	("is_cached", ctypes.c_uint64, 1)
+        ("line", ctypes.c_uint64, 63),
+        ("is_cached", ctypes.c_uint64, 1)
     ]
 
 class AddrUDesc(ctypes.Union):
@@ -31,9 +31,9 @@ class AddrUDesc(ctypes.Union):
 
     _anonymous_ = ("g", "c",)
     _fields_ = [
-	("g", AddrGDesc),
-	("c", AddrCDesc),
-	("ppa", ctypes.c_uint64)
+        ("g", AddrGDesc),
+        ("c", AddrCDesc),
+        ("ppa", ctypes.c_uint64)
     ]
 
 class Addr(ctypes.Structure):
@@ -41,7 +41,7 @@ class Addr(ctypes.Structure):
 
     _anonymous_ = ("u", )
     _fields_ = [
-	("u", AddrUDesc)
+        ("u", AddrUDesc)
     ]
 
 class Geometry(ctypes.Structure):
@@ -54,8 +54,9 @@ class Geometry(ctypes.Structure):
         ("nblocks", ctypes.c_size_t),
         ("npages", ctypes.c_size_t),
         ("nsectors", ctypes.c_size_t),
-        ("nbytes", ctypes.c_size_t),
 
+        ("page_nbytes", ctypes.c_size_t),
+        ("sector_nbytes", ctypes.c_size_t),
         ("meta_nbytes", ctypes.c_size_t),
 
         ("tbytes", ctypes.c_size_t),
@@ -64,45 +65,53 @@ class Geometry(ctypes.Structure):
     ]
 
 LLN = ctypes.cdll.LoadLibrary("liblightnvm.so")
-LLN.nvm_dev_attr_geo.restype = Geometry
+LLN.nvm_dev_get_geo.restype = ctypes.POINTER(Geometry)
 
 class Device(object):
 
     def __init__(self, dev_path):
+        self._dev = None
         self.dev_path = dev_path
-        self.dev = None
 
     def open(self):
-        if self.dev:
-	    return
+        if self._dev:
+            return True
 
-        self.dev = LLN.nvm_dev_open(self.dev_path)
+        self._dev = LLN.nvm_dev_open(self.dev_path)
+
+        return self._dev
 
     def close(self):
-        if not self.dev:
-	    return
+        if not self._dev:
+            return
 
-	LLN.nvm_dev_close(self.dev)
-        self.dev = None
+        LLN.nvm_dev_close(self._dev)
+        self._dev = None
+
+    def geo(self):
+        if not self._dev:
+            return None
+
+        return LLN.nvm_dev_get_geo(self._dev)
 
     def pr(self):
-	if not self.dev:
-	    return
+        if not self._dev:
+            return
 
-	LLN.nvm_dev_pr(self.dev)
+        LLN.nvm_dev_pr(self._dev)
 
 class Version(object):
 
     def __init__(self):
-	self.major = LLN.nvm_ver_major()
-	self.minor = LLN.nvm_ver_minor()
-	self.patch = LLN.nvm_ver_patch()
+        self.major = LLN.nvm_ver_major()
+        self.minor = LLN.nvm_ver_minor()
+        self.patch = LLN.nvm_ver_patch()
 
     def major(self):
-	return self.major
+        return self.major
 
     def minor(self):
-	return self.minor
+        return self.minor
 
     def patch(self):
         return self.patch
@@ -118,10 +127,24 @@ def main():
 
     dev = Device("/dev/nvme0n1")
     dev.open()
-    dev.pr()
-    dev.close()
 
-    print(LLN.nvm_ver_major())
+    geo = dev.geo()
+
+    addrs = []
+
+    for ch in xrange(0, geo.contents.nchannels):
+        for lun in xrange(0, geo.contents.nluns):
+            addr = Addr()
+            addr.u.g.ch = ch
+            addr.u.g.lun = lun
+            addr.u.g.blk = 21
+
+            ahex = "0x%016x" % addr.u.ppa
+            addrs.append(ahex)
+
+    print(addrs)
+
+    dev.close()
 
 if __name__ == "__main__":
     main()
