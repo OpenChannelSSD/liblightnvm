@@ -72,6 +72,11 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 		nvm_timer_stop();
 		nvm_timer_pr("nvm_vblk_read");
 
+		if (getenv("NVM_CLI_BUF_PR")) {
+			printf("** READ:\n");
+			nvm_buf_pr(buf, nbytes);
+		}
+
 		free(buf);
 		nvm_vblk_free(vblk);
 	}
@@ -226,6 +231,11 @@ int line_read(NVM_CLI_CMD_ARGS *args, int flags)
 	nvm_timer_stop();
 	nvm_timer_pr("nvm_vblk_read");
 
+	if (getenv("NVM_CLI_BUF_PR")) {
+		printf("** READ:\n");
+		nvm_buf_pr(buf, nbytes);
+	}
+
 	free(buf);
 	nvm_vblk_free(vblk);
 
@@ -374,6 +384,11 @@ int set_read(NVM_CLI_CMD_ARGS *args, int flags)
 		perror("nvm_vblk_read");
 	nvm_timer_stop();
 	nvm_timer_pr("nvm_vblk_read");
+
+	if (getenv("NVM_CLI_BUF_PR")) {
+		printf("** READ:\n");
+		nvm_buf_pr(buf, nbytes);
+	}
 
 	free(buf);
 	nvm_vblk_free(vblk);
