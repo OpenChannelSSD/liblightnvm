@@ -119,20 +119,32 @@ ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 {
 	size_t nerr = 0;
 	const struct nvm_geo *geo = nvm_dev_get_geo(vblk->dev);
-	const int nplanes = geo->nplanes;
 	const int PMODE = vblk->dev->pmode;
-	
-	#pragma omp parallel for schedule(static) reduction(+:nerr)
-	for (int i = 0; i < vblk->nblks; ++i) {
-		struct nvm_addr addrs[nplanes];
-		ssize_t err;
 
-		for (int pl = 0; pl < nplanes; ++pl) {
-			addrs[pl].ppa = vblk->blks[i].ppa;
-			addrs[pl].g.pl = pl;
+	const int BLK_NADDRS = geo->nplanes;
+	const int CMD_NBLKS = vblk->dev->erase_naddrs_max / BLK_NADDRS;
+	const int NTHREADS = vblk->nblks < CMD_NBLKS ? 1 : vblk->nblks / CMD_NBLKS;
+
+	#pragma omp parallel for num_threads(NTHREADS) schedule(static,1) reduction(+:nerr) if (NTHREADS>1)
+	for (int off = 0; off < vblk->nblks; off += CMD_NBLKS) {
+		ssize_t err;
+		struct nvm_ret ret = {};
+
+		const int nblks = NVM_MIN(CMD_NBLKS, vblk->nblks - off);
+		const int naddrs = nblks * BLK_NADDRS;
+
+		struct nvm_addr addrs[naddrs];
+
+		for (int i = 0; i < naddrs; ++i) {
+			const int idx = off + (i / BLK_NADDRS);
+
+			addrs[i].ppa = vblk->blks[idx].ppa;
+			addrs[i].g.pl = i % geo->nplanes;
 		}
 
-		err = nvm_addr_erase(vblk->dev, addrs, nplanes, PMODE, NULL);
+		nvm_addrs_pr(addrs, naddrs);
+
+		err = nvm_addr_erase(vblk->dev, addrs, naddrs, PMODE, &ret);
 		if (err)
 			++nerr;
 	}
@@ -148,75 +160,91 @@ ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 	return vblk->nbytes;
 }
 
+static inline int _cmd_nspages(int nblks, int cmd_nspages_max)
+{
+	int cmd_nspages = cmd_nspages_max;
+
+	while(nblks % cmd_nspages && cmd_nspages > 1) --cmd_nspages;
+
+	return cmd_nspages;
+}
+
 ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf, size_t count,
 			size_t offset)
 {
 	size_t nerr = 0;
 	const int PMODE = nvm_dev_get_pmode(vblk->dev);
-
 	const struct nvm_geo *geo = nvm_dev_get_geo(vblk->dev);
 
-	const int alignment = geo->nplanes * geo->nsectors * geo->sector_nbytes;
+	const int SPAGE_NADDRS = geo->nplanes * geo->nsectors;
+	const int CMD_NSPAGES = _cmd_nspages(vblk->nblks,
+				vblk->dev->write_naddrs_max / SPAGE_NADDRS);
 
-	const size_t bgn = offset / alignment;
-	const size_t end = bgn + (count / alignment);
+	const int ALIGN = SPAGE_NADDRS * geo->sector_nbytes;
+	const int NTHREADS = vblk->nblks < CMD_NSPAGES ? 1 : vblk->nblks / CMD_NSPAGES;
 
-	const int NVM_CMD_NADDR = geo->nplanes * geo->nsectors;
+	const size_t bgn = offset / ALIGN;
+	const size_t end = bgn + (count / ALIGN);
 
-	const char *data;
+	char *padding_buf = NULL;
 
-	if (offset + count > vblk->nbytes) {			// Check bounds
+	if (offset + count > vblk->nbytes) {		// Check bounds
 		errno = EINVAL;
 		return -1;
 	}
 
-	if ((count % alignment) || (offset % alignment)) {	// Check align
+	if ((count % ALIGN) || (offset % ALIGN)) {	// Check align
 		errno = EINVAL;
 		return -1;
 	}
 
-	if (buf) {	// Use user-supplied buffer
-		data = buf;
-	} else {	// Allocate and use a padding buffer
-		data = nvm_buf_alloc(geo, NVM_CMD_NADDR * geo->sector_nbytes);
-		if (!data) {
+	if (!buf) {	// Allocate and use a padding buffer
+		const size_t nbytes = CMD_NSPAGES * SPAGE_NADDRS * geo->sector_nbytes;
+
+		padding_buf = nvm_buf_alloc(geo, nbytes);
+		if (!padding_buf) {
 			errno = ENOMEM;
 			return -1;
 		}
+		nvm_buf_fill(padding_buf, nbytes);
 	}
 
-	#pragma omp parallel num_threads(vblk->nthreads) reduction(+:nerr)
-	{
-		const size_t tid = omp_get_thread_num();
+	#pragma omp parallel for num_threads(NTHREADS) schedule(static,1) reduction(+:nerr) ordered if(NTHREADS>1)
+	for (size_t off = bgn; off < end; off += CMD_NSPAGES) {
+		struct nvm_ret ret = {};
 
-		for (size_t spg = bgn + tid; spg < end; spg += vblk->nthreads) {
-			struct nvm_addr addrs[NVM_CMD_NADDR];
-			const char *data_off;
-			struct nvm_ret ret = {};
+		const int nspages = NVM_MIN(CMD_NSPAGES, (int)(end - off));
+		const int naddrs = nspages * SPAGE_NADDRS;
 
-			if (buf)
-				data_off = data + (spg - bgn) * geo->sector_nbytes * NVM_CMD_NADDR;
-			else
-				data_off = data;
+		struct nvm_addr addrs[naddrs];
+		const char *buf_off;
 
-			int idx = spg % vblk->nblks;
-			int vpg = (spg / vblk->nblks) % geo->npages;
+		if (padding_buf)
+			buf_off = padding_buf;
+		else
+			buf_off = buf + (off - bgn) * geo->sector_nbytes * SPAGE_NADDRS;
 
-			// Unroll: nplane X nsector
-			for (int i = 0; i < NVM_CMD_NADDR; ++i) {
-				addrs[i].ppa = vblk->blks[idx].ppa;
-				addrs[i].g.pg = vpg;
-				addrs[i].g.pl = (i / geo->nsectors) % geo->nplanes;
-				addrs[i].g.sec = i % geo->nsectors;
-			}
+		for (int i = 0; i < naddrs; ++i) {
+			const int spg = off + (i / SPAGE_NADDRS);
+			const int idx = spg % vblk->nblks;
+			const int pg = (spg / vblk->nblks) % geo->npages;
 
-			ssize_t err = nvm_addr_write(vblk->dev, addrs,
-						     NVM_CMD_NADDR, data_off,
-						     NULL, PMODE, &ret);
-			if (err)
-				++nerr;
+			addrs[i].ppa = vblk->blks[idx].ppa;
+			addrs[i].g.pg = pg;
+			addrs[i].g.pl = (i / geo->nsectors) % geo->nplanes;
+			addrs[i].g.sec = i % geo->nsectors;
 		}
+
+		const ssize_t err = nvm_addr_write(vblk->dev, addrs, naddrs,
+						   buf_off, NULL, PMODE, &ret);
+		if (err)
+			++nerr;
+
+		#pragma omp ordered
+		{}
 	}
+
+	free(padding_buf);
 
 	if (nerr) {
 		errno = EIO;
@@ -248,54 +276,58 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 {
 	size_t nerr = 0;
 	const int PMODE = nvm_dev_get_pmode(vblk->dev);
-
 	const struct nvm_geo *geo = nvm_dev_get_geo(vblk->dev);
 
-	const int alignment = geo->nplanes * geo->nsectors * geo->sector_nbytes;
+	const int SPAGE_NADDRS = geo->nplanes * geo->nsectors;
+	const int CMD_NSPAGES = _cmd_nspages(vblk->nblks,
+				vblk->dev->write_naddrs_max / SPAGE_NADDRS);
 
-	const size_t bgn = offset / alignment;
-	const size_t end = bgn + (count / alignment);
+	const int ALIGN = SPAGE_NADDRS * geo->sector_nbytes;
+	const int NTHREADS = vblk->nblks < CMD_NSPAGES ? 1 : vblk->nblks / CMD_NSPAGES;
 
-	const int NVM_CMD_NADDR = geo->nplanes * geo->nsectors;
+	const size_t bgn = offset / ALIGN;
+	const size_t end = bgn + (count / ALIGN);
 
-	if (offset + count > vblk->nbytes) {			// Check bounds
+	if (offset + count > vblk->nbytes) {		// Check bounds
 		errno = EINVAL;
 		return -1;
 	}
 
-	if ((count % alignment) || (offset % alignment)) {	// Check align
+	if ((count % ALIGN) || (offset % ALIGN)) {	// Check align
 		errno = EINVAL;
 		return -1;
 	}
 
-	#pragma omp parallel num_threads(vblk->nthreads) reduction(+:nerr)
-	{
-		const size_t tid = omp_get_thread_num();
+	#pragma omp parallel for num_threads(NTHREADS) schedule(static,1) reduction(+:nerr) ordered if(NTHREADS>1)
+	for (size_t off = bgn; off < end; off += CMD_NSPAGES) {
+		struct nvm_ret ret = {};
 
-		for (size_t spg = bgn + tid; spg < end; spg += vblk->nthreads) {
-			struct nvm_addr addrs[NVM_CMD_NADDR];
-			char *buf_off;
-			struct nvm_ret ret = {};
+		const int nspages = NVM_MIN(CMD_NSPAGES, (int)(end - off));
+		const int naddrs = nspages * SPAGE_NADDRS;
 
-			buf_off = buf + (spg - bgn) * geo->sector_nbytes * NVM_CMD_NADDR;
+		struct nvm_addr addrs[naddrs];
+		char *buf_off;
 
-			int idx = spg % vblk->nblks;
-			int vpg = (spg / vblk->nblks) % geo->npages;
+		buf_off = buf + (off - bgn) * geo->sector_nbytes * SPAGE_NADDRS;
 
-			// Unroll: nplanes X nsectors
-			for (int i = 0; i < NVM_CMD_NADDR; ++i) {
-				addrs[i].ppa = vblk->blks[idx].ppa;
-				addrs[i].g.pg = vpg;
-				addrs[i].g.pl = (i / geo->nsectors) % geo->nplanes;
-				addrs[i].g.sec = i % geo->nsectors;
-			}
+		for (int i = 0; i < naddrs; ++i) {
+			const int spg = off + (i / SPAGE_NADDRS);
+			const int idx = spg % vblk->nblks;
+			const int pg = (spg / vblk->nblks) % geo->npages;
 
-			ssize_t err = nvm_addr_read(vblk->dev, addrs,
-						     NVM_CMD_NADDR, buf_off,
-						     NULL, PMODE, &ret);
-			if (err)
-				++nerr;
+			addrs[i].ppa = vblk->blks[idx].ppa;
+			addrs[i].g.pg = pg;
+			addrs[i].g.pl = (i / geo->nsectors) % geo->nplanes;
+			addrs[i].g.sec = i % geo->nsectors;
 		}
+
+		const ssize_t err = nvm_addr_read(vblk->dev, addrs, naddrs,
+						  buf_off, NULL, PMODE, &ret);
+		if (err)
+			++nerr;
+
+		#pragma omp ordered
+		{}
 	}
 
 	if (nerr) {
