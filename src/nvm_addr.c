@@ -119,14 +119,14 @@ struct nvm_addr nvm_addr_lba2gen(struct nvm_dev *dev, uint64_t off)
 }
 
 static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
-			    int len, void *data, void *meta, uint16_t flags,
+			    int naddrs, void *data, void *meta, uint16_t flags,
 			    uint16_t opcode, struct nvm_ret *ret)
 {
 	struct nvm_user_vio ctl;
-	uint64_t dev_addrs[len];
+	uint64_t dev_addrs[naddrs];
 	int i, err;
 
-	if (len > NVM_NADDR_MAX) {
+	if (naddrs > NVM_NADDR_MAX) {
 		errno = EINVAL;
 		return -1;
 	}
@@ -135,17 +135,17 @@ static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
 	ctl.opcode = opcode;
 	ctl.control = flags | NVM_FLAG_DEFAULT;
 
-	for (i = 0; i < len; ++i) {	// Setup PPAs: Convert address format
+	for (i = 0; i < naddrs; ++i) {	// Setup PPAs: Convert address format
 		dev_addrs[i] = nvm_addr_gen2dev(dev, addrs[i]);
 	}
-	ctl.nppas = len - 1;		// Unnatural numbers: counting from zero
-	ctl.ppa_list = len == 1 ? dev_addrs[0] : (uint64_t)dev_addrs;
+	ctl.nppas = naddrs - 1;		// Unnatural numbers: counting from zero
+	ctl.ppa_list = naddrs == 1 ? dev_addrs[0] : (uint64_t)dev_addrs;
 
 	ctl.addr = (uint64_t)data;	// Setup data
-	ctl.data_len = data ? dev->geo.sector_nbytes * len : 0;
+	ctl.data_len = data ? dev->geo.sector_nbytes * naddrs : 0;
 
 	ctl.metadata = (uint64_t)meta;	// Setup metadata
-	ctl.metadata_len = meta ? dev->geo.meta_nbytes * len : 0;
+	ctl.metadata_len = meta ? dev->geo.meta_nbytes * naddrs : 0;
 
 	err = ioctl(dev->fd, NVME_NVM_IOCTL_SUBMIT_VIO, &ctl);
 
