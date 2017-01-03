@@ -29,6 +29,18 @@
 #ifndef __NVM_H
 #define __NVM_H
 
+#define NVM_MIN(x, y) ({                \
+        __typeof__(x) _min1 = (x);      \
+        __typeof__(y) _min2 = (y);      \
+        (void) (&_min1 == &_min2);      \
+        _min1 < _min2 ? _min1 : _min2; })
+
+#define NVM_MAX(x, y) ({                \
+        __typeof__(x) _min1 = (x);      \
+        __typeof__(y) _min2 = (y);      \
+        (void) (&_min1 == &_min2);      \
+        _min1 > _min2 ? _min1 : _min2; })
+
 #include <liblightnvm.h>
 
 #define NVM_I64_FMT	"%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"\
