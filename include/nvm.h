@@ -211,6 +211,9 @@ struct nvm_dev {
 	uint64_t ssw;			///< Bit-width for LBA fmt conversion
 	int pmode;			///< Default plane-mode I/O
 	int fd;				///< Device fd / IOCTL handle
+	int erase_naddrs_max;		///< Maximum # of address for erase
+	int read_naddrs_max;		///< Maximum # of address for read
+	int write_naddrs_max;		///< Maximum # of address for write
 };
 
 struct nvm_vblk {

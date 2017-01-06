@@ -347,6 +347,10 @@ static int dev_attr_fill(struct nvm_dev *dev)
 			return -1;
 	}
 
+	dev->erase_naddrs_max = NVM_NADDR_MAX;
+	dev->write_naddrs_max = NVM_NADDR_MAX;
+	dev->read_naddrs_max = NVM_NADDR_MAX;
+
 	return 0;
 }
 
@@ -363,8 +367,12 @@ struct nvm_dev *nvm_dev_new(void)
 
 void nvm_dev_pr(struct nvm_dev *dev)
 {
-	printf("dev { path(%s), name(%s), fd(%d), ssw(%lu), pmode(%d) }\n",
+	printf("dev {\n path(%s), name(%s), fd(%d), ssw(%lu), pmode(%d),\n",
 	       dev->path, dev->name, dev->fd, dev->ssw, dev->pmode);
+	printf(" erase_naddrs_max(%d), read_naddrs_max(%d), write_naddrs_max(%d)\n}\n",
+	       dev->erase_naddrs_max,
+	       dev->read_naddrs_max,
+	       dev->write_naddrs_max);
 	printf("dev-"); nvm_geo_pr(&dev->geo);
 	printf("dev-"); nvm_addr_fmt_pr(&dev->fmt);
 	printf("dev-"); nvm_addr_fmt_mask_pr(&dev->mask);
@@ -423,6 +431,81 @@ const struct nvm_geo * nvm_dev_get_geo(struct nvm_dev *dev)
 int nvm_dev_get_pmode(struct nvm_dev *dev)
 {
         return dev->pmode;
+}
+
+int nvm_dev_get_erase_naddrs_max(struct nvm_dev *dev)
+{
+	return dev->erase_naddrs_max;
+}
+
+int nvm_dev_get_read_naddrs_max(struct nvm_dev *dev)
+{
+	return dev->read_naddrs_max;
+}
+
+int nvm_dev_get_write_naddrs_max(struct nvm_dev *dev)
+{
+	return dev->write_naddrs_max;
+}
+
+int nvm_dev_set_erase_naddrs_max(struct nvm_dev *dev, int naddrs)
+{
+	if (naddrs > NVM_NADDR_MAX) {
+		errno = EINVAL;
+		return -1;
+	}
+	if (naddrs < 1) {
+		errno = EINVAL;
+		return -1;
+	}
+	if (naddrs % dev->geo.nplanes) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	dev->erase_naddrs_max = naddrs;
+
+	return 0;
+}
+
+int nvm_dev_set_read_naddrs_max(struct nvm_dev *dev, int naddrs)
+{
+	if (naddrs > NVM_NADDR_MAX) {
+		errno = EINVAL;
+		return -1;
+	}
+	if (naddrs < 1) {
+		errno = EINVAL;
+		return -1;
+	}
+	if (naddrs % (dev->geo.nplanes * dev->geo.nsectors)) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	dev->read_naddrs_max = naddrs;
+
+	return 0;
+}
+
+int nvm_dev_set_write_naddrs_max(struct nvm_dev *dev, int naddrs)
+{
+	if (naddrs > NVM_NADDR_MAX) {
+		errno = EINVAL;
+		return -1;
+	}
+	if (naddrs < 1) {
+		errno = EINVAL;
+		return -1;
+	}
+	if (naddrs % (dev->geo.nplanes * dev->geo.nsectors)) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	dev->write_naddrs_max = naddrs;
+
+	return 0;
 }
 
 struct nvm_dev *nvm_dev_open(const char *dev_path)

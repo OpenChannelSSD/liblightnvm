@@ -339,6 +339,63 @@ void nvm_dev_pr(struct nvm_dev *dev);
 int nvm_dev_get_pmode(struct nvm_dev *dev);
 
 /**
+ * Returns the maximum number of addresses to use when sending erases to device.
+ * That is, when invoking nvm_addr_erase.
+ *
+ * @param dev The device to obtain maximum for
+ */
+int nvm_dev_get_erase_naddrs_max(struct nvm_dev *dev);
+
+/**
+ * Set the maximum number of addresses to use for reads, that is, when invoking
+ * nvm_addr_read
+ *
+ * @param dev The device to obtain maximum for
+ */
+int nvm_dev_get_read_naddrs_max(struct nvm_dev *dev);
+
+/**
+ * Set the maximum number of addresses to use for writes, that is, when invoking
+ * nvm_addr_write
+ *
+ * @param dev The device to obtain maximum for
+ */
+int nvm_dev_get_write_naddrs_max(struct nvm_dev *dev);
+
+/**
+ * Set the maximum number of addresses to use for erases, that is, when invoking
+ * nvm_addr_erase
+ *
+ * @param dev The device to set maximum for
+ * @param naddrs The maximum
+ *
+ * @returns 0 on success, -1 on error and errno set to indicate the error.
+ */
+int nvm_dev_set_erase_naddrs_max(struct nvm_dev *dev, int naddrs);
+
+/**
+ * Set the maximum number of addresses to use for erases, that is, when invoking
+ * nvm_addr_erase.
+ *
+ * @param dev The device to set maximum for
+ * @param naddrs The maximum
+ *
+ * @returns 0 on success, -1 on error and errno set to indicate the error.
+ */
+int nvm_dev_set_read_naddrs_max(struct nvm_dev *dev, int naddrs);
+
+/**
+ * Set the maximum number of addresses to use for erases, that is, when invoking
+ * nvm_addr_erase.
+ *
+ * @param dev The device to set maximum for
+ * @param naddrs The maximum
+ *
+ * @returns 0 on success, -1 on error and errno set to indicate the error.
+ */
+int nvm_dev_set_write_naddrs_max(struct nvm_dev *dev, int naddrs);
+
+/**
  * Returns the geometry of the given device
  *
  * @note
