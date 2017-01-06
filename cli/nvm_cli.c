@@ -150,7 +150,31 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 		return NULL;
 	}
 
-	cmd->args.geo = nvm_dev_get_geo(cmd->args.dev);// Get geometry
+	if (getenv("NVM_CLI_ERASE_NADDRS_MAX")) {
+		int erase_naddrs_max = atoi(getenv("NVM_CLI_ERASE_NADDRS_MAX"));
+		if (nvm_dev_set_erase_naddrs_max(cmd->args.dev, erase_naddrs_max)) {
+			perror("nvm_dev_erase_naddrs_max");
+			return NULL;
+		}
+	}
+
+	if (getenv("NVM_CLI_READ_NADDRS_MAX")) {
+		int read_naddrs_max = atoi(getenv("NVM_CLI_READ_NADDRS_MAX"));
+		if (nvm_dev_set_read_naddrs_max(cmd->args.dev, read_naddrs_max)) {
+			perror("nvm_dev_read_naddrs_max");
+			return NULL;
+		}
+	}
+
+	if (getenv("NVM_CLI_WRITE_NADDRS_MAX")) {
+		int write_naddrs_max = atoi(getenv("NVM_CLI_WRITE_NADDRS_MAX"));
+		if (nvm_dev_set_write_naddrs_max(cmd->args.dev, write_naddrs_max)) {
+			perror("nvm_dev_write_naddrs_max");
+			return NULL;
+		}
+	}
+
+	cmd->args.geo = nvm_dev_get_geo(cmd->args.dev);	// Get geometry
 	cmd->args.addrs[0].ppa = 0;
 
 	switch(cmd->argt) {				// Get variable params
