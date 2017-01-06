@@ -19,9 +19,11 @@ show below. And additionally by optionally defining the following environment
 variables:
 
   * NVM_CLI_NOVERIFY -- When set, address verification is disabled
-  * NVM_BUF_PR -- When set, read commands will dump the buffer to stdout
-  * NVM_CLI_BUF_PR -- When set, read/write commands will dump buffer to stdout
+  * NVM_CLI_BUF_PR -- When set, read/write commands will dump buffers to stdout
   * NVM_CLI_META_PR -- When set, read/write commands will dump meta to stdout
+  * NVM_CLI_ERASE_NADDRS_MAX -- Controls number of addresses pr. erase
+  * NVM_CLI_READ_NADDRS_MAX -- Controls number of addresses pr. read
+  * NVM_CLI_WRITE_NADDRS_MAX -- Controls number of addresses pr. write
 
 .. toctree::
 
