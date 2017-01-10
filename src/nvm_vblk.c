@@ -77,7 +77,6 @@ struct nvm_vblk* nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addrs[],
 	vblk->pos_read = 0;
 	vblk->nbytes = vblk->nblks * geo->nplanes * geo->npages *
 		       geo->nsectors * geo->sector_nbytes;
-	vblk->nthreads = naddrs;
 
 	return vblk;
 }
@@ -105,7 +104,6 @@ struct nvm_vblk *nvm_vblk_alloc_line(struct nvm_dev *dev, int ch_bgn,
 
 	vblk->nbytes = vblk->nblks * geo->nplanes * geo->npages *
 		       geo->nsectors * geo->sector_nbytes;
-	vblk->nthreads = vblk->nblks;
 
 	return vblk;
 }
@@ -373,23 +371,6 @@ size_t nvm_vblk_get_pos_read(struct nvm_vblk *vblk)
 size_t nvm_vblk_get_pos_write(struct nvm_vblk *vblk)
 {
 	return vblk->pos_write;
-}
-
-int nvm_vblk_get_nthreads(struct nvm_vblk *vblk)
-{
-	return vblk->nthreads;
-}
-
-int nvm_vblk_set_nthreads(struct nvm_vblk *vblk, int nthreads)
-{
-	if ((nthreads > vblk->nblks) || (nthreads < 1)) {
-		errno = EINVAL;
-		return -1;
-	}
-
-	vblk->nthreads = nthreads;
-
-	return 0;
 }
 
 void nvm_vblk_pr(struct nvm_vblk *vblk)
