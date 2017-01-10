@@ -113,6 +113,15 @@ void nvm_vblk_free(struct nvm_vblk *vblk)
 	free(vblk);
 }
 
+static inline int _cmd_nblks(int nblks, int cmd_nblks_max)
+{
+	int cmd_nblks = cmd_nblks_max;
+
+	while(nblks % cmd_nblks && cmd_nblks > 1) --cmd_nblks;
+
+	return cmd_nblks;
+}
+
 ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 {
 	size_t nerr = 0;
@@ -120,10 +129,11 @@ ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 	const int PMODE = vblk->dev->pmode;
 
 	const int BLK_NADDRS = geo->nplanes;
-	const int CMD_NBLKS = vblk->dev->erase_naddrs_max / BLK_NADDRS;
+	const int CMD_NBLKS = _cmd_blks(vblk->nblks,
+				vblk->dev->erase_naddrs_max / BLK_NADDRS);
 	const int NTHREADS = vblk->nblks < CMD_NBLKS ? 1 : vblk->nblks / CMD_NBLKS;
 
-	#pragma omp parallel for num_threads(NTHREADS) schedule(static,1) reduction(+:nerr) if (NTHREADS>1)
+	#pragma omp parallel for num_threads(NTHREADS) schedule(static,1) reduction(+:nerr) ordered if (NTHREADS>1)
 	for (int off = 0; off < vblk->nblks; off += CMD_NBLKS) {
 		ssize_t err;
 		struct nvm_ret ret = {};
@@ -140,11 +150,12 @@ ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 			addrs[i].g.pl = i % geo->nplanes;
 		}
 
-                nvm_addr_prn(addrs, naddrs);
-
 		err = nvm_addr_erase(vblk->dev, addrs, naddrs, PMODE, &ret);
 		if (err)
 			++nerr;
+
+		#pragma omp ordered
+		{}
 	}
 
 	if (nerr) {
