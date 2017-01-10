@@ -2,11 +2,21 @@
 from __future__ import print_function
 from subprocess import Popen, PIPE
 import argparse
+import pprint
 import json
 import os
 
-def gen_cli(jsn, tmpl):
+def gen_cli(args):
     """Generate CLI RST"""
+
+    if not args.json:
+        return ""
+
+    if not args.tmpl:
+        return ""
+
+    jsn = json.load(open(args.json))
+    tmpl = open(args.tmpl).read()
 
     for sect in jsn:
         cmd = [sect["name"]]
@@ -26,49 +36,91 @@ def gen_cli(jsn, tmpl):
 
     return tmpl
 
-def gen_capi(jsn, tmpl):
+def gen_capi(args):
     """Generate C API RST as string"""
 
-    for sect in jsn:
+    if not args.header:
+        return ""
+
+    if not args.tmpl:
+        return ""
+
+    tmpl = open(args.tmpl).read()
+
+    cmd = ["ctags", "-x", "--c-kinds=fpsgx", args.header]
+
+    process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+    out, err = process.communicate()
+
+    if process.returncode:
+        return ""
+
+    lib = {}
+    for line in out.split("\n"):
+        parts = (" ".join(line.split())).split(" ")[:2]
+        if len(parts) < 2:
+            continue
+
+        name, kind = parts
+        ns = name.split("_")[1]
+
+        if ns not in lib:
+            lib[ns] = {}
+
+        if kind not in lib[ns]:
+            lib[ns][kind] = []
+
+        lib[ns][kind].append(name)
+
+    for ns in lib:
 
         rst = ""
 
-        for typedef in sect["typedefs"]:
-            rst += "\n".join([
-                typedef,
-                "-" * len(typedef), "",
-                ".. doxygentypedef:: %s" % typedef,
-                "", ""
-            ])
+        if "typedefs" in lib[ns]:
+            for typedef in lib[ns]["typedefs"]:
+                rst += "\n".join([
+                    typedef,
+                    "-" * len(typedef), "",
+                    ".. doxygentypedef:: %s" % typedef,
+                    "", ""
+                ])
 
-        for struct in sect["structs"]:
-            rst += "\n".join([
-                struct,
-                "-" * len(struct), "",
-                ".. doxygenstruct:: %s" % struct,
-                "   :members:",
-                "", ""
-            ])
+        for mangler in ["struct", "externvar"]:
+            if mangler in lib[ns]:
+                for struct in lib[ns][mangler]:
+                    rst += "\n".join([
+                        struct,
+                        "-" * len(struct), "",
+                        ".. doxygenstruct:: %s" % struct,
+                        "   :members:",
+                        "", ""
+                    ])
+        """
+        if "enum" in lib[ns]:
+            for enum in lib[ns]["enum"]:
+                rst += "\n".join([
+                    enum,
+                    "-" * len(enum), "",
+                    ".. doxygenenum:: %s" % enum,
+                    "", ""
+                ])
+        """
 
-        for enum in sect["enums"]:
-            rst += "\n".join([
-                enum,
-                "-" * len(enum), "",
-                ".. doxygenenum:: %s" % enum,
-                "", ""
-            ])
+        if "prototype" in lib[ns]:
+            for func in lib[ns]["prototype"]:
+                rst += "\n".join([
+                    func,
+                    "-" * len(func), "",
+                    ".. doxygenfunction:: %s" % func,
+                    "", ""
+                ])
 
-        for func in sect["functions"]:
-            rst += "\n".join([
-                func,
-                "-" * len(func), "",
-                ".. doxygenfunction:: %s" % func,
-                "", ""
-            ])
-
-        tmpl = tmpl.replace("{{%s}}" % sect["name"].upper(), rst)
+        tmpl = tmpl.replace("{{%s}}" % ns.upper(), rst)
 
     return tmpl
+
+def expand_path(path):
+    return os.path.abspath(os.path.expanduser(os.path.expandvars(path)))
 
 if __name__ == "__main__":
     CMDS = {
@@ -85,9 +137,13 @@ if __name__ == "__main__":
     )
     PRSR.add_argument(
         "--json", "-j",
-        required=True,
         type=str,
-        help="Path to input (e.g. doc/gen/api.json)"
+        help="Path to input (e.g. doc/gen/cli.json)"
+    )
+    PRSR.add_argument(
+        "--header",
+        type=str,
+        help="Path to liblightnvm.h"
     )
     PRSR.add_argument(
         "--tmpl", "-t",
@@ -103,17 +159,20 @@ if __name__ == "__main__":
     )
 
     ARGS = PRSR.parse_args()
-    ARGS.json = os.path.abspath(ARGS.json)
-    ARGS.tmpl = os.path.abspath(ARGS.tmpl)
-    ARGS.rst = os.path.abspath(ARGS.rst)
+    if ARGS.json:
+        ARGS.json = expand_path(ARGS.json)
+    if ARGS.tmpl:
+        ARGS.tmpl = expand_path(ARGS.tmpl)
+    if ARGS.rst:
+        ARGS.rst = expand_path(ARGS.rst)
+    if ARGS.header:
+        ARGS.header = expand_path(ARGS.header)
 
     try:
-        JSON = json.load(open(ARGS.json))
-        TMPL = open(ARGS.tmpl).read()
+        RST = CMDS[ARGS.topic](ARGS)
 
-        RST = CMDS[ARGS.topic](JSON, TMPL)
-
-        with open(ARGS.rst, "w") as RST_FD:
-            RST_FD.write(RST)
+        if RST:
+            with open(ARGS.rst, "w") as RST_FD:
+                RST_FD.write(RST)
     except OSError as EXC:
         print("FAILED: generating RST(%s), err(%s)" % (ARGS.rst, EXC))

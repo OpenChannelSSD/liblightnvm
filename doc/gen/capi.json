@@ -100,9 +100,7 @@
 		"nvm_vblk_get_addrs",
 		"nvm_vblk_get_naddrs",
 		"nvm_vblk_get_pos_read",
-		"nvm_vblk_get_pos_write",
-		"nvm_vblk_get_nthreads",
-		"nvm_vblk_set_nthreads"
+		"nvm_vblk_get_pos_write"
 	]
 }
 ]
