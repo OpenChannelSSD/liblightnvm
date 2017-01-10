@@ -140,7 +140,7 @@ ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 			addrs[i].g.pl = i % geo->nplanes;
 		}
 
-		nvm_addrs_pr(addrs, naddrs);
+                nvm_addr_prn(addrs, naddrs);
 
 		err = nvm_addr_erase(vblk->dev, addrs, naddrs, PMODE, &ret);
 		if (err)
@@ -378,6 +378,7 @@ void nvm_vblk_pr(struct nvm_vblk *vblk)
 	printf("vblk {\n");
 	printf(" nbytes(%lub:%luMb),\n", vblk->nbytes, vblk->nbytes >> 20);
 	printf("}\n");
-	printf("vblk-"); nvm_addrs_pr(vblk->blks, vblk->nblks);
+	printf("vblk-");
+        nvm_addr_prn(vblk->blks, vblk->nblks);
 }
 

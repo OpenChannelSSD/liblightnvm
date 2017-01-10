@@ -580,7 +580,7 @@ void nvm_addr_pr(struct nvm_addr addr);
 /**
  * Prints a humanly readable representation of the given list of addresses
  */
-void nvm_addrs_pr(struct nvm_addr addr[], unsigned int naddrs);
+void nvm_addr_prn(struct nvm_addr *addr, unsigned int naddrs);
 
 /**
  * Allocate a virtual block, spanning a given set of physical blocks
