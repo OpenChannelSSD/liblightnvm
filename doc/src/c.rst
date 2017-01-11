@@ -51,10 +51,25 @@ nvm_dev
 .. doxygenstruct:: nvm_dev
    :members:
 
+nvm_dev_open
+------------
+
+.. doxygenfunction:: nvm_dev_open
+
 nvm_dev_close
 -------------
 
 .. doxygenfunction:: nvm_dev_close
+
+nvm_dev_pr
+----------
+
+.. doxygenfunction:: nvm_dev_pr
+
+nvm_dev_get_bbts_cached
+-----------------------
+
+.. doxygenfunction:: nvm_dev_get_bbts_cached
 
 nvm_dev_get_erase_naddrs_max
 ----------------------------
@@ -81,15 +96,10 @@ nvm_dev_get_write_naddrs_max
 
 .. doxygenfunction:: nvm_dev_get_write_naddrs_max
 
-nvm_dev_open
-------------
+nvm_dev_set_bbts_cached
+-----------------------
 
-.. doxygenfunction:: nvm_dev_open
-
-nvm_dev_pr
-----------
-
-.. doxygenfunction:: nvm_dev_pr
+.. doxygenfunction:: nvm_dev_set_bbts_cached
 
 nvm_dev_set_erase_naddrs_max
 ----------------------------
@@ -117,30 +127,45 @@ nvm_bbt
 .. doxygenstruct:: nvm_bbt
    :members:
 
-nvm_bbt_free
-------------
-
-.. doxygenfunction:: nvm_bbt_free
-
 nvm_bbt_get
 -----------
 
 .. doxygenfunction:: nvm_bbt_get
+
+nvm_bbt_set
+-----------
+
+.. doxygenfunction:: nvm_bbt_set
 
 nvm_bbt_mark
 ------------
 
 .. doxygenfunction:: nvm_bbt_mark
 
+nvm_bbt_flush
+-------------
+
+.. doxygenfunction:: nvm_bbt_flush
+
+nvm_bbt_flush_all
+-----------------
+
+.. doxygenfunction:: nvm_bbt_flush_all
+
+nvm_bbt_alloc_cp
+----------------
+
+.. doxygenfunction:: nvm_bbt_alloc_cp
+
+nvm_bbt_free
+------------
+
+.. doxygenfunction:: nvm_bbt_free
+
 nvm_bbt_pr
 ----------
 
 .. doxygenfunction:: nvm_bbt_pr
-
-nvm_bbt_set
------------
-
-.. doxygenfunction:: nvm_bbt_set
 
 nvm_bbt_state_pr
 ----------------
@@ -158,6 +183,21 @@ nvm_addr
 .. doxygenstruct:: nvm_addr
    :members:
 
+nvm_addr_erase
+--------------
+
+.. doxygenfunction:: nvm_addr_erase
+
+nvm_addr_read
+-------------
+
+.. doxygenfunction:: nvm_addr_read
+
+nvm_addr_write
+--------------
+
+.. doxygenfunction:: nvm_addr_write
+
 nvm_addr_check
 --------------
 
@@ -167,11 +207,6 @@ nvm_addr_dev2gen
 ----------------
 
 .. doxygenfunction:: nvm_addr_dev2gen
-
-nvm_addr_erase
---------------
-
-.. doxygenfunction:: nvm_addr_erase
 
 nvm_addr_gen2dev
 ----------------
@@ -208,16 +243,6 @@ nvm_addr_prn
 
 .. doxygenfunction:: nvm_addr_prn
 
-nvm_addr_read
--------------
-
-.. doxygenfunction:: nvm_addr_read
-
-nvm_addr_write
---------------
-
-.. doxygenfunction:: nvm_addr_write
-
 
 
 Logical Addressing
@@ -244,6 +269,36 @@ nvm_vblk
 .. doxygenstruct:: nvm_vblk
    :members:
 
+nvm_vblk_erase
+--------------
+
+.. doxygenfunction:: nvm_vblk_erase
+
+nvm_vblk_pread
+--------------
+
+.. doxygenfunction:: nvm_vblk_pread
+
+nvm_vblk_read
+-------------
+
+.. doxygenfunction:: nvm_vblk_read
+
+nvm_vblk_pwrite
+---------------
+
+.. doxygenfunction:: nvm_vblk_pwrite
+
+nvm_vblk_write
+--------------
+
+.. doxygenfunction:: nvm_vblk_write
+
+nvm_vblk_pad
+------------
+
+.. doxygenfunction:: nvm_vblk_pad
+
 nvm_vblk_alloc
 --------------
 
@@ -254,15 +309,15 @@ nvm_vblk_alloc_line
 
 .. doxygenfunction:: nvm_vblk_alloc_line
 
-nvm_vblk_erase
---------------
-
-.. doxygenfunction:: nvm_vblk_erase
-
 nvm_vblk_free
 -------------
 
 .. doxygenfunction:: nvm_vblk_free
+
+nvm_vblk_pr
+-----------
+
+.. doxygenfunction:: nvm_vblk_pr
 
 nvm_vblk_get_addrs
 ------------------
@@ -293,36 +348,6 @@ nvm_vblk_get_pos_write
 ----------------------
 
 .. doxygenfunction:: nvm_vblk_get_pos_write
-
-nvm_vblk_pad
-------------
-
-.. doxygenfunction:: nvm_vblk_pad
-
-nvm_vblk_pr
------------
-
-.. doxygenfunction:: nvm_vblk_pr
-
-nvm_vblk_pread
---------------
-
-.. doxygenfunction:: nvm_vblk_pread
-
-nvm_vblk_pwrite
----------------
-
-.. doxygenfunction:: nvm_vblk_pwrite
-
-nvm_vblk_read
--------------
-
-.. doxygenfunction:: nvm_vblk_read
-
-nvm_vblk_write
---------------
-
-.. doxygenfunction:: nvm_vblk_write
 
 
 

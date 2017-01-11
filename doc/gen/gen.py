@@ -5,6 +5,7 @@ import argparse
 import pprint
 import json
 import os
+import re
 
 def gen_cli(args):
     """Generate CLI RST"""
@@ -73,6 +74,29 @@ def gen_capi(args):
         lib[ns][kind].append(name)
 
     for ns in lib:
+
+        if "prototype" in lib[ns]:
+            ordering = [
+                "bbt_get", "bbt_set", "bbt_mark", "bbt_flush",
+                "addr_erase", "addr_read", "addr_write", "addr_check",
+                "addr_.*2",
+                "lba_p?read", "lba_p?write",
+                "vblk_erase", "vblk_p?read", "vblk_p?write", "vblk_pad",
+                "_alloc", "_fill", "_free", "_pr",
+                "_get_", "_set_"
+            ]
+
+            ordered = []
+            for order in ordering:
+                for func in lib[ns]["prototype"]:
+                    if re.search(order, func):
+                        if func not in ordered:
+                            ordered.append(func)
+
+            lib[ns]["prototype"] = list(
+                set(lib[ns]["prototype"]) -
+                set(ordered)
+            ) + ordered
 
         rst = ""
 
