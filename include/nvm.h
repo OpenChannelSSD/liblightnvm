@@ -214,6 +214,9 @@ struct nvm_dev {
 	int erase_naddrs_max;		///< Maximum # of address for erase
 	int read_naddrs_max;		///< Maximum # of address for read
 	int write_naddrs_max;		///< Maximum # of address for write
+	int bbts_cached;		///< Whether to cache bbts
+	size_t nbbts;			///< Number of entries in cache
+	struct nvm_bbt **bbts;		///< Cache of bad-block-tables
 };
 
 struct nvm_vblk {

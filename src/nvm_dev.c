@@ -367,12 +367,18 @@ struct nvm_dev *nvm_dev_new(void)
 
 void nvm_dev_pr(struct nvm_dev *dev)
 {
+	if (!dev) {
+		printf("dev { NULL }\n");
+		return;
+	}
+
 	printf("dev {\n path(%s), name(%s), fd(%d), ssw(%lu), pmode(%d),\n",
 	       dev->path, dev->name, dev->fd, dev->ssw, dev->pmode);
-	printf(" erase_naddrs_max(%d), read_naddrs_max(%d), write_naddrs_max(%d)\n}\n",
+	printf(" erase_naddrs_max(%d), read_naddrs_max(%d), write_naddrs_max(%d),\n",
 	       dev->erase_naddrs_max,
 	       dev->read_naddrs_max,
 	       dev->write_naddrs_max);
+	printf(" bbts_cached(%d)\n}\n", dev->bbts_cached);
 	printf("dev-"); nvm_geo_pr(&dev->geo);
 	printf("dev-"); nvm_addr_fmt_pr(&dev->fmt);
 	printf("dev-"); nvm_addr_fmt_mask_pr(&dev->mask);
@@ -468,6 +474,27 @@ int nvm_dev_set_erase_naddrs_max(struct nvm_dev *dev, int naddrs)
 	return 0;
 }
 
+int nvm_dev_get_bbts_cached(struct nvm_dev *dev)
+{
+	return dev->bbts_cached;
+}
+
+int nvm_dev_set_bbts_cached(struct nvm_dev *dev, int bbts_cached)
+{
+	switch(bbts_cached) {
+	case 0:
+	case 1:
+		break;
+	default:
+		errno = EINVAL;
+		return -1;
+	}
+
+	dev->bbts_cached = bbts_cached;
+
+	return 0;
+}
+
 int nvm_dev_set_read_naddrs_max(struct nvm_dev *dev, int naddrs)
 {
 	if (naddrs > NVM_NADDR_MAX) {
@@ -546,15 +573,24 @@ struct nvm_dev *nvm_dev_open(const char *dev_path)
 		return NULL;
 	}
 
+	dev->bbts_cached = 0;
+	dev->nbbts = dev->geo.nchannels * dev->geo.nluns;
+	dev->bbts = malloc(sizeof(*dev->bbts) * dev->nbbts);
+	for (size_t i = 0; i < dev->nbbts; ++i)
+		dev->bbts[i] = NULL;
+
 	return dev;
 }
 
 void nvm_dev_close(struct nvm_dev *dev)
 {
-	if (dev && !dev->fd)
-		close(dev->fd);
+	if (!dev)
+		return;
+
+	nvm_bbt_flush_all(dev, NULL);
+	free(dev->bbts);
+
+	close(dev->fd);
 	free(dev);
 }
-
-
 

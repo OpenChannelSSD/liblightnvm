@@ -37,6 +37,18 @@
 #include <nvm.h>
 #include <nvm_debug.h>
 
+static inline int _bbt_idx(const struct nvm_dev *dev,
+			   const struct nvm_addr addr)
+{
+	return addr.g.ch * dev->geo.nluns + addr.g.lun;
+}
+
+static inline int _blk_idx(const struct nvm_dev *dev,
+		           const struct nvm_addr addr)
+{
+	return addr.g.blk * dev->geo.nplanes + addr.g.pl;
+}
+
 /**
  * Hack'n'slashed in here...
  */
@@ -56,6 +68,11 @@ struct krnl_bbt {
 
 void krnl_bbt_pr(struct krnl_bbt *bbt)
 {
+	if (!bbt) {
+		printf("krnl_bbt(NULL)\n");
+		return;
+	}
+
 	printf("tblkid {%c, %c, %c, %c}\n",
 	       bbt->tblid[0], bbt->tblid[1], bbt->tblid[2], bbt->tblid[3]);
 	printf("verid(%u)\n", bbt->verid);
@@ -78,124 +95,61 @@ void krnl_bbt_pr(struct krnl_bbt *bbt)
 	printf("}\n");
 }
 
-struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
-			    struct nvm_ret *ret)
+/**
+ * Retrieve bad-block-table from kernel and update the blk-list of the given
+ * bbt
+ *
+ * @returns 0 on success. -1 on error and errno set to indicate the error
+ */
+static inline int krnl_bbt_get(struct nvm_bbt *bbt, struct nvm_ret *ret)
 {
 	struct nvm_passthru_vio ctl;
-	struct nvm_bbt *bbt;
 	struct krnl_bbt *k_bbt;
 	size_t krnl_bbt_sz;
 	int err;
 
-	if (nvm_addr_check(addr, &dev->geo)) {
-		errno = EINVAL;
-		return NULL;
-	}
-
-	bbt = malloc(sizeof(*bbt));
-	if (!bbt) {
-		errno = ENOMEM;
-		return NULL;
-	}
-
-	bbt->dev = dev;
-	bbt->addr = addr;
-	bbt->nblks = dev->geo.nblocks * dev->geo.nplanes;
-	bbt->blks = malloc(sizeof(*bbt->blks) * bbt->nblks);
-	if (!bbt->blks) {
-		free(bbt);
-		errno = ENOMEM;
-		return NULL;
-	}
-
 	krnl_bbt_sz = sizeof(*k_bbt) + sizeof(*(k_bbt->blk)) * bbt->nblks;
-	k_bbt = nvm_buf_alloc(&dev->geo, krnl_bbt_sz);
+	k_bbt = nvm_buf_alloc(&bbt->dev->geo, krnl_bbt_sz);
 	if (!k_bbt) {
-		free(bbt->blks);
-		free(bbt);
 		errno = ENOMEM;
-		return NULL;
+		return -1;
 	}
 
 	memset(&ctl, 0, sizeof(ctl));	// Setup the IOCTL
 	ctl.opcode = S12_OPC_GET_BBT;
 	ctl.addr = (uint64_t)k_bbt;
 	ctl.data_len = krnl_bbt_sz;
-	ctl.ppa_list = nvm_addr_gen2dev(dev, addr);
+	ctl.ppa_list = nvm_addr_gen2dev(bbt->dev, bbt->addr);
 	ctl.nppas = 0;
 
-	err = ioctl(dev->fd, NVME_NVM_IOCTL_ADMIN_VIO, &ctl);
+	err = ioctl(bbt->dev->fd, NVME_NVM_IOCTL_ADMIN_VIO, &ctl);
 	if (ret) {			// Fill return-codes when available
 		ret->result = ctl.result;
 		ret->status = ctl.status;
 	}
 	if (err || (k_bbt->tblks != bbt->nblks)) {
 		errno = EIO;
-		free(bbt->blks);
-		free(bbt);
-		return NULL;
+		free(k_bbt);
+		return -1;
 	}
 	if (!(k_bbt->tblid[0] == 'B' && k_bbt->tblid[1] == 'B' &&
 	      k_bbt->tblid[2] == 'L' && k_bbt->tblid[3] == 'T')) {
 		errno = EIO;
-		free(bbt->blks);
-		free(bbt);
-		return NULL;
+		free(k_bbt);
+		return -1;
 	}
 
 	for (int i = 0; i < bbt->nblks; ++i) {
 		bbt->blks[i] = k_bbt->blk[i];
 	}
 
-	return bbt;
+	free(k_bbt);
+
+	return 0;
 }
 
-int nvm_bbt_set(struct nvm_dev *dev, struct nvm_bbt *bbt,
-		struct nvm_ret *ret)
-{
-	struct nvm_bbt *bbt_old;
-	int nupdates = 0;
-
-	if (!bbt) {
-		errno = EINVAL;
-		return -1;
-	}
-	if (nvm_addr_check(bbt->addr, &dev->geo)) {
-		errno = EINVAL;
-		return -1;
-	}
-
-	bbt_old = nvm_bbt_get(dev, bbt->addr, ret);
-	if (!bbt_old)
-		return -1;			// Propagate `errno`
-
-	if (bbt->nblks != bbt_old->nblks) {
-		errno = EINVAL;
-		return -1;
-	}
-	
-	for (int i = 0; i < bbt->nblks; ++i) {	// Set only those which changed
-		if (bbt->blks[i] == bbt_old->blks[i])
-			continue;
-
-		struct nvm_addr addr;	// Construct block address
-
-		addr.ppa = bbt->addr.ppa;
-		addr.g.blk = i / dev->geo.nplanes;
-		addr.g.pl = i % dev->geo.nplanes;
-
-		if (nvm_bbt_mark(dev, &addr, 1, bbt->blks[i], ret)) {
-			return -1;	// Propagate `errno`
-		}
-
-		++nupdates;
-	}
-
-	return nupdates;
-}
-
-int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		 uint16_t flags, struct nvm_ret *ret)
+static inline int krnl_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[],
+				int naddrs, uint16_t flags, struct nvm_ret *ret)
 {
 	struct nvm_passthru_vio ctl;
 	uint64_t dev_addrs[naddrs];
@@ -245,6 +199,211 @@ int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 	return 0;
 }
 
+int nvm_bbt_flush(struct nvm_dev *dev, struct nvm_addr addr,
+		  struct nvm_ret *ret)
+{
+	const struct nvm_bbt *bbt;
+	struct nvm_bbt *krnl;
+	size_t bbt_idx;
+	int err;
+
+	if ((!dev) || (nvm_addr_check(addr, &dev->geo))) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	bbt_idx = _bbt_idx(dev, addr);
+
+	bbt = dev->bbts[bbt_idx];
+	if (!bbt)
+		return 0;			// Nothing to flush
+
+	krnl = nvm_bbt_alloc_cp(bbt);
+	if (!krnl)
+		return -1;			// Propagate `errno`
+
+	err = krnl_bbt_get(krnl, ret);
+	if (err)
+		return -1;			// Propagate `errno`
+
+	if (bbt->nblks != krnl->nblks) {
+		errno = EINVAL;
+		return -1;
+	}
+	
+	for (int i = 0; i < bbt->nblks; ++i) {	// Update on device
+		struct nvm_addr blk_addr;
+
+		if (bbt->blks[i] == krnl->blks[i])
+			continue;		// Ignore same state
+
+		// Convert "i -> (blk, pl)" and submit changed state
+		blk_addr.ppa = bbt->addr.ppa;
+		blk_addr.g.blk = i / dev->geo.nplanes;
+		blk_addr.g.pl = i % dev->geo.nplanes;
+
+		if (krnl_bbt_mark(dev, &blk_addr, 1, bbt->blks[i], ret))
+			return -1;		// Propagate `errno`
+	}
+
+	/* Deallocate the bbt entry */
+	nvm_bbt_free(dev->bbts[bbt_idx]);
+	dev->bbts[bbt_idx] = NULL;
+
+	return 0;
+}
+
+int nvm_bbt_flush_all(struct nvm_dev *dev, struct nvm_ret *ret)
+{
+	for (size_t i = 0; i < dev->nbbts; ++i) {
+		struct nvm_addr addr;
+		int err;
+
+		addr.ppa = 0;
+		addr.g.ch = i % dev->geo.nchannels;
+		addr.g.lun = (i / dev->geo.nchannels) % dev->geo.nluns;
+
+		err = nvm_bbt_flush(dev, addr, ret);
+		if (err)
+			return err;
+	}
+
+	return 0;
+}
+
+const struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
+				  struct nvm_ret *ret)
+{
+	size_t bbt_idx;
+	int err;
+
+	if ((!dev) || (nvm_addr_check(addr, &dev->geo))) {
+		errno = EINVAL;
+		return NULL;
+	}
+	
+	bbt_idx = _bbt_idx(dev, addr);
+
+	/* Return bbt from cache */
+	if (dev->bbts_cached && dev->bbts[bbt_idx])
+		return dev->bbts[bbt_idx];
+
+	/* Allocate bbt entry in managed memory area */
+	if (!dev->bbts[bbt_idx]) {
+		struct nvm_bbt *bbt;
+
+		bbt = malloc(sizeof(*bbt));
+		if (!bbt) {
+			errno = ENOMEM;
+			return NULL;
+		}
+
+		bbt->dev = dev;
+		bbt->addr = addr;
+		bbt->nblks = dev->geo.nblocks * dev->geo.nplanes;
+		bbt->blks = malloc(sizeof(*bbt->blks) * bbt->nblks);
+		if (!bbt->blks) {
+			free(bbt);
+			errno = ENOMEM;
+			return NULL;
+		}
+
+		dev->bbts[bbt_idx] = bbt;
+	}
+
+	/* Update bbt entry in managed memory area with bbt from device */
+	err = krnl_bbt_get(dev->bbts[bbt_idx], ret);
+	if (err) {
+		free(dev->bbts[bbt_idx]->blks);
+		free(dev->bbts[bbt_idx]);
+		dev->bbts[bbt_idx] = NULL;
+
+		return NULL;
+	}
+
+	return dev->bbts[bbt_idx];
+}
+
+int nvm_bbt_set(struct nvm_dev *dev, const struct nvm_bbt *bbt,
+		struct nvm_ret *ret)
+{
+	struct nvm_addr addr = bbt->addr;
+	size_t bbt_idx;
+
+	if ((!dev) || (!bbt) || (nvm_addr_check(bbt->addr, &dev->geo))) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	/* Refresh bbt entry in managed memory */
+	if (!nvm_bbt_get(dev, addr, ret))
+		return -1;
+
+	/* Update bbt entry in managed memory with given bbt */
+	bbt_idx = _bbt_idx(dev, addr);
+	for (int i = 0; i < bbt->nblks; ++i)
+		dev->bbts[bbt_idx]->blks[i] = bbt->blks[i];
+
+	/* Flush bbt entry in managed memory to device */
+	if (!dev->bbts_cached)
+		return nvm_bbt_flush(dev, addr, ret);
+
+	return 0;
+}
+
+int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+		 uint16_t flags, struct nvm_ret *ret)
+{
+	if (!dev->bbts_cached)
+		return krnl_bbt_mark(dev, addrs, naddrs, flags, ret);
+
+	/* Update bbt entries in managed memory */
+	for (int i = 0; i < naddrs; ++i) {
+		struct nvm_addr addr = addrs[i];
+
+		size_t bbt_idx = _bbt_idx(dev, addr);
+		size_t blk_idx = _blk_idx(dev, addr);
+
+		if (!nvm_bbt_get(dev, addr, ret))
+			return -1;
+
+		dev->bbts[bbt_idx]->blks[blk_idx] = flags;
+	}
+
+	return 0;
+}
+
+struct nvm_bbt *nvm_bbt_alloc_cp(const struct nvm_bbt *bbt)
+{
+	struct nvm_bbt *new;
+
+	if ((!bbt) || (!bbt->blks)) {
+		errno = EINVAL;
+		return NULL;
+	}
+
+	new = malloc(sizeof(*new));
+	if (!new) {
+		errno = ENOMEM;
+		return NULL;
+	}
+
+	new->blks = malloc(sizeof(*(new->blks)) * bbt->nblks);
+	if (!new->nblks) {
+		free(new);
+		errno = ENOMEM;
+		return NULL;
+	}
+
+	new->dev = bbt->dev;
+	new->addr = bbt->addr;
+	new->nblks = bbt->nblks;
+	for (uint64_t i = 0; i < bbt->nblks; ++i)
+		new->blks[i] = bbt->blks[i];
+
+	return new;
+}
+
 void nvm_bbt_free(struct nvm_bbt *bbt)
 {
 	if (!bbt)
@@ -254,9 +413,14 @@ void nvm_bbt_free(struct nvm_bbt *bbt)
 	free(bbt);
 }
 
-void nvm_bbt_pr(struct nvm_bbt *bbt)
+void nvm_bbt_pr(const struct nvm_bbt *bbt)
 {
 	int nnotfree = 0;
+
+	if (!bbt) {
+		printf("bbt { NULL }\n");
+		return;
+	}
 
 	printf("bbt {\n");
 	printf("  addr"); nvm_addr_pr(bbt->addr);

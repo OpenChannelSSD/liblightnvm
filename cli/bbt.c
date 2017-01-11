@@ -10,7 +10,7 @@
 
 int get(NVM_CLI_CMD_ARGS *args, int flags)
 {
-	struct nvm_bbt* bbt;
+	const struct nvm_bbt* bbt;
 	struct nvm_ret ret = {0,0};
 
 	printf("** nvm_bbt_get(...):\n");
@@ -23,7 +23,6 @@ int get(NVM_CLI_CMD_ARGS *args, int flags)
 	}
 
 	nvm_bbt_pr(bbt);
-	nvm_bbt_free(bbt);
 
 	return 0;
 }
@@ -36,7 +35,8 @@ int set(NVM_CLI_CMD_ARGS *args, int flags)
 
 	printf("** nvm_bbt_set(...):\n");
 
-	bbt = nvm_bbt_get(args->dev, args->addrs[0], &ret);	// Get bbt state
+	// Get bbt state
+	bbt = nvm_bbt_alloc_cp(nvm_bbt_get(args->dev, args->addrs[0], &ret));
 	if (!bbt) {
 		perror("nvm_bbt_get");
 		nvm_ret_pr(&ret);

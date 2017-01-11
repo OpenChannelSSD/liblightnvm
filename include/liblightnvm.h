@@ -239,13 +239,13 @@ void nvm_ret_pr(struct nvm_ret *ret);
  * @param dev The device on which to retrieve a bad-block-table from
  * @param addr Address of the LUN to retrieve bad-block-table for
  * @param ret Pointer to structure in which to store lower-level status and
- *            result.
+ *            result
  * @returns On success, a pointer to the bad-block-table is returned. On error,
  * NULL is returned, `errno` set to indicate the error and ret filled with
  * lower-level result codes
  */
-struct nvm_bbt* nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
-			    struct nvm_ret *ret);
+const struct nvm_bbt* nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
+				  struct nvm_ret *ret);
 
 /**
  * Updates the bad-block-table on given device using the provided bbt
@@ -253,12 +253,12 @@ struct nvm_bbt* nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
  * @param dev The device on which to update a bad-block-table
  * @param bbt The bbt to write to device
  * @param ret Pointer to structure in which to store lower-level status and
- *            result.
- * @returns On success, the number of updated entries is returned. On error, -1
- * is returned, `errno` set to indicate the error and ret filled with with
- * lower-level result codes
+ *            result
+ * @returns On success, 0 is returned. On error, -1 is returned, `errno` set to
+ * indicate the error and ret filled with lower-level result codes
  */
-int nvm_bbt_set(struct nvm_dev *dev, struct nvm_bbt* bbt, struct nvm_ret *ret);
+int nvm_bbt_set(struct nvm_dev *dev, const struct nvm_bbt* bbt,
+		struct nvm_ret *ret);
 
 /**
  * Mark addresses good, bad, or host-bad.
@@ -270,7 +270,7 @@ int nvm_bbt_set(struct nvm_dev *dev, struct nvm_bbt* bbt, struct nvm_ret *ret);
  *
  * @see `enum nvm_bbt_state`
  *
- * @param dev Handle to the device on which to mark
+ * @param dev Device handle
  * @param addrs Array of memory address
  * @param naddrs Length of memory address array
  * @param flags 0x0 = GOOD, 0x1 = BAD, 0x2 = GROWN_BAD, as well as access mode
@@ -281,6 +281,40 @@ int nvm_bbt_set(struct nvm_dev *dev, struct nvm_bbt* bbt, struct nvm_ret *ret);
  */
 int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		 uint16_t flags, struct nvm_ret *ret);
+
+/**
+ * Persist the bad-block-table at `addr` on device and deallocate managed memory
+ * for the given bad-block-table describing the LUN at `addr`.
+ *
+ * @param dev Device handle
+ * @param addr Address of the LUN to flush bad-block-table for
+ * @param ret Pointer to structure in which to store lower-level status and
+ *            result
+ * @returns On success, 0 is returned. On error, -1 is returned, `errno` set to
+ * indicate the error and ret filled with lower-level result codes
+ */
+int nvm_bbt_flush(struct nvm_dev *dev, struct nvm_addr addr,
+		  struct nvm_ret *ret);
+
+/**
+ * Persist all bad-block-tables associated with the given `dev`
+ *
+ * @param dev Device handle
+ * @param ret Pointer to structure in which to store lower-level status and
+ *            result
+ * @returns On success, 0 is returned. On error, -1 is returned, `errno` set to
+ * indicate the error and ret filled with lower-level result codes
+ */
+int nvm_bbt_flush_all(struct nvm_dev *dev, struct nvm_ret *ret);
+
+/**
+ * Allocate a copy of the given bad-block-table
+ *
+ * @param bbt Pointer to the bad-block-table to copy
+ * @returns On success, a pointer to a write-able copy of the given bbt is
+ * returned. On error, NULL is returned and errno set to indicate the error
+ */
+struct nvm_bbt *nvm_bbt_alloc_cp(const struct nvm_bbt *bbt);
 
 /**
  * Destroys a given bad-block-table
@@ -294,7 +328,7 @@ void nvm_bbt_free(struct nvm_bbt *bbt);
  *
  * @param bbt The bad-block-table to print
  */
-void nvm_bbt_pr(struct nvm_bbt *bbt);
+void nvm_bbt_pr(const struct nvm_bbt *bbt);
 
 
 /**
@@ -347,6 +381,17 @@ int nvm_dev_get_pmode(struct nvm_dev *dev);
 int nvm_dev_get_erase_naddrs_max(struct nvm_dev *dev);
 
 /**
+ * Returns whether caching is enabled for bad-block-tables on the device.
+ *
+ * @note
+ * 0 = cache disabled
+ * 1 = cache enabled
+ *
+ * @param dev The device to obtain maximum for
+ */
+int nvm_dev_get_bbts_cached(struct nvm_dev *dev);
+
+/**
  * Set the maximum number of addresses to use for reads, that is, when invoking
  * nvm_addr_read
  *
@@ -372,6 +417,19 @@ int nvm_dev_get_write_naddrs_max(struct nvm_dev *dev);
  * @returns 0 on success, -1 on error and errno set to indicate the error.
  */
 int nvm_dev_set_erase_naddrs_max(struct nvm_dev *dev, int naddrs);
+
+/**
+ * Sets whether retrieval and changes to bad-block-tables should be cached.
+ *
+ * @note
+ * 0 = cache disabled
+ * 1 = cache enabled
+ *
+ * @param dev The device to bad-block-table caching for
+ *
+ * @returns 0 on success, -1 on error and errno set to indicate the error.
+ */
+int nvm_dev_set_bbts_cached(struct nvm_dev *dev, int bbts_cached);
 
 /**
  * Set the maximum number of addresses to use for erases, that is, when invoking
