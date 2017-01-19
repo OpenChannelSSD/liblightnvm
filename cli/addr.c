@@ -119,6 +119,7 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 			free(buf);
 			return ENOMEM;
 		}
+		memset(meta, 0, meta_tbytes);
 	}
 
 	printf("** nvm_addr_read(...) : pmode(0x%x)\n", PMODE);
@@ -138,7 +139,7 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 		nvm_buf_pr(buf, buf_nbytes);
 	}
 	if (meta && getenv("NVM_CLI_META_PR")) {
-		printf("** Read meta:\n");
+		printf("** Read meta_tbytes(%d) meta:\n", meta_tbytes);
 		nvm_buf_pr(meta, meta_tbytes);
 	}
 

@@ -65,6 +65,9 @@ void _test_1ADDR(int use_meta)
 	int pmode = NVM_FLAG_PMODE_SNGL;
 	int failed = 1;
 
+	printf("INFO: 1 naddrs(%d), use_meta(%d) on ", naddrs, use_meta);
+	nvm_addr_pr(blk_addr);
+
 	buf_w_nbytes = naddrs * geo->sector_nbytes;
 	meta_w_nbytes = naddrs * geo->meta_nbytes;
 	buf_r_nbytes = geo->sector_nbytes;
@@ -106,7 +109,7 @@ void _test_1ADDR(int use_meta)
 		goto exit_naddr;
 	}
 
-	meta_r = nvm_buf_alloc(geo, buf_r_nbytes);
+	meta_r = nvm_buf_alloc(geo, meta_r_nbytes);
 	if (!meta_r) {
 		CU_FAIL("nvm_buf_alloc");
 		goto exit_naddr;
@@ -157,7 +160,8 @@ void _test_1ADDR(int use_meta)
 				addr.g.sec = sec;
 
 				memset(buf_r, 0, buf_r_nbytes);
-				memset(meta_r, 0, meta_r_nbytes);
+				if (use_meta)
+					memset(meta_r, 0, meta_r_nbytes);
 
 				res = nvm_addr_read(dev, &addr, 1, buf_r,
 						    use_meta ? meta_r : NULL, pmode, &ret);
@@ -197,11 +201,13 @@ exit_naddr:
 
 void test_1ADDR_META0_SNGL(void)
 {
+	++blk_addr.g.blk;
 	_test_1ADDR(0);
 }
 
 void test_1ADDR_META1_SNGL(void)
 {
+	++blk_addr.g.blk;
 	_test_1ADDR(1);
 }
 
@@ -214,6 +220,9 @@ void _test_NADDR(int use_meta, int pmode)
 	ssize_t res;
 	size_t buf_nbytes, meta_nbytes;
 	int failed = 1;
+
+	printf("INFO: N naddrs(%d), use_meta(%d) on ", naddrs, use_meta);
+	nvm_addr_pr(blk_addr);
 
 	buf_nbytes = naddrs * geo->sector_nbytes;
 	meta_nbytes = naddrs * geo->meta_nbytes;
@@ -420,14 +429,14 @@ int main(int argc, char **argv)
 	}
 
 	if (
-	(NULL == CU_add_test(pSuite, "NADDR META0 QUAD", test_NADDR_META0_QUAD)) ||
 	(NULL == CU_add_test(pSuite, "NADDR META1 QUAD", test_NADDR_META1_QUAD)) ||
-	(NULL == CU_add_test(pSuite, "NADDR META0 DUAL", test_NADDR_META0_DUAL)) ||
 	(NULL == CU_add_test(pSuite, "NADDR META1 DUAL", test_NADDR_META1_DUAL)) ||
-	(NULL == CU_add_test(pSuite, "NADDR META0 SNGL", test_NADDR_META0_SNGL)) ||
 	(NULL == CU_add_test(pSuite, "NADDR META1 SNGL", test_NADDR_META1_SNGL)) ||
-	(NULL == CU_add_test(pSuite, "1ADDR META0 SNGL", test_1ADDR_META0_SNGL)) ||
 	(NULL == CU_add_test(pSuite, "1ADDR META1 SNGL", test_1ADDR_META1_SNGL)) ||
+	(NULL == CU_add_test(pSuite, "NADDR META0 QUAD", test_NADDR_META0_QUAD)) ||
+	(NULL == CU_add_test(pSuite, "NADDR META0 DUAL", test_NADDR_META0_DUAL)) ||
+	(NULL == CU_add_test(pSuite, "NADDR META0 SNGL", test_NADDR_META0_SNGL)) ||
+	(NULL == CU_add_test(pSuite, "1ADDR META0 SNGL", test_1ADDR_META0_SNGL)) ||
 	0)
 	{
 		CU_cleanup_registry();
