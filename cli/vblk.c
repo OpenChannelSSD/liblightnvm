@@ -499,6 +499,7 @@ int main(int argc, char **argv)
 	} else {
 		nvm_cli_usage(argv[0], "NVM Virtual Block (nvm_vblk_*)", cmds,
 			      ncmds);
+		ret = 1;
 	}
 	nvm_cli_teardown(cmd);
 

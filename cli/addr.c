@@ -251,6 +251,7 @@ int main(int argc, char **argv)
 		ret = cmd->func(&cmd->args, cmd->flags);
 	} else {
 		nvm_cli_usage(argv[0], "NVM address (nvm_addr_*)", cmds, ncmds);
+		ret = 1;
 	}
 	
 	nvm_cli_teardown(cmd);
