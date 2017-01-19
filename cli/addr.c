@@ -127,6 +127,11 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 		nvm_addr_pr(args->addrs[i]);
 	}
 
+	if (meta && getenv("NVM_CLI_META_PR")) {
+		printf("** Before read meta_tbytes(%d) meta:\n", meta_tbytes);
+		nvm_buf_pr(meta, meta_tbytes);
+	}
+
 	err = nvm_addr_read(args->dev, args->addrs, args->naddrs, buf, meta,
 			    PMODE, NULL);
 	if (err) {
@@ -139,7 +144,7 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 		nvm_buf_pr(buf, buf_nbytes);
 	}
 	if (meta && getenv("NVM_CLI_META_PR")) {
-		printf("** Read meta_tbytes(%d) meta:\n", meta_tbytes);
+		printf("** After read meta_tbytes(%d) meta:\n", meta_tbytes);
 		nvm_buf_pr(meta, meta_tbytes);
 	}
 
