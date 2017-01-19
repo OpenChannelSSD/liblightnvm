@@ -41,7 +41,7 @@ int nvm_cli_pmode(struct nvm_dev *dev)
 	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
 
 	char *pmode_env = getenv("NVM_CLI_PMODE");		// Check ENV
-	if (getenv("NVM_CLI_PMODE")) {
+	if (pmode_env) {
 		switch(atoi(pmode_env)) {
 			case 4:
 				if (geo->nplanes < 4) {	// Verify
