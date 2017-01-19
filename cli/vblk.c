@@ -112,6 +112,7 @@ int write(NVM_CLI_CMD_ARGS *args, int flags)
 			perror("nvm_buf_alloc");
 			return errno;
 		}
+		nvm_buf_fill(buf, nbytes);
 		nvm_timer_stop();
 		nvm_timer_pr("nvm_buf_alloc");
 
