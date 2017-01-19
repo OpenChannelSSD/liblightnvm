@@ -197,6 +197,9 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf, size_t count,
 
 	char *padding_buf = NULL;
 
+	const size_t meta_tbytes = CMD_NSPAGES * SPAGE_NADDRS * geo->meta_nbytes;
+	char *meta = NULL;
+
 	if (offset + count > vblk->nbytes) {		// Check bounds
 		errno = EINVAL;
 		return -1;
@@ -217,6 +220,13 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf, size_t count,
 		}
 		nvm_buf_fill(padding_buf, nbytes);
 	}
+
+	meta = nvm_buf_alloc(geo, meta_tbytes);	// Construct pseudo-buf
+	if (!meta) {
+		errno = ENOMEM;
+		return -1;
+	}
+	nvm_buf_fill(meta, meta_tbytes);
 
 	#pragma omp parallel for num_threads(NTHREADS) schedule(static,1) reduction(+:nerr) ordered if(NTHREADS>1)
 	for (size_t off = bgn; off < end; off += CMD_NSPAGES) {
@@ -245,7 +255,7 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf, size_t count,
 		}
 
 		const ssize_t err = nvm_addr_write(vblk->dev, addrs, naddrs,
-						   buf_off, NULL, PMODE, &ret);
+						   buf_off, meta, PMODE, &ret);
 		if (err)
 			++nerr;
 
