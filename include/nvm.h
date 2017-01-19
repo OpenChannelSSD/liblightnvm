@@ -217,6 +217,7 @@ struct nvm_dev {
 	int bbts_cached;		///< Whether to cache bbts
 	size_t nbbts;			///< Number of entries in cache
 	struct nvm_bbt **bbts;		///< Cache of bad-block-tables
+	enum meta_mode meta_mode;	///< Flag to indicate the how meta is w
 };
 
 struct nvm_vblk {

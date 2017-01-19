@@ -221,12 +221,25 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf, size_t count,
 		nvm_buf_fill(padding_buf, nbytes);
 	}
 
-	meta = nvm_buf_alloc(geo, meta_tbytes);	// Construct pseudo-buf
-	if (!meta) {
-		errno = ENOMEM;
-		return -1;
+	if (vblk->dev->meta_mode != NVM_META_MODE_NONE) {	// Meta
+		meta = nvm_buf_alloc(geo, meta_tbytes);		// Alloc buf
+		if (!meta) {
+			errno = ENOMEM;
+			return -1;
+		}
+
+		switch(vblk->dev->meta_mode) {			// Fill it
+			case NVM_META_MODE_ALPHA:
+				nvm_buf_fill(meta, meta_tbytes);
+				break;
+			case NVM_META_MODE_CONST:
+				for (size_t i = 0; i < meta_tbytes; ++i)
+					meta[i] = 65 + (meta_tbytes % 20);
+				break;
+			case NVM_META_MODE_NONE:
+				break;
+		}
 	}
-	nvm_buf_fill(meta, meta_tbytes);
 
 	#pragma omp parallel for num_threads(NTHREADS) schedule(static,1) reduction(+:nerr) ordered if(NTHREADS>1)
 	for (size_t off = bgn; off < end; off += CMD_NSPAGES) {

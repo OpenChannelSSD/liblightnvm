@@ -40,7 +40,7 @@ int nvm_cli_pmode(struct nvm_dev *dev)
 {
 	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
 
-	char *pmode_env = getenv("NVM_CLI_PMODE");		// Check ENV
+	char *pmode_env = getenv("NVM_CLI_PMODE");	// Check ENV
 	if (pmode_env) {
 		switch(atoi(pmode_env)) {
 			case 4:
@@ -64,6 +64,26 @@ int nvm_cli_pmode(struct nvm_dev *dev)
 	}
 
 	return nvm_dev_get_pmode(dev);
+}
+
+int nvm_cli_meta_mode(struct nvm_dev *dev)
+{
+	char *meta_mode_env = getenv("NVM_CLI_META_MODE");	// Check ENV
+	if (meta_mode_env) {
+		switch(atoi(meta_mode_env)) {
+			case 0x0:
+				return NVM_META_MODE_NONE;
+			case 0x1:
+				return NVM_META_MODE_ALPHA;
+			case 0x2:
+				return NVM_META_MODE_CONST;
+			default:
+				errno = EINVAL;
+				return -1;
+		}
+	}
+
+	return nvm_dev_get_meta_mode(dev);
 }
 
 void nvm_cli_usage(const char *cli_name, const char *cli_description,
@@ -114,6 +134,7 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 	NVM_CLI_CMD *cmd = NULL;
 	char cmd_name[NVM_CLI_CMD_LEN];
 	char dev_path[NVM_DEV_PATH_LEN+1];
+	int meta_mode;
 
 	if (argc < 3) {		// Need at lest: <cli> <cmd> <dev_path>
 		return NULL;
@@ -149,6 +170,13 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 		perror("nvm_dev_open");
 		return NULL;
 	}
+
+	meta_mode = nvm_cli_meta_mode(cmd->args.dev);
+	if (meta_mode < 0) {
+		perror("Failed using meta_mode from CLI");
+		return NULL;
+	}
+	nvm_dev_set_meta_mode(cmd->args.dev, meta_mode);
 
 	if (getenv("NVM_CLI_ERASE_NADDRS_MAX")) {
 		int erase_naddrs_max = atoi(getenv("NVM_CLI_ERASE_NADDRS_MAX"));

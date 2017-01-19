@@ -81,6 +81,12 @@ struct nvm_dev;
  */
 struct nvm_vblk;
 
+enum meta_mode {
+	NVM_META_MODE_NONE = 0x0,
+	NVM_META_MODE_ALPHA = 0x1,
+	NVM_META_MODE_CONST = 0x2
+};
+
 enum nvm_bounds {
 	NVM_BOUNDS_CHANNEL = 1,
 	NVM_BOUNDS_LUN = 2,
@@ -371,6 +377,9 @@ void nvm_dev_pr(struct nvm_dev *dev);
  * @return On success, pmode flag is returned.
  */
 int nvm_dev_get_pmode(struct nvm_dev *dev);
+
+int nvm_dev_get_meta_mode(struct nvm_dev *dev);
+int nvm_dev_set_meta_mode(struct nvm_dev *dev, int meta_mode);
 
 /**
  * Returns the maximum number of addresses to use when sending erases to device.

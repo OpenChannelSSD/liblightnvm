@@ -58,3 +58,15 @@ void nvm_timer_pr(const char* tool);
  * errno set to indicate the error.
  */
 int nvm_cli_pmode(struct nvm_dev *dev);
+
+/**
+ * Provide an override for device meta_mode via CLI ENV("NVM_CLI_META_MODE")
+ *
+ * @note
+ * If nothing NVM_CLI_META_MODE is not set, the device default is returned.
+ *
+ * @param dev Device to verify user-supplied meta_mode against
+ * @return On success, user-supplied plane_mode is returned. On error, -1 and
+ * errno set to indicate the error.
+ */
+int nvm_cli_meta_mode(struct nvm_dev *dev);

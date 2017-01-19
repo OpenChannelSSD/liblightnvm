@@ -351,6 +351,8 @@ static int dev_attr_fill(struct nvm_dev *dev)
 	dev->write_naddrs_max = NVM_NADDR_MAX;
 	dev->read_naddrs_max = NVM_NADDR_MAX;
 
+	dev->meta_mode = NVM_META_MODE_NONE;
+
 	return 0;
 }
 
@@ -378,6 +380,7 @@ void nvm_dev_pr(struct nvm_dev *dev)
 	       dev->erase_naddrs_max,
 	       dev->read_naddrs_max,
 	       dev->write_naddrs_max);
+	printf(" meta_mode(%d),\n", dev->meta_mode);
 	printf(" bbts_cached(%d)\n}\n", dev->bbts_cached);
 	printf("dev-"); nvm_geo_pr(&dev->geo);
 	printf("dev-"); nvm_addr_fmt_pr(&dev->fmt);
@@ -437,6 +440,28 @@ const struct nvm_geo * nvm_dev_get_geo(struct nvm_dev *dev)
 int nvm_dev_get_pmode(struct nvm_dev *dev)
 {
         return dev->pmode;
+}
+
+int nvm_dev_get_meta_mode(struct nvm_dev *dev)
+{
+	return dev->meta_mode;
+}
+
+int nvm_dev_set_meta_mode(struct nvm_dev *dev, int meta_mode)
+{
+	switch (meta_mode) {
+		case NVM_META_MODE_NONE:
+		case NVM_META_MODE_ALPHA:
+		case NVM_META_MODE_CONST:
+			break;
+		default:
+			errno = EINVAL;
+			return -1;
+	}
+
+	dev->meta_mode = meta_mode;
+
+	return 0;
 }
 
 int nvm_dev_get_erase_naddrs_max(struct nvm_dev *dev)
