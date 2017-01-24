@@ -30,6 +30,17 @@ size_t compare_buffers(char *expected, char *actual, size_t nbytes)
 	return diff;
 }
 
+void print_mismatch(char *expected, char *actual, size_t nbytes)
+{
+	printf("MISMATCHES:\n");
+	for (int i = 0; i < nbytes; ++i) {
+		if (expected[i] != actual[i]) {
+			printf("i(%06d), expected(%c) != actual(%02d|0x%02x|%c)\n",
+				i, expected[i], (int)actual[i], (int)actual[i], actual[i]);
+		}
+	}
+}
+
 int setup(void)
 {
 	dev = nvm_dev_open(nvm_dev_path);
@@ -176,8 +187,10 @@ void _test_1ADDR(int use_meta)
 				
 				if (buf_diff)
 					CU_FAIL("Read failure: buffer mismatch");
-				if (meta_diff)
+				if (use_meta && meta_diff) {
 					CU_FAIL("Read failure: meta mismatch");
+					print_mismatch(meta_w + mw_offset, meta_r, meta_r_nbytes);
+				}
 				if (buf_diff || meta_diff)
 					goto exit_naddr;
 			}
@@ -326,14 +339,7 @@ void _test_NADDR(int use_meta, int pmode)
 			CU_FAIL("Read failure: buffer mismatch");
 		if (use_meta && meta_diff) {
 			CU_FAIL("Read failure: meta mismatch");
-			printf("\nExpect(");
-			for(int i = 0; i < meta_nbytes; ++i)
-				printf("%c", meta_w[i]);
-			printf(")\n");
-			printf("\nActual(");
-			for(int i = 0; i < meta_nbytes; ++i)
-				printf("%c", meta_r[i]);
-			printf(")\n");
+			print_mismatch(meta_w, meta_r, meta_nbytes);
 		}
 		if (buf_diff || meta_diff)
 			goto exit_naddr;
