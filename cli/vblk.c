@@ -323,6 +323,63 @@ int line_pad(NVM_CLI_CMD_ARGS *args, int flags)
 	return res < 0;
 }
 
+int line_to_file(NVM_CLI_CMD_ARGS *args, int flags)
+{
+	ssize_t res = 0;
+
+	struct nvm_addr bgn, end;
+	struct nvm_vblk *vblk;
+	size_t nbytes;
+	const struct nvm_geo *geo;
+	char *buf;
+
+	bgn = args->addrs[0];
+	end = args->addrs[1];
+
+	vblk = nvm_vblk_alloc_line(args->dev, bgn.g.ch, end.g.ch, bgn.g.lun,
+				   end.g.lun, end.g.blk);
+	if (!vblk) {
+		perror("nvm_vblk_alloc");
+		return errno;
+	}
+	nbytes = nvm_vblk_get_nbytes(vblk);
+	geo = nvm_dev_get_geo(args->dev);
+
+	printf("** nvm_vblk_read(...):\n");
+	nvm_vblk_pr(vblk);
+
+	nvm_timer_start();
+	buf = nvm_buf_alloc(geo, nbytes);
+	if (!buf) {
+		perror("nvm_buf_alloc");
+		return errno;
+	}
+	nvm_timer_stop();
+	nvm_timer_pr("nvm_buf_alloc");
+
+	nvm_timer_start();
+	res = nvm_vblk_read(vblk, buf, nbytes);
+	if (res < 0)
+		perror("nvm_vblk_read");
+	nvm_timer_stop();
+	nvm_timer_pr("nvm_vblk_read");
+
+	{
+		FILE *file_handle;
+		char file_name[1024];
+
+		sprintf(file_name, "vblk_line_%016lx_%016lx.bin", bgn.ppa, end.ppa);
+		file_handle = fopen(file_name, "wb");
+		fwrite(buf, 1, nbytes, file_handle);
+		fclose(file_handle);
+	}
+
+	free(buf);
+	nvm_vblk_free(vblk);
+
+	return res < 0;
+}
+
 int set_erase(NVM_CLI_CMD_ARGS *args, int flags)
 {
 	ssize_t res = 0;
@@ -485,6 +542,7 @@ static NVM_CLI_CMD cmds[] = {
 	{"line_read", line_read, NVM_CLI_ARG_LINE, 0x0},
 	{"line_write", line_write, NVM_CLI_ARG_LINE, 0x0},
 	{"line_pad", line_pad, NVM_CLI_ARG_LINE, 0x0},
+	{"line_to_file", line_to_file, NVM_CLI_ARG_LINE, 0x0},
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
