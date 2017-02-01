@@ -23,8 +23,38 @@ size_t nbytes;
 struct nvm_vblk *vblk;
 char *buf_w, *buf_r;
 
+static int SEED = 1337;
+
+static int VERBOSE = 0;
+
+size_t compare_buffers(char *expected, char *actual, size_t nbytes)
+{
+	size_t diff = 0;
+
+	for (int i = 0; i < nbytes; ++i) {
+		if (expected[i] != actual[i]) {
+			++diff;
+		}
+	}
+
+	return diff;
+}
+
+void print_mismatch(char *expected, char *actual, size_t nbytes)
+{
+	printf("MISMATCHES:\n");
+	for (int i = 0; i < nbytes; ++i) {
+		if (expected[i] != actual[i]) {
+			printf("i(%06d), expected(%c) != actual(%02d|0x%02x|%c)\n",
+				i, expected[i], (int)actual[i], (int)actual[i], actual[i]);
+		}
+	}
+}
+
 int setup(void)
 {
+	srand(SEED);
+
 	dev = nvm_dev_open(nvm_dev_path);
 	if (!dev) {
 		perror("nvm_dev_open");
@@ -45,6 +75,14 @@ int setup(void)
 		return -1;
 	}
 	nvm_buf_fill(buf_w, nbytes);
+
+	// Drop the byte offset into the buffer
+	for (size_t offset = 0; offset < nbytes; offset += geo->sector_nbytes) {
+		char misc[geo->sector_nbytes];
+
+		sprintf(misc, "-={[%lu]}=-", offset);
+		memcpy(buf_w + offset, misc, strlen(misc));
+	}
 
 	buf_r = nvm_buf_alloc(geo, nbytes);
 	if (!buf_r) {
@@ -85,14 +123,14 @@ void _test_VBLK(int test_expected_read_fail)
 		}
 	}
 	
-	res = nvm_vblk_write(vblk, buf_w, nbytes);	// EXPECT: OK
+	res = nvm_vblk_write(vblk, buf_w, nbytes);		// EXPECT: OK
 	CU_ASSERT(res >= 0);
 	if (res < 0) {
 		CU_FAIL("FAILED: nvm_vblk_write");
 		return;
 	}
 
-	res = nvm_vblk_read(vblk, buf_r, nbytes);	// EXPECT: OK
+	res = nvm_vblk_read(vblk, buf_r, nbytes);		// EXPECT: OK
 	CU_ASSERT(res >= 0);
 	if (res < 0) {
 		CU_FAIL("FAILED: nvm_vblk_read");
@@ -112,15 +150,83 @@ void test_VBLK_PE_PR_PW_PR(void)
 	_test_VBLK(1);
 }
 
+size_t rand_offset(size_t nbytes, size_t count, size_t align)
+{
+	const double var = (double)rand() / (double)RAND_MAX;
+
+	return ((size_t)(var * (nbytes - count)) / align) * align;
+}
+
+void test_VBLK_RAND(void)
+{
+	const size_t read_alignment = geo->nplanes * geo->nsectors * geo->sector_nbytes;
+	ssize_t res = 0;
+
+	res = nvm_vblk_erase(vblk);			// EXPECT: OK
+	CU_ASSERT(res >= 0);
+	if (res < 0) {
+		CU_FAIL("FAILED: Erasing vblk");
+	}
+
+	res = nvm_vblk_write(vblk, buf_w, nbytes);	// EXPECT: OK
+	CU_ASSERT(res >= 0);
+	if (res < 0) {
+		CU_FAIL("FAILED: nvm_vblk_write");
+		return;
+	}
+
+	int naddrs = nvm_vblk_get_naddrs(vblk);
+
+	for (int i = 1; i <= naddrs; ++i) {
+		size_t count = read_alignment * i;
+		size_t nbytes_read = 0;
+
+		char *buf = nvm_buf_alloc(geo, count);
+		if (!buf) {
+			CU_FAIL("FAILED: nvm_buf_alloc");
+			return;
+		}
+
+		while (nbytes_read < nbytes) {			// EXPECT: OK
+			size_t offset = rand_offset(nbytes, count, read_alignment);
+
+			res = nvm_vblk_pread(vblk, buf, count, offset);
+			CU_ASSERT(res >= 0);
+			if (res < 0) {
+				if (VERBOSE)
+					perror("nvm_vblk_pread");
+				CU_FAIL("FAILED: nvm_vblk_pread");
+				free(buf);
+				return;
+			}
+			CU_ASSERT(res == count);
+
+			if (compare_buffers(buf_w + offset, buf, count)) {
+				if (VERBOSE)
+					print_mismatch(buf_w + offset, buf, count);
+				CU_FAIL("FAILED: buffer mismatch");
+				free(buf);
+				return;
+			}
+
+			nbytes_read += res;
+		}
+
+		free(buf);
+	}
+}
+
 int main(int argc, char **argv)
 {
 	switch(argc) {
+	case 8:
+		VERBOSE = atoi(argv[7]);
 	case 7:
 		blk = atoi(argv[6]);
 	case 6:
 		lun_end = atoi(argv[5]);
 	case 5:
-		lun_end = atoi(argv[4]);
+		lun_bgn = atoi(argv[4]);
 	case 4:
 		ch_end = atoi(argv[3]);
 	case 3:
@@ -146,6 +252,7 @@ int main(int argc, char **argv)
 	}
 
 	if (
+	(NULL == CU_add_test(pSuite, "nvm_vblk_RAND", test_VBLK_RAND)) ||
 	(NULL == CU_add_test(pSuite, "nvm_vblk_PE_PW_PR", test_VBLK_PE_PW_PR)) ||
 	(NULL == CU_add_test(pSuite, "nvm_vblk_PE_PR_PW_PR", test_VBLK_PE_PR_PW_PR)) ||
 	0)
