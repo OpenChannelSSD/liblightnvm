@@ -77,22 +77,22 @@ Failure Modes
 
 Failure Modes. NAND Flash might fail in various ways:
 
-• Bit Errors. The downside of shrinking cell size is an increase in errors when
+- Bit Errors. The downside of shrinking cell size is an increase in errors when
 storing bits. While error rates of 2 bits per KB were common for SLC, this rate
 has increased four to eight times for MLC.
 
-• Read and Write Disturb. The media is prone to leak currents to nearby cells as
+- Read and Write Disturb. The media is prone to leak currents to nearby cells as
 bits are written or read. This causes some of the write constraints described
 above.
 
-• Data Retention. As cells wear out, data retention capability decreases. To
+- Data Retention. As cells wear out, data retention capability decreases. To
 persist over time, data must be rewritten multiple times.
 
-• Write/Erase Error. During write or erase, a failure can occur due to an
+- Write/Erase Error. During write or erase, a failure can occur due to an
 unrecoverable error at the block level. In that case, the block should be
 retired and data already written should be rewritten to a new block.
 
-• Die Failure. A logical unit of storage, i.e., a die on a NAND chip may cease
+- Die Failure. A logical unit of storage, i.e., a die on a NAND chip may cease
 to function over time due to a defect. In that case, all its data will be lost
 unless RAID or other replication techniques has been used.
 
