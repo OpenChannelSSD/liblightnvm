@@ -149,10 +149,10 @@ static ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
 
 	err = ioctl(dev->fd, NVME_NVM_IOCTL_SUBMIT_VIO, &ctl);
 #ifdef NVM_DEBUG_ENABLED
-        nvm_addr_prn(addrs, naddrs);
 	if (err || ctl.result || ctl.status) {
-		printf("err(%d), ctl.result(%u), ctl.status(%llu)\n",
-		       err, ctl.result, ctl.status);
+		printf("opcode(0x%02x), err(%d), ctl.result(%u), ctl.status(%llu)\n",
+		       opcode, err, ctl.result, ctl.status);
+		nvm_addr_prn(addrs, naddrs);
 	}
 #endif
 	if (ret) {

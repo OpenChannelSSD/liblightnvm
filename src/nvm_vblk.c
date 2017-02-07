@@ -35,7 +35,6 @@
 #include <linux/lightnvm.h>
 #include <liblightnvm.h>
 #include <nvm.h>
-#include <nvm_debug.h>
 #include <nvm_omp.h>
 
 struct nvm_vblk* nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addrs[],

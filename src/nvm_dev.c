@@ -67,7 +67,7 @@ struct udev_device *udev_dev_find(struct udev *udev, const char *subsystem,
 
 		path = udev_list_entry_get_name(dev_list_entry);
 		if (!path) {
-			NVM_DEBUG("Failed retrieving path from entry\n");
+			NVM_DEBUG("FAILED: retrieving path from entry\n");
 			continue;
 		}
 		path_len = strlen(path);
@@ -83,7 +83,7 @@ struct udev_device *udev_dev_find(struct udev *udev, const char *subsystem,
 						/* Get the udev object */
 		dev = udev_device_new_from_syspath(udev, path);
 		if (!dev) {
-			NVM_DEBUG("Failed retrieving device from path\n");
+			NVM_DEBUG("FAILED: retrieving device from path\n");
 			continue;
 		}
 
@@ -93,7 +93,7 @@ struct udev_device *udev_dev_find(struct udev *udev, const char *subsystem,
 
 			sys_devtype = udev_device_get_devtype(dev);
 			if (!sys_devtype) {
-				NVM_DEBUG("sys_devtype(%s)", sys_devtype);
+				NVM_DEBUG("FAILED: sys_devtype(%s)", sys_devtype);
 				udev_device_unref(dev);
 				dev = NULL;
 				continue;
@@ -101,7 +101,7 @@ struct udev_device *udev_dev_find(struct udev *udev, const char *subsystem,
 
 			sys_devtype_match = strcmp(devtype, sys_devtype);
 			if (sys_devtype_match != 0) {
-				NVM_DEBUG("%s != %s\n", devtype, sys_devtype);
+				NVM_DEBUG("FAILED: %s != %s\n", devtype, sys_devtype);
 				udev_device_unref(dev);
 				dev = NULL;
 				continue;
@@ -122,7 +122,7 @@ struct udev_device *udev_nvmdev_find(struct udev *udev, const char *dev_name)
 	if (dev)
 		return dev;
 
-	NVM_DEBUG("NOTHING FOUND\n");
+	NVM_DEBUG("FAILED: NOTHING FOUND\n");
 	return NULL;
 }
 
@@ -252,56 +252,56 @@ static int dev_attr_fill(struct nvm_dev *dev)
 	geo = &(dev->geo);
 
 	if (sysattr2int(udev_dev, "lightnvm/num_channels", &val)) {
-		NVM_DEBUG("ERR: num_channels for dev->name(%s)\n", dev->name);
+		NVM_DEBUG("FAILED: num_channels for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
 	geo->nchannels = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/num_luns", &val)) {
-		NVM_DEBUG("ERR: num_luns for dev->name(%s)\n", dev->name);
+		NVM_DEBUG("FAILED: num_luns for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
 	geo->nluns = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/num_planes", &val)) {
-		NVM_DEBUG("ERR: num_planes for dev->name(%s)\n", dev->name);
+		NVM_DEBUG("FAILED: num_planes for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
 	geo->nplanes = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/num_blocks", &val)) {
-		NVM_DEBUG("ERR: num_blocks for dev->name(%s)\n", dev->name);
+		NVM_DEBUG("FAILED: num_blocks for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
 	geo->nblocks = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/num_pages", &val)) {
-		NVM_DEBUG("ERR: num_pages for dev->name(%s)\n", dev->name);
+		NVM_DEBUG("FAILED: num_pages for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
 	geo->npages = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/page_size", &val)) {
-		NVM_DEBUG("ERR: page_size for dev->name(%s)\n", dev->name);
+		NVM_DEBUG("FAILED: page_size for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
 	geo->page_nbytes = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/hw_sector_size", &val)) {
-		NVM_DEBUG("ERR: hw_sector_size for dev->name(%s)\n", dev->name);
+		NVM_DEBUG("FAILED: hw_sector_size for dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}
 	geo->sector_nbytes = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/oob_sector_size", &val)) {
-		NVM_DEBUG("ERR: oob_sector_size dev->name(%s)\n", dev->name);
+		NVM_DEBUG("FAILED: oob_sector_size dev->name(%s)\n", dev->name);
 		errno = EIO;
 		return -1;
 	}

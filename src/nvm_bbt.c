@@ -35,7 +35,6 @@
 #include <linux/lightnvm.h>
 #include <liblightnvm.h>
 #include <nvm.h>
-#include <nvm_debug.h>
 
 static inline int _bbt_idx(const struct nvm_dev *dev,
 			   const struct nvm_addr addr)

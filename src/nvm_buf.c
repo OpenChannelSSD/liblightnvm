@@ -29,9 +29,9 @@
 #define _GNU_SOURCE
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include <errno.h>
 #include <liblightnvm.h>
-#include <nvm_debug.h>
 
 void *nvm_buf_alloc(const struct nvm_geo *geo, size_t nbytes)
 {
