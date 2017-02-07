@@ -107,4 +107,4 @@ Die Failure.
 REFERENCES
 ==========
 
-  * LightNVM: the Linux Open-Channel SSD Subsystem" - Matias Bjørling, Javier Gonzalez, Philippe Bonnet, FAST 2017.
+  * LightNVM: the Linux Open-Channel SSD Subsystem" - Matias Bjørling, Javier Gonzalez, Philippe Bonnet - FAST 2017.
