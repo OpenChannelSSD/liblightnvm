@@ -186,11 +186,14 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf, size_t count,
 	const struct nvm_geo *geo = nvm_dev_get_geo(vblk->dev);
 
 	const int SPAGE_NADDRS = geo->nplanes * geo->nsectors;
-	const int CMD_NSPAGES = _cmd_nspages(vblk->nblks,
-				vblk->dev->write_naddrs_max / SPAGE_NADDRS);
 
 	const int ALIGN = SPAGE_NADDRS * geo->sector_nbytes;
-	const int NTHREADS = vblk->nblks < CMD_NSPAGES ? 1 : vblk->nblks / CMD_NSPAGES;
+
+	const int NSPAGE_SUM = (count / (ALIGN)); //
+	const int CMD_NSPAGES = _cmd_nspages( NSPAGE_SUM,	//each thread
+				vblk->dev->write_naddrs_max / SPAGE_NADDRS);
+
+	const int NTHREADS = NSPAGE_SUM < CMD_NSPAGES ? 1 : NSPAGE_SUM / CMD_NSPAGES;
 
 	const size_t bgn = offset / ALIGN;
 	const size_t end = bgn + (count / ALIGN);
@@ -309,13 +312,15 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 	size_t nerr = 0;
 	const int PMODE = nvm_dev_get_pmode(vblk->dev);
 	const struct nvm_geo *geo = nvm_dev_get_geo(vblk->dev);
-
 	const int SPAGE_NADDRS = geo->nplanes * geo->nsectors;
-	const int CMD_NSPAGES = _cmd_nspages(vblk->nblks,
-				vblk->dev->write_naddrs_max / SPAGE_NADDRS);
 
 	const int ALIGN = SPAGE_NADDRS * geo->sector_nbytes;
-	const int NTHREADS = vblk->nblks < CMD_NSPAGES ? 1 : vblk->nblks / CMD_NSPAGES;
+
+	const int NSPAGE_SUM = (count / ALIGN); //
+	const int CMD_NSPAGES = _cmd_nspages(NSPAGE_SUM,
+				vblk->dev->write_naddrs_max / SPAGE_NADDRS);
+
+	const int NTHREADS = NSPAGE_SUM < CMD_NSPAGES ? 1 : NSPAGE_SUM / CMD_NSPAGES;
 
 	const size_t bgn = offset / ALIGN;
 	const size_t end = bgn + (count / ALIGN);
