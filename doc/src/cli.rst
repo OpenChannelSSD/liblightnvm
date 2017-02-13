@@ -114,4 +114,5 @@ nvm_vblk
    nvm_vblk  line_read dev_path ch_bgn ch_end lun_bgn lun_end blk
    nvm_vblk line_write dev_path ch_bgn ch_end lun_bgn lun_end blk
    nvm_vblk   line_pad dev_path ch_bgn ch_end lun_bgn lun_end blk
+   nvm_vblk line_to_file dev_path ch_bgn ch_end lun_bgn lun_end blk
   

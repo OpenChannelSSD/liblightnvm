@@ -105,6 +105,82 @@ struct nvm_ret {
 };
 
 /**
+ * Encapsulation of lowest-level user and admin commands
+ */
+struct nvm_cmd {
+	union {
+		struct {
+			uint8_t opcode;
+			uint8_t flags;
+			uint16_t control;
+			uint16_t nppas;
+			uint16_t rsvd;
+			uint64_t metadata;
+			uint64_t addr;
+			uint64_t ppa_list;
+			uint32_t metadata_len;
+			uint32_t data_len;
+			uint64_t status;
+			uint32_t result;
+			uint32_t rsvd3[3];
+		} user;			///< Common fields for user commands
+
+		struct {
+			uint8_t opcode;
+			uint8_t flags;
+			uint8_t rsvd[2];
+			uint32_t nsid;
+			uint32_t cdw2;
+			uint32_t cdw3;
+			uint64_t metadata;
+			uint64_t addr;
+			uint32_t metadata_len;
+			uint32_t data_len;
+			uint64_t ppa_list;
+			uint16_t nppas;
+			uint16_t control;
+			uint32_t cdw13;
+			uint32_t cdw14;
+			uint32_t cdw15;
+			uint64_t status;
+			uint32_t result;
+			uint32_t timeout_ms;
+		} admin;		///< Common fields for admin commands
+
+		uint32_t cdw[16];	///< Command as array of dwords
+	};
+};
+
+/**
+ * Execute an user command
+ *
+ * @param dev Device the execute the command upon
+ * @param cmd The command to execute
+ * @param ret Pointer to struct to fill with lower-level result-codes
+ *
+ * @returns On success, 0 is returned. On error, -1 is returned, `errno` set to
+ * indicate the error and ret filled with lower-level result codes
+ */
+int nvm_cmd_user(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret);
+
+/**
+ * Execute an admin command
+ *
+ * @param dev Device the execute the command upon
+ * @param cmd The command to execute
+ * @param ret Pointer to struct to fill with lower-level result-codes
+ *
+ * @returns On success, 0 is returned. On error, -1 is returned, `errno` set to
+ * indicate the error and ret filled with lower-level result codes
+ */
+int nvm_cmd_admin(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret);
+
+/**
+ * Prints a text-representation of the given command
+ */
+void nvm_cmd_pr(struct nvm_cmd *cmd);
+
+/**
  * Encapsulation of generic physical nvm addressing
  *
  * Although the user need not worry about device specific address formats the

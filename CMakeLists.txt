@@ -41,6 +41,7 @@ set(SOURCE_FILES
 	src/nvm_geo.c
 	src/nvm_lba.c
 	src/nvm_ver.c
+	src/nvm_cmd.c
 	src/nvm_addr.c
 	src/nvm_vblk.c
 	src/nvm_bounds.c

@@ -81,6 +81,11 @@ nvm_dev_get_geo
 
 .. doxygenfunction:: nvm_dev_get_geo
 
+nvm_dev_get_meta_mode
+---------------------
+
+.. doxygenfunction:: nvm_dev_get_meta_mode
+
 nvm_dev_get_pmode
 -----------------
 
@@ -105,6 +110,11 @@ nvm_dev_set_erase_naddrs_max
 ----------------------------
 
 .. doxygenfunction:: nvm_dev_set_erase_naddrs_max
+
+nvm_dev_set_meta_mode
+---------------------
+
+.. doxygenfunction:: nvm_dev_set_meta_mode
 
 nvm_dev_set_read_naddrs_max
 ---------------------------
@@ -171,6 +181,32 @@ nvm_bbt_state_pr
 ----------------
 
 .. doxygenfunction:: nvm_bbt_state_pr
+
+
+
+Low-Level Command Execution
+===========================
+
+nvm_cmd
+-------
+
+.. doxygenstruct:: nvm_cmd
+   :members:
+
+nvm_cmd_admin
+-------------
+
+.. doxygenfunction:: nvm_cmd_admin
+
+nvm_cmd_user
+------------
+
+.. doxygenfunction:: nvm_cmd_user
+
+nvm_cmd_pr
+----------
+
+.. doxygenfunction:: nvm_cmd_pr
 
 
 
