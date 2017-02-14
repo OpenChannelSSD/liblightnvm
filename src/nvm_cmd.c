@@ -33,20 +33,51 @@
 #include <errno.h>
 #include <stdio.h>
 #include <linux/lightnvm.h>
+#include <linux/nvme_ioctl.h>
 #include <liblightnvm.h>
 #include <nvm.h>
 #include <nvm_debug.h>
 
-int nvm_cmd_user(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret)
+int nvm_cmd_vuser(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret)
 {
 	int err;
 
 	err = ioctl(dev->fd, NVME_NVM_IOCTL_SUBMIT_VIO, cmd);
 	if (ret) {
-		ret->result = cmd->user.result;
-		ret->status = cmd->user.status;
+		ret->result = cmd->vuser.result;
+		ret->status = cmd->vuser.status;
 	}
-	if (err || cmd->user.result) {
+	if (err || cmd->vuser.result) {
+		errno = EIO;
+		return -1;
+	}
+
+	return 0;
+}
+
+int nvm_cmd_vadmin(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret)
+{
+	int err;
+
+	err = ioctl(dev->fd, NVME_NVM_IOCTL_ADMIN_VIO, cmd);
+	if (ret) {
+		ret->result = cmd->vadmin.result;
+		ret->status = cmd->vadmin.status;
+	}
+	if (err || cmd->vadmin.result) {
+		errno = EIO;
+		return -1;
+	}
+
+	return 0;
+}
+
+int nvm_cmd_user(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret)
+{
+	int err;
+
+	err = ioctl(dev->fd, NVME_IOCTL_SUBMIT_IO, cmd);
+	if (err) {
 		errno = EIO;
 		return -1;
 	}
@@ -58,12 +89,8 @@ int nvm_cmd_admin(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret)
 {
 	int err;
 
-	err = ioctl(dev->fd, NVME_NVM_IOCTL_ADMIN_VIO, cmd);
-	if (ret) {
-		ret->result = cmd->admin.result;
-		ret->status = cmd->admin.status;
-	}
-	if (err || cmd->admin.result) {
+	err = ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, cmd);
+	if (err) {
 		errno = EIO;
 		return -1;
 	}

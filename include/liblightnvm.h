@@ -2,8 +2,9 @@
  * User space I/O library for Open-Channel SSDs
  *
  * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
- * Copyright (C) 2015 Matias González <javier@cnexlabs.com>
+ * Copyright (C) 2015 Matias González <matias@cnexlabs.com>
  * Copyright (C) 2016 Simon A. F. Lund <slund@cnexlabs.com>
+ * Copyright (C) 2017 Simon A. F. Lund <slund@cnexlabs.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -109,7 +110,7 @@ struct nvm_ret {
  */
 struct nvm_cmd {
 	union {
-		struct {
+		struct nvm_cmd_vuser {
 			uint8_t opcode;
 			uint8_t flags;
 			uint16_t control;
@@ -123,9 +124,9 @@ struct nvm_cmd {
 			uint64_t status;
 			uint32_t result;
 			uint32_t rsvd3[3];
-		} user;			///< Common fields for user commands
+		} vuser;	///< Common fields for vector user commands
 
-		struct {
+		struct nvm_cmd_vadmin {
 			uint8_t opcode;
 			uint8_t flags;
 			uint8_t rsvd[2];
@@ -145,9 +146,45 @@ struct nvm_cmd {
 			uint64_t status;
 			uint32_t result;
 			uint32_t timeout_ms;
-		} admin;		///< Common fields for admin commands
+		} vadmin;	///< Common fields for vector admin commands
 
-		uint32_t cdw[16];	///< Command as array of dwords
+		struct nvm_cmd_admin {
+			uint8_t opcode;
+			uint8_t flags;
+			uint16_t rsvd1;
+			uint32_t nsid;
+			uint32_t cdw2;
+			uint32_t cdw3;
+			uint64_t metadata;
+			uint64_t addr;
+			uint32_t metadata_len;
+			uint32_t data_len;
+			uint32_t cdw10;
+			uint32_t cdw11;
+			uint32_t cdw12;
+			uint32_t cdw13;
+			uint32_t cdw14;
+			uint32_t cdw15;
+			uint32_t timeout_ms;
+			uint32_t result;
+		} admin;    ///< Common fields for admin commands
+
+		struct nvm_cmd_user {
+			uint8_t opcode;
+			uint8_t flags;
+			uint16_t control;
+			uint16_t nblocks;
+			uint16_t rsvd;
+			uint64_t metadata;
+			uint64_t addr;
+			uint64_t slba;
+			uint32_t dsmgmt;
+			uint32_t reftag;
+			uint16_t apptag;
+			uint16_t appmask;
+		} user;     ///< Common fields for user commands
+
+		uint32_t cdw[20];	///< Command as array of dwords
 	};
 };
 
@@ -174,6 +211,30 @@ int nvm_cmd_user(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret);
  * indicate the error and ret filled with lower-level result codes
  */
 int nvm_cmd_admin(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret);
+
+/**
+ * Execute a vector user command
+ *
+ * @param dev Device the execute the command upon
+ * @param cmd The command to execute
+ * @param ret Pointer to struct to fill with lower-level result-codes
+ *
+ * @returns On success, 0 is returned. On error, -1 is returned, `errno` set to
+ * indicate the error and ret filled with lower-level result codes
+ */
+int nvm_cmd_vuser(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret);
+
+/**
+ * Execute an vector admin command
+ *
+ * @param dev Device the execute the command upon
+ * @param cmd The command to execute
+ * @param ret Pointer to struct to fill with lower-level result-codes
+ *
+ * @returns On success, 0 is returned. On error, -1 is returned, `errno` set to
+ * indicate the error and ret filled with lower-level result codes
+ */
+int nvm_cmd_vadmin(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret);
 
 /**
  * Prints a text-representation of the given command
