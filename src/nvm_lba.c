@@ -31,10 +31,9 @@
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
-#include <linux/lightnvm.h>
 #include <liblightnvm.h>
-#include <nvm.h>
-
+#include <nvm_dev.h>
+/*
 void nvm_lba_map_pr(struct nvm_lba_map* map)
 {
 	printf("lba_map {\n");
@@ -45,7 +44,7 @@ void nvm_lba_map_pr(struct nvm_lba_map* map)
 	printf(" page_nbytes(%lu)\n", map->page_nbytes);
 	printf(" sector_nbytes(%lu)\n", map->sector_nbytes);
 	printf("}\n");
-}
+}*/
 
 ssize_t nvm_lba_pwrite(struct nvm_dev *dev, const void *buf, size_t count,
 		       off_t offset)
