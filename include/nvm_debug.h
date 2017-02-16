@@ -27,8 +27,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __NVM_DEBUG_H
-#define __NVM_DEBUG_H
+#ifndef __INTERNAL_NVM_DEBUG_H
+#define __INTERNAL_NVM_DEBUG_H
 
 #include <stdio.h>
 
@@ -50,4 +50,4 @@
 #else
 	#define NVM_DEBUG(x, ...)
 #endif
-#endif /* __NVM_DEBUG_H */
+#endif /* __INTERNAL_NVM_DEBUG_H */
