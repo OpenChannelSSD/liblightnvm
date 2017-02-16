@@ -1,10 +1,9 @@
 /*
- * addr - Sector addressing functions for write, read, and meta-data print
- *        Block addressing functions for erase and mark
- *
+ * cmd - Lowest level command interface
  * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
  * Copyright (C) 2015 Matias Bjørling <matias@cnexlabs.com>
  * Copyright (C) 2016 Simon A. F. Lund <slund@cnexlabs.com>
+ * Copyright (C) 2017 Simon A. F. Lund <slund@cnexlabs.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,75 +26,30 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
 #include <stdio.h>
-#include <linux/lightnvm.h>
-#include <linux/nvme_ioctl.h>
 #include <liblightnvm.h>
-#include <nvm.h>
-#include <nvm_debug.h>
+#include <nvm_be.h>
+#include <nvm_dev.h>
+#include <nvm_utils.h>
 
 int nvm_cmd_vuser(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret)
 {
-	int err;
-
-	err = ioctl(dev->fd, NVME_NVM_IOCTL_SUBMIT_VIO, cmd);
-	if (ret) {
-		ret->result = cmd->vuser.result;
-		ret->status = cmd->vuser.status;
-	}
-	if (err || cmd->vuser.result) {
-		errno = EIO;
-		return -1;
-	}
-
-	return 0;
+	return dev->be->vuser(dev, cmd, ret);
 }
 
 int nvm_cmd_vadmin(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret)
 {
-	int err;
-
-	err = ioctl(dev->fd, NVME_NVM_IOCTL_ADMIN_VIO, cmd);
-	if (ret) {
-		ret->result = cmd->vadmin.result;
-		ret->status = cmd->vadmin.status;
-	}
-	if (err || cmd->vadmin.result) {
-		errno = EIO;
-		return -1;
-	}
-
-	return 0;
+	return dev->be->vadmin(dev, cmd, ret);
 }
 
 int nvm_cmd_user(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret)
 {
-	int err;
-
-	err = ioctl(dev->fd, NVME_IOCTL_SUBMIT_IO, cmd);
-	if (err) {
-		errno = EIO;
-		return -1;
-	}
-
-	return 0;
+	return dev->be->user(dev, cmd, ret);
 }
 
 int nvm_cmd_admin(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret)
 {
-	int err;
-
-	err = ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, cmd);
-	if (err) {
-		errno = EIO;
-		return -1;
-	}
-
-	return 0;
+	return dev->be->user(dev, cmd, ret);
 }
 
 void nvm_cmd_pr(struct nvm_cmd *cmd)
