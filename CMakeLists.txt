@@ -35,6 +35,7 @@ set(HEADER_FILES
 	include/nvm_omp.h)
 
 set(SOURCE_FILES
+	src/nvm_spec.c
 	src/nvm_dev.c
 	src/nvm_buf.c
 	src/nvm_bbt.c
