@@ -36,6 +36,7 @@ set(HEADER_FILES
 
 set(SOURCE_FILES
 	src/nvm_spec.c
+	src/nvm_be_ioctl.c
 	src/nvm_dev.c
 	src/nvm_buf.c
 	src/nvm_bbt.c
