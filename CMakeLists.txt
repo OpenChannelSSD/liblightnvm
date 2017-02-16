@@ -30,13 +30,18 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 
 set(HEADER_FILES
 	include/liblightnvm.h
-	include/nvm.h
+	include/nvm_be.h
 	include/nvm_debug.h
-	include/nvm_omp.h)
+	include/nvm_dev.h
+	include/nvm_omp.h
+	include/nvm_spec.h
+	include/nvm_utils.h
+	include/nvm_vblk.h)
 
 set(SOURCE_FILES
 	src/nvm_spec.c
 	src/nvm_be_ioctl.c
+	src/nvm_be_sysfs.c
 	src/nvm_dev.c
 	src/nvm_buf.c
 	src/nvm_bbt.c
