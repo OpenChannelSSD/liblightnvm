@@ -387,51 +387,6 @@ void nvm_dev_pr(struct nvm_dev *dev)
 	printf("dev-"); nvm_addr_fmt_mask_pr(&dev->mask);
 }
 
-int nvm_dev_attr_nchannels(struct nvm_dev *dev)
-{
-	return dev->geo.nchannels;
-}
-
-int nvm_dev_attr_nluns(struct nvm_dev *dev)
-{
-	return dev->geo.nluns;
-}
-
-int nvm_dev_attr_nplanes(struct nvm_dev *dev)
-{
-	return dev->geo.nplanes;
-}
-
-int nvm_dev_attr_nblocks(struct nvm_dev *dev)
-{
-	return dev->geo.nblocks;
-}
-
-int nvm_dev_attr_npages(struct nvm_dev *dev)
-{
-	return dev->geo.npages;
-}
-
-int nvm_dev_attr_nsectors(struct nvm_dev *dev)
-{
-	return dev->geo.nsectors;
-}
-
-int nvm_dev_attr_nbytes(struct nvm_dev *dev)
-{
-	return dev->geo.sector_nbytes;
-}
-
-int nvm_dev_attr_vblk_nbytes(struct nvm_dev *dev)
-{
-	return dev->geo.vblk_nbytes;
-}
-
-int nvm_dev_attr_vpage_nbytes(struct nvm_dev *dev)
-{
-	return dev->geo.vpg_nbytes;
-}
-
 const struct nvm_geo * nvm_dev_get_geo(struct nvm_dev *dev)
 {
 	return &dev->geo;
