@@ -492,6 +492,16 @@ void nvm_geo_pr(const struct nvm_geo *geo);
 struct nvm_dev * nvm_dev_open(const char *dev_path);
 
 /**
+ * Creates a handle to given device path
+ *
+ * @param dev_path Path of the device to open e.g. "/dev/nvme0n1"
+ * @param flags Flags for opening device in different modes
+ *
+ * @returns A handle to the device
+ */
+struct nvm_dev * nvm_dev_openf(const char *dev_path, int flags);
+
+/**
  * Destroys device-handle
  *
  * @param dev Handle to destroy
