@@ -61,6 +61,11 @@ nvm_dev_close
 
 .. doxygenfunction:: nvm_dev_close
 
+nvm_dev_openf
+-------------
+
+.. doxygenfunction:: nvm_dev_openf
+
 nvm_dev_pr
 ----------
 
@@ -85,6 +90,11 @@ nvm_dev_get_meta_mode
 ---------------------
 
 .. doxygenfunction:: nvm_dev_get_meta_mode
+
+nvm_dev_get_nsid
+----------------
+
+.. doxygenfunction:: nvm_dev_get_nsid
 
 nvm_dev_get_pmode
 -----------------
@@ -192,6 +202,40 @@ nvm_cmd
 
 .. doxygenstruct:: nvm_cmd
    :members:
+
+nvm_cmd_admin
+-------------
+
+.. doxygenstruct:: nvm_cmd_admin
+   :members:
+
+nvm_cmd_user
+------------
+
+.. doxygenstruct:: nvm_cmd_user
+   :members:
+
+nvm_cmd_vadmin
+--------------
+
+.. doxygenstruct:: nvm_cmd_vadmin
+   :members:
+
+nvm_cmd_vuser
+-------------
+
+.. doxygenstruct:: nvm_cmd_vuser
+   :members:
+
+nvm_cmd_vadmin
+--------------
+
+.. doxygenfunction:: nvm_cmd_vadmin
+
+nvm_cmd_vuser
+-------------
+
+.. doxygenfunction:: nvm_cmd_vuser
 
 nvm_cmd_admin
 -------------
