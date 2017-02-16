@@ -194,8 +194,7 @@ int nvm_dev_set_write_naddrs_max(struct nvm_dev *dev, int naddrs)
 	return 0;
 }
 
-struct nvm_dev *nvm_dev_open(const char *dev_path)
-{
+struct nvm_dev * nvm_dev_openf(const char *dev_path, int flags) {
 	struct nvm_dev *dev = NULL;
 
 	for (int i = 0; nvm_backends[i]; ++i) {
@@ -217,6 +216,11 @@ struct nvm_dev *nvm_dev_open(const char *dev_path)
 		dev->bbts[i] = NULL;
 
 	return dev;
+}
+
+struct nvm_dev *nvm_dev_open(const char *dev_path)
+{
+	return nvm_dev_openf(dev_path, 0x0);
 }
 
 void nvm_dev_close(struct nvm_dev *dev)
