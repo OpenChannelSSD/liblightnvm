@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
  * Copyright (C) 2015 Matias Bjørling <matias@cnexlabs.com>
+ * Copyright (C) 2016 Simon A. F. Lund <slund@cnexlabs.com>
+ * Copyright (C) 2017 Simon A. F. Lund <slund@cnexlabs.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,10 +33,10 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>
-#include <libudev.h>
-#include <linux/lightnvm.h>
 #include <liblightnvm.h>
-#include <nvm.h>
+#include <nvm_be.h>
+#include <nvm_dev.h>
+#include <nvm_spec.h>
 
 static inline int _bbt_idx(const struct nvm_dev *dev,
 			   const struct nvm_addr addr)
@@ -102,7 +104,7 @@ void krnl_bbt_pr(struct krnl_bbt *bbt)
  */
 static inline int krnl_bbt_get(struct nvm_bbt *bbt, struct nvm_ret *ret)
 {
-	struct nvm_passthru_vio ctl;
+	struct nvm_cmd cmd = {};
 	struct krnl_bbt *k_bbt;
 	size_t krnl_bbt_sz;
 	int err;
@@ -114,18 +116,13 @@ static inline int krnl_bbt_get(struct nvm_bbt *bbt, struct nvm_ret *ret)
 		return -1;
 	}
 
-	memset(&ctl, 0, sizeof(ctl));	// Setup the IOCTL
-	ctl.opcode = S12_OPC_GET_BBT;
-	ctl.addr = (uint64_t)k_bbt;
-	ctl.data_len = krnl_bbt_sz;
-	ctl.ppa_list = nvm_addr_gen2dev(bbt->dev, bbt->addr);
-	ctl.nppas = 0;
+	cmd.vadmin.opcode = S12_OPC_GET_BBT;
+	cmd.vadmin.addr = (uint64_t)k_bbt;
+	cmd.vadmin.data_len = krnl_bbt_sz;
+	cmd.vadmin.ppa_list = nvm_addr_gen2dev(bbt->dev, bbt->addr);
+	cmd.vadmin.nppas = 0;
 
-	err = ioctl(bbt->dev->fd, NVME_NVM_IOCTL_ADMIN_VIO, &ctl);
-	if (ret) {			// Fill return-codes when available
-		ret->result = ctl.result;
-		ret->status = ctl.status;
-	}
+	err = bbt->dev->be->vadmin(bbt->dev, &cmd, ret);
 	if (err || (k_bbt->tblks != bbt->nblks)) {
 		errno = EIO;
 		free(k_bbt);
@@ -138,9 +135,8 @@ static inline int krnl_bbt_get(struct nvm_bbt *bbt, struct nvm_ret *ret)
 		return -1;
 	}
 
-	for (int i = 0; i < bbt->nblks; ++i) {
+	for (int i = 0; i < bbt->nblks; ++i)
 		bbt->blks[i] = k_bbt->blk[i];
-	}
 
 	free(k_bbt);
 
@@ -150,7 +146,7 @@ static inline int krnl_bbt_get(struct nvm_bbt *bbt, struct nvm_ret *ret)
 static inline int krnl_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[],
 				int naddrs, uint16_t flags, struct nvm_ret *ret)
 {
-	struct nvm_passthru_vio ctl;
+	struct nvm_cmd cmd = {};
 	uint64_t dev_addrs[naddrs];
 	int err;
 
@@ -179,17 +175,12 @@ static inline int krnl_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[],
 		dev_addrs[i] = nvm_addr_gen2dev(dev, addrs[i]);
 	}
 
-	memset(&ctl, 0, sizeof(ctl));	// Setup the IOCTL
-	ctl.opcode = S12_OPC_SET_BBT;
-	ctl.control = flags;
-	ctl.nppas = naddrs - 1;		// Unnatural numbers: counting from zero
-	ctl.ppa_list = naddrs == 1 ? dev_addrs[0] : (uint64_t)dev_addrs;
+	cmd.vadmin.opcode = S12_OPC_SET_BBT;	// Construct command
+	cmd.vadmin.control = flags;
+	cmd.vadmin.nppas = naddrs - 1;		// Unnatural numbers: counting from zero
+	cmd.vadmin.ppa_list = naddrs == 1 ? dev_addrs[0] : (uint64_t)dev_addrs;
 
-	err = ioctl(dev->fd, NVME_NVM_IOCTL_ADMIN_VIO, &ctl);
-	if (ret) {			// Fill return-codes when available
-		ret->result = ctl.result;
-		ret->status = ctl.status;
-	}
+	err = dev->be->vadmin(dev, &cmd, ret);
 	if (err) {
 		errno = EIO;
 		return -1;
