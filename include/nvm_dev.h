@@ -37,6 +37,7 @@ struct nvm_dev {
 	int fd;				///< Device IOCTL handle
 	char name[NVM_DEV_NAME_LEN];	///< Device name e.g. "nvme0n1"
 	char path[NVM_DEV_PATH_LEN];	///< Device path e.g. "/dev/nvme0n1"
+	uint8_t verid;			///< Open-Channel SSD version identifier
 	struct spec_ppaf_nand ppaf;	///< Device address format
 	struct spec_ppaf_nand_mask mask;///< Device address format mask
 	struct nvm_geo geo;		///< Device geometry
