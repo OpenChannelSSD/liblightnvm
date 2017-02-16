@@ -64,4 +64,6 @@ struct nvm_be {
 	int (*vadmin)(struct nvm_dev *, struct nvm_cmd *, struct nvm_ret *);
 };
 
+extern struct nvm_be nvm_be_ioctl;
+
 #endif /* __INTERNAL_NVM_BE_H */
