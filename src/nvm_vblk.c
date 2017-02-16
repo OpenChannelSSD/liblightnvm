@@ -26,16 +26,14 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <assert.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <errno.h>
 #include <stdio.h>
-#include <linux/lightnvm.h>
+#include <errno.h>
 #include <liblightnvm.h>
-#include <nvm.h>
+#include <nvm_dev.h>
+#include <nvm_vblk.h>
 #include <nvm_omp.h>
+#include <nvm_utils.h>
 
 struct nvm_vblk* nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addrs[],
 				int naddrs)
@@ -81,8 +79,8 @@ struct nvm_vblk* nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addrs[],
 }
 
 struct nvm_vblk *nvm_vblk_alloc_line(struct nvm_dev *dev, int ch_bgn,
-                                     int ch_end, int lun_bgn, int lun_end,
-                                     int blk)
+				     int ch_end, int lun_bgn, int lun_end,
+				     int blk)
 {
 	struct nvm_vblk *vblk;
 	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
