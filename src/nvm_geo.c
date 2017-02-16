@@ -39,10 +39,6 @@ void nvm_geo_pr(const struct nvm_geo *geo)
 	       geo->page_nbytes, geo->sector_nbytes, geo->meta_nbytes);
 	printf(" tbytes(%lub:%luMb),\n",
 	       geo->tbytes, geo->tbytes >> 20);
-	printf(" vpg_nbytes(%lub:%luKb),\n",
-	       geo->vpg_nbytes, geo->vpg_nbytes >> 10);
-	printf(" vblk_nbytes(%lub:%luMb)\n",
-	       geo->vblk_nbytes, geo->vblk_nbytes >> 20);
 	printf("}\n");
 }
 

@@ -293,8 +293,6 @@ struct nvm_geo {
 	size_t meta_nbytes;	///< Number of bytes for out-of-bound / metadata
 
 	size_t tbytes;		///< Total number of bytes in geometry
-	size_t vblk_nbytes;	///< Number of bytes per virtual block
-	size_t vpg_nbytes;	///< Number of bytes per virtual page
 };
 
 /**
@@ -615,7 +613,7 @@ const struct nvm_geo *nvm_dev_get_geo(struct nvm_dev *dev);
  * Allocate a buffer aligned to match the given geometry
  *
  * @note
- * nbytes must be greater than zero and a multiple of geo.vpage_nbytes
+ * nbytes must be greater than zero and a multiple of minimal granularity
  *
  * @param geo The geometry to get alignment information from
  * @param nbytes The size of the allocated buffer in bytes
@@ -673,7 +671,8 @@ ssize_t nvm_addr_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
  * @param addrs Array of memory address
  * @param naddrs Length of array of memory addresses
  * @param buf The buffer which content to write, must be aligned to device
- *            geo.vpage_nbytes and size equal to `naddrs * geo.nbytes`
+ *            geometry of minimal write granularity and size equal to
+ *            `naddrs * geo.nbytes`
  * @param meta Buffer containing metadata, must be of size equal to device
  *             `naddrs * geo.meta_nbytes`
  * @param flags Access mode
@@ -698,7 +697,7 @@ ssize_t nvm_addr_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
  * @param addrs List of memory address
  * @param naddrs Length of array of memory addresses
  * @param buf Buffer to store result of read into, must be aligned to device
- *            geo.vpage_nbytes and size equal to `naddrs * geo.nbytes`
+ *            granularity min read and size equal to `naddrs * geo.sector_nbytes`
  * @param meta Buffer to store content of metadata, must be of size equal to
  *             device `naddrs * geo.meta_nbytes`
  * @param flags Access mode
