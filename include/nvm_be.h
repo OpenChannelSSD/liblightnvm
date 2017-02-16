@@ -65,5 +65,6 @@ struct nvm_be {
 };
 
 extern struct nvm_be nvm_be_ioctl;
+extern struct nvm_be nvm_be_sysfs;
 
 #endif /* __INTERNAL_NVM_BE_H */
