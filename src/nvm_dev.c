@@ -27,6 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 #include <errno.h>
 #include <liblightnvm.h>
@@ -96,6 +97,11 @@ int nvm_dev_set_meta_mode(struct nvm_dev *dev, int meta_mode)
 	dev->meta_mode = meta_mode;
 
 	return 0;
+}
+
+int nvm_dev_get_nsid(struct nvm_dev *dev)
+{
+	return dev->nsid;
 }
 
 int nvm_dev_get_erase_naddrs_max(struct nvm_dev *dev)
@@ -220,6 +226,11 @@ struct nvm_dev * nvm_dev_openf(const char *dev_path, int flags) {
 
 	for (size_t i = 0; i < dev->nbbts; ++i)
 		dev->bbts[i] = NULL;
+
+	// HACK: use naming conventions to determine nsid, fallback to hardcode
+	dev->nsid = atoi(&dev_path[strlen(dev_path)-1]);
+	if ((dev->nsid < 1) || (dev->nsid > 1000))
+		dev->nsid = 1;
 
 	return dev;
 }
