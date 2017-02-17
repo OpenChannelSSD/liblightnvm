@@ -13,6 +13,7 @@ static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
 
 static int channel = 0;
 static int lun = 0;
+static int VERBOSE = 0;
 
 static struct nvm_dev *dev;
 static const struct nvm_geo *geo;
@@ -259,10 +260,18 @@ void _test_BBT_SET(int bbts_cached)
 		for (int pl = 0; pl < geo->nplanes; ++pl) {
 			int idx = (geo->nblocks/(i*2)) + pl;
 
+			if (VERBOSE)
+				printf("FROM: idx(%d), exp(%d)\n",
+					idx, bbt_exp->blks[idx]);
+
 			if (bbt_exp->blks[idx])
 				bbt_exp->blks[idx] = NVM_BBT_FREE;
 			else
 				bbt_exp->blks[idx] = NVM_BBT_HMRK;
+
+			if (VERBOSE)
+				printf("TO: idx(%d), exp(%d)\n",
+					idx, bbt_exp->blks[idx]);
 		}
 	}
 
@@ -282,12 +291,21 @@ void _test_BBT_SET(int bbts_cached)
 
 	CU_ASSERT_EQUAL(bbt_exp->nblks, bbt_act->nblks);	// Verify bbt
 
+	res = 0;
 	for (int blk = 0; blk < bbt_act->nblks; ++blk) {
 		CU_ASSERT_EQUAL(bbt_exp->blks[blk], bbt_act->blks[blk]);
 		if (bbt_exp->blks[blk] != bbt_act->blks[blk]) {
 			CU_FAIL("FAILED: Unexpected value of bbt");
+			res = -1;
 			break;
 		}
+	}
+	if (VERBOSE && res) {
+		for (int blk = 0; blk < bbt_act->nblks; ++blk)
+			if (bbt_exp->blks[blk] != bbt_act->blks[blk])
+				printf("FAILED: blk(%d): exp(%d) != act(%d)\n",
+					blk, bbt_exp->blks[blk], bbt_act->blks[blk]);
+
 	}
 
 	nvm_bbt_free(bbt_exp);
@@ -308,6 +326,8 @@ void test_BBT_SET_CACHED(void)
 int main(int argc, char **argv)
 {
 	switch(argc) {
+	case 5:
+		VERBOSE = atoi(argv[4]);
 	case 4:
 		lun = atoi(argv[3]);
 	case 3:
