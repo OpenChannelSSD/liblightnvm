@@ -212,6 +212,12 @@ struct nvm_dev * nvm_dev_openf(const char *dev_path, int flags) {
 	dev->bbts_cached = 0;
 	dev->nbbts = dev->geo.nchannels * dev->geo.nluns;
 	dev->bbts = malloc(sizeof(*dev->bbts) * dev->nbbts);
+	if (!dev->bbts) {
+		NVM_DEBUG("FAILED: malloc dev->bbts");
+		errno = ENOMEM;
+		return NULL;
+	}
+
 	for (size_t i = 0; i < dev->nbbts; ++i)
 		dev->bbts[i] = NULL;
 
