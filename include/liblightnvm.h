@@ -527,6 +527,15 @@ int nvm_dev_get_meta_mode(struct nvm_dev *dev);
 int nvm_dev_set_meta_mode(struct nvm_dev *dev, int meta_mode);
 
 /**
+ * Returns the NVME namespace identifier
+ *
+ * @param dev The device to obtain the NVME namespace of
+ *
+ * @return On success, NVME namespace identifier is returned.
+ */
+int nvm_dev_get_nsid(struct nvm_dev *dev);
+
+/**
  * Returns the maximum number of addresses to use when sending erases to device.
  * That is, when invoking nvm_addr_erase.
  *
