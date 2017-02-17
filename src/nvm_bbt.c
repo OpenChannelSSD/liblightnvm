@@ -358,11 +358,11 @@ int nvm_bbt_set(struct nvm_dev *dev, const struct nvm_bbt *bbt,
 	for (int i = 0; i < bbt->nblks; ++i)
 		dev->bbts[bbt_idx]->blks[i] = bbt->blks[i];
 
-	/* Flush bbt entry in managed memory to device */
-	if (!dev->bbts_cached)
-		return nvm_bbt_flush(dev, addr, ret);
+	if (dev->bbts_cached)
+		return 0;
 
-	return 0;
+	/* Flush bbt entry in managed memory to device */
+	return nvm_bbt_flush(dev, addr, ret);
 }
 
 int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
@@ -410,7 +410,7 @@ struct nvm_bbt *nvm_bbt_alloc_cp(const struct nvm_bbt *bbt)
 	new->addr = bbt->addr;
 	new->nblks = bbt->nblks;
 
-	new->blks = malloc(sizeof(*(new->blks)) * bbt->nblks);
+	new->blks = malloc(sizeof(*(new->blks)) * new->nblks);
 	if (!new->blks) {
 		NVM_DEBUG("FAILED: malloc new->nblks");
 		free(new);
