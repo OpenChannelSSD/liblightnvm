@@ -49,7 +49,7 @@ int nvm_cmd_user(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret)
 
 int nvm_cmd_admin(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret)
 {
-	return dev->be->user(dev, cmd, ret);
+	return dev->be->admin(dev, cmd, ret);
 }
 
 void nvm_cmd_pr(struct nvm_cmd *cmd)
