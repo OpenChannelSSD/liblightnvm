@@ -245,7 +245,7 @@ int main(int argc, char **argv)
 	if (CUE_SUCCESS != CU_initialize_registry())
 		return CU_get_error();
 
-	pSuite = CU_add_suite("nvm_bbt_*", setup, teardown);
+	pSuite = CU_add_suite("nvm_vblk_*", setup, teardown);
 	if (NULL == pSuite) {
 		CU_cleanup_registry();
 		return CU_get_error();
