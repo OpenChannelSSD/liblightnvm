@@ -32,6 +32,7 @@ int setup(void)
 	if (!dev) {
 		perror("nvm_dev_open");
 		CU_ASSERT_PTR_NOT_NULL(dev);
+		return -1;
 	}
 	geo = nvm_dev_get_geo(dev);
 
@@ -256,13 +257,12 @@ void _test_BBT_SET(int bbts_cached)
 	// Check that we have the expected number of blocks
 	CU_ASSERT_EQUAL(bbt_exp->nblks, geo->nplanes * geo->nblocks);
 
-	for (int i = 1; i < 5; ++i) {		// Flip state of four blocks
+	// Flip the state four plane-spanning-blocks
+	int nblks = 4 * geo->nplanes;
+	for (int i = 0; i < nblks; i += geo->nplanes) {
+		int plane_blk = (10 * geo->nplanes) + i * 4;
 		for (int pl = 0; pl < geo->nplanes; ++pl) {
-			int idx = (geo->nblocks/(i*2)) + pl;
-
-			if (VERBOSE)
-				printf("FROM: idx(%d), exp(%d)\n",
-					idx, bbt_exp->blks[idx]);
+			int idx = plane_blk + pl;
 
 			if (bbt_exp->blks[idx])
 				bbt_exp->blks[idx] = NVM_BBT_FREE;
@@ -270,8 +270,8 @@ void _test_BBT_SET(int bbts_cached)
 				bbt_exp->blks[idx] = NVM_BBT_HMRK;
 
 			if (VERBOSE)
-				printf("TO: idx(%d), exp(%d)\n",
-					idx, bbt_exp->blks[idx]);
+				printf("FLIPPED: blk(%d), idx(%d), exp(%d)\n",
+					plane_blk, idx, bbt_exp->blks[idx]);
 		}
 	}
 
