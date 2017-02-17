@@ -406,17 +406,18 @@ struct nvm_bbt *nvm_bbt_alloc_cp(const struct nvm_bbt *bbt)
 		return NULL;
 	}
 
+	new->dev = bbt->dev;
+	new->addr = bbt->addr;
+	new->nblks = bbt->nblks;
+
 	new->blks = malloc(sizeof(*(new->blks)) * bbt->nblks);
-	if (!new->nblks) {
+	if (!new->blks) {
 		NVM_DEBUG("FAILED: malloc new->nblks");
 		free(new);
 		errno = ENOMEM;
 		return NULL;
 	}
 
-	new->dev = bbt->dev;
-	new->addr = bbt->addr;
-	new->nblks = bbt->nblks;
 	for (uint64_t i = 0; i < bbt->nblks; ++i)
 		new->blks[i] = bbt->blks[i];
 
