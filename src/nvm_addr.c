@@ -169,7 +169,7 @@ static inline ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
 	err = dev->be->vuser(dev, &cmd, ret);
 #ifdef NVM_DEBUG_ENABLED
 	if (err || cmd.vuser.result || cmd.vuser.status) {
-		printf("opcode(0x%02x), err(%d), result(%u), status(%llu)\n",
+		printf("opcode(0x%02x), err(%d), result(%u), status(%lu)\n",
 		       opcode, err, cmd.vuser.result, cmd.vuser.status);
 		nvm_addr_prn(addrs, naddrs);
 	}
