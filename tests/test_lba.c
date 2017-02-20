@@ -81,7 +81,7 @@ void test_VBLK_PE_LW_LR(void)
 		for (int lun = bgn.g.lun; lun <= end.g.lun; ++lun) {
 			for (int blk = bgn.g.blk; blk <= end.g.blk; ++blk) {
 				struct nvm_vblk *vblk;
-				struct nvm_addr addr = {};
+				struct nvm_addr addr = {.ppa=0};
 
 				addr.g.ch = ch;
 				addr.g.lun = lun;
