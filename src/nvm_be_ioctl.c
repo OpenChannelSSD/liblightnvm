@@ -228,7 +228,7 @@ static inline int _ioctl_fill_geo(struct nvm_dev *dev, struct nvm_ret *ret)
 	return 0;
 }
 
-struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags)
+struct nvm_dev *nvm_be_ioctl_open(const char *dev_path)
 {
 	struct nvm_dev *dev = NULL;
 	struct nvm_ret ret = {};
