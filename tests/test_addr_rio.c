@@ -27,7 +27,7 @@ size_t compare_buffers(char *expected, char *actual, size_t nbytes)
 {
 	size_t diff = 0;
 
-	for (int i = 0; i < nbytes; ++i) {
+	for (size_t i = 0; i < nbytes; ++i) {
 		if (expected[i] != actual[i]) {
 			++diff;
 		}
@@ -39,9 +39,9 @@ size_t compare_buffers(char *expected, char *actual, size_t nbytes)
 void print_mismatch(char *expected, char *actual, size_t nbytes)
 {
 	printf("MISMATCHES:\n");
-	for (int i = 0; i < nbytes; ++i) {
+	for (size_t i = 0; i < nbytes; ++i) {
 		if (expected[i] != actual[i]) {
-			printf("i(%06d), expected(%c) != actual(%02d|0x%02x|%c)\n",
+			printf("i(%06lu), expected(%c) != actual(%02d|0x%02x|%c)\n",
 				i, expected[i], (int)actual[i], (int)actual[i], actual[i]);
 		}
 	}
@@ -165,8 +165,8 @@ void _test_NADDR(int naddrs, int pmode)
 	size_t npages = geo->npages;
 	size_t nsectors = geo->nsectors;
 
-	for (int cmd = 0; cmd < ncmds; ++cmd) {
-		struct nvm_ret ret = {};
+	for (size_t cmd = 0; cmd < ncmds; ++cmd) {
+		struct nvm_ret ret = {0,0};
 
 		for (int i = 0; i < naddrs; ++i) {
 			int a_rand = rand();
