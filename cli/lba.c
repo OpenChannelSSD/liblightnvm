@@ -8,7 +8,7 @@
 #include <liblightnvm.h>
 #include "nvm_cli.h"
 
-int cmd_pwrite(NVM_CLI_CMD_ARGS *args, int flags)
+int cmd_pwrite(NVM_CLI_CMD_ARGS *args)
 {
 	ssize_t err = 0;
 	struct nvm_ret ret;
@@ -35,7 +35,7 @@ int cmd_pwrite(NVM_CLI_CMD_ARGS *args, int flags)
 	return err ? 1 : 0;
 }
 
-int cmd_pread(NVM_CLI_CMD_ARGS *args, int flags)
+int cmd_pread(NVM_CLI_CMD_ARGS *args)
 {
 	ssize_t err = 0;
 	struct nvm_ret ret;
@@ -66,9 +66,10 @@ int cmd_pread(NVM_CLI_CMD_ARGS *args, int flags)
 //
 // Remaining code is CLI boiler-plate
 //
+
 static NVM_CLI_CMD cmds[] = {
-	{"pwrite", cmd_pwrite, NVM_CLI_ARG_COUNT_OFFSET, 0x0},
-	{"pread", cmd_pread, NVM_CLI_ARG_COUNT_OFFSET, 0x0},
+	{"pwrite", cmd_pwrite, NVM_CLI_ARG_COUNT_OFFSET, NULL},
+	{"pread", cmd_pread, NVM_CLI_ARG_COUNT_OFFSET, NULL},
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
@@ -80,7 +81,7 @@ int main(int argc, char **argv)
 
 	cmd = nvm_cli_setup(argc, argv, cmds, ncmds);
 	if (cmd) {
-		ret = cmd->func(&cmd->args, cmd->flags);
+		ret = cmd->func(cmd->args);
 	} else {
 		nvm_cli_usage(argv[0], "NVM logical-block-address (nvm_lba_*)",
 			      cmds, ncmds);
