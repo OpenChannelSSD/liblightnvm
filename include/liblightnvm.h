@@ -535,6 +535,14 @@ void nvm_dev_pr(struct nvm_dev *dev);
 int nvm_dev_get_pmode(struct nvm_dev *dev);
 
 /**
+ * Returns the verid of the given device
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @return On success, verid is returned
+ */
+int nvm_dev_get_verid(struct nvm_dev *dev);
+
+/**
  * Returns the 'meta-mode' of the given device
  *
  * @param dev Device handle obtained with `nvm_dev_open`
