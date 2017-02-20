@@ -323,8 +323,12 @@ enum nvm_bbt_state {
 struct nvm_bbt {
 	struct nvm_dev *dev;	///< Device on which the bbt resides
 	struct nvm_addr addr;	///< Address of the LUN described by the bbt
-	uint8_t *blks;	///< Array containing block status for each block in LUN
-	uint64_t nblks;	///< Length of the bad block array
+	uint64_t nblks;		///< Total # of blocks in lun
+	uint32_t nbad;		///< # of manufacturer marked bad blocks
+	uint32_t ngbad;		///< # of grown bad blocks
+	uint32_t ndmrk;		///< # of device reserved/marked blocks
+	uint32_t nhmrk;		///< # of of host reserved/marked blocks
+	uint8_t blks[0];	///< Array of block status for each block in LUN
 };
 
 /**
