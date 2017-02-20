@@ -21,7 +21,7 @@ size_t compare_buffers(char *expected, char *actual, size_t nbytes)
 {
 	size_t diff = 0;
 
-	for (int i = 0; i < nbytes; ++i) {
+	for (size_t i = 0; i < nbytes; ++i) {
 		if (expected[i] != actual[i]) {
 			++diff;
 		}
@@ -33,9 +33,9 @@ size_t compare_buffers(char *expected, char *actual, size_t nbytes)
 void print_mismatch(char *expected, char *actual, size_t nbytes)
 {
 	printf("MISMATCHES:\n");
-	for (int i = 0; i < nbytes; ++i) {
+	for (size_t i = 0; i < nbytes; ++i) {
 		if (expected[i] != actual[i]) {
-			printf("i(%06d), expected(%c) != actual(%02d|0x%02x|%c)\n",
+			printf("i(%06lu), expected(%c) != actual(%02d|0x%02x|%c)\n",
 				i, expected[i], (int)actual[i], (int)actual[i], actual[i]);
 		}
 	}
@@ -96,7 +96,7 @@ void _test_1ADDR(int use_meta)
 		CU_FAIL("nvm_buf_alloc");
 		goto exit_naddr;
 	}
-	for (int i = 0; i < meta_w_nbytes; ++i) {
+	for (size_t i = 0; i < meta_w_nbytes; ++i) {
 		meta_w[i] = 65;
 	}
 	for (int i = 0; i < naddrs; ++i) {
@@ -126,7 +126,7 @@ void _test_1ADDR(int use_meta)
 		goto exit_naddr;
 	}
 
-	for (int pl = 0; pl < geo->nplanes; ++pl) {	// Erase
+	for (size_t pl = 0; pl < geo->nplanes; ++pl) {	// Erase
 		addrs[pl].ppa = blk_addr.ppa;
 
 		addrs[pl].g.pl = pl;
@@ -138,7 +138,7 @@ void _test_1ADDR(int use_meta)
 		goto exit_naddr;
 	}
 
-	for (int pg = 0; pg < geo->npages; ++pg) {	// Write
+	for (size_t pg = 0; pg < geo->npages; ++pg) {	// Write
 		for (int i = 0; i < naddrs; ++i) {
 			addrs[i].ppa = blk_addr.ppa;
 
@@ -154,9 +154,9 @@ void _test_1ADDR(int use_meta)
 		}
 	}
 
-	for (int pg = 0; pg < geo->npages; ++pg) {		// Read
-		for (int pl = 0; pl < geo->nplanes; ++pl) {
-			for (int sec = 0; sec < geo->nsectors; ++sec) {
+	for (size_t pg = 0; pg < geo->npages; ++pg) {		// Read
+		for (size_t pl = 0; pl < geo->nplanes; ++pl) {
+			for (size_t sec = 0; sec < geo->nsectors; ++sec) {
 				struct nvm_addr addr;
 				size_t buf_diff = 0, meta_diff = 0;
 
@@ -252,7 +252,7 @@ void _test_NADDR(int use_meta, int pmode)
 		CU_FAIL("nvm_buf_alloc");
 		goto exit_naddr;
 	}
-	for (int i = 0; i < meta_nbytes; ++i) {
+	for (size_t i = 0; i < meta_nbytes; ++i) {
 		meta_w[i] = 65;
 	}
 	for (int i = 0; i < naddrs; ++i) {
@@ -282,7 +282,7 @@ void _test_NADDR(int use_meta, int pmode)
 		goto exit_naddr;
 	}
 
-	for (int pl = 0; pl < geo->nplanes; ++pl) {		// Erase
+	for (size_t pl = 0; pl < geo->nplanes; ++pl) {		// Erase
 		addrs[pl].ppa = blk_addr.ppa;
 
 		addrs[pl].g.pl = pl;
@@ -293,7 +293,7 @@ void _test_NADDR(int use_meta, int pmode)
 		goto exit_naddr;
 	}
 
-	for (int pg = 0; pg < geo->npages; ++pg) {		// Write
+	for (size_t pg = 0; pg < geo->npages; ++pg) {		// Write
 		for (int i = 0; i < naddrs; ++i) {
 			addrs[i].ppa = blk_addr.ppa;
 
@@ -309,7 +309,7 @@ void _test_NADDR(int use_meta, int pmode)
 		}
 	}
 
-	for (int pg = 0; pg < geo->npages; ++pg) {		// Read
+	for (size_t pg = 0; pg < geo->npages; ++pg) {		// Read
 		size_t buf_diff = 0, meta_diff = 0;
 
 		for (int i = 0; i < naddrs; ++i) {
