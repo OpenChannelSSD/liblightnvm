@@ -6,7 +6,7 @@
 #include <liblightnvm.h>
 #include "nvm_cli.h"
 
-int erase(NVM_CLI_CMD_ARGS *args, int flags)
+int erase(NVM_CLI_CMD_ARGS *args)
 {
 	struct nvm_ret ret;
 	int PMODE;
@@ -33,7 +33,7 @@ int erase(NVM_CLI_CMD_ARGS *args, int flags)
 	return err ? 1 : 0;
 }
 
-int write(NVM_CLI_CMD_ARGS *args, int flags)
+int _write(NVM_CLI_CMD_ARGS *args, int with_meta)
 {
 	struct nvm_ret ret;
 	int PMODE;
@@ -55,7 +55,7 @@ int write(NVM_CLI_CMD_ARGS *args, int flags)
 		return ENOMEM;
 	nvm_buf_fill(buf, buf_nbytes);
 
-	if (flags & 0x1) {				// metadata buffer
+	if (with_meta) {				// metadata buffer
 		meta = nvm_buf_alloc(args->geo, meta_tbytes);
 		if (!meta) {
 			free(buf);
@@ -92,7 +92,17 @@ int write(NVM_CLI_CMD_ARGS *args, int flags)
 	return err ? 1 : 0;
 }
 
-int read(NVM_CLI_CMD_ARGS *args, int flags)
+int write(NVM_CLI_CMD_ARGS *args)
+{
+	return _write(args, 0);
+}
+
+int write_wm(NVM_CLI_CMD_ARGS *args)
+{
+	return _write(args, 1);
+}
+
+int _read(NVM_CLI_CMD_ARGS *args, int with_meta)
 {
 	struct nvm_ret ret;
 	int PMODE;
@@ -113,7 +123,7 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 	if (!buf)
 		return ENOMEM;
 
-	if (flags & 0x1) {				// metadata buffer
+	if (with_meta) {				// metadata buffer
 		meta = nvm_buf_alloc(args->geo, meta_tbytes);
 		if (!meta) {
 			free(buf);
@@ -154,7 +164,17 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 	return err;
 }
 
-int cmd_fmt(NVM_CLI_CMD_ARGS *args, int flags)
+int read(NVM_CLI_CMD_ARGS *args)
+{
+	return _read(args, 0);
+}
+
+int read_wm(NVM_CLI_CMD_ARGS *args)
+{
+	return _read(args, 1);
+}
+
+int cmd_fmt(NVM_CLI_CMD_ARGS *args)
 {
 	for (int i = 0; i < args->naddrs; ++i)
 		nvm_addr_pr(args->addrs[i]);
@@ -162,7 +182,7 @@ int cmd_fmt(NVM_CLI_CMD_ARGS *args, int flags)
 	return 0;
 }
 
-int cmd_gen2dev(NVM_CLI_CMD_ARGS *args, int flags)
+int cmd_gen2dev(NVM_CLI_CMD_ARGS *args)
 {
 	for (int i = 0; i < args->naddrs; ++i) {
 		printf("gen-addr"); nvm_addr_pr(args->addrs[i]);
@@ -173,7 +193,7 @@ int cmd_gen2dev(NVM_CLI_CMD_ARGS *args, int flags)
 	return 0;
 }
 
-int cmd_gen2lba(NVM_CLI_CMD_ARGS *args, int flags)
+int cmd_gen2lba(NVM_CLI_CMD_ARGS *args)
 {
 	for (int i = 0; i < args->naddrs; ++i) {
 		printf("gen-addr"); nvm_addr_pr(args->addrs[i]);
@@ -184,7 +204,7 @@ int cmd_gen2lba(NVM_CLI_CMD_ARGS *args, int flags)
 	return 0;
 }
 
-int cmd_gen2off(NVM_CLI_CMD_ARGS *args, int flags)
+int cmd_gen2off(NVM_CLI_CMD_ARGS *args)
 {
 	for (int i = 0; i < args->naddrs; ++i) {
 		printf("gen-addr"); nvm_addr_pr(args->addrs[i]);
@@ -195,7 +215,7 @@ int cmd_gen2off(NVM_CLI_CMD_ARGS *args, int flags)
 	return 0;
 }
 
-int cmd_dev2gen(NVM_CLI_CMD_ARGS *args, int flags)
+int cmd_dev2gen(NVM_CLI_CMD_ARGS *args)
 {
 	for (int i = 0; i < args->nlbas; ++i) {
 		printf("dev-addr(%064ld)\n", args->lbas[i]);
@@ -205,7 +225,7 @@ int cmd_dev2gen(NVM_CLI_CMD_ARGS *args, int flags)
 	return 0;
 }
 
-int cmd_lba2gen(NVM_CLI_CMD_ARGS *args, int flags)
+int cmd_lba2gen(NVM_CLI_CMD_ARGS *args)
 {
 	for (int i = 0; i < args->nlbas; ++i) {
 		printf("lba-addr(%064ld)\n", args->lbas[i]);
@@ -215,7 +235,7 @@ int cmd_lba2gen(NVM_CLI_CMD_ARGS *args, int flags)
 	return 0;
 }
 
-int cmd_off2gen(NVM_CLI_CMD_ARGS *args, int flags)
+int cmd_off2gen(NVM_CLI_CMD_ARGS *args)
 {
 	for (int i = 0; i < args->nlbas; ++i) {
 		printf("off-addr(%064ld)\n", args->lbas[i]);
@@ -229,19 +249,19 @@ int cmd_off2gen(NVM_CLI_CMD_ARGS *args, int flags)
 // Remaining code is CLI boiler-plate
 //
 static NVM_CLI_CMD cmds[] = {
-	{"erase", erase, NVM_CLI_ARG_ADDRLIST, 0x0},
-	{"write", write, NVM_CLI_ARG_ADDRLIST, 0x1},
-	{"read", read, NVM_CLI_ARG_ADDRLIST, 0x1},
-	{"write_wm", write, NVM_CLI_ARG_ADDRLIST, 0x0},
-	{"read_wm", read, NVM_CLI_ARG_ADDRLIST, 0x0},
-	{"from_hex", cmd_fmt, NVM_CLI_ARG_ADDRLIST, 0x0},
-	{"from_geo", cmd_fmt, NVM_CLI_ARG_CH_LUN_PL_BLK_PG_SEC, 0x0},
-	{"gen2dev", cmd_gen2dev, NVM_CLI_ARG_ADDRLIST, 0x0},
-	{"gen2lba", cmd_gen2lba, NVM_CLI_ARG_ADDRLIST, 0x0},
-	{"gen2off", cmd_gen2off, NVM_CLI_ARG_ADDRLIST, 0x0},
-	{"dev2gen", cmd_dev2gen, NVM_CLI_ARG_INTLIST, 0x0},
-	{"lba2gen", cmd_lba2gen, NVM_CLI_ARG_INTLIST, 0x0},
-	{"off2gen", cmd_off2gen, NVM_CLI_ARG_INTLIST, 0x0},
+	{"erase",	erase,		NVM_CLI_ARG_ADDRLIST, NULL},
+	{"write",	write,		NVM_CLI_ARG_ADDRLIST, NULL},
+	{"read",	read,		NVM_CLI_ARG_ADDRLIST, NULL},
+	{"write_wm",	write,		NVM_CLI_ARG_ADDRLIST, NULL},
+	{"read_wm",	read,		NVM_CLI_ARG_ADDRLIST, NULL},
+	{"from_hex",	cmd_fmt,	NVM_CLI_ARG_ADDRLIST, NULL},
+	{"from_geo",	cmd_fmt,	NVM_CLI_ARG_CH_LUN_PL_BLK_PG_SEC, NULL},
+	{"gen2dev",	cmd_gen2dev,	NVM_CLI_ARG_ADDRLIST, NULL},
+	{"gen2lba",	cmd_gen2lba,	NVM_CLI_ARG_ADDRLIST, NULL},
+	{"gen2off",	cmd_gen2off,	NVM_CLI_ARG_ADDRLIST, NULL},
+	{"dev2gen",	cmd_dev2gen,	NVM_CLI_ARG_INTLIST, NULL},
+	{"lba2gen",	cmd_lba2gen,	NVM_CLI_ARG_INTLIST, NULL},
+	{"off2gen",	cmd_off2gen,	NVM_CLI_ARG_INTLIST, NULL},
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
@@ -253,7 +273,7 @@ int main(int argc, char **argv)
 
 	cmd = nvm_cli_setup(argc, argv, cmds, ncmds);
 	if (cmd) {
-		ret = cmd->func(&cmd->args, cmd->flags);
+		ret = cmd->func(cmd->args);
 	} else {
 		nvm_cli_usage(argv[0], "NVM address (nvm_addr_*)", cmds, ncmds);
 		ret = 1;
