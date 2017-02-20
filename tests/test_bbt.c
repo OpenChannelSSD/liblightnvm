@@ -50,6 +50,46 @@ int teardown(void)
 	return 0;
 }
 
+void _verify_counters(struct nvm_dev *dev, const struct nvm_bbt *bbt)
+{
+	uint32_t nbad = 0, ngbad = 0, ndmrk = 0, nhmrk = 0;
+
+	for (int i = 0; i < bbt->nblks; ++i) {
+		switch (bbt->blks[i]) {
+		case NVM_BBT_FREE:
+			break;
+		case NVM_BBT_BAD:
+			++nbad;
+			break;
+		case NVM_BBT_GBAD:
+			++ngbad;
+			break;
+		case NVM_BBT_DMRK:
+			++ndmrk;
+			break;
+		case NVM_BBT_HMRK:
+			++nhmrk;
+			break;
+
+		default:
+			CU_FAIL("Invalid blk-state");
+			break;
+		}
+	}
+
+	if (nvm_dev_get_verid(dev) == 0x2) {	// Spec 2.0
+		nbad = nbad / geo->nplanes;
+		ngbad = ngbad / geo->nplanes;
+		ndmrk = ndmrk / geo->nplanes;
+		nhmrk = nhmrk / geo->nplanes;
+	}
+
+	CU_ASSERT_EQUAL(bbt->nbad, nbad);
+	CU_ASSERT_EQUAL(bbt->ngbad, ngbad);
+	CU_ASSERT_EQUAL(bbt->ndmrk, ndmrk);
+	CU_ASSERT_EQUAL(bbt->nhmrk, nhmrk);
+}
+
 /**
  * Test that we can get a valid bad-block-table from a device
  */
@@ -90,6 +130,8 @@ void _test_BBT_GET(int bbts_cached)
 				return;
 		}
 	}
+
+	_verify_counters(dev, bbt);
 
 	return;
 }
@@ -305,7 +347,6 @@ void _test_BBT_SET(int bbts_cached)
 			if (bbt_exp->blks[blk] != bbt_act->blks[blk])
 				printf("FAILED: blk(%d): exp(%d) != act(%d)\n",
 					blk, bbt_exp->blks[blk], bbt_act->blks[blk]);
-
 	}
 
 	nvm_bbt_free(bbt_exp);
