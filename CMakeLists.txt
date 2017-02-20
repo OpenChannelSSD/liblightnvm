@@ -7,15 +7,21 @@ set(NVM_VERSION "${NVM_VERSION_MAJOR}.${NVM_VERSION_MINOR}.${NVM_VERSION_PATCH}"
 
 project(liblightnvm C)
 include(FeatureSummary)
+include(use_c11)
+
+use_c11()
+enable_c_flag("-std=c11")
+enable_c_flag("-Wall")
+enable_c_flag("-Wextra")
+enable_c_flag("-pedantic")
+
 if (NOT CMAKE_VERSION VERSION_LESS "2.8.12")
 include(FindOpenMP)
 endif()
-include(use_c99)
-use_c99()
-
 if (OPENMP_FOUND)
 	set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 endif()
+message("CORE-CMAKE_C_FLAGS(${CMAKE_C_FLAGS})")
 
 find_package(udev REQUIRED liblightnvm)
 set_package_properties(udev PROPERTIES DESCRIPTION "Queriying OpenChannel SSDs via sysfs/udev.")
@@ -26,7 +32,6 @@ if ( NOT ${UDEV_FOUND} )
 endif()
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DNVM_DEBUG_ENABLED")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 
 set(HEADER_FILES
 	include/liblightnvm.h
