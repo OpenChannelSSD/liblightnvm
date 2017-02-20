@@ -62,12 +62,11 @@ void nvm_buf_fill(char *buf, size_t nbytes)
 void nvm_buf_pr(char *buf, size_t nbytes)
 {
 	const int width = 32;
-	int i;
 
 	printf("** NVM_BUF_PR - BEGIN **");
-	for (i = 0; i < nbytes; i++) {
+	for (size_t i = 0; i < nbytes; i++) {
 		if (!(i % width))
-			printf("\ni[%d,%d]: ", i, i+(width-1));
+			printf("\ni[%lu,%lu]: ", i, i+(width-1));
 		printf(" %c", buf[i]);
 	}
 	printf("\n** NVM_BUF_PR - END **\n");
