@@ -32,17 +32,14 @@
 
 #define NVM_UNIVERSAL_SECT_SH 9
 
-#define NVM_MIN(x, y) ({                \
-        __typeof__(x) _min1 = (x);      \
-        __typeof__(y) _min2 = (y);      \
-        (void) (&_min1 == &_min2);      \
-        _min1 < _min2 ? _min1 : _min2; })
-
-#define NVM_MAX(x, y) ({                \
-        __typeof__(x) _min1 = (x);      \
-        __typeof__(y) _min2 = (y);      \
-        (void) (&_min1 == &_min2);      \
-        _min1 > _min2 ? _min1 : _min2; })
+/**
+ * Macro to suppress warnings on unused arguments.
+ */
+#ifdef __GNUC__
+#  define NVM_UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
+#else
+#  define NVM_UNUSED(x) UNUSED_ ## x
+#endif
 
 #define NVM_I64_FMT	"%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"\
 			"%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"\
