@@ -152,12 +152,13 @@ void spec_lbaf_pr(struct spec_lbaf *lbaf)
 struct spec_bbt *spec_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 			      struct nvm_ret *ret)
 {
-	struct nvm_cmd cmd = {};
+	struct nvm_cmd cmd = {.cdw={0}};
 	struct spec_bbt *spec_bbt;
 	size_t spec_bbt_sz;
-	int err, nblks;
+	int err;
 
-	nblks = dev->geo.nblocks * dev->geo.nplanes;
+
+	uint32_t nblks = dev->geo.nblocks * dev->geo.nplanes;
 	spec_bbt_sz = sizeof(*spec_bbt) + sizeof(*(spec_bbt->blk)) * nblks;
 	spec_bbt = nvm_buf_alloc(&dev->geo, spec_bbt_sz);
 	if (!spec_bbt) {
@@ -193,7 +194,7 @@ struct spec_bbt *spec_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 int spec_bbt_set(struct nvm_dev *dev, struct nvm_addr addrs[],
 		 int naddrs, uint16_t flags, struct nvm_ret *ret)
 {
-	struct nvm_cmd cmd = {};
+	struct nvm_cmd cmd = {.cdw={0}};
 	uint64_t dev_addrs[naddrs];
 	int err;
 
@@ -261,7 +262,7 @@ void spec_bbt_pr(struct spec_bbt *bbt)
 	printf("rsvd2(..)\n");
 
 	printf("blk[] (notgood) {\n");
-	for (int i = 0; i < bbt->tblks; ++i) {
+	for (uint32_t i = 0; i < bbt->tblks; ++i) {
 		if (i)
 			printf("\n");
 		printf("i(%d) = %u", i, bbt->blk[i]);
