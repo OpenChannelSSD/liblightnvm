@@ -18,7 +18,7 @@ size_t compare_buffers(char *expected, char *actual, size_t nbytes)
 {
 	size_t diff = 0;
 
-	for (int i = 0; i < nbytes; ++i) {
+	for (size_t i = 0; i < nbytes; ++i) {
 		if (expected[i] != actual[i]) {
 			++diff;
 		}
@@ -52,7 +52,7 @@ void _test_FMT_CONV(int func)
 	size_t tsecs = geo->nchannels * geo->nluns * geo->nplanes *
 		       geo->nblocks * geo->npages * geo->nsectors;
 
-	for (int sec = 0; sec < tsecs; ++sec) {
+	for (size_t sec = 0; sec < tsecs; ++sec) {
 		struct nvm_addr expected;
 		struct nvm_addr actual;
 		uint64_t conv;
