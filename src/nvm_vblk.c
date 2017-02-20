@@ -133,7 +133,7 @@ ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 	#pragma omp parallel for num_threads(NTHREADS) schedule(static,1) reduction(+:nerr) ordered if (NTHREADS>1)
 	for (int off = 0; off < vblk->nblks; off += CMD_NBLKS) {
 		ssize_t err;
-		struct nvm_ret ret = {};
+		struct nvm_ret ret = {0,0};
 
 		const int nblks = NVM_MIN(CMD_NBLKS, vblk->nblks - off);
 		const int naddrs = nblks * BLK_NADDRS;
@@ -240,7 +240,7 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf, size_t count,
 
 	#pragma omp parallel for num_threads(NTHREADS) schedule(static,1) reduction(+:nerr) ordered if(NTHREADS>1)
 	for (size_t off = bgn; off < end; off += CMD_NSPAGES) {
-		struct nvm_ret ret = {};
+		struct nvm_ret ret = {0,0};
 
 		const int nspages = NVM_MIN(CMD_NSPAGES, (int)(end - off));
 		const int naddrs = nspages * SPAGE_NADDRS;
@@ -329,7 +329,7 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 
 	#pragma omp parallel for num_threads(NTHREADS) schedule(static,1) reduction(+:nerr) ordered if(NTHREADS>1)
 	for (size_t off = bgn; off < end; off += CMD_NSPAGES) {
-		struct nvm_ret ret = {};
+		struct nvm_ret ret = {0,0};
 
 		const int nspages = NVM_MIN(CMD_NSPAGES, (int)(end - off));
 		const int naddrs = nspages * SPAGE_NADDRS;
