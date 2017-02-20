@@ -25,14 +25,13 @@ typedef struct {
 	ssize_t offset;
 } NVM_CLI_CMD_ARGS;
 
-typedef int (*NVM_CLI_CMD_FUNC)(NVM_CLI_CMD_ARGS*, int);
+typedef int (*NVM_CLI_CMD_FUNC)(NVM_CLI_CMD_ARGS*);
 
 typedef struct {
 	char name[NVM_CLI_CMD_LEN];
 	NVM_CLI_CMD_FUNC func;
 	NVM_CLI_CMD_ARGTYPE argt;
-	int flags;
-	NVM_CLI_CMD_ARGS args;
+	NVM_CLI_CMD_ARGS *args;
 } NVM_CLI_CMD;
 
 void nvm_cli_usage(const char *cli_name, const char *cli_description,
