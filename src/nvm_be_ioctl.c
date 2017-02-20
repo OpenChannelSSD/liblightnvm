@@ -88,7 +88,10 @@ int nvm_be_ioctl_user(struct nvm_dev *dev, struct nvm_cmd *cmd,
 		      struct nvm_ret *ret)
 {
 	const int err = ioctl(dev->fd, NVME_IOCTL_SUBMIT_IO, cmd);
-
+	if (ret) {
+		ret->result = 0x0;
+		ret->status = 0x0;
+	}
 	if (err) {
 		errno = EIO;
 		return -1;
@@ -101,7 +104,10 @@ int nvm_be_ioctl_admin(struct nvm_dev *dev, struct nvm_cmd *cmd,
 		       struct nvm_ret *ret)
 {
 	const int err = ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, cmd);
-
+	if (ret) {
+		ret->result = cmd->admin.result;
+		ret->status = 0x0;
+	}
 	if (err) {
 		errno = EIO;
 		return -1;
@@ -124,7 +130,7 @@ static inline void _construct_ppaf_mask(struct spec_ppaf_nand *ppaf,
 
 static inline int _ioctl_fill_geo(struct nvm_dev *dev, struct nvm_ret *ret)
 {
-	struct nvm_cmd cmd = {};
+	struct nvm_cmd cmd = {.cdw={0}};
 	struct spec_identify *idf;
 	int err;
 
@@ -231,7 +237,7 @@ static inline int _ioctl_fill_geo(struct nvm_dev *dev, struct nvm_ret *ret)
 struct nvm_dev *nvm_be_ioctl_open(const char *dev_path)
 {
 	struct nvm_dev *dev = NULL;
-	struct nvm_ret ret = {};
+	struct nvm_ret ret = {0,0};
 	int err;
 	
 	if (strlen(dev_path) > NVM_DEV_PATH_LEN) {
