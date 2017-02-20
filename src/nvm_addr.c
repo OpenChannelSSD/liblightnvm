@@ -52,7 +52,7 @@ void nvm_addr_pr(struct nvm_addr addr)
 void nvm_addr_prn(struct nvm_addr *addr, unsigned int naddrs)
 {
 	printf("naddrs(%d) {\n", naddrs);
-	for (int i = 0; i < naddrs; ++i) {
+	for (unsigned int i = 0; i < naddrs; ++i) {
 		printf(" %02d: ", i); nvm_addr_pr(addr[i]);
 	}
 	printf("}\n");
@@ -138,7 +138,7 @@ static inline ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
 				   uint16_t flags, uint16_t opcode,
 				   struct nvm_ret *ret)
 {
-	struct nvm_cmd cmd = {};
+	struct nvm_cmd cmd = {.cdw={0}};
 	uint64_t dev_addrs[naddrs];
 	int i, err;
 
