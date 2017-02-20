@@ -72,6 +72,11 @@ const struct nvm_geo * nvm_dev_get_geo(struct nvm_dev *dev)
 	return &dev->geo;
 }
 
+int nvm_dev_get_verid(struct nvm_dev *dev)
+{
+	return dev->verid;
+}
+
 int nvm_dev_get_pmode(struct nvm_dev *dev)
 {
 	return dev->pmode;
