@@ -5,7 +5,7 @@
 #include <liblightnvm.h>
 #include "nvm_cli.h"
 
-int erase(NVM_CLI_CMD_ARGS *args, int flags)
+int erase(NVM_CLI_CMD_ARGS *args)
 {
 	ssize_t res = 0;
 
@@ -34,7 +34,7 @@ int erase(NVM_CLI_CMD_ARGS *args, int flags)
 	return res < 0;
 }
 
-int read(NVM_CLI_CMD_ARGS *args, int flags)
+int read(NVM_CLI_CMD_ARGS *args)
 {
 	ssize_t res = 0;
 
@@ -84,7 +84,7 @@ int read(NVM_CLI_CMD_ARGS *args, int flags)
 	return res < 0;
 }
 
-int write(NVM_CLI_CMD_ARGS *args, int flags)
+int write(NVM_CLI_CMD_ARGS *args)
 {
 	ssize_t res = 0;
 
@@ -130,7 +130,7 @@ int write(NVM_CLI_CMD_ARGS *args, int flags)
 	return res < 0;
 }
 
-int pad(NVM_CLI_CMD_ARGS *args, int flags)
+int pad(NVM_CLI_CMD_ARGS *args)
 {
 	ssize_t res = 0;
 
@@ -159,7 +159,7 @@ int pad(NVM_CLI_CMD_ARGS *args, int flags)
 	return res < 0;
 }
 
-int line_erase(NVM_CLI_CMD_ARGS *args, int flags)
+int line_erase(NVM_CLI_CMD_ARGS *args)
 {
 	ssize_t res = 0;
 
@@ -191,7 +191,7 @@ int line_erase(NVM_CLI_CMD_ARGS *args, int flags)
 	return res < 0;
 }
 
-int line_read(NVM_CLI_CMD_ARGS *args, int flags)
+int line_read(NVM_CLI_CMD_ARGS *args)
 {
 	ssize_t res = 0;
 
@@ -243,7 +243,7 @@ int line_read(NVM_CLI_CMD_ARGS *args, int flags)
 	return res < 0;
 }
 
-int line_write(NVM_CLI_CMD_ARGS *args, int flags)
+int line_write(NVM_CLI_CMD_ARGS *args)
 {
 	ssize_t res = 0;
 
@@ -291,7 +291,7 @@ int line_write(NVM_CLI_CMD_ARGS *args, int flags)
 	return res < 0;
 }
 
-int line_pad(NVM_CLI_CMD_ARGS *args, int flags)
+int line_pad(NVM_CLI_CMD_ARGS *args)
 {
 	ssize_t res = 0;
 
@@ -323,7 +323,7 @@ int line_pad(NVM_CLI_CMD_ARGS *args, int flags)
 	return res < 0;
 }
 
-int line_to_file(NVM_CLI_CMD_ARGS *args, int flags)
+int line_to_file(NVM_CLI_CMD_ARGS *args)
 {
 	ssize_t res = 0;
 
@@ -380,7 +380,7 @@ int line_to_file(NVM_CLI_CMD_ARGS *args, int flags)
 	return res < 0;
 }
 
-int set_erase(NVM_CLI_CMD_ARGS *args, int flags)
+int set_erase(NVM_CLI_CMD_ARGS *args)
 {
 	ssize_t res = 0;
 
@@ -407,7 +407,7 @@ int set_erase(NVM_CLI_CMD_ARGS *args, int flags)
 	return res < 0;
 }
 
-int set_read(NVM_CLI_CMD_ARGS *args, int flags)
+int set_read(NVM_CLI_CMD_ARGS *args)
 {
 	ssize_t res = 0;
 
@@ -454,7 +454,7 @@ int set_read(NVM_CLI_CMD_ARGS *args, int flags)
 	return res < 0;
 }
 
-int set_write(NVM_CLI_CMD_ARGS *args, int flags)
+int set_write(NVM_CLI_CMD_ARGS *args)
 {
 	ssize_t res = 0;
 
@@ -497,7 +497,7 @@ int set_write(NVM_CLI_CMD_ARGS *args, int flags)
 	return res < 0;
 }
 
-int set_pad(NVM_CLI_CMD_ARGS *args, int flags)
+int set_pad(NVM_CLI_CMD_ARGS *args)
 {
 	ssize_t res = 0;
 
@@ -528,21 +528,21 @@ int set_pad(NVM_CLI_CMD_ARGS *args, int flags)
 // Remaining code is CLI boiler-plate
 //
 static NVM_CLI_CMD cmds[] = {
-	{"erase", erase, NVM_CLI_ARG_ADDRLIST, 0x0},
-	{"read", read, NVM_CLI_ARG_ADDRLIST, 0x0},
-	{"write", write, NVM_CLI_ARG_ADDRLIST, 0x0},
-	{"pad", pad, NVM_CLI_ARG_ADDRLIST, 0x0},
+	{"erase",	erase,	NVM_CLI_ARG_ADDRLIST,	NULL},
+	{"read",	read,	NVM_CLI_ARG_ADDRLIST,	NULL},
+	{"write",	write,	NVM_CLI_ARG_ADDRLIST,	NULL},
+	{"pad",		pad,	NVM_CLI_ARG_ADDRLIST,	NULL},
 
-	{"set_erase", set_erase, NVM_CLI_ARG_ADDRLIST, 0x0},
-	{"set_read", set_read, NVM_CLI_ARG_ADDRLIST, 0x0},
-	{"set_write", set_write, NVM_CLI_ARG_ADDRLIST, 0x0},
-	{"set_pad", set_pad, NVM_CLI_ARG_ADDRLIST, 0x0},
+	{"set_erase",	set_erase,	NVM_CLI_ARG_ADDRLIST,	NULL},
+	{"set_read",	set_read,	NVM_CLI_ARG_ADDRLIST,	NULL},
+	{"set_write",	set_write,	NVM_CLI_ARG_ADDRLIST,	NULL},
+	{"set_pad",	set_pad,	NVM_CLI_ARG_ADDRLIST,	NULL},
 
-	{"line_erase", line_erase, NVM_CLI_ARG_LINE, 0x0},
-	{"line_read", line_read, NVM_CLI_ARG_LINE, 0x0},
-	{"line_write", line_write, NVM_CLI_ARG_LINE, 0x0},
-	{"line_pad", line_pad, NVM_CLI_ARG_LINE, 0x0},
-	{"line_to_file", line_to_file, NVM_CLI_ARG_LINE, 0x0},
+	{"line_erase",	line_erase,	NVM_CLI_ARG_LINE,	NULL},
+	{"line_read",	line_read,	NVM_CLI_ARG_LINE,	NULL},
+	{"line_write",	line_write,	NVM_CLI_ARG_LINE,	NULL},
+	{"line_pad",	line_pad,	NVM_CLI_ARG_LINE,	NULL},
+	{"line_to_file",line_to_file,	NVM_CLI_ARG_LINE,	NULL},
 };
 
 static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
@@ -554,7 +554,7 @@ int main(int argc, char **argv)
 
 	cmd = nvm_cli_setup(argc, argv, cmds, ncmds);
 	if (cmd) {
-		ret = cmd->func(&cmd->args, cmd->flags);
+		ret = cmd->func(cmd->args);
 	} else {
 		nvm_cli_usage(argv[0], "NVM Virtual Block (nvm_vblk_*)", cmds,
 			      ncmds);
