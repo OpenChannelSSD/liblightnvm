@@ -202,7 +202,7 @@ void spec_lbaf_pr(struct spec_lbaf *lbaf);
 /**
  * Prints a humanly readable representation of the give address format mask
  *
- * @param ppaf The 
+ * @param ppaf The address format to print
  */
 void spec_ppaf_nand_pr(struct spec_ppaf_nand* ppaf);
 
@@ -213,6 +213,39 @@ void spec_ppaf_nand_pr(struct spec_ppaf_nand* ppaf);
  */
 void spec_ppaf_nand_mask_pr(struct spec_ppaf_nand_mask* mask);
 
-//void nvm_lba_map_pr(struct nvm_lba_map* map);
+struct spec_bbt {
+	uint8_t		tblid[4];
+	uint16_t	verid;
+	uint16_t	revid;
+	uint32_t	rvsd1;
+	uint32_t	tblks;
+	uint32_t	tfact;
+	uint32_t	tgrown;
+	uint32_t	tdresv;
+	uint32_t	thresv;
+	uint32_t	rsvd2[8];
+	uint8_t		blk[0];
+};
+
+/**
+ * Construct and execute a LigthNVM spec rev.1.2 BBT_GET command
+ *
+ * @returns 0 on success. -1 on error and errno set to indicate the error
+ */
+struct spec_bbt *spec_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
+			      struct nvm_ret *ret);
+
+/**
+ * Construct and execute an LightNVM spec rev. 1.2 BBT_SET command
+ */
+int spec_bbt_set(struct nvm_dev *dev, struct nvm_addr addrs[],
+		 int naddrs, uint16_t flags, struct nvm_ret *ret);
+
+/**
+ * Prints a humanly readable representation of the given spec_bbt
+ *
+ * @param ppaf The address format to print
+ */
+void spec_bbt_pr(struct spec_bbt *bbt);
 
 #endif /* __INTERNAL_NVM_SPEC_H */
