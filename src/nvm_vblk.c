@@ -251,7 +251,7 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf, size_t count,
 		if (padding_buf)
 			buf_off = padding_buf;
 		else
-			buf_off = buf + (off - bgn) * geo->sector_nbytes * SPAGE_NADDRS;
+			buf_off = (const char*)buf + (off - bgn) * geo->sector_nbytes * SPAGE_NADDRS;
 
 		for (int i = 0; i < naddrs; ++i) {
 			const int spg = off + (i / SPAGE_NADDRS);
@@ -337,7 +337,7 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 		struct nvm_addr addrs[naddrs];
 		char *buf_off;
 
-		buf_off = buf + (off - bgn) * geo->sector_nbytes * SPAGE_NADDRS;
+		buf_off = (char*)buf + (off - bgn) * geo->sector_nbytes * SPAGE_NADDRS;
 
 		for (int i = 0; i < naddrs; ++i) {
 			const int spg = off + (i / SPAGE_NADDRS);
