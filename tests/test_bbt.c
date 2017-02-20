@@ -54,7 +54,7 @@ void _verify_counters(struct nvm_dev *dev, const struct nvm_bbt *bbt)
 {
 	uint32_t nbad = 0, ngbad = 0, ndmrk = 0, nhmrk = 0;
 
-	for (int i = 0; i < bbt->nblks; ++i) {
+	for (uint64_t i = 0; i < bbt->nblks; ++i) {
 		switch (bbt->blks[i]) {
 		case NVM_BBT_FREE:
 			break;
@@ -95,7 +95,7 @@ void _verify_counters(struct nvm_dev *dev, const struct nvm_bbt *bbt)
  */
 void _test_BBT_GET(int bbts_cached)
 {
-	struct nvm_ret ret = {};
+	struct nvm_ret ret = {0,0};
 	const struct nvm_bbt *bbt;
 
 	nvm_dev_set_bbts_cached(dev, bbts_cached);
@@ -117,7 +117,7 @@ void _test_BBT_GET(int bbts_cached)
 	}
 
 	// Verify that it contains valid states
-	for (int i = 0; i < bbt->nblks; ++i) {
+	for (uint64_t i = 0; i < bbt->nblks; ++i) {
 		switch(bbt->blks[i]) {
 			case NVM_BBT_FREE:
 			case NVM_BBT_BAD:
@@ -161,14 +161,14 @@ void test_BBT_GET_CACHED(void)
 //
 void _test_BBT_MARK_NADDR(unsigned int naddr_pr_call, int bbts_cached)
 {
-	struct nvm_ret ret = {};
+	struct nvm_ret ret = {0,0};
 	const int nblks = NVM_NADDR_MAX;
 	
 	const int nvblks = nblks / geo->nplanes;
 	const int vblk_ofz = 4;
 	const int vblk_skip = (geo->nblocks - vblk_ofz) / nvblks;
 
-	struct nvm_addr addrs[nblks];
+	struct nvm_addr addrs[NVM_NADDR_MAX];
 
 	nvm_dev_set_bbts_cached(dev, bbts_cached);
 	if (FLUSH_ALL && nvm_bbt_flush_all(dev, &ret)) {
@@ -178,7 +178,7 @@ void _test_BBT_MARK_NADDR(unsigned int naddr_pr_call, int bbts_cached)
 
 	for (int i = 0; i < nblks; i += geo->nplanes) {	// Construct addresses
 		int vblk = vblk_ofz + (i / geo->nplanes) * vblk_skip;
-		for (int pl = 0; pl < geo->nplanes; ++pl) {
+		for (size_t pl = 0; pl < geo->nplanes; ++pl) {
 			addrs[i + pl].ppa = lun_addr.ppa;
 			addrs[i + pl].g.blk = vblk;
 			addrs[i + pl].g.pl = pl;
@@ -279,7 +279,7 @@ void test_BBT_MARK_NADDR_1_CACHED(void)
 
 void _test_BBT_SET(int bbts_cached)
 {
-	struct nvm_ret ret = {};
+	struct nvm_ret ret = {0,0};
 	struct nvm_bbt *bbt_exp;
 	const struct nvm_bbt *bbt_act;
 	int res;
@@ -303,7 +303,7 @@ void _test_BBT_SET(int bbts_cached)
 	int nblks = 4 * geo->nplanes;
 	for (int i = 0; i < nblks; i += geo->nplanes) {
 		int plane_blk = (10 * geo->nplanes) + i * 4;
-		for (int pl = 0; pl < geo->nplanes; ++pl) {
+		for (size_t pl = 0; pl < geo->nplanes; ++pl) {
 			int idx = plane_blk + pl;
 
 			if (bbt_exp->blks[idx])
@@ -334,7 +334,7 @@ void _test_BBT_SET(int bbts_cached)
 	CU_ASSERT_EQUAL(bbt_exp->nblks, bbt_act->nblks);	// Verify bbt
 
 	res = 0;
-	for (int blk = 0; blk < bbt_act->nblks; ++blk) {
+	for (uint64_t blk = 0; blk < bbt_act->nblks; ++blk) {
 		CU_ASSERT_EQUAL(bbt_exp->blks[blk], bbt_act->blks[blk]);
 		if (bbt_exp->blks[blk] != bbt_act->blks[blk]) {
 			CU_FAIL("FAILED: Unexpected value of bbt");
@@ -343,9 +343,9 @@ void _test_BBT_SET(int bbts_cached)
 		}
 	}
 	if (VERBOSE && res) {
-		for (int blk = 0; blk < bbt_act->nblks; ++blk)
+		for (uint64_t blk = 0; blk < bbt_act->nblks; ++blk)
 			if (bbt_exp->blks[blk] != bbt_act->blks[blk])
-				printf("FAILED: blk(%d): exp(%d) != act(%d)\n",
+				printf("FAILED: blk(%lu): exp(%d) != act(%d)\n",
 					blk, bbt_exp->blks[blk], bbt_act->blks[blk]);
 	}
 
