@@ -26,24 +26,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
+#include <liblightnvm.h>
+#include <nvm_be.h>
+#include <nvm_dev.h>
 #include <nvm_spec.h>
 #include <nvm_utils.h>
-/*
-#define _GNU_SOURCE
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <libudev.h>
-#include <linux/lightnvm.h>
-#include <liblightnvm.h>
 #include <nvm_debug.h>
-#include <nvm_utils.h>
-*/
 
 void _s12_identify_pr(struct spec_identify *identify)
 {
@@ -157,3 +148,124 @@ void spec_lbaf_pr(struct spec_lbaf *lbaf)
 	printf(" sec_len(%u),\n", lbaf->sec_len);
 	printf("}\n");
 }
+
+struct spec_bbt *spec_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
+			      struct nvm_ret *ret)
+{
+	struct nvm_cmd cmd = {};
+	struct spec_bbt *spec_bbt;
+	size_t spec_bbt_sz;
+	int err, nblks;
+
+	nblks = dev->geo.nblocks * dev->geo.nplanes;
+	spec_bbt_sz = sizeof(*spec_bbt) + sizeof(*(spec_bbt->blk)) * nblks;
+	spec_bbt = nvm_buf_alloc(&dev->geo, spec_bbt_sz);
+	if (!spec_bbt) {
+		NVM_DEBUG("FAILED: malloc k_bbt failed");
+		errno = ENOMEM;
+		return NULL;
+	}
+
+	cmd.vadmin.opcode = S12_OPC_GET_BBT;
+	cmd.vadmin.addr = (uint64_t)spec_bbt;
+	cmd.vadmin.data_len = spec_bbt_sz;
+	cmd.vadmin.ppa_list = nvm_addr_gen2dev(dev, addr);
+	cmd.vadmin.nppas = 0;
+
+	err = dev->be->vadmin(dev, &cmd, ret);
+	if (err || (spec_bbt->tblks != nblks)) {
+		NVM_DEBUG("FAILED: be execution failed");
+		errno = EIO;
+		free(spec_bbt);
+		return NULL;
+	}
+	if (!(spec_bbt->tblid[0] == 'B' && spec_bbt->tblid[1] == 'B' &&
+	      spec_bbt->tblid[2] == 'L' && spec_bbt->tblid[3] == 'T')) {
+		NVM_DEBUG("FAILED: invalid format of returned bbt");
+		errno = EIO;
+		free(spec_bbt);
+		return NULL;
+	}
+
+	return spec_bbt;
+}
+
+int spec_bbt_set(struct nvm_dev *dev, struct nvm_addr addrs[],
+		 int naddrs, uint16_t flags, struct nvm_ret *ret)
+{
+	struct nvm_cmd cmd = {};
+	uint64_t dev_addrs[naddrs];
+	int err;
+
+	switch(flags) {
+	case NVM_BBT_FREE:
+	case NVM_BBT_BAD:
+	case NVM_BBT_DMRK:
+	case NVM_BBT_GBAD:
+	case NVM_BBT_HMRK:
+		break;
+	default:
+		NVM_DEBUG("FAILED: invalid mark");
+		errno = EINVAL;
+		return -1;
+	}
+
+	if (naddrs > NVM_NADDR_MAX) {
+		NVM_DEBUG("FAILED: naddrs > NVM_NADDR_MAX");
+		errno = EINVAL;
+		return -1;
+	}
+
+	for (int i = 0; i < naddrs; ++i) {	// Setup PPAs: Convert format
+		if (nvm_addr_check(addrs[i], &dev->geo)) {
+			NVM_DEBUG("FAILED: invalid addrs[i]");
+			errno = EINVAL;
+			return -1;
+		}
+		dev_addrs[i] = nvm_addr_gen2dev(dev, addrs[i]);
+	}
+
+	cmd.vadmin.opcode = S12_OPC_SET_BBT;	// Construct command
+	cmd.vadmin.control = flags;
+	cmd.vadmin.nppas = naddrs - 1;		// Unnatural numbers: counting from zero
+	cmd.vadmin.ppa_list = naddrs == 1 ? dev_addrs[0] : (uint64_t)dev_addrs;
+
+	err = dev->be->vadmin(dev, &cmd, ret);
+	if (err) {
+		NVM_DEBUG("FAILED: be execution failed");
+		errno = EIO;
+		return -1;
+	}
+
+	return 0;
+}
+
+void spec_bbt_pr(struct spec_bbt *bbt)
+{
+	if (!bbt) {
+		printf("spec_bbt(NULL)\n");
+		return;
+	}
+
+	printf("tblkid {%c, %c, %c, %c}\n",
+	       bbt->tblid[0], bbt->tblid[1], bbt->tblid[2], bbt->tblid[3]);
+	printf("verid(%u)\n", bbt->verid);
+	printf("revid(%u)\n", bbt->revid);
+	printf("rvsd1(%u)\n", bbt->rvsd1);
+	printf("tblks(%u)\n", bbt->tblks);
+	printf("tfact(%u)\n", bbt->tfact);
+	printf("tgrown(%u)\n", bbt->tgrown);
+
+	printf("tdresv(%u)\n", bbt->tdresv);
+	printf("thresv(%u)\n", bbt->thresv);
+	printf("rsvd2(..)\n");
+
+	printf("blk[] (notgood) {\n");
+	for (int i = 0; i < bbt->tblks; ++i) {
+		if (i)
+			printf("\n");
+		printf("i(%d) = %u", i, bbt->blk[i]);
+	}
+	printf("}\n");
+}
+
