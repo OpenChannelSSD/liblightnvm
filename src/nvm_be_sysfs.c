@@ -362,7 +362,7 @@ void nvm_be_sysfs_close(struct nvm_dev *dev)
 	close(dev->fd);
 }
 
-struct nvm_dev *nvm_be_sysfs_open(const char *dev_path, int flags)
+struct nvm_dev *nvm_be_sysfs_open(const char *dev_path)
 {
 	struct nvm_dev *dev;
 	int err;
