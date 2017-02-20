@@ -224,7 +224,7 @@ struct spec_bbt {
 	uint32_t	tdresv;
 	uint32_t	thresv;
 	uint32_t	rsvd2[8];
-	uint8_t		blk[0];
+	uint8_t		blk[];
 };
 
 /**
