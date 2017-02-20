@@ -328,7 +328,7 @@ struct nvm_bbt {
 	uint32_t ngbad;		///< # of grown bad blocks
 	uint32_t ndmrk;		///< # of device reserved/marked blocks
 	uint32_t nhmrk;		///< # of of host reserved/marked blocks
-	uint8_t blks[0];	///< Array of block status for each block in LUN
+	uint8_t blks[];		///< Array of block status for each block in LUN
 };
 
 /**
