@@ -56,7 +56,7 @@ static inline int _refresh_counters(struct nvm_dev *dev, struct nvm_bbt *bbt)
 	int ndmrk = 0;
 	int nhmrk = 0;
 
-	for (int i = 0; i < bbt->nblks; ++i) {
+	for (uint64_t i = 0; i < bbt->nblks; ++i) {
 		switch (bbt->blks[i]) {
 		case NVM_BBT_FREE:
 			break;
@@ -115,18 +115,19 @@ int nvm_bbt_flush(struct nvm_dev *dev, struct nvm_addr addr,
 
 	spec = spec_bbt_get(dev, addr, ret);
 	if (!spec) {
-		NVM_DEBUG("FAILED: spec_bbt_get failed");
+		NVM_DEBUG("FAILED: spec_bbt_get failed spec");
 		return -1;			// Propagate `errno`
 	}
 
 	if (cached->nblks != spec->tblks) {
-		NVM_DEBUG("FAILED: cached->blks != spec->tblks");
+		NVM_DEBUG("FAILED: cached->nblks(%lu) != spec->tblks(%u)",
+			  cached->nblks, spec->tblks);
 		errno = EINVAL;
 		free(spec);
 		return -1;
 	}
 	
-	for (int i = 0; i < cached->nblks; ++i) {	// Update on device
+	for (uint64_t i = 0; i < cached->nblks; ++i) {	// Update on device
 		struct nvm_addr blk_addr;
 
 		if (cached->blks[i] == spec->blk[i])
@@ -138,7 +139,7 @@ int nvm_bbt_flush(struct nvm_dev *dev, struct nvm_addr addr,
 		blk_addr.g.pl = i % dev->geo.nplanes;
 
 		if (spec_bbt_set(dev, &blk_addr, 1, cached->blks[i], ret)) {
-			NVM_DEBUG("FAILED: spec_bbt_set failed");
+			NVM_DEBUG("FAILED: spec_bbt_set");
 			free(spec);
 			return -1;		// Propagate `errno`
 		}
@@ -227,7 +228,7 @@ const struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 		return NULL;
 	}
 
-	for (int i = 0 ; i < dev->bbts[bbt_idx]->nblks; ++i)
+	for (uint64_t i = 0 ; i < dev->bbts[bbt_idx]->nblks; ++i)
 		dev->bbts[bbt_idx]->blks[i] = spec->blk[i];
 
 	dev->bbts[bbt_idx]->nbad = spec->tfact;
@@ -260,7 +261,7 @@ int nvm_bbt_set(struct nvm_dev *dev, const struct nvm_bbt *bbt,
 
 	/* Update bbt entry in managed memory with given bbt */
 	bbt_idx = _bbt_idx(dev, addr);
-	for (int i = 0; i < bbt->nblks; ++i)
+	for (uint64_t i = 0; i < bbt->nblks; ++i)
 		dev->bbts[bbt_idx]->blks[i] = bbt->blks[i];
 
 	_refresh_counters(dev, dev->bbts[bbt_idx]);
@@ -302,7 +303,7 @@ struct nvm_bbt *nvm_bbt_alloc_cp(const struct nvm_bbt *bbt)
 {
 	struct nvm_bbt *new;
 
-	if ((!bbt) || (!bbt->blks)) {
+	if (!bbt) {
 		NVM_DEBUG("FAILED: given bbt is invalid");
 		errno = EINVAL;
 		return NULL;
@@ -331,27 +332,32 @@ void nvm_bbt_free(struct nvm_bbt *bbt)
 void nvm_bbt_pr(const struct nvm_bbt *bbt)
 {
 	int nnotfree = 0;
+	uint64_t npl_blks, nplanes;
 
 	if (!bbt) {
 		printf("bbt { NULL }\n");
 		return;
 	}
 
+	nplanes = bbt->dev->geo.nplanes;
+	npl_blks = bbt->nblks / nplanes;
+
 	printf("bbt {\n");
 	printf(" addr"); nvm_addr_pr(bbt->addr);
-	printf(" nblks(%lu) {", bbt->nblks);
-	for (int i = 0; i < bbt->nblks; i += bbt->dev->geo.nplanes) {
-		int blk = i / bbt->dev->geo.nplanes;
+	printf(" nblks(%lu),\n", bbt->nblks);
+	printf(" npl_blks(%lu) {", npl_blks);
+	for (uint64_t blk = 0; blk < bbt->nblks; ++blk) {
+		if (!(blk % nplanes))
+			printf("\n  blk(%04lu): [ ", blk / nplanes);
 
-		printf("\n  blk(%04d): [ ", blk);
-		for (int blk = i; blk < (i+ bbt->dev->geo.nplanes); ++blk) {
-			nvm_bbt_state_pr(bbt->blks[blk]);
-			printf(" ");
-			if (bbt->blks[blk]) {
-				++nnotfree;
-			}
+		nvm_bbt_state_pr(bbt->blks[blk]);
+		printf(" ");
+		if (bbt->blks[blk]) {
+			++nnotfree;
 		}
-		printf("]");
+
+		if (!((blk+1) % nplanes))
+			printf("]");
 	}
 	printf("\n },\n");
 	printf(" tnotfree(%d) {\n", nnotfree);
