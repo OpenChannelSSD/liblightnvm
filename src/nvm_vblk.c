@@ -35,6 +35,10 @@
 #include <nvm_omp.h>
 #include <nvm_utils.h>
 
+static inline int NVM_MIN(int x, int y) {
+	return x < y ? x : y;
+}
+
 struct nvm_vblk* nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addrs[],
 				int naddrs)
 {
