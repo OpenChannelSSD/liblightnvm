@@ -26,7 +26,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -36,18 +35,15 @@
 void *nvm_buf_alloc(const struct nvm_geo *geo, size_t nbytes)
 {
 	char *buf;
-	int ret;
 
 	if (!nbytes) {
 		errno = EINVAL;
 		return NULL;
 	}
 
-	ret = posix_memalign((void **)&buf, geo->sector_nbytes, nbytes);
-	if (ret) {
-		errno = ret;
-		return NULL;
-	}
+	buf = aligned_alloc(geo->sector_nbytes, nbytes);
+	if (!buf)
+		return NULL;	// Propagate errno
 
 	return buf;
 }
