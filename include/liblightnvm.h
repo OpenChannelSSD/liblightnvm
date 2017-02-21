@@ -117,7 +117,7 @@ struct nvm_ret {
  */
 struct nvm_cmd {
 	union {
-		struct nvm_cmd_vuser {
+		struct {
 			uint8_t opcode;
 			uint8_t flags;
 			uint16_t control;
@@ -133,7 +133,7 @@ struct nvm_cmd {
 			uint32_t rsvd3[3];
 		} vuser;	///< Common fields for vector user commands
 
-		struct nvm_cmd_vadmin {
+		struct {
 			uint8_t opcode;
 			uint8_t flags;
 			uint8_t rsvd[2];
@@ -155,7 +155,7 @@ struct nvm_cmd {
 			uint32_t timeout_ms;
 		} vadmin;	///< Common fields for vector admin commands
 
-		struct nvm_cmd_admin {
+		struct {
 			uint8_t opcode;
 			uint8_t flags;
 			uint16_t rsvd1;
@@ -176,7 +176,7 @@ struct nvm_cmd {
 			uint32_t result;
 		} admin;	///< Common fields for admin commands
 
-		struct nvm_cmd_user {
+		struct {
 			uint8_t opcode;
 			uint8_t flags;
 			uint16_t control;
