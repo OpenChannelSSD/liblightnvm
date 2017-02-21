@@ -20,7 +20,6 @@ env:
   matrix:
     - DIST_VERS=16.04 DIST_CODE=xenial
     - DIST_VERS=14.04 DIST_CODE=trusty
-    - DIST_VERS=12.04 DIST_CODE=precise
 
 branches:
   except:
