@@ -11,7 +11,8 @@ if ( "${CUNIT}" STREQUAL "CUNIT-NOTFOUND" )
 endif()
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DNVM_DEBUG_ENABLED")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+
+message("TESTS-CMAKE_C_FLAGS(${CMAKE_C_FLAGS})")
 
 include_directories("${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_SOURCE_DIR}/include/linux/uapi")
