@@ -21,17 +21,15 @@ void test_DEV_OPEN_CLOSE(void)
 
 void test_DEV_OPEN_CLOSE_N(void)
 {
-	int i;
-
 	const int n = 10;
-	struct nvm_dev *dev[n];
+	struct nvm_dev *dev[10];
 
-	for(i=0; i<n; ++i) {
+	for (int i = 0; i < n; ++i) {
 		dev[i] = nvm_dev_open(nvm_dev_path);
 		CU_ASSERT_PTR_NOT_NULL(dev[i]);
 	}
 
-	for(i=0; i<n; ++i) {
+	for (int i = 0; i < n; ++i) {
 		nvm_dev_close(dev[i]);
 		CU_ASSERT_PTR_NOT_NULL(dev[i]);
 		// still dangling...
