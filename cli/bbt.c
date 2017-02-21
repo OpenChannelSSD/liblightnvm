@@ -11,7 +11,7 @@
 int get(NVM_CLI_CMD_ARGS *args)
 {
 	const struct nvm_bbt* bbt;
-	struct nvm_ret ret = {0};
+	struct nvm_ret ret = {0,0};
 
 	printf("** nvm_bbt_get(...):\n");
 
@@ -30,7 +30,7 @@ int get(NVM_CLI_CMD_ARGS *args)
 int _set(NVM_CLI_CMD_ARGS *args, enum nvm_bbt_state state)
 {
 	struct nvm_bbt* bbt;
-	struct nvm_ret ret = {0};
+	struct nvm_ret ret = {0,0};
 	int nupdates;
 
 	printf("** nvm_bbt_set(...):\n");
@@ -92,7 +92,7 @@ int set_h(NVM_CLI_CMD_ARGS *args)
 int _mark(NVM_CLI_CMD_ARGS *args, enum nvm_bbt_state state)
 {
 	ssize_t err = 0;
-	struct nvm_ret ret = {0};
+	struct nvm_ret ret = {0,0};
 
 	printf("** nvm_bbt_mark(...):\n");
 	for (int i = 0; i < args->naddrs; ++i)
