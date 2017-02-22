@@ -12,6 +12,12 @@ typedef enum nvm_cli_argtype {
 	NVM_CLI_ARG_CH_LUN_PL_BLK_PG_SEC,
 	NVM_CLI_ARG_LINE,
 	NVM_CLI_ARG_COUNT_OFFSET,
+	NVM_CLI_ARG_MISC_ADDR,
+	//above cmd open blockdev(need get info from /sys/block/nvme0n1/lightnvm)
+	
+	// below cmd open char-dev(don't need get extra info from udev)
+	NVM_CLI_ARG_MISC_RDREG,	
+	NVM_CLI_ARG_MISC_WRREG,
 } NVM_CLI_CMD_ARGTYPE;
 
 typedef struct {
