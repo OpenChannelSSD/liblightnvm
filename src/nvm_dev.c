@@ -30,6 +30,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <liblightnvm.h>
 #include <nvm_be.h>
 #include <nvm_dev.h>
@@ -256,6 +258,50 @@ void nvm_dev_close(struct nvm_dev *dev)
 
 	nvm_bbt_flush_all(dev, NULL);
 	free(dev->bbts);
+	free(dev);
+}
+
+// Some Misc command open char device /dev/nvme0n1
+// it's don't need get and fillup geo, ppaf. etc
+struct nvm_dev *char_dev_open(const char *dev_path)
+{
+	struct nvm_dev *dev;
+	
+	if (strlen(dev_path) > NVM_DEV_PATH_LEN) {
+		NVM_DEBUG("FAILED: Device path too long\n");
+		return NULL;
+	}
+
+	dev = malloc(sizeof(*dev));
+	if (dev) {
+		memset(dev, 0, sizeof(*dev));
+	} else {
+		NVM_DEBUG("FAILED: nvm_dev_new.\n");
+		return NULL;
+	}
+
+	strncpy(dev->path, dev_path, NVM_DEV_PATH_LEN);
+	strncpy(dev->name, dev_path+5, NVM_DEV_NAME_LEN);
+
+	dev->fd = open(dev->path, O_RDWR);
+	if (dev->fd < 0) {
+		NVM_DEBUG("FAILED: open dev->path(%s) dev->fd(%d)\n",
+			  dev->path, dev->fd);
+
+		free(dev);
+		
+		return NULL;
+	}
+
+	return dev;
+}
+
+void char_dev_close(struct nvm_dev *dev)
+{
+	if (!dev)
+		return;
+
+	close(dev->fd);
 	free(dev);
 }
 

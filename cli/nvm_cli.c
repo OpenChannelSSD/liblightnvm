@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
-
+#include <nvm_dev.h>
 static NVM_CLI_CMD_ARGS args;
 
 static size_t start, stop;
@@ -123,6 +123,15 @@ void nvm_cli_usage(const char *cli_name, const char *cli_description,
 		case NVM_CLI_ARG_COUNT_OFFSET:
 			printf("count offset");
 			break;
+		case NVM_CLI_ARG_MISC_ADDR:
+			printf("addr");
+			break;
+		case NVM_CLI_ARG_MISC_WRREG:
+			printf("regaddr value32");
+			break;
+		case NVM_CLI_ARG_MISC_RDREG:
+			printf("regaddr");
+			break;
 
 		case NVM_CLI_ARG_NONE:
 			break;
@@ -167,45 +176,59 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 	memset(dev_path, 0, sizeof(dev_path));
 	strcpy(dev_path, argv[2]);
 
-	args.dev = nvm_dev_open(dev_path);		// Open device
-	if (!args.dev) {
-		perror("nvm_dev_open");
-		return NULL;
-	}
-
-	meta_mode = nvm_cli_meta_mode(args.dev);
-	if (meta_mode < 0) {
-		perror("Failed using meta_mode from CLI");
-		return NULL;
-	}
-	nvm_dev_set_meta_mode(args.dev, meta_mode);
-
-	if (getenv("NVM_CLI_ERASE_NADDRS_MAX")) {
-		int erase_naddrs_max = atoi(getenv("NVM_CLI_ERASE_NADDRS_MAX"));
-		if (nvm_dev_set_erase_naddrs_max(args.dev, erase_naddrs_max)) {
-			perror("nvm_dev_erase_naddrs_max");
+	if (cmd->argt >= NVM_CLI_ARG_MISC_RDREG)
+	{
+		// open char-device(/dev/nvme0), no udev
+		args.dev = char_dev_open(dev_path);
+		if (!args.dev) {
+			perror("char_dev_open");
 			return NULL;
 		}
 	}
 
-	if (getenv("NVM_CLI_READ_NADDRS_MAX")) {
-		int read_naddrs_max = atoi(getenv("NVM_CLI_READ_NADDRS_MAX"));
-		if (nvm_dev_set_read_naddrs_max(args.dev, read_naddrs_max)) {
-			perror("nvm_dev_read_naddrs_max");
+	else
+	{
+		// open block-device(dev/nvme0n1), udev exist
+		args.dev = nvm_dev_open(dev_path);		// Open device
+		if (!args.dev) {
+			perror("nvm_dev_open");
 			return NULL;
 		}
-	}
 
-	if (getenv("NVM_CLI_WRITE_NADDRS_MAX")) {
-		int write_naddrs_max = atoi(getenv("NVM_CLI_WRITE_NADDRS_MAX"));
-		if (nvm_dev_set_write_naddrs_max(args.dev, write_naddrs_max)) {
-			perror("nvm_dev_write_naddrs_max");
+		meta_mode = nvm_cli_meta_mode(args.dev);
+		if (meta_mode < 0) {
+			perror("Failed using meta_mode from CLI");
 			return NULL;
 		}
-	}
+		nvm_dev_set_meta_mode(args.dev, meta_mode);
 
-	args.geo = nvm_dev_get_geo(args.dev);	// Get geometry
-	args.addrs[0].ppa = 0;
+		if (getenv("NVM_CLI_ERASE_NADDRS_MAX")) {
+			int erase_naddrs_max = atoi(getenv("NVM_CLI_ERASE_NADDRS_MAX"));
+			if (nvm_dev_set_erase_naddrs_max(args.dev, erase_naddrs_max)) {
+				perror("nvm_dev_erase_naddrs_max");
+				return NULL;
+			}
+		}
+
+		if (getenv("NVM_CLI_READ_NADDRS_MAX")) {
+			int read_naddrs_max = atoi(getenv("NVM_CLI_READ_NADDRS_MAX"));
+			if (nvm_dev_set_read_naddrs_max(args.dev, read_naddrs_max)) {
+				perror("nvm_dev_read_naddrs_max");
+				return NULL;
+			}
+		}
+
+		if (getenv("NVM_CLI_WRITE_NADDRS_MAX")) {
+			int write_naddrs_max = atoi(getenv("NVM_CLI_WRITE_NADDRS_MAX"));
+			if (nvm_dev_set_write_naddrs_max(args.dev, write_naddrs_max)) {
+				perror("nvm_dev_write_naddrs_max");
+				return NULL;
+			}
+		}
+
+		args.geo = nvm_dev_get_geo(args.dev);	// Get geometry
+		args.addrs[0].ppa = 0;
+	}
 
 	switch(cmd->argt) {				// Get variable params
 		case NVM_CLI_ARG_CH_LUN_BLK_PG:
@@ -302,6 +325,35 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 
 		case NVM_CLI_ARG_NONE:
 			break;
+
+		//////Below MISC command, return cmd directly, don't need check
+		case NVM_CLI_ARG_MISC_ADDR:		//PPAF Convert
+			if (argc != 4) {
+				printf("FAILED: Invalid argc\n");
+				return NULL;
+			}
+			args.addrs[0].ppa = strtol(argv[3], NULL, 16);
+			cmd->args = &args;
+			return cmd;
+
+		case NVM_CLI_ARG_MISC_WRREG:
+			if (argc != 5) {
+				printf("FAILED: Invalid argc\n");
+				return NULL;
+			}
+			args.offset = strtol(argv[3], NULL, 16);  //regaddr
+			args.count = strtol(argv[4], NULL, 16);   //value
+			cmd->args = &args;
+			return cmd;
+			
+		case NVM_CLI_ARG_MISC_RDREG:
+			if (argc != 4) {
+				printf("FAILED: Invalid argc\n");
+				return NULL;
+			}
+			args.offset = strtol(argv[3], NULL, 16);  //regaddr			
+			cmd->args = &args;
+			return cmd;
 	}
 
 	// Verify that addresses are within device bounds
@@ -328,7 +380,10 @@ void nvm_cli_teardown(NVM_CLI_CMD *cmd)
 		return;
 
 	if (args.dev) {
-		nvm_dev_close(args.dev);
+		if (cmd->argt >= NVM_CLI_ARG_MISC_RDREG)
+			char_dev_close(args.dev);
+		else
+			nvm_dev_close(args.dev);
 	}
 }
 

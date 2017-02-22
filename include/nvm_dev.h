@@ -55,4 +55,7 @@ struct nvm_dev {
 	struct nvm_be *be;		///< Backend interface
 };
 
+struct nvm_dev *char_dev_open(const char *dev_path);
+void char_dev_close(struct nvm_dev *dev);
+
 #endif /* __INTERNAL_NVM_DEV_H */

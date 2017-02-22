@@ -33,6 +33,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#define NVM_DEBUG_ENABLED
+
 #ifdef NVM_DEBUG_ENABLED
 
 #define NVM_DEBUG(...) printf("%s:%s-%d: " FIRST(__VA_ARGS__) "\n" , \

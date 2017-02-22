@@ -57,6 +57,7 @@ set(SOURCE_FILES
 	src/nvm_addr.c
 	src/nvm_vblk.c
 	src/nvm_bounds.c
+	src/nvm_misc.c
 )
 
 include_directories("${PROJECT_SOURCE_DIR}/include")

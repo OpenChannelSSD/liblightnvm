@@ -990,6 +990,13 @@ size_t nvm_vblk_get_pos_write(struct nvm_vblk *vblk);
  */
 void nvm_vblk_pr(struct nvm_vblk *vblk);
 
+/* below is Misc command defined by Dengcai */
+uint64_t nvm_addr_host2nand(struct nvm_dev *dev, uint64_t hostppa);
+uint64_t nvm_addr_nand2host(struct nvm_dev *dev, uint64_t nandppa);
+uint32_t nvme_register_read(struct nvm_dev *dev, uint32_t regaddr);
+int nvme_register_write(struct nvm_dev *dev, uint32_t regaddr, uint32_t value);
+
+
 #ifdef __cplusplus
 }
 #endif

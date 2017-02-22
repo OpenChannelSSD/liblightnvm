@@ -53,6 +53,18 @@ struct nvme_passthru_cmd {
 	__u32	result;
 };
 
+/* MISC cmdtype */
+#define NVME_MISC_RD_REGISTER 	0
+#define NVME_MISC_WR_REGISTER 	1
+
+struct nvme_misc_cmd {
+	__u32	cmdtype;
+	__u32	regaddr;
+	__u32	val32;
+	__u64	val64;
+};
+
+
 #define nvme_admin_cmd nvme_passthru_cmd
 
 #define NVME_IOCTL_ID		_IO('N', 0x40)
@@ -62,5 +74,6 @@ struct nvme_passthru_cmd {
 #define NVME_IOCTL_RESET	_IO('N', 0x44)
 #define NVME_IOCTL_SUBSYS_RESET	_IO('N', 0x45)
 #define NVME_IOCTL_RESCAN	_IO('N', 0x46)
+#define NVME_IOCTL_MISCTOOL	_IOWR('N', 0x47, struct nvme_misc_cmd)
 
 #endif /* _UAPI_LINUX_NVME_IOCTL_H */
