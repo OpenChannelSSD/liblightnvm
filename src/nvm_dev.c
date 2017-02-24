@@ -95,6 +95,29 @@ int nvm_dev_get_pmode(struct nvm_dev *dev)
 	return dev->pmode;
 }
 
+int nvm_dev_set_pmode(struct nvm_dev *dev, int pmode)
+{
+	switch (pmode) {
+	case NVM_FLAG_PMODE_QUAD:
+		if (dev->geo.nplanes < 4) {
+			errno = EINVAL;
+			return -1;
+		}
+	case NVM_FLAG_PMODE_DUAL:
+		if (dev->geo.nplanes < 2) {
+			errno = EINVAL;
+			return -1;
+		}
+	case NVM_FLAG_PMODE_SNGL:
+		dev->pmode = pmode;
+		return 0;
+
+	default:
+		errno = EINVAL;
+		return -1;
+	}
+}
+
 int nvm_dev_get_meta_mode(struct nvm_dev *dev)
 {
 	return dev->meta_mode;
