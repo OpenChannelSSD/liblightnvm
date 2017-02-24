@@ -45,10 +45,16 @@ extern "C" {
 #define NVM_DEV_NAME_LEN 32
 #define NVM_DEV_PATH_LEN (NVM_DEV_NAME_LEN + 5)
 
-#define NVM_FLAG_PMODE_SNGL 0x0	///< Single-plane
-#define NVM_FLAG_PMODE_DUAL 0x1	///< Dual-plane (NVM_IO_DUAL_ACCESS)
-#define NVM_FLAG_PMODE_QUAD 0x2	///< Quad-plane (NVM_IO_QUAD_ACCESS)
 #define NVM_FLAG_SCRBL 0x200	///< Scrambler ON/OFF: Context sensitive
+
+/**
+ * Plane-mode access for IO
+ */
+enum nvm_pmode {
+	NVM_FLAG_PMODE_SNGL = 0x0,	///< Single-plane
+	NVM_FLAG_PMODE_DUAL = 0x1,	///< Dual-plane (NVM_IO_DUAL_ACCESS)
+	NVM_FLAG_PMODE_QUAD = 0x2	///< Quad-plane (NVM_IO_QUAD_ACCESS)
+};
 
 #define NVM_FLAG_DEFAULT (NVM_FLAG_PMODE_SNGL | NVM_FLAG_SCRBL);
 
