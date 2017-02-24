@@ -52,6 +52,27 @@ int nvm_cmd_admin(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret)
 	return dev->be->admin(dev, cmd, ret);
 }
 
+void nvm_cmd_vuser_pr(struct nvm_cmd *cmd)
+{
+	printf("cmd.vuser {\n");
+	printf(" opcode(0x%02x), ", cmd->vuser.opcode);
+	printf(" flags(0x%02x), ", cmd->vuser.flags);
+	printf(" control(0x%04x),\n", cmd->vuser.control);
+	printf(" nppas(%u),\n", cmd->vuser.nppas);
+	printf(" metadata(%lu),\n", cmd->vuser.metadata);
+	printf(" addr(%lu),\n", cmd->vuser.addr);
+	printf(" ppa_list {");
+	/*
+	for (int i = 0; i <= cmd->vuser.nppas; ++i) {
+		printf("  0x%016lx,\n", ((uint64_t*)cmd->vuser.ppa_list)[i]);
+	}*/
+	printf(" metadata_len(%u),\n", cmd->vuser.metadata_len);
+	printf(" data_len(%u),\n", cmd->vuser.data_len);
+	printf(" status(0x%016lx),\n", cmd->vuser.status);
+	printf(" result(0x%016x),\n", cmd->vuser.result);
+	printf("}\n");
+}
+
 void nvm_cmd_pr(struct nvm_cmd *cmd)
 {
 	printf("nvm_cmd {\n");
