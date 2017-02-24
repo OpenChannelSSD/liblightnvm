@@ -52,7 +52,7 @@ void nvm_addr_pr(struct nvm_addr addr)
 void nvm_addr_prn(struct nvm_addr *addr, unsigned int naddrs)
 {
 	printf("naddrs(%d) {\n", naddrs);
-	for (unsigned int i = 0; i < naddrs; ++i) {
+	for (unsigned int i = 0; (i < naddrs) && addr; ++i) {
 		printf(" %02d: ", i); nvm_addr_pr(addr[i]);
 	}
 	printf("}\n");
