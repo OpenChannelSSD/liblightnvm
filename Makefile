@@ -82,14 +82,30 @@ doxy-view:
 sphinx:
 	@mkdir -p $(BUILD_DIR)/doc/sphinx/html
 	@mkdir -p $(BUILD_DIR)/doc/sphinx/pdf
-	python doc/gen/gen.py capi --header include/liblightnvm.h -t doc/gen/capi.tmpl -r doc/src/c.rst
-	python doc/gen/gen.py cli -j doc/gen/cli.json -t doc/gen/cli.tmpl -r doc/src/cli.rst
 	sphinx-build -b html -c doc -E doc/src $(BUILD_DIR)/doc/sphinx/html
-#	sphinx-build -b pdf -c doc -E doc/src $(BUILD_DIR)/doc/sphinx/pdf
 
 .PHONY: sphinx-view
 sphinx-view:
 	xdg-open $(BUILD_DIR)/doc/sphinx/html/index.html
+
+.PHONY: doc-gen-capi
+doc-gen-capi:
+	python doc/gen/capi.py doc/src/capi/ --header include/liblightnvm.h
+
+.PHONY: doc-gen-cli
+doc-gen-cli:
+	python doc/gen/cli.py doc/src/cli/
+
+.PHONY: doc-gen-tut
+doc-gen-tut:
+	python doc/gen/cli.py doc/src/tutorial/
+
+.PHONY: doc-gen-misc
+doc-gen-misc:
+	python doc/gen/cli.py doc/src/
+
+.PHONY: doc-gen-cmds
+doc-gen-cmds: doc-gen-misc doc-gen-cli doc-gen-tut
 
 .PHONY: doc
 doc: doxy sphinx
@@ -97,6 +113,10 @@ doc: doxy sphinx
 .PHONY: doc-view-html
 doc-view-html:
 	xdg-open $(BUILD_DIR)/doc/sphinx/html/index.html
+
+.PHONY: doc-view-html-tutorial
+doc-view-html-tutorial:
+	xdg-open $(BUILD_DIR)/doc/sphinx/html/tutorial/index.html
 
 #.PHONY: doc-view-pdf
 #doc-view-pdf:
