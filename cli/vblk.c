@@ -18,7 +18,9 @@ int erase(NVM_CLI_CMD_ARGS *args)
 			return errno;
 		}
 
-		printf("** nvm_vblk_erase(...):\n");
+		printf("** nvm_vblk_erase(...): pmode(%s)\n",
+			nvm_pmode_str(nvm_dev_get_pmode(args->dev))
+		);
 		nvm_vblk_pr(vblk);
 
 		nvm_timer_start();
@@ -53,7 +55,9 @@ int read(NVM_CLI_CMD_ARGS *args)
 		nbytes = nvm_vblk_get_nbytes(vblk);
 		geo = nvm_dev_get_geo(args->dev);
 
-		printf("** nvm_vblk_read(...):\n");
+		printf("** nvm_vblk_read(...): pmode(%s)\n",
+			nvm_pmode_str(nvm_dev_get_pmode(args->dev))
+		);
 		nvm_vblk_pr(vblk);
 
 		nvm_timer_start();
@@ -143,7 +147,10 @@ int pad(NVM_CLI_CMD_ARGS *args)
 			return errno;
 		}
 
-		printf("** nvm_vblk_pad(...):\n");
+		printf("** nvm_vblk_pad(...): pmode(%s)\n",
+			nvm_pmode_str(nvm_dev_get_pmode(args->dev))
+		);
+
 		nvm_vblk_pr(vblk);
 
 		nvm_timer_start();
@@ -176,7 +183,10 @@ int line_erase(NVM_CLI_CMD_ARGS *args)
 		return errno;
 	}
 
-	printf("** nvm_vblk_erase(...):\n");
+	printf("** nvm_vblk_erase(...): pmode(%s)\n",
+		nvm_pmode_str(nvm_dev_get_pmode(args->dev))
+	);
+
 	nvm_vblk_pr(vblk);
 
 	nvm_timer_start();
@@ -213,7 +223,9 @@ int line_read(NVM_CLI_CMD_ARGS *args)
 	nbytes = nvm_vblk_get_nbytes(vblk);
 	geo = nvm_dev_get_geo(args->dev);
 
-	printf("** nvm_vblk_read(...):\n");
+	printf("** nvm_vblk_read(...): pmode(%s)\n",
+		nvm_pmode_str(nvm_dev_get_pmode(args->dev))
+	);
 	nvm_vblk_pr(vblk);
 
 	nvm_timer_start();
@@ -392,7 +404,10 @@ int set_erase(NVM_CLI_CMD_ARGS *args)
 		return errno;
 	}
 
-	printf("** nvm_vblk_erase(...):\n");
+	printf("** nvm_vblk_erase(...): pmode(%s)\n",
+		nvm_pmode_str(nvm_dev_get_pmode(args->dev))
+	);
+
 	nvm_vblk_pr(vblk);
 
 	nvm_timer_start();
@@ -424,7 +439,9 @@ int set_read(NVM_CLI_CMD_ARGS *args)
 	nbytes = nvm_vblk_get_nbytes(vblk);
 	geo = nvm_dev_get_geo(args->dev);
 
-	printf("** nvm_vblk_read(...):\n");
+	printf("** nvm_vblk_read(...): pmode(%s)\n",
+		nvm_pmode_str(nvm_dev_get_pmode(args->dev))
+	);
 	nvm_vblk_pr(vblk);
 
 	nvm_timer_start();
@@ -471,7 +488,9 @@ int set_write(NVM_CLI_CMD_ARGS *args)
 	nbytes = nvm_vblk_get_nbytes(vblk);
 	geo = nvm_dev_get_geo(args->dev);
 
-	printf("** nvm_vblk_write(...):\n");
+	printf("** nvm_vblk_write(...): pmode(%s)\n",
+		nvm_pmode_str(nvm_dev_get_pmode(args->dev))
+	);
 	nvm_vblk_pr(vblk);
 
 	nvm_timer_start();
@@ -509,7 +528,9 @@ int set_pad(NVM_CLI_CMD_ARGS *args)
 		return errno;
 	}
 
-	printf("** nvm_vblk_pad(...):\n");
+	printf("** nvm_vblk_pad(...): pmode(%s)\n",
+		nvm_pmode_str(nvm_dev_get_pmode(args->dev))
+	);
 	nvm_vblk_pr(vblk);
 
 	nvm_timer_start();
