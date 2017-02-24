@@ -107,7 +107,10 @@ int write(NVM_CLI_CMD_ARGS *args)
 		nbytes = nvm_vblk_get_nbytes(vblk);
 		geo = nvm_dev_get_geo(args->dev);
 
-		printf("** nvm_vblk_write(...):\n");
+		printf("** nvm_vblk_write(...): pmode(%s)\n",
+			nvm_pmode_str(nvm_dev_get_pmode(args->dev))
+		);
+
 		nvm_vblk_pr(vblk);
 
 		nvm_timer_start();
