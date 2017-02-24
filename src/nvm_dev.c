@@ -42,6 +42,19 @@ static struct nvm_be *nvm_backends[] = {
 	NULL
 };
 
+const char *nvm_pmode_str(int pmode) {
+	switch (pmode) {
+	case NVM_FLAG_PMODE_SNGL:
+		return "SNGL";
+	case NVM_FLAG_PMODE_DUAL:
+		return "DUAL";
+	case NVM_FLAG_PMODE_QUAD:
+		return "QUAD";
+	default:
+		return "UNKN";
+	}
+}
+
 void nvm_dev_pr(struct nvm_dev *dev)
 {
 	if (!dev) {
@@ -54,7 +67,7 @@ void nvm_dev_pr(struct nvm_dev *dev)
 	       dev->verid, dev->beid);
 	printf(" path(%s), name(%s), fd(%d),\n",
 	       dev->path, dev->name, dev->fd);
-	printf(" ssw(%lu), pmode(%d),\n", dev->ssw, dev->pmode);
+	printf(" ssw(%lu), pmode(%s),\n", dev->ssw, nvm_pmode_str(dev->pmode));
 
 	printf(" erase_naddrs_max(%d),", dev->erase_naddrs_max);
 	printf(" read_naddrs_max(%d),", dev->read_naddrs_max);
