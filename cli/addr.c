@@ -18,7 +18,7 @@ int erase(NVM_CLI_CMD_ARGS *args)
 		return EINVAL;
 	}
 
-	printf("** nvm_addr_erase(...) : pmode(0x%x)\n", PMODE);
+	printf("** nvm_addr_erase(...) : pmode(%s)\n", nvm_pmode_str(PMODE));
 	for (int i = 0; i < args->naddrs; ++i) {
 		nvm_addr_pr(args->addrs[i]);
 	}
@@ -65,7 +65,7 @@ int _write(NVM_CLI_CMD_ARGS *args, int with_meta)
 			meta[i] = (i / args->naddrs) % args->naddrs + 65;
 	}
 
-	printf("** nvm_addr_write(...) : pmode(0x%x)\n", PMODE);
+	printf("** nvm_addr_write(...) : pmode(%s)\n", nvm_pmode_str(PMODE));
 	for (int i = 0; i < args->naddrs; ++i) {
 		nvm_addr_pr(args->addrs[i]);
 	}
@@ -132,7 +132,7 @@ int _read(NVM_CLI_CMD_ARGS *args, int with_meta)
 		memset(meta, 0, meta_tbytes);
 	}
 
-	printf("** nvm_addr_read(...) : pmode(0x%x)\n", PMODE);
+	printf("** nvm_addr_read(...) : pmode(%s)\n", nvm_pmode_str(PMODE));
 	for (int i = 0; i < args->naddrs; ++i) {
 		nvm_addr_pr(args->addrs[i]);
 	}
