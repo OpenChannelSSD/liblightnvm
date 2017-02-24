@@ -7,46 +7,16 @@ import json
 import os
 import re
 
-def gen_cli(args):
-    """Generate CLI RST"""
+def _update_file(fpath, content):
 
-    if not args.json:
-        return ""
-
-    if not args.tmpl:
-        return ""
-
-    jsn = json.load(open(args.json))
-    tmpl = open(args.tmpl).read()
-
-    for sect in jsn:
-        cmd = [sect["name"]]
-        prc = Popen(cmd, stdout=PIPE, stderr=PIPE)
-        usage, err = prc.communicate()
-
-        usage = "\n" + usage
-        usage = "\n  ".join(usage.split("\n"))
-        rst = "\n".join([
-            sect["name"],
-            "=" * len(sect["name"]), "",
-            ".. code-block:: bash",
-            usage
-        ])
-
-        tmpl = tmpl.replace("{{%s}}" % sect["name"].upper(), rst)
-
-    return tmpl
+    with open(fpath, 'w+') as output:
+        output.write(content)
 
 def gen_capi(args):
     """Generate C API RST as string"""
 
     if not args.header:
         return ""
-
-    if not args.tmpl:
-        return ""
-
-    tmpl = open(args.tmpl).read()
 
     cmd = ["ctags", "-x", "--c-kinds=fpsgx", args.header]
 
@@ -55,6 +25,8 @@ def gen_capi(args):
 
     if process.returncode:
         return ""
+
+    docs = {}
 
     lib = {}
     for line in out.split("\n"):
@@ -98,7 +70,13 @@ def gen_capi(args):
                 set(ordered)
             ) + ordered
 
-        rst = ""
+        header = "nvm_%s" % ns
+
+        rst = "\n".join([
+                header,
+                "=" * len(header),
+                ""
+        ])
 
         if "typedefs" in lib[ns]:
             for typedef in lib[ns]["typedefs"]:
@@ -139,64 +117,43 @@ def gen_capi(args):
                     "", ""
                 ])
 
-        tmpl = tmpl.replace("{{%s}}" % ns.upper(), rst)
+        docs[ns] = rst
 
-    return tmpl
+    return docs
 
 def expand_path(path):
     return os.path.abspath(os.path.expanduser(os.path.expandvars(path)))
 
 if __name__ == "__main__":
-    CMDS = {
-        "capi": gen_capi,
-        "cli": gen_cli
-    }
+    PRSR = argparse.ArgumentParser(description='Generate C API docs')
 
-    PRSR = argparse.ArgumentParser(description='Generate RST docs')
     PRSR.add_argument(
-        "topic",
-        choices=CMDS.keys(),
+        "path",
         type=str,
-        help="Topic to generate RST for"
+        help="Path to DIR containing C API RST src (also output dir)"
     )
-    PRSR.add_argument(
-        "--json", "-j",
-        type=str,
-        help="Path to input (e.g. doc/gen/cli.json)"
-    )
+
     PRSR.add_argument(
         "--header",
         type=str,
+        required=True,
         help="Path to liblightnvm.h"
-    )
-    PRSR.add_argument(
-        "--tmpl", "-t",
-        required=True,
-        type=str,
-        help="Path to template (e.g. doc/gen/api.tmpl)"
-    )
-    PRSR.add_argument(
-        "--rst", "-r",
-        required=True,
-        type=str,
-        help="Path to output (e.g. doc/src/c.rst)"
     )
 
     ARGS = PRSR.parse_args()
-    if ARGS.json:
-        ARGS.json = expand_path(ARGS.json)
-    if ARGS.tmpl:
-        ARGS.tmpl = expand_path(ARGS.tmpl)
-    if ARGS.rst:
-        ARGS.rst = expand_path(ARGS.rst)
+    if ARGS.path:
+        ARGS.path = expand_path(ARGS.path)
     if ARGS.header:
         ARGS.header = expand_path(ARGS.header)
 
     try:
-        RST = CMDS[ARGS.topic](ARGS)
+        RST = gen_capi(ARGS)
 
-        if RST:
-            with open(ARGS.rst, "w") as RST_FD:
-                RST_FD.write(RST)
+        for NS in RST:
+            _update_file(os.sep.join([ARGS.path, "nvm_%s.rst" % NS]), RST[NS])
+
+        #if RST:
+        #    with open(ARGS.rst, "w") as RST_FD:
+        #        RST_FD.write(RST)
     except OSError as EXC:
-        print("FAILED: generating RST(%s), err(%s)" % (ARGS.rst, EXC))
+        print("FAILED: generating RST err(%s)" % EXC)
