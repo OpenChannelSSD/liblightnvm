@@ -559,6 +559,17 @@ void nvm_dev_pr(struct nvm_dev *dev);
  */
 int nvm_dev_get_pmode(struct nvm_dev *dev);
 
+
+/**
+ * Set the default plane-mode for the given device
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @param pmode Default plane-mode
+ *
+ * @returns 0 on success, -1 on error and errno set to indicate the error.
+ */
+int nvm_dev_set_pmode(struct nvm_dev *dev, int pmode);
+
 /**
  * Returns the verid of the given device
  *
@@ -576,7 +587,7 @@ int nvm_dev_get_verid(struct nvm_dev *dev);
 int nvm_dev_get_meta_mode(struct nvm_dev *dev);
 
 /**
- * 
+ * Set the default meta mode
  *
  */
 int nvm_dev_set_meta_mode(struct nvm_dev *dev, int meta_mode);
