@@ -261,8 +261,17 @@ int nvm_cmd_vadmin(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret
 
 /**
  * Prints a text-representation of the given command
+ *
+ * @param cmd The command to print
  */
 void nvm_cmd_pr(struct nvm_cmd *cmd);
+
+/**
+ * Prints a textual presentation of the vuser par of the given command
+ *
+ * @param cmd The command to print
+ */
+void nvm_cmd_vuser_pr(struct nvm_cmd *cmd);
 
 /**
  * Encapsulation of generic physical nvm addressing
