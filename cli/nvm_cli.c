@@ -45,23 +45,23 @@ int nvm_cli_pmode(struct nvm_dev *dev)
 	char *pmode_env = getenv("NVM_CLI_PMODE");	// Check ENV
 	if (pmode_env) {
 		switch(atoi(pmode_env)) {
-			case 4:
-				if (geo->nplanes < 4) {	// Verify
-					errno = EINVAL;
-					return -1;
-				}
-				return NVM_FLAG_PMODE_QUAD;
-			case 2:
-				if (geo->nplanes < 2) {	// Verify
-					errno = EINVAL;
-					return -1;
-				}
-				return NVM_FLAG_PMODE_DUAL;
-			case 0:
-				return NVM_FLAG_PMODE_SNGL;
-			default:
+		case NVM_FLAG_PMODE_QUAD:
+			if (geo->nplanes < 4) {	// Verify
 				errno = EINVAL;
 				return -1;
+			}
+			return NVM_FLAG_PMODE_QUAD;
+		case NVM_FLAG_PMODE_DUAL:
+			if (geo->nplanes < 2) {	// Verify
+				errno = EINVAL;
+				return -1;
+			}
+			return NVM_FLAG_PMODE_DUAL;
+		case NVM_FLAG_PMODE_SNGL:
+			return NVM_FLAG_PMODE_SNGL;
+		default:
+			errno = EINVAL;
+			return -1;
 		}
 	}
 
