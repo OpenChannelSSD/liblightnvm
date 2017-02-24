@@ -1,0 +1,12 @@
+** nvm_vblk_write(...): pmode(DUAL)
+vblk {
+ nbytes(67108864b:64Mb),
+}
+vblk-naddrs(4) {
+ 00: (0x0000000000000002){ ch(00), lun(00), pl(0), blk(0002), pg(000), sec(0) }
+ 01: (0x0a0700000000014d){ ch(10), lun(07), pl(0), blk(0333), pg(000), sec(0) }
+ 02: (0x0301000000000014){ ch(03), lun(01), pl(0), blk(0020), pg(000), sec(0) }
+ 03: (0x0500000000000190){ ch(05), lun(00), pl(0), blk(0400), pg(000), sec(0) }
+}
+Ran nvm_buf_alloc, elapsed wall-clock: 0.057942
+Ran nvm_vblk_write, elapsed wall-clock: 0.955897

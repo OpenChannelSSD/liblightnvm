@@ -1,0 +1,2 @@
+** nvm_addr_read(...) : pmode(DUAL)
+(0x000000000000000a){ ch(00), lun(00), pl(0), blk(0010), pg(000), sec(0) }

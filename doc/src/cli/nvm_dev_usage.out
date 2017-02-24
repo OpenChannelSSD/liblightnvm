@@ -1,0 +1,4 @@
+NVM Device (nvm_dev_*) -- Ver { major(0), minor(0), patch(1) }
+
+Usage:
+ nvm_dev       info dev_path 

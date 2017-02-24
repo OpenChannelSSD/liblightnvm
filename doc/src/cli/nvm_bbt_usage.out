@@ -1,0 +1,14 @@
+NVM bad-block-table (nvm_bbt_*) -- Ver { major(0), minor(0), patch(1) }
+
+Usage:
+ nvm_bbt        get dev_path ch lun
+ nvm_bbt      set_f dev_path ch lun
+ nvm_bbt      set_b dev_path ch lun
+ nvm_bbt      set_g dev_path ch lun
+ nvm_bbt      set_d dev_path ch lun
+ nvm_bbt      set_h dev_path ch lun
+ nvm_bbt     mark_f dev_path addr [addr...]
+ nvm_bbt     mark_b dev_path addr [addr...]
+ nvm_bbt     mark_g dev_path addr [addr...]
+ nvm_bbt     mark_d dev_path addr [addr...]
+ nvm_bbt     mark_h dev_path addr [addr...]
