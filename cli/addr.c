@@ -9,14 +9,8 @@
 int erase(NVM_CLI_CMD_ARGS *args)
 {
 	struct nvm_ret ret;
-	int PMODE;
+	int PMODE = nvm_dev_get_pmode(args->dev);
 	ssize_t err = 0;
-
-	PMODE = nvm_cli_pmode(args->dev);
-	if (PMODE < 0) {
-		perror("nvm_cli_pmode");
-		return EINVAL;
-	}
 
 	printf("** nvm_addr_erase(...) : pmode(%s)\n", nvm_pmode_str(PMODE));
 	for (int i = 0; i < args->naddrs; ++i) {
@@ -36,14 +30,8 @@ int erase(NVM_CLI_CMD_ARGS *args)
 int _write(NVM_CLI_CMD_ARGS *args, int with_meta)
 {
 	struct nvm_ret ret;
-	int PMODE;
+	int PMODE = nvm_dev_get_pmode(args->dev);
 	ssize_t err = 0;
-
-	PMODE = nvm_cli_pmode(args->dev);
-	if (PMODE < 0) {
-		perror("nvm_cli_pmode");
-		return EINVAL;
-	}
 
 	int buf_nbytes = args->naddrs * args->geo->sector_nbytes;
 	char *buf = NULL;
@@ -105,14 +93,8 @@ int write_wm(NVM_CLI_CMD_ARGS *args)
 int _read(NVM_CLI_CMD_ARGS *args, int with_meta)
 {
 	struct nvm_ret ret;
-	int PMODE;
+	int PMODE = nvm_dev_get_pmode(args->dev);
 	ssize_t err = 0;
-
-	PMODE = nvm_cli_pmode(args->dev);
-	if (PMODE < 0) {
-		perror("nvm_cli_pmode");
-		return EINVAL;
-	}
 
 	int buf_nbytes = args->naddrs * args->geo->sector_nbytes;
 	char *buf = NULL;
