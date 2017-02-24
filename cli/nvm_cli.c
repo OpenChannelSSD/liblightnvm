@@ -136,7 +136,6 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 	NVM_CLI_CMD *cmd = NULL;
 	char cmd_name[NVM_CLI_CMD_LEN];
 	char dev_path[NVM_DEV_PATH_LEN+1];
-	int meta_mode;
 
 	if (argc < 3) {		// Need at lest: <cli> <cmd> <dev_path>
 		return NULL;
@@ -173,9 +172,16 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 		return NULL;
 	}
 
-	meta_mode = nvm_cli_meta_mode(args.dev);
+	int pmode = nvm_cli_pmode(args.dev);
+	if (pmode < 0) {
+		perror("FAILED: Using NVM_CLI_PMODE");
+		return NULL;
+	}
+	nvm_dev_set_pmode(args.dev, pmode);
+
+	int meta_mode = nvm_cli_meta_mode(args.dev);
 	if (meta_mode < 0) {
-		perror("Failed using meta_mode from CLI");
+		perror("FAILED: Using NVM_CLI_META_MODE");
 		return NULL;
 	}
 	nvm_dev_set_meta_mode(args.dev, meta_mode);
