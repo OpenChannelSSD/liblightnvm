@@ -127,12 +127,40 @@ ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 {
 	size_t nerr = 0;
 	const struct nvm_geo *geo = nvm_dev_get_geo(vblk->dev);
-	const int PMODE = vblk->dev->pmode;
+	// TODO: Remove verid check
+	const int PMODE = vblk->dev->verid == SPEC_VERID_20 ? NVM_FLAG_PMODE_SNGL : vblk->dev->pmode;
 
-	const int BLK_NADDRS = geo->nplanes;
+	const int BLK_NADDRS = PMODE ? 1 : geo->nplanes;
 	const int CMD_NBLKS = _cmd_nblks(vblk->nblks,
 				vblk->dev->erase_naddrs_max / BLK_NADDRS);
 	const int NTHREADS = vblk->nblks < CMD_NBLKS ? 1 : vblk->nblks / CMD_NBLKS;
+
+	/**
+	 * Plane-mode is supported as all or nothing
+	 *
+	 * Currently only consequence is that it is not possible to use
+	 * DUAL_MODE on a device with four planes.
+	 */
+	switch (PMODE) {
+	case NVM_FLAG_PMODE_DUAL:
+		if (vblk->dev->geo.nplanes != 2) {
+			errno = ENOSYS;
+			return -1;
+		}
+		break;
+	case NVM_FLAG_PMODE_QUAD:
+		if (vblk->dev->geo.nplanes != 4) {
+			errno = ENOSYS;
+			return -1;
+		}
+		break;
+	case NVM_FLAG_PMODE_SNGL:
+		break;
+	default:
+		errno = ENOSYS;
+		return -1;
+		break;
+	}
 
 	#pragma omp parallel for num_threads(NTHREADS) schedule(static,1) reduction(+:nerr) ordered if (NTHREADS>1)
 	for (int off = 0; off < vblk->nblks; off += CMD_NBLKS) {
@@ -148,7 +176,7 @@ ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 			const int idx = off + (i / BLK_NADDRS);
 
 			addrs[i].ppa = vblk->blks[idx].ppa;
-			addrs[i].g.pl = i % geo->nplanes;
+			addrs[i].g.pl = PMODE ? 0 : i % geo->nplanes;
 		}
 
 		err = nvm_addr_erase(vblk->dev, addrs, naddrs, PMODE, &ret);
