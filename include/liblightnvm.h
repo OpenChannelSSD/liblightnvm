@@ -202,6 +202,16 @@ struct nvm_cmd {
 };
 
 /**
+ * Obtain string representation of the given plane-mode
+ *
+ * @param pmode The plane-mode to obtain string representation of
+ *
+ * @returns On success, string representation of the given plane-mode. On error,
+ * "UNKN".
+ */
+const char *nvm_pmode_str(int pmode);
+
+/**
  * Execute an user command on the given device
  *
  * @param dev Device handle obtained with `nvm_dev_open`
