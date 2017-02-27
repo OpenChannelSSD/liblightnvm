@@ -26,6 +26,16 @@ def gen_capi(args):
     if process.returncode:
         return ""
 
+    titles = {
+        "nvm_geo": "Geometry",
+        "nvm_buf": "Buffer Allocation",
+        "nvm_dev": "Device Management",
+        "nvm_bbt": "Bad-Block-Table",
+        "nvm_cmd": "Raw Commands",
+        "nvm_addr": "Addressing",
+        "nvm_vblk": "Virtual Block",
+        "nvm_lba": "LBA Interface",
+    }
     docs = {}
 
     lib = {}
@@ -35,7 +45,7 @@ def gen_capi(args):
             continue
 
         name, kind = parts
-        ns = name.split("_")[1]
+        ns = "_".join(name.split("_")[:2])
 
         if ns not in lib:
             lib[ns] = {}
@@ -52,8 +62,8 @@ def gen_capi(args):
                 "bbt_get", "bbt_set", "bbt_mark", "bbt_flush",
                 "addr_erase", "addr_read", "addr_write", "addr_check",
                 "addr_.*2",
-                "lba_p?read", "lba_p?write",
                 "vblk_erase", "vblk_p?read", "vblk_p?write", "vblk_pad",
+                "lba_p?read", "lba_p?write",
                 "_alloc", "_fill", "_free", "_pr",
                 "_get_", "_set_"
             ]
@@ -70,12 +80,13 @@ def gen_capi(args):
                 set(ordered)
             ) + ordered
 
-        header = "nvm_%s" % ns
+        title = "%s - %s" % (ns, titles[ns]) if ns in titles else ns
 
         rst = "\n".join([
-                header,
-                "=" * len(header),
-                ""
+            ".. _sec-capi-%s:" % ns, "",
+            title,
+            "=" * len(title),
+            "", ""
         ])
 
         if "typedefs" in lib[ns]:
@@ -97,7 +108,7 @@ def gen_capi(args):
                         "   :members:",
                         "", ""
                     ])
-        """
+
         if "enum" in lib[ns]:
             for enum in lib[ns]["enum"]:
                 rst += "\n".join([
@@ -106,7 +117,6 @@ def gen_capi(args):
                     ".. doxygenenum:: %s" % enum,
                     "", ""
                 ])
-        """
 
         if "prototype" in lib[ns]:
             for func in lib[ns]["prototype"]:
@@ -150,7 +160,7 @@ if __name__ == "__main__":
         RST = gen_capi(ARGS)
 
         for NS in RST:
-            _update_file(os.sep.join([ARGS.path, "nvm_%s.rst" % NS]), RST[NS])
+            _update_file(os.sep.join([ARGS.path, "%s.rst" % NS]), RST[NS])
 
         #if RST:
         #    with open(ARGS.rst, "w") as RST_FD:
