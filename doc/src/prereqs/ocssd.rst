@@ -1,17 +1,4 @@
-.. _sec-prereqs:
-
-===============
- Prerequisites
-===============
-
-Here is what you need:
-
- * An Open-Channel SSD
- * Operating System Support
- * Management Tool
-
-The following sections describe how to and options for meeting started
-prerequisites.
+.. _sec-prereqs-ocssd:
 
 An Open-Channel SSD
 ===================
@@ -56,18 +43,3 @@ Then use the following flags to setup a device:
   lbbtable=$DRIVE_BBT,\
   lmetadata=$DRIVE_METADATA,\
   lmetasize=$DRIVE_METASIZE
-
-Operating System Support
-========================
-
-Linux you can use the kernel
-sources available here:
-
- * Branch: liblnvm
- * Repos: git@github.com:OpenChannelSSD/linux.git
-
-Management Tool
-===============
-
-The `NVMe CLI <https://github.com/linux-nvme/nvme-cli>`_ tool supports Open-Channel SSDs through the lnvm extension. You may use "nvme lnvm" to see supported parameters.
-

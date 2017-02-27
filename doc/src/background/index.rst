@@ -103,8 +103,3 @@ Die Failure.
   A logical unit of storage, i.e., a die on a NAND chip may cease to function
   over time due to a defect. In that case, all its data will be lost unless
   RAID or other replication techniques has been used.
-
-REFERENCES
-==========
-
-  * LightNVM: the Linux Open-Channel SSD Subsystem" - Matias Bjørling, Javier Gonzalez, Philippe Bonnet - FAST 2017.

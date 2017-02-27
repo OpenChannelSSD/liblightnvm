@@ -1,3 +1,5 @@
+.. _sec-cli-nvm_dev:
+
 nvm_dev
 =======
 

@@ -3,7 +3,7 @@
 
 int main(int argc, char **argv)
 {
-	NVM_DEV dev = nvm_dev_open("/dev/nvme0n1");
+	struct nvm_dev *dev = nvm_dev_open("/dev/nvme0n1");
 	if (!dev) {
 		perror("nvm_dev_open");
 		return 1;
