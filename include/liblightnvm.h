@@ -233,7 +233,8 @@ int nvm_cmd_user(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret);
  * @returns On success, 0 is returned. On error, -1 is returned, `errno` set to
  * indicate the error and ret filled with lower-level result codes
  */
-int nvm_cmd_admin(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret);
+int nvm_cmd_admin(struct nvm_dev *dev, struct nvm_cmd *cmd,
+		  struct nvm_ret *ret);
 
 /**
  * Execute a vector user command on the given device
@@ -245,7 +246,8 @@ int nvm_cmd_admin(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret)
  * @returns On success, 0 is returned. On error, -1 is returned, `errno` set to
  * indicate the error and ret filled with lower-level result codes
  */
-int nvm_cmd_vuser(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret);
+int nvm_cmd_vuser(struct nvm_dev *dev, struct nvm_cmd *cmd,
+		  struct nvm_ret *ret);
 
 /**
  * Execute a vector admin command on the given device
@@ -257,7 +259,8 @@ int nvm_cmd_vuser(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret)
  * @returns On success, 0 is returned. On error, -1 is returned, `errno` set to
  * indicate the error and ret filled with lower-level result codes
  */
-int nvm_cmd_vadmin(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret);
+int nvm_cmd_vadmin(struct nvm_dev *dev, struct nvm_cmd *cmd,
+		   struct nvm_ret *ret);
 
 /**
  * Prints a text-representation of the given command
@@ -421,7 +424,7 @@ void nvm_ret_pr(struct nvm_ret *ret);
  * NULL is returned, `errno` set to indicate the error and ret filled with
  * lower-level result codes
  */
-const struct nvm_bbt* nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
+const struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 				  struct nvm_ret *ret);
 
 /**
@@ -434,7 +437,7 @@ const struct nvm_bbt* nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
  * @returns On success, 0 is returned. On error, -1 is returned, `errno` set to
  * indicate the error and ret filled with lower-level result codes
  */
-int nvm_bbt_set(struct nvm_dev *dev, const struct nvm_bbt* bbt,
+int nvm_bbt_set(struct nvm_dev *dev, const struct nvm_bbt *bbt,
 		struct nvm_ret *ret);
 
 /**
@@ -525,7 +528,7 @@ void nvm_geo_pr(const struct nvm_geo *geo);
  *
  * @returns A handle to the device
  */
-struct nvm_dev * nvm_dev_open(const char *dev_path);
+struct nvm_dev *nvm_dev_open(const char *dev_path);
 
 /**
  * Creates a handle to given device path
@@ -535,7 +538,7 @@ struct nvm_dev * nvm_dev_open(const char *dev_path);
  *
  * @returns A handle to the device
  */
-struct nvm_dev * nvm_dev_openf(const char *dev_path, int flags);
+struct nvm_dev *nvm_dev_openf(const char *dev_path, int flags);
 
 /**
  * Destroys device-handle
@@ -779,7 +782,8 @@ ssize_t nvm_addr_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
  * @param addrs List of memory address
  * @param naddrs Length of array of memory addresses
  * @param buf Buffer to store result of read into, must be aligned to device
- *            granularity min read and size equal to `naddrs * geo.sector_nbytes`
+ *            granularity min read and size equal to `naddrs *
+ *            geo.sector_nbytes`
  * @param meta Buffer to store content of metadata, must be of size equal to
  *             device `naddrs * geo.meta_nbytes`
  * @param flags Access mode
@@ -922,7 +926,8 @@ ssize_t nvm_vblk_erase(struct nvm_vblk *vblk);
  * @note
  * buf must be aligned to device geometry, see struct nvm_geo and nvm_buf_alloc
  * count must be a multiple of min-size, see struct nvm_geo
- * do not mix use of nvm_vblk_pwrite with nvm_vblk_write on the same virtual block
+ * do not mix use of nvm_vblk_pwrite with nvm_vblk_write on the same virtual
+ * block
  *
  * @param vblk The virtual block to write to
  * @param buf Write content starting at buf
@@ -940,7 +945,8 @@ ssize_t nvm_vblk_write(struct nvm_vblk *vblk, const void *buf, size_t count);
  * buf must be aligned to device geometry, see struct nvm_geo and nvm_buf_alloc
  * count must be a multiple of min-size, see struct nvm_geo
  * offset must be a multiple of min-size, see struct nvm_geo
- * do not mix use of nvm_vblk_pwrite with nvm_vblk_write on the same virtual block
+ * do not mix use of nvm_vblk_pwrite with nvm_vblk_write on the same virtual
+ * block
  *
  * @param vblk The virtual block to write to
  * @param buf Write content starting at buf
@@ -975,7 +981,7 @@ ssize_t nvm_vblk_read(struct nvm_vblk *vblk, void *buf, size_t count);
  * Read from a virtual block at given offset
  */
 ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
-                       size_t offset);
+		       size_t offset);
 
 /**
  * Retrieve the device associated with the given virtual block
