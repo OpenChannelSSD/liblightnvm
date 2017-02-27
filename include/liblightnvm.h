@@ -1,10 +1,9 @@
 /*
  * User space I/O library for Open-Channel SSDs
  *
- * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
- * Copyright (C) 2015 Matias González <matias@cnexlabs.com>
- * Copyright (C) 2016 Simon A. F. Lund <slund@cnexlabs.com>
- * Copyright (C) 2017 Simon A. F. Lund <slund@cnexlabs.com>
+ * Copyright (C) 2015-2017 Javier González <javier@cnexlabs.com>
+ * Copyright (C) 2015-2017 Matias Bjørling <matias@cnexlabs.com>
+ * Copyright (C) 2015-2017 Simon A. F. Lund <slund@cnexlabs.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,13 +57,6 @@ enum nvm_pmode {
 
 #define NVM_FLAG_DEFAULT (NVM_FLAG_PMODE_SNGL | NVM_FLAG_SCRBL);
 
-#define NVM_BLK_BITS (16)	///< Number of bits for block field
-#define NVM_PG_BITS  (16)	///< Number of bits for page field
-#define NVM_SEC_BITS (8)	///< Number of bits for sector field
-#define NVM_PL_BITS  (8)	///< Number of bits for plane field
-#define NVM_LUN_BITS (8)	///< Number of bits for LUN field
-#define NVM_CH_BITS  (7)	///< NUmber of bits for channel field
-
 /**
  * Opaque handle for NVM devices
  *
@@ -88,12 +80,18 @@ struct nvm_dev;
  */
 struct nvm_vblk;
 
-enum meta_mode {
+/**
+ * Enumeration of pseudo meta mode
+ */
+enum nvm_meta_mode {
 	NVM_META_MODE_NONE = 0x0,
 	NVM_META_MODE_ALPHA = 0x1,
 	NVM_META_MODE_CONST = 0x2
 };
 
+/**
+ * Enumeration of device bounds
+ */
 enum nvm_bounds {
 	NVM_BOUNDS_CHANNEL = 1,
 	NVM_BOUNDS_LUN = 2,
@@ -292,13 +290,13 @@ struct nvm_addr {
 		 * Address packing and geometric accessors
 		 */
 		struct {
-			uint64_t blk	: NVM_BLK_BITS;	///< Block address
-			uint64_t pg	: NVM_PG_BITS;	///< Page address
-			uint64_t sec	: NVM_SEC_BITS;	///< Sector address
-			uint64_t pl	: NVM_PL_BITS;	///< Plane address
-			uint64_t lun	: NVM_LUN_BITS;	///< LUN address
-			uint64_t ch	: NVM_CH_BITS;	///< Channel address
-			uint64_t rsvd	: 1;		///< Reserved
+			uint64_t blk	: 16;	///< Block address
+			uint64_t pg	: 16;	///< Page address
+			uint64_t sec	: 8;	///< Sector address
+			uint64_t pl	: 8;	///< Plane address
+			uint64_t lun	: 8;	///< LUN address
+			uint64_t ch	: 7;	///< Channel address
+			uint64_t rsvd	: 1;	///< Reserved
 		} g;
 
 		struct {
