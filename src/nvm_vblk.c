@@ -127,8 +127,7 @@ ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 {
 	size_t nerr = 0;
 	const struct nvm_geo *geo = nvm_dev_get_geo(vblk->dev);
-	// TODO: Remove verid check
-	const int PMODE = vblk->dev->verid == SPEC_VERID_20 ? NVM_FLAG_PMODE_SNGL : vblk->dev->pmode;
+	const int PMODE = vblk->dev->pmode;
 
 	const int BLK_NADDRS = PMODE ? 1 : geo->nplanes;
 	const int CMD_NBLKS = _cmd_nblks(vblk->nblks,
