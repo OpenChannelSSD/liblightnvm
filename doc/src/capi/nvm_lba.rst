@@ -1,5 +1,8 @@
-nvm_lba
-=======
+.. _sec-capi-nvm_lba:
+
+nvm_lba - LBA Interface
+=======================
+
 nvm_lba_pread
 -------------
 

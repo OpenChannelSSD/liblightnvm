@@ -1,5 +1,8 @@
-nvm_dev
-=======
+.. _sec-capi-nvm_dev:
+
+nvm_dev - Device Management
+===========================
+
 nvm_dev
 -------
 
@@ -85,6 +88,11 @@ nvm_dev_set_meta_mode
 ---------------------
 
 .. doxygenfunction:: nvm_dev_set_meta_mode
+
+nvm_dev_set_pmode
+-----------------
+
+.. doxygenfunction:: nvm_dev_set_pmode
 
 nvm_dev_set_read_naddrs_max
 ---------------------------

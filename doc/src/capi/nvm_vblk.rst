@@ -1,5 +1,8 @@
-nvm_vblk
-========
+.. _sec-capi-nvm_vblk:
+
+nvm_vblk - Virtual Block
+========================
+
 nvm_vblk
 --------
 

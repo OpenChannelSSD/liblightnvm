@@ -1,5 +1,8 @@
-nvm_addr
-========
+.. _sec-capi-nvm_addr:
+
+nvm_addr - Addressing
+=====================
+
 nvm_addr
 --------
 

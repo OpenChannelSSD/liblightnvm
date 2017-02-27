@@ -1,5 +1,8 @@
-nvm_geo
-=======
+.. _sec-capi-nvm_geo:
+
+nvm_geo - Geometry
+==================
+
 nvm_geo
 -------
 

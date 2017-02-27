@@ -1,10 +1,18 @@
-nvm_bbt
-=======
+.. _sec-capi-nvm_bbt:
+
+nvm_bbt - Bad-Block-Table
+=========================
+
 nvm_bbt
 -------
 
 .. doxygenstruct:: nvm_bbt
    :members:
+
+nvm_bbt_state
+-------------
+
+.. doxygenenum:: nvm_bbt_state
 
 nvm_bbt_get
 -----------

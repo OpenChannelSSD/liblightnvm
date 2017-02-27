@@ -1,5 +1,8 @@
-nvm_cmd
-=======
+.. _sec-capi-nvm_cmd:
+
+nvm_cmd - Raw Commands
+======================
+
 nvm_cmd
 -------
 
@@ -30,4 +33,9 @@ nvm_cmd_pr
 ----------
 
 .. doxygenfunction:: nvm_cmd_pr
+
+nvm_cmd_vuser_pr
+----------------
+
+.. doxygenfunction:: nvm_cmd_vuser_pr
 

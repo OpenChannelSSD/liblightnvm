@@ -1,5 +1,8 @@
-nvm_buf
-=======
+.. _sec-capi-nvm_buf:
+
+nvm_buf - Buffer Allocation
+===========================
+
 nvm_buf_alloc
 -------------
 

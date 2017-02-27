@@ -1,5 +1,8 @@
+.. _sec-capi-nvm_ver:
+
 nvm_ver
 =======
+
 nvm_ver_major
 -------------
 

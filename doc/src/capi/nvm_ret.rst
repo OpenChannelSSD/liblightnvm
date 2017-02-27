@@ -1,5 +1,8 @@
+.. _sec-capi-nvm_ret:
+
 nvm_ret
 =======
+
 nvm_ret
 -------
 
