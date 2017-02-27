@@ -92,6 +92,10 @@ sphinx-view:
 doc-gen-capi:
 	python doc/gen/capi.py doc/src/capi/ --header include/liblightnvm.h
 
+.PHONY: doc-gen-misc
+doc-gen-qs:
+	cd doc/src/quick_start && python ../../gen/cli.py ./
+
 .PHONY: doc-gen-cli
 doc-gen-cli:
 	python doc/gen/cli.py doc/src/cli/
@@ -100,12 +104,8 @@ doc-gen-cli:
 doc-gen-tut:
 	python doc/gen/cli.py doc/src/tutorial/
 
-.PHONY: doc-gen-misc
-doc-gen-misc:
-	python doc/gen/cli.py doc/src/
-
 .PHONY: doc-gen-cmds
-doc-gen-cmds: doc-gen-misc doc-gen-cli doc-gen-tut
+doc-gen-cmds: doc-gen-qs doc-gen-cli doc-gen-tut
 
 .PHONY: doc
 doc: doxy sphinx
