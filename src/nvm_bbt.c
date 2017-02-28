@@ -1,10 +1,9 @@
 /*
  * bbt - Bad-block-table functions
  *
- * Copyright (C) 2015 Javier González <javier@cnexlabs.com>
- * Copyright (C) 2015 Matias Bjørling <matias@cnexlabs.com>
- * Copyright (C) 2016 Simon A. F. Lund <slund@cnexlabs.com>
- * Copyright (C) 2017 Simon A. F. Lund <slund@cnexlabs.com>
+ * Copyright (C) 2015-2017 Javier Gonzáles <javier@cnexlabs.com>
+ * Copyright (C) 2015-2017 Matias Bjørling <matias@cnexlabs.com>
+ * Copyright (C) 2015-2017 Simon A. F. Lund <slund@cnexlabs.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
