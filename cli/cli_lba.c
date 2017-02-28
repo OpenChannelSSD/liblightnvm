@@ -6,7 +6,7 @@
 #include <string.h>
 #include <errno.h>
 #include <liblightnvm.h>
-#include "nvm_cli.h"
+#include "liblightnvm_cli.h"
 
 int cmd_pwrite(NVM_CLI_CMD_ARGS *args)
 {

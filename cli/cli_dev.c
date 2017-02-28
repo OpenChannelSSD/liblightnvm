@@ -3,7 +3,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <liblightnvm.h>
-#include "nvm_cli.h"
+#include "liblightnvm_cli.h"
 
 int info(NVM_CLI_CMD_ARGS *args)
 {

@@ -1,4 +1,4 @@
-#include "nvm_cli.h"
+#include "liblightnvm_cli.h"
 #include <sys/time.h>
 #include <stdlib.h>
 #include <string.h>
