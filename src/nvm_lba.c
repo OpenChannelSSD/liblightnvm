@@ -26,6 +26,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#define _XOPEN_SOURCE 700
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -33,18 +34,6 @@
 #include <stdio.h>
 #include <liblightnvm.h>
 #include <nvm_dev.h>
-/*
-void nvm_lba_map_pr(struct nvm_lba_map* map)
-{
-	printf("lba_map {\n");
-	printf(" channel_nbytes(%lu)\n", map->channel_nbytes);
-	printf(" lun_nbytes(%lu)\n", map->lun_nbytes);
-	printf(" plane_nbytes(%lu)\n", map->plane_nbytes);
-	printf(" block_nbytes(%lu)\n", map->block_nbytes);
-	printf(" page_nbytes(%lu)\n", map->page_nbytes);
-	printf(" sector_nbytes(%lu)\n", map->sector_nbytes);
-	printf("}\n");
-}*/
 
 ssize_t nvm_lba_pwrite(struct nvm_dev *dev, const void *buf, size_t count,
 		       off_t offset)
