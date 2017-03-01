@@ -63,8 +63,8 @@ void nvm_dev_pr(struct nvm_dev *dev)
 	}
 
 	printf("dev {\n");
-	printf(" verid(0x%02x), beid(0x%02x),\n",
-	       dev->verid, dev->beid);
+	printf(" verid(0x%02x), be->id(0x%02x),\n",
+	       dev->verid, dev->be->id);
 	printf(" path(%s), name(%s), fd(%d),\n",
 	       dev->path, dev->name, dev->fd);
 	printf(" ssw(%lu), pmode(%s),\n", dev->ssw, nvm_pmode_str(dev->pmode));
