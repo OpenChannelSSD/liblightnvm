@@ -49,7 +49,7 @@ def main(args):
     if args.repos == "binaries":
         descr["files"] = [
             {
-                "includePattern": "./(liblightnvm)-(.*).tar.gz",
+                "includePattern": "./(liblightnvm0)-(.*).tar.gz",
                 "uploadPattern": "%s/$1-$2-%s-%s.tar.gz" % (
                     args.dist_code, args.branch, commit_short
                 ),
@@ -62,7 +62,7 @@ def main(args):
     elif args.repos == "debs":
         descr["files"] = [
             {
-                "includePattern": "./(liblightnvm)-(.*).deb",
+                "includePattern": "./(liblightnvm0)-(.*).deb",
                 "uploadPattern": "%s/$1-$2-%s-%s.deb" % (
                     args.dist_code, args.branch, commit_short
                 ),

@@ -49,8 +49,12 @@ script:
   - CONTAINER_ID=$(cat container.id)
   - docker ps -a
   - docker exec -t ${TAG} make clean make-pkg
-  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm-${NVM_VERSION}.deb .
-  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm-${NVM_VERSION}.tar.gz .
+  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm0-cli.deb .
+  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm0-dev.deb .
+  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm0-lib.deb .
+  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm0-cli.tar.gz .
+  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm0-dev.tar.gz .
+  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm0-lib.tar.gz .
   - docker stop "${CONTAINER_ID}"
 
 after_success:
