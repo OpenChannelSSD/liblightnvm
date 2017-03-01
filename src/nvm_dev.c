@@ -131,18 +131,20 @@ int nvm_dev_get_meta_mode(struct nvm_dev *dev)
 int nvm_dev_set_meta_mode(struct nvm_dev *dev, int meta_mode)
 {
 	switch (meta_mode) {
-		case NVM_META_MODE_NONE:
-		case NVM_META_MODE_ALPHA:
-		case NVM_META_MODE_CONST:
-			break;
-		default:
-			errno = EINVAL;
-			return -1;
+	case NVM_META_MODE_NONE:
+		dev->meta_mode = NVM_META_MODE_NONE;
+		return 0;
+	case NVM_META_MODE_ALPHA:
+		dev->meta_mode = NVM_META_MODE_ALPHA;
+		return 0;
+	case NVM_META_MODE_CONST:
+		dev->meta_mode = NVM_META_MODE_CONST;
+		return 0;
+
+	default:
+		errno = EINVAL;
+		return -1;
 	}
-
-	dev->meta_mode = meta_mode;
-
-	return 0;
 }
 
 int nvm_dev_get_nsid(struct nvm_dev *dev)
@@ -246,14 +248,18 @@ int nvm_dev_set_write_naddrs_max(struct nvm_dev *dev, int naddrs)
 	return 0;
 }
 
-struct nvm_dev * nvm_dev_openf(const char *dev_path, int NVM_UNUSED(flags)) {
+struct nvm_dev * nvm_dev_openf(const char *dev_path, int flags) {
 	struct nvm_dev *dev = NULL;
 
+	int be = flags & NVM_BE_ALL;
+
 	for (int i = 0; nvm_backends[i]; ++i) {
+		if (be && !(nvm_backends[i]->id & be))
+			continue;
+
 		dev = nvm_backends[i]->open(dev_path);
 		if (dev) {
 			dev->be = nvm_backends[i];
-			dev->beid = i;
 			break;
 		}
 	}
