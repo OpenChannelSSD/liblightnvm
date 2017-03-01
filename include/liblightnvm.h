@@ -632,6 +632,13 @@ int nvm_dev_get_erase_naddrs_max(struct nvm_dev *dev);
 int nvm_dev_get_bbts_cached(struct nvm_dev *dev);
 
 /**
+ * Returns the backend identifier associated with the given device
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ */
+int nvm_dev_get_be_id(struct nvm_dev *dev);
+
+/**
  * Set the maximum number of addresses to use for reads, that is, when invoking
  * nvm_addr_read
  *
