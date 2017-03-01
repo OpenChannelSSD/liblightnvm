@@ -286,6 +286,8 @@ void nvm_be_ioctl_close(struct nvm_dev *dev)
 }
 
 struct nvm_be nvm_be_ioctl = {
+	.id = NVM_BE_IOCTL,
+
 	.open = nvm_be_ioctl_open,
 	.close = nvm_be_ioctl_close,
 
