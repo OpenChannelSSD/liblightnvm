@@ -34,6 +34,11 @@ nvm_dev_get_bbts_cached
 
 .. doxygenfunction:: nvm_dev_get_bbts_cached
 
+nvm_dev_get_be_id
+-----------------
+
+.. doxygenfunction:: nvm_dev_get_be_id
+
 nvm_dev_get_erase_naddrs_max
 ----------------------------
 

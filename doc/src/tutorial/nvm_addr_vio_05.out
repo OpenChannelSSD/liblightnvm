@@ -5,7 +5,7 @@ vblk {
 vblk-naddrs(1) {
  00: (0x000000000000000a){ ch(00), lun(00), pl(0), blk(0010), pg(000), sec(0) }
 }
-Ran nvm_vblk_erase, elapsed wall-clock: 0.006320
+Ran nvm_vblk_erase, elapsed wall-clock: 0.015684
 
 ** nvm_vblk_write(...): pmode(DUAL)
 vblk {
@@ -14,5 +14,5 @@ vblk {
 vblk-naddrs(1) {
  00: (0x000000000000000a){ ch(00), lun(00), pl(0), blk(0010), pg(000), sec(0) }
 }
-Ran nvm_buf_alloc, elapsed wall-clock: 0.019177
-Ran nvm_vblk_write, elapsed wall-clock: 0.968400
+Ran nvm_buf_alloc, elapsed wall-clock: 0.019323
+Ran nvm_vblk_write, elapsed wall-clock: 0.931128

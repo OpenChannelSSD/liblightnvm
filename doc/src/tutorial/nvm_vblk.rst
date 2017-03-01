@@ -21,7 +21,8 @@ Increased utilization of parallel units in a device is achieved by constructing
 a virtual block as either a :ref:`sec-tut-vblk-set` or a
 :ref:`sec-tut-vblk-line`.
 
-.. NOTE :: C API documentation of the virtual block is available in :ref:`sec-capi-vblk`
+.. NOTE :: C API documentation of the virtual block is available in
+  :ref:`sec-capi-nvm_vblk`
 
 .. _sec-tut-vblk-plane:
 

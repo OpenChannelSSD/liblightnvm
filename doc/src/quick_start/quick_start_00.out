@@ -1,6 +1,6 @@
 ** Device information  -- nvm_dev_pr **
 dev {
- verid(0x02), beid(0x01),
+ verid(0x02), be->id(0x02),
  path(/dev/nvme0n1), name(nvme0n1), fd(3),
  ssw(12), pmode(DUAL),
  erase_naddrs_max(64), read_naddrs_max(64), write_naddrs_max(64),

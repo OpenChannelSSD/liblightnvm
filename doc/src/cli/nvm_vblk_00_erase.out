@@ -5,4 +5,4 @@ vblk {
 vblk-naddrs(1) {
  00: (0x020500000000002a){ ch(02), lun(05), pl(0), blk(0042), pg(000), sec(0) }
 }
-Ran nvm_vblk_erase, elapsed wall-clock: 0.005787
+Ran nvm_vblk_erase, elapsed wall-clock: 0.006806
