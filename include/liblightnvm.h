@@ -47,6 +47,16 @@ extern "C" {
 #define NVM_FLAG_SCRBL 0x200	///< Scrambler ON/OFF: Context sensitive
 
 /**
+ * Enumeration of cmd back-ends used by liblightnvm
+ */
+enum nvm_be_id {
+	NVM_BE_ANY = 0x0,	///< Flag for ANY backend
+	NVM_BE_IOCTL = 0x1,	///< Flag for the IOCTL backend
+	NVM_BE_SYSFS = 0x2,	///< Flag for the IOCTL + sysfs backend
+};
+#define NVM_BE_ALL (NVM_BE_IOCTL | NVM_BE_SYSFS)	///< All be identifiers
+
+/**
  * Plane-mode access for IO
  */
 enum nvm_pmode {
