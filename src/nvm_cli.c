@@ -66,54 +66,74 @@ void nvm_timer_pr(const char* tool)
     printf("Ran %s, elapsed wall-clock: %lf\n", tool, nvm_timer_elapsed());
 }
 
+int nvm_cli_be_id(void)
+{
+	char *id = getenv("NVM_CLI_BE_ID");
+	if (!id)
+		return NVM_BE_ANY;
+
+	switch(strtol(id, NULL, 16)) {
+	case NVM_BE_ANY:
+		return NVM_BE_ANY;
+	case NVM_BE_IOCTL:
+		return NVM_BE_IOCTL;
+	case NVM_BE_SYSFS:
+		return NVM_BE_SYSFS;
+
+	default:
+		errno = EINVAL;
+		return -1;
+	}
+}
+
 int nvm_cli_pmode(struct nvm_dev *dev)
 {
 	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
 
-	char *pmode_env = getenv("NVM_CLI_PMODE");	// Check ENV
-	if (pmode_env) {
-		switch(atoi(pmode_env)) {
-		case NVM_FLAG_PMODE_QUAD:
-			if (geo->nplanes < 4) {	// Verify
-				errno = EINVAL;
-				return -1;
-			}
-			return NVM_FLAG_PMODE_QUAD;
-		case NVM_FLAG_PMODE_DUAL:
-			if (geo->nplanes < 2) {	// Verify
-				errno = EINVAL;
-				return -1;
-			}
-			return NVM_FLAG_PMODE_DUAL;
-		case NVM_FLAG_PMODE_SNGL:
-			return NVM_FLAG_PMODE_SNGL;
-		default:
+	char *pmode_env = getenv("NVM_CLI_PMODE");
+	if (!pmode_env)
+		return nvm_dev_get_pmode(dev);
+
+	switch(strtol(pmode_env, NULL, 16)) {
+	case NVM_FLAG_PMODE_QUAD:
+		if (geo->nplanes < 4) {	// Verify
 			errno = EINVAL;
 			return -1;
 		}
-	}
+		return NVM_FLAG_PMODE_QUAD;
+	case NVM_FLAG_PMODE_DUAL:
+		if (geo->nplanes < 2) {	// Verify
+			errno = EINVAL;
+			return -1;
+		}
+		return NVM_FLAG_PMODE_DUAL;
+	case NVM_FLAG_PMODE_SNGL:
+		return NVM_FLAG_PMODE_SNGL;
 
-	return nvm_dev_get_pmode(dev);
+	default:
+		errno = EINVAL;
+		return -1;
+	}
 }
 
 int nvm_cli_meta_mode(struct nvm_dev *dev)
 {
-	char *meta_mode_env = getenv("NVM_CLI_META_MODE");	// Check ENV
-	if (meta_mode_env) {
-		switch(atoi(meta_mode_env)) {
-			case 0x0:
-				return NVM_META_MODE_NONE;
-			case 0x1:
-				return NVM_META_MODE_ALPHA;
-			case 0x2:
-				return NVM_META_MODE_CONST;
-			default:
-				errno = EINVAL;
-				return -1;
-		}
-	}
+	char *meta_mode_env = getenv("NVM_CLI_META_MODE");
+	if (!meta_mode_env)
+		return nvm_dev_get_meta_mode(dev);
 
-	return nvm_dev_get_meta_mode(dev);
+	switch(strtol(meta_mode_env, NULL, 16)) {
+	case NVM_META_MODE_NONE:
+		return NVM_META_MODE_NONE;
+	case NVM_META_MODE_ALPHA:
+		return NVM_META_MODE_ALPHA;
+	case NVM_META_MODE_CONST:
+		return NVM_META_MODE_CONST;
+
+	default:
+		errno = EINVAL;
+		return -1;
+	}
 }
 
 void nvm_cli_usage(const char *cli_name, const char *cli_description,
@@ -194,7 +214,13 @@ NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
 	memset(dev_path, 0, sizeof(dev_path));
 	strcpy(dev_path, argv[2]);
 
-	args.dev = nvm_dev_open(dev_path);		// Open device
+	int be_id = nvm_cli_be_id();
+	if (be_id < 0) {
+		perror("FAILED: Using NVM_CLI_BE_ID");
+		return NULL;
+	}
+
+	args.dev = nvm_dev_openf(dev_path, be_id);	// Open device
 	if (!args.dev) {
 		perror("nvm_dev_open");
 		return NULL;
