@@ -33,6 +33,12 @@
  * Backend interface
  */
 struct nvm_be {
+
+	/**
+	 * Backend identifier
+	 */
+	enum nvm_be_id id;
+
 	/**
 	 * Open a device
 	 */
