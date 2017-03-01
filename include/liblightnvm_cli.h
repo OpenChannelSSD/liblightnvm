@@ -130,6 +130,14 @@ double nvm_timer_elapsed(void);
 void nvm_timer_pr(const char* tool);
 
 /**
+ * Provide backend via ENV("NVM_CLI_BE_ID")
+ *
+ * @note
+ * If NVM_CLI_BE_ID is not set, then NVM_BE_ANY is returned
+ */
+int nvm_cli_be_id(void);
+
+/**
  * Override plane_mode via ENV("NVM_CLI_PMODE")
  *
  * @note
