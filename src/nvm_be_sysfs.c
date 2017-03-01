@@ -404,6 +404,8 @@ struct nvm_dev *nvm_be_sysfs_open(const char *dev_path)
 }
 
 struct nvm_be nvm_be_sysfs = {
+	.id = NVM_BE_SYSFS,
+
 	.open = nvm_be_sysfs_open,
 	.close = nvm_be_sysfs_close,
 
