@@ -130,9 +130,9 @@ doc-publish:
 	cd $(BUILD_DIR)/ghpages && git rm -rf --ignore-unmatch .
 	cp -r $(BUILD_DIR)/doc/sphinx/html/. $(BUILD_DIR)/ghpages/
 	touch $(BUILD_DIR)/ghpages/.nojekyll
+	cd $(BUILD_DIR)/ghpages && git config user.name "Mr. Robot"
+	cd $(BUILD_DIR)/ghpages && config user.email "foo@example.com"
 	cd $(BUILD_DIR)/ghpages && git add .
-	if [ -z "`git config user.name`" ]; then git config user.name "Mr. Robot"; fi
-	if [ -z "`git config user.email`" ]; then git config user.email "foo@example.com"; fi
 	cd $(BUILD_DIR)/ghpages && git commit -m "Autogen docs for `git rev-parse --short HEAD`."
 	cd $(BUILD_DIR)/ghpages && git push origin --delete gh-pages
 	cd $(BUILD_DIR)/ghpages && git push origin gh-pages
