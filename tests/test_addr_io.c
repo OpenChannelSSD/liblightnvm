@@ -126,19 +126,25 @@ void _test_1ADDR(int use_meta)
 		goto exit_naddr;
 	}
 
-	for (size_t pl = 0; pl < geo->nplanes; ++pl) {	// Erase
-		addrs[pl].ppa = blk_addr.ppa;
+	/* Erase */
+	if (pmode) {
+		addrs[0].ppa = blk_addr.ppa;
+	} else {
+		for (size_t pl = 0; pl < geo->nplanes; ++pl) {
+			addrs[pl].ppa = blk_addr.ppa;
 
-		addrs[pl].g.pl = pl;
+			addrs[pl].g.pl = pl;
+		}
 	}
 
-	res = nvm_addr_erase(dev, addrs, geo->nplanes, pmode, &ret);
+	res = nvm_addr_erase(dev, addrs, pmode ? 1 : geo->nplanes, pmode, &ret);
 	if (res < 0) {
 		CU_FAIL("Erase failure");
 		goto exit_naddr;
 	}
 
-	for (size_t pg = 0; pg < geo->npages; ++pg) {	// Write
+	/* Write */
+	for (size_t pg = 0; pg < geo->npages; ++pg) {
 		for (int i = 0; i < naddrs; ++i) {
 			addrs[i].ppa = blk_addr.ppa;
 
@@ -154,7 +160,8 @@ void _test_1ADDR(int use_meta)
 		}
 	}
 
-	for (size_t pg = 0; pg < geo->npages; ++pg) {		// Read
+	/* Read */
+	for (size_t pg = 0; pg < geo->npages; ++pg) {
 		for (size_t pl = 0; pl < geo->nplanes; ++pl) {
 			for (size_t sec = 0; sec < geo->nsectors; ++sec) {
 				struct nvm_addr addr;
@@ -282,18 +289,25 @@ void _test_NADDR(int use_meta, int pmode)
 		goto exit_naddr;
 	}
 
-	for (size_t pl = 0; pl < geo->nplanes; ++pl) {		// Erase
-		addrs[pl].ppa = blk_addr.ppa;
+	/* Erase */
+	if (pmode) {
+		addrs[0].ppa = blk_addr.ppa;
+	} else {
+		for (size_t pl = 0; pl < geo->nplanes; ++pl) {
+			addrs[pl].ppa = blk_addr.ppa;
 
-		addrs[pl].g.pl = pl;
+			addrs[pl].g.pl = pl;
+		}
 	}
-	res = nvm_addr_erase(dev, addrs, geo->nplanes, pmode, &ret);
+
+	res = nvm_addr_erase(dev, addrs, pmode ? 1 : geo->nplanes, pmode, &ret);
 	if (res < 0) {
 		CU_FAIL("Erase failure");
 		goto exit_naddr;
 	}
 
-	for (size_t pg = 0; pg < geo->npages; ++pg) {		// Write
+	/* Write */
+	for (size_t pg = 0; pg < geo->npages; ++pg) {
 		for (int i = 0; i < naddrs; ++i) {
 			addrs[i].ppa = blk_addr.ppa;
 
@@ -308,8 +322,9 @@ void _test_NADDR(int use_meta, int pmode)
 			goto exit_naddr;
 		}
 	}
-
-	for (size_t pg = 0; pg < geo->npages; ++pg) {		// Read
+	
+	/* Read */
+	for (size_t pg = 0; pg < geo->npages; ++pg) {
 		size_t buf_diff = 0, meta_diff = 0;
 
 		for (int i = 0; i < naddrs; ++i) {
