@@ -177,10 +177,6 @@ int nvm_dev_set_erase_naddrs_max(struct nvm_dev *dev, int naddrs)
 		errno = EINVAL;
 		return -1;
 	}
-	if (naddrs % dev->geo.nplanes) {
-		errno = EINVAL;
-		return -1;
-	}
 
 	dev->erase_naddrs_max = naddrs;
 
@@ -218,7 +214,7 @@ int nvm_dev_set_read_naddrs_max(struct nvm_dev *dev, int naddrs)
 		errno = EINVAL;
 		return -1;
 	}
-	if (naddrs % (dev->geo.nplanes * dev->geo.nsectors)) {
+	if (dev->pmode && (naddrs % (dev->geo.nplanes))) {
 		errno = EINVAL;
 		return -1;
 	}
@@ -238,7 +234,11 @@ int nvm_dev_set_write_naddrs_max(struct nvm_dev *dev, int naddrs)
 		errno = EINVAL;
 		return -1;
 	}
-	if (naddrs % (dev->geo.nplanes * dev->geo.nsectors)) {
+	if (dev->pmode && (naddrs % (dev->geo.nplanes * dev->geo.nsectors))) {
+		errno = EINVAL;
+		return -1;
+	}
+	if (naddrs % (dev->geo.nsectors)) {
 		errno = EINVAL;
 		return -1;
 	}
