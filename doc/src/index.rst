@@ -18,15 +18,13 @@ using physical addressing. Command-construction is encapsulated, including
 mapping a general physical addressing format to device specific. Thereby
 allowing the user to focus on performing read/write on the vector space. The
 interface is useful for experimenting with the vectorized I/O as provided by
-Open-Channel SSDs.
-However, the library also support pealing of these abstractions and let the
-user construct and submit "raw" commands.
+Open-Channel SSDs. However, the library also support pealing of these
+abstractions and let the user construct and submit "raw" commands.
 
-For application integration, the "virtual block" interface provides
-a libc-like ``write``/``read``/``pread`` interface, encapsulating concerns of
-optimizing command construction for utilization of parallel units on an
-Open-Channel SSD.  A virtual block can be created to span all parallel units or
-a subset thereof.
+For application integration, the "virtual block" interface provides a libc-like
+``write``/``read``/``pread`` interface, encapsulating concerns of optimizing
+command construction for utilization of parallel units on an Open-Channel SSD.
+A virtual block can be created to span all parallel units or a subset thereof.
 
 liblightnvm provides access to the user via a public C API, and a command-line
 interface (CLI). The CLI is a thin wrapper around what the C API exposes and is
