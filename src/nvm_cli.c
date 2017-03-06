@@ -905,7 +905,7 @@ void nvm_cli_usage_pr(struct nvm_cli *cli)
 	printf("\nUsage:\n");
 
 	for (int i = 0; i < cli->ncmds; ++i) {
-		printf(" %s %10s ", cli->name, cli->cmds[i].name);
+		printf(" %s %12s ", cli->name, cli->cmds[i].name);
 
 		switch(cli->cmds[i].arg_type) {
 		case NVM_CLI_ARG_ADDR:
@@ -950,10 +950,10 @@ void nvm_cli_usage_pr(struct nvm_cli *cli)
 			break;
 
 		case NVM_CLI_ARG_REGISTER:
-			printf("dev_path register");
+			printf("dev_path 0xREG");
 			break;
 		case NVM_CLI_ARG_REGISTER_VALUE:
-			printf("dev_path register value");
+			printf("dev_path 0xREG 0xVAL");
 			break;
 
 		case NVM_CLI_ARG_DEV_PATH:
