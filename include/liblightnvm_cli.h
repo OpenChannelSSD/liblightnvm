@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /**
- * @file liblightnvm.h
+ * @file liblightnvm_cli.h
  */
 #ifndef __LIBLIGHTNVM_CLI_H
 #define __LIBLIGHTNVM_CLI_H
@@ -40,126 +40,171 @@ extern "C" {
 
 #define NVM_CLI_CMD_LEN 50
 
-typedef enum nvm_cli_argtype {
+/**
+ * Enumeration of environment variables
+ */
+enum nvm_cli_evar_type {
+	NVM_CLI_ENV_BE_ID,
+	NVM_CLI_PMODE,
+	NVM_CLI_META_MODE,
+	NVM_CLI_NOVERIFY,
+	NVM_CLI_ERASE_NADDRS_MAX,
+	NVM_CLI_READ_NADDRS_MAX,
+	NVM_CLI_WRITE_NADDRS_MAX,
+};
+
+/**
+ * Storage for parsed environment variable dec_vals
+ */
+struct nvm_cli_evars {
+	int be_id;
+	int pmode;
+	int meta_mode;
+	int noverify;
+	int erase_naddrs_max;
+	int read_naddrs_max;
+	int write_naddrs_max;
+	int meta_pr;
+};
+
+/**
+ * Positional argument types
+ */
+enum nvm_cli_cmd_arg_type {
 	NVM_CLI_ARG_NONE,
-	NVM_CLI_ARG_ADDRLIST,
-	NVM_CLI_ARG_INTLIST,
-	NVM_CLI_ARG_CH_LUN,
-	NVM_CLI_ARG_CH_LUN_BLK,
-	NVM_CLI_ARG_CH_LUN_BLK_PG,
-	NVM_CLI_ARG_CH_LUN_PL_BLK_PG_SEC,
-	NVM_CLI_ARG_LINE,
+	NVM_CLI_ARG_DEV_PATH,
+	NVM_CLI_ARG_DECVAL,
+	NVM_CLI_ARG_DECVAL_LIST,
+	NVM_CLI_ARG_HEXVAL,
+	NVM_CLI_ARG_HEXVAL_LIST,
+	NVM_CLI_ARG_ADDR,
+	NVM_CLI_ARG_ADDR_LIST,
+	NVM_CLI_ARG_ADDR_LUN,
+	NVM_CLI_ARG_ADDR_BLK,
+	NVM_CLI_ARG_ADDR_PG,
+	NVM_CLI_ARG_ADDR_SEC,
+	NVM_CLI_ARG_VBLK_LINE,
+	NVM_CLI_ARG_REGISTER,
+	NVM_CLI_ARG_REGISTER_VALUE,
 	NVM_CLI_ARG_COUNT_OFFSET,
-} NVM_CLI_CMD_ARGTYPE;
-
-typedef struct {
-	struct nvm_dev *dev;
-	const struct nvm_geo *geo;
-	struct nvm_addr addrs[1024];
-	int naddrs;
-	size_t lbas[1024];
-	int nlbas;
-	size_t count;
-	ssize_t offset;
-} NVM_CLI_CMD_ARGS;
-
-typedef int (*NVM_CLI_CMD_FUNC)(NVM_CLI_CMD_ARGS*);
-
-typedef struct {
-	char name[NVM_CLI_CMD_LEN];
-	NVM_CLI_CMD_FUNC func;
-	NVM_CLI_CMD_ARGTYPE argt;
-	NVM_CLI_CMD_ARGS *args;
-} NVM_CLI_CMD;
+};
 
 /**
- * Prints usage
- *
- * @param cli_name Name of the CLI tool
- * @param cli_description Description of the CLI tool
- * @param cmds Array of commands in CLI tool
- * @param ncmds Count of commands in CLI tool
+ * Storage for positional arguments
  */
-void nvm_cli_usage(const char *cli_name, const char *cli_description,
-		   NVM_CLI_CMD cmds[], int ncmds);
+struct nvm_cli_cmd_args {
+	char dev_path[1024];		///< For ALL
+	struct nvm_dev *dev;		///< For ALL
+	const struct nvm_geo *geo;	///< For ALL
+	struct nvm_addr addrs[1024];	///< Parsed gen addresses
+	int naddrs;			///< Number of parsed gen addresses
+	size_t dec_vals[1024];		///< Parsed decimal dec_vals
+	int ndec_vals;			///< Number of parsed decical values
+	size_t hex_vals[1024];		///< Parsed decimal values
+	int nhex_vals;			///< Number of parsed decical values
+};
 
 /**
- * Parse command-line arguments and setup CLI cmd
- *
- * @param argc argument count, forward from main(int argc,...)
- * @param argv arguments, forward from main(... , char **argv)
- * @param cmds Array of commands in CLI tool
- * @param ncmds Count of commands in CLI tool
- * @return Pointer to CLI command to execute
+ * Types of option-arguments
  */
-NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds);
+enum nvm_cli_opt_type {
+	NVM_CLI_OPT_NONE = 0,
+	NVM_CLI_OPT_HELP = 1,
+	NVM_CLI_OPT_BRIEF = 1 << 1,
+	NVM_CLI_OPT_VERBOSE = 1 << 2,
+	NVM_CLI_OPT_FILE_INPUT = 1 << 3,
+	NVM_CLI_OPT_FILE_OUTPUT = 1 << 4,
+	NVM_CLI_OPT_VAL_DEC = 1 << 5,
+	NVM_CLI_OPT_VAL_HEX = 1 << 6,
+};
+
+#define NVM_CLI_OPT_DEFAULT (NVM_CLI_OPT_HELP | NVM_CLI_OPT_VERBOSE)
 
 /**
- * Tear down CLI arguments for the given cmd
- *
- * @param cmd
+ * Storage for opt-arguments
  */
-void nvm_cli_teardown(NVM_CLI_CMD *cmd);
+struct nvm_cli_opts {
+	int mask;		///< Mask of all provided options
+	int help;		///< For NVM_CLI_OPT_HELP
+	int brief;		///< For NVM_CLI_OPT_BRIEF
+	int verbose;		///< For NVM_CLI_OPT_VERBOSE
+	char *file_input;	///< For NVM_CLI_OPT_FILE_INPUT
+	char *file_output;	///< For NVM_CLI_OPT_FILE_OUTPUT
+	size_t dec_val;		///< For NVM_CLI_OPT_VAL_DEC
+	size_t hex_val;		///< For NVM_CLI_OPT_VAL_HEX
+};
+
+struct nvm_cli;
+
+typedef int (*nvm_cli_cmd_func)(struct nvm_cli*);
+
+struct nvm_cli_cmd {
+	char name[NVM_CLI_CMD_LEN];	// Command name
+	nvm_cli_cmd_func func;		// Command function
+	enum nvm_cli_cmd_arg_type arg_type;	// Positional argument type
+	int opt_types;			// Mask of supported options
+};
+
+struct nvm_cli {
+	const char *title;		// Defined by user
+	const char *descr_short;	// Defined by user
+	const char *descr_long;	// Defined by user
+
+	struct nvm_cli_cmd *cmds;	// Defined by user
+	int ncmds;			// Defined by user
+
+	char name[NVM_CLI_CMD_LEN];	// Constructed by _parse_cli
+
+	struct nvm_cli_cmd cmd;		// Selected from `cmds` by _parse_cmd
+
+	struct nvm_cli_cmd_args args;	// Constructed by _parse_args
+	struct nvm_cli_opts opts;	// Constructed by _parse_opts
+	struct nvm_cli_evars evars;	// Constructed from ENV
+};
+
+void nvm_cli_cmd_args_pr(struct nvm_cli_cmd_args *args);
+
+void nvm_cli_opts_pr(struct nvm_cli_opts *opts);
+
+void nvm_cli_evars_pr(struct nvm_cli_evars *evars);
+
+void nvm_cli_pr(struct nvm_cli *cli);
 
 /**
  * Start the global timer
  *
  * @return timestamp, in ms, when the timer was started
  */
-size_t nvm_timer_start(void);
+size_t nvm_cli_timer_start(void);
 
 /**
  * Stop the global timer
  *
  * @return timestamp, in ms, when the timer was stopped
  */
-size_t nvm_timer_stop(void);
+size_t nvm_cli_timer_stop(void);
 
 /**
  * Return elapsed time
  *
  * @return Elapsed time, in seconds
  */
-double nvm_timer_elapsed(void);
+double nvm_cli_timer_elapsed(void);
 
 /**
  * Print out elapsed time prefix with the given string
  *
  * @param tool Prefix to use
  */
-void nvm_timer_pr(const char* tool);
+void nvm_cli_timer_pr(const char *tool);
 
-/**
- * Provide backend via ENV("NVM_CLI_BE_ID")
- *
- * @note
- * If NVM_CLI_BE_ID is not set, then NVM_BE_ANY is returned
- */
-int nvm_cli_be_id(void);
+void nvm_cli_usage_pr(struct nvm_cli *cli);
 
-/**
- * Override plane_mode via ENV("NVM_CLI_PMODE")
- *
- * @note
- * If NVM_CLI_PMODE is not set, the device default is returned.
- *
- * @param dev Device handle obtained with `nvm_dev_open`
- * @return On success, user-supplied plane_mode is returned. On error, -1 and
- * errno set to indicate the error.
- */
-int nvm_cli_pmode(struct nvm_dev *dev);
+int nvm_cli_init(struct nvm_cli *cli, int argc, char *argv[]);
 
-/**
- * Provide an override for device meta_mode via CLI ENV("NVM_CLI_META_MODE")
- *
- * @note
- * If NVM_CLI_META_MODE is not set, the device default is returned.
- *
- * @param dev Device handle obtained with `nvm_dev_open`
- * @return On success, user-supplied plane_mode is returned. On error, -1 and
- * errno set to indicate the error.
- */
-int nvm_cli_meta_mode(struct nvm_dev *dev);
+int nvm_cli_run(struct nvm_cli *cli);
+
+void nvm_cli_destroy(struct nvm_cli *cli);
 
 #ifdef __cplusplus
 }

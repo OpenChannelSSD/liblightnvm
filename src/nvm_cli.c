@@ -26,14 +26,13 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <liblightnvm_cli.h>
-#include <sys/time.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
-
-static NVM_CLI_CMD_ARGS args;
+#include <getopt.h>
+#include <sys/time.h>
+#include <liblightnvm_cli.h>
 
 static size_t start, stop;
 
@@ -44,55 +43,465 @@ static inline size_t wclock_sample(void)
     return tv.tv_usec + tv.tv_sec * 1000000;
 }
 
-size_t nvm_timer_start(void)
+size_t nvm_cli_timer_start(void)
 {
     start = wclock_sample();
     return start;
 }
 
-size_t nvm_timer_stop(void)
+size_t nvm_cli_timer_stop(void)
 {
     stop = wclock_sample();
     return stop;
 }
 
-double nvm_timer_elapsed(void)
+double nvm_cli_timer_elapsed(void)
 {
     return (stop-start)/(double)1000000.0;
 }
 
-void nvm_timer_pr(const char* tool)
+void nvm_cli_timer_pr(const char *tool)
 {
-    printf("Ran %s, elapsed wall-clock: %lf\n", tool, nvm_timer_elapsed());
+    printf("Ran %s, elapsed wall-clock: %lf\n", tool, nvm_cli_timer_elapsed());
 }
 
-int nvm_cli_be_id(void)
+int _parse_options(int argc, char *argv[], struct nvm_cli *cli)
 {
-	char *id = getenv("NVM_CLI_BE_ID");
-	if (!id)
-		return NVM_BE_ANY;
+	for (int opt = 0; (opt = getopt(argc, argv, ":hbvi:o:n:x:")) != -1;) {
+		switch(opt) {
+		case 'h':
+			cli->opts.mask |= NVM_CLI_OPT_HELP;
+			cli->opts.help = 1;
+			break;
+		case 'b':
+			cli->opts.mask |= NVM_CLI_OPT_BRIEF;
+			cli->opts.brief = 1;
+			break;
+		case 'v':
+			cli->opts.mask |= NVM_CLI_OPT_VERBOSE;
+			cli->opts.verbose = 1;
+			break;
+		case 'i':
+			cli->opts.mask |= NVM_CLI_OPT_FILE_INPUT;
+			cli->opts.file_input = optarg;
+			break;
+		case 'o':
+			cli->opts.mask |= NVM_CLI_OPT_FILE_OUTPUT;
+			cli->opts.file_output = optarg;
+			break;
+		case 'n':
+			cli->opts.mask |= NVM_CLI_OPT_VAL_DEC;
+			cli->opts.dec_val = atoi(optarg);
+			break;
+		case 'x':
+			cli->opts.mask |= NVM_CLI_OPT_VAL_HEX;
+			cli->opts.hex_val = strtol(optarg, NULL, 16);
+			break;
 
-	switch(strtol(id, NULL, 16)) {
-	case NVM_BE_ANY:
-		return NVM_BE_ANY;
-	case NVM_BE_IOCTL:
-		return NVM_BE_IOCTL;
-	case NVM_BE_SYSFS:
-		return NVM_BE_SYSFS;
+		case ':':
+		case '?':
+			return -1;
+		default:
+			break;
+		}
+	}
 
-	default:
+	return optind;
+}
+
+int _parse_cmd_arg_count_offset(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 2;
+
+	if (argc < inc) {
 		errno = EINVAL;
 		return -1;
 	}
+
+	cli->args.dec_vals[0] = atoi(argv[0]);
+	cli->args.dec_vals[1] = atoi(argv[1]);
+	cli->args.ndec_vals = 2;
+
+	return inc;
 }
 
-int nvm_cli_pmode(struct nvm_dev *dev)
+int _parse_cmd_arg_vblk_line(int argc, char *argv[], struct nvm_cli *cli)
 {
-	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
+	const int inc = 5;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.addrs[0].ppa = 0;
+	cli->args.addrs[0].g.ch = atoi(argv[0]);
+	cli->args.addrs[0].g.lun = atoi(argv[2]);
+	cli->args.addrs[0].g.blk = atoi(argv[4]);
+
+	cli->args.addrs[1].ppa = 0;
+	cli->args.addrs[1].g.ch = atoi(argv[1]);
+	cli->args.addrs[1].g.lun = atoi(argv[3]);
+	cli->args.addrs[1].g.blk = atoi(argv[4]);
+	cli->args.naddrs = 2;
+
+	return inc;
+}
+
+int _parse_cmd_arg_addr_sec(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 6;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.addrs[0].ppa = 0;
+	cli->args.addrs[0].g.ch = atoi(argv[0]);
+	cli->args.addrs[0].g.lun = atoi(argv[1]);
+	cli->args.addrs[0].g.pl = atoi(argv[2]);
+	cli->args.addrs[0].g.blk = atoi(argv[3]);
+	cli->args.addrs[0].g.pg = atoi(argv[4]);
+	cli->args.addrs[0].g.sec = atoi(argv[5]);
+	cli->args.naddrs = 1;
+
+	return inc;
+}
+
+int _parse_cmd_arg_addr_pg(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 4;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.addrs[0].ppa = 0;
+	cli->args.addrs[0].g.ch = atoi(argv[0]);
+	cli->args.addrs[0].g.lun = atoi(argv[1]);
+	cli->args.addrs[0].g.blk = atoi(argv[2]);
+	cli->args.addrs[0].g.pg = atoi(argv[3]);
+	cli->args.naddrs = 1;
+
+	return inc;
+}
+
+int _parse_cmd_arg_addr_blk(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 3;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.addrs[0].ppa = 0;
+	cli->args.addrs[0].g.ch = atoi(argv[0]);
+	cli->args.addrs[0].g.lun = atoi(argv[1]);
+	cli->args.addrs[0].g.blk = atoi(argv[2]);
+	cli->args.naddrs = 1;
+
+	return inc;
+}
+
+int _parse_cmd_arg_addr_lun(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 2;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.addrs[0].ppa = 0;
+	cli->args.addrs[0].g.ch = atoi(argv[0]);
+	cli->args.addrs[0].g.lun = atoi(argv[1]);
+	cli->args.naddrs = 1;
+
+	return inc;
+}
+
+int _parse_cmd_arg_register(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 1;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.hex_vals[(cli->args.nhex_vals)++] = strtol(argv[0], NULL, 16);
+
+	return inc;
+}
+
+int _parse_cmd_arg_register_value(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 2;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.hex_vals[(cli->args.nhex_vals)++] = strtol(argv[0], NULL, 16);
+	cli->args.hex_vals[(cli->args.nhex_vals)++] = strtol(argv[1], NULL, 16);
+
+	return 1;
+}
+
+int _parse_cmd_arg_addr(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 1;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.addrs[(cli->args.naddrs)++].ppa = strtol(argv[0], NULL, 16);
+
+	return inc;
+}
+
+int _parse_cmd_arg_addr_list(int argc, char *argv[], struct nvm_cli *cli)
+{
+	int inc = 0;
+	
+	for (int i = 0; (i < argc) && (argv[i][0] != '-'); ++i, ++inc)
+		cli->args.addrs[i].ppa = strtol(argv[i], NULL, 16);
+	cli->args.naddrs = inc;
+
+	return inc;
+}
+
+int _parse_cmd_arg_decval(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 1;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+	
+	cli->args.dec_vals[(cli->args.ndec_vals)++] = atoi(argv[0]);
+
+	return inc;
+}
+
+int _parse_cmd_arg_decval_list(int argc, char *argv[], struct nvm_cli *cli)
+{
+	int inc = 0;
+	
+	for (int i = 0; (i < argc) && (argv[i][0] != '-'); ++i, ++inc)
+		cli->args.dec_vals[i] = atoi(argv[i]);
+
+	cli->args.ndec_vals = inc;
+
+	return inc;
+}
+
+int _parse_cmd_arg_hexval(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 1;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+	
+	cli->args.hex_vals[(cli->args.nhex_vals)++] = strtol(argv[0], NULL, 16);
+
+	return inc;
+}
+
+int _parse_cmd_arg_hexval_list(int argc, char *argv[], struct nvm_cli *cli)
+{
+	int inc = 0;
+	
+	for (int i = 0; (i < argc) && (argv[i][0] != '-'); ++i, ++inc)
+		cli->args.hex_vals[i] = strtol(argv[i], NULL, 16);
+
+	cli->args.nhex_vals = inc;
+
+	return inc;
+}
+
+int _parse_cmd_arg_dev_path(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 1;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	if (strlen(argv[0]) < (size_t)inc ||
+	    strlen(argv[0]) > NVM_DEV_PATH_LEN) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	strcpy(cli->args.dev_path, argv[0]);
+
+	return inc;
+}
+
+int _parse_cmd_args(int argc, char *argv[], struct nvm_cli *cli)
+{
+	int inc = 0;
+	int ret;
+
+	// Currently all commands except (ARG_NONE) take dev_path
+	if (cli->cmd.arg_type != NVM_CLI_ARG_NONE) {
+		ret = _parse_cmd_arg_dev_path(argc, argv, cli);	
+		if (ret < 0)
+			return -1;
+		inc += ret;
+	}
+
+	// Invoke the remaining parsers
+	switch (cli->cmd.arg_type) {
+	case NVM_CLI_ARG_DECVAL:
+		ret = _parse_cmd_arg_decval(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_DECVAL_LIST:
+		ret = _parse_cmd_arg_decval_list(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_HEXVAL:
+		ret = _parse_cmd_arg_hexval(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_HEXVAL_LIST:
+		ret = _parse_cmd_arg_hexval_list(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_ADDR:
+		ret = _parse_cmd_arg_addr(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_ADDR_LIST:
+		ret = _parse_cmd_arg_addr_list(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_ADDR_LUN:
+		ret = _parse_cmd_arg_addr_lun(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_ADDR_BLK:
+		ret = _parse_cmd_arg_addr_blk(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_ADDR_PG:
+		ret = _parse_cmd_arg_addr_pg(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_ADDR_SEC:
+		ret = _parse_cmd_arg_addr_sec(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_VBLK_LINE:
+		ret = _parse_cmd_arg_vblk_line(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_COUNT_OFFSET:
+		ret = _parse_cmd_arg_count_offset(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_REGISTER:
+		ret = _parse_cmd_arg_register(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_REGISTER_VALUE:
+		ret = _parse_cmd_arg_register_value(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_DEV_PATH:
+	case NVM_CLI_ARG_NONE:
+		return inc;
+	}
+
+	return -1;
+}
+
+int _parse_cmd(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 1;
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	for (int i = 0; i < cli->ncmds; ++i)
+		if (strcmp(argv[0], cli->cmds[i].name) == 0) {
+			cli->cmd = cli->cmds[i];
+			return inc;
+		}
+
+	errno = EINVAL;
+	return -1;
+}
+
+int _parse_cli_name(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 1;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	strcpy(cli->name, argv[0]);
+
+	return inc;
+}
+
+/**
+ * Environment variable parsers
+ */
+
+int _evar_pmode(struct nvm_cli *cli)
+{
+	struct nvm_dev *dev = cli->args.dev;
+	const struct nvm_geo *geo = cli->args.geo;
 
 	char *pmode_env = getenv("NVM_CLI_PMODE");
-	if (!pmode_env)
-		return nvm_dev_get_pmode(dev);
+	if (!pmode_env) {
+		cli->evars.pmode = nvm_dev_get_pmode(dev);
+		return 0;
+	}
 
 	switch(strtol(pmode_env, NULL, 16)) {
 	case NVM_FLAG_PMODE_QUAD:
@@ -100,15 +509,18 @@ int nvm_cli_pmode(struct nvm_dev *dev)
 			errno = EINVAL;
 			return -1;
 		}
-		return NVM_FLAG_PMODE_QUAD;
+		cli->evars.pmode = NVM_FLAG_PMODE_QUAD;
+		return 0;
 	case NVM_FLAG_PMODE_DUAL:
 		if (geo->nplanes < 2) {	// Verify
 			errno = EINVAL;
 			return -1;
 		}
-		return NVM_FLAG_PMODE_DUAL;
+		cli->evars.pmode = NVM_FLAG_PMODE_DUAL;
+		return 0;
 	case NVM_FLAG_PMODE_SNGL:
-		return NVM_FLAG_PMODE_SNGL;
+		cli->evars.pmode = NVM_FLAG_PMODE_SNGL;
+		return 0;
 
 	default:
 		errno = EINVAL;
@@ -116,19 +528,80 @@ int nvm_cli_pmode(struct nvm_dev *dev)
 	}
 }
 
-int nvm_cli_meta_mode(struct nvm_dev *dev)
+int _evar_noverify(struct nvm_cli *cli)
+{
+	cli->evars.noverify = getenv("NVM_CLI_NOVERIFY") ? 1 : 0;
+
+	return 0;
+}
+
+int _evar_meta_pr(struct nvm_cli *cli)
+{
+	cli->evars.meta_pr = getenv("NVM_CLI_META_PR") ? 1 : 0;
+
+	return 0;
+}
+
+int _evar_erase_naddrs_max(struct nvm_cli *cli)
+{
+	char *erase_naddrs_max = getenv("NVM_CLI_ERASE_NADDRS_MAX");
+	if (!erase_naddrs_max) {
+		cli->evars.erase_naddrs_max = nvm_dev_get_erase_naddrs_max(
+								cli->args.dev);
+		return 0;
+	}
+
+	cli->evars.erase_naddrs_max = atoi(erase_naddrs_max);
+
+	return 0;
+}
+
+int _evar_write_naddrs_max(struct nvm_cli *cli)
+{
+	char *write_naddrs_max = getenv("NVM_CLI_WRITE_NADDRS_MAX");
+	if (!write_naddrs_max) {
+		cli->evars.write_naddrs_max = nvm_dev_get_write_naddrs_max(
+								cli->args.dev);
+		return 0;
+	}
+
+	cli->evars.write_naddrs_max = atoi(write_naddrs_max);
+
+	return 0;
+}
+
+int _evar_read_naddrs_max(struct nvm_cli *cli)
+{
+	char *read_naddrs_max = getenv("NVM_CLI_READ_NADDRS_MAX");
+	if (!read_naddrs_max) {
+		cli->evars.read_naddrs_max = nvm_dev_get_read_naddrs_max(
+								cli->args.dev);
+		return 0;
+	}
+
+	cli->evars.read_naddrs_max = atoi(read_naddrs_max);
+
+	return 0;
+}
+
+int _evar_meta_mode(struct nvm_cli *cli)
 {
 	char *meta_mode_env = getenv("NVM_CLI_META_MODE");
-	if (!meta_mode_env)
-		return nvm_dev_get_meta_mode(dev);
+	if (!meta_mode_env) {
+		cli->evars.meta_mode = nvm_dev_get_meta_mode(cli->args.dev);
+		return 0;
+	}
 
 	switch(strtol(meta_mode_env, NULL, 16)) {
 	case NVM_META_MODE_NONE:
-		return NVM_META_MODE_NONE;
+		cli->evars.meta_mode = NVM_META_MODE_NONE;
+		return 0;
 	case NVM_META_MODE_ALPHA:
-		return NVM_META_MODE_ALPHA;
+		cli->evars.meta_mode = NVM_META_MODE_ALPHA;
+		return 0;
 	case NVM_META_MODE_CONST:
-		return NVM_META_MODE_CONST;
+		cli->evars.meta_mode = NVM_META_MODE_CONST;
+		return 0;
 
 	default:
 		errno = EINVAL;
@@ -136,259 +609,443 @@ int nvm_cli_meta_mode(struct nvm_dev *dev)
 	}
 }
 
-void nvm_cli_usage(const char *cli_name, const char *cli_description,
-		   NVM_CLI_CMD cmds[], int ncmds)
+int _evar_be_id(struct nvm_cli *cli)
 {
-	printf("%s -- ", cli_description);
-	nvm_ver_pr();
-	printf("\n\nUsage:\n");
+	char *id = getenv("NVM_CLI_BE_ID");
+	if (!id) {
+		cli->evars.be_id = NVM_BE_ANY;
+		return 0;
+	}
 
-	for (int i = 0; i < ncmds; ++i) {
-		printf(" %s %10s dev_path ", cli_name, cmds[i].name);
+	switch(strtol(id, NULL, 16)) {
+	case NVM_BE_ANY:
+		cli->evars.be_id = NVM_BE_ANY;
+		return 0;
+	case NVM_BE_IOCTL:
+		cli->evars.be_id = NVM_BE_IOCTL;
+		return 0;
+	case NVM_BE_SYSFS:
+		cli->evars.be_id = NVM_BE_SYSFS;
+		return 0;
 
-		switch(cmds[i].argt) {
-		case NVM_CLI_ARG_ADDRLIST:
-			printf("addr [addr...]");
-			break;
-		case NVM_CLI_ARG_INTLIST:
-			printf("num [num...]");
-			break;
-		case NVM_CLI_ARG_CH_LUN:
-			printf("ch lun");
-			break;
-		case NVM_CLI_ARG_CH_LUN_BLK:
-			printf("ch lun blk");
-			break;
-		case NVM_CLI_ARG_CH_LUN_BLK_PG:
-			printf("ch lun blk pg");
-			break;
-		case NVM_CLI_ARG_CH_LUN_PL_BLK_PG_SEC:
-			printf("ch lun pl blk pg sec");
-			break;
-		case NVM_CLI_ARG_LINE:
-			printf("ch_bgn ch_end lun_bgn lun_end blk");
-			break;
-		case NVM_CLI_ARG_COUNT_OFFSET:
-			printf("count offset");
-			break;
+	default:
+		errno = EINVAL;
+		return -1;
+	}
+}
 
-		case NVM_CLI_ARG_NONE:
+int _evar_and_dev_setup(struct nvm_cli *cli)
+{
+	if (!cli) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	if (_evar_be_id(cli) < 0) {		// Backend identifier
+		perror("NVM_CLI_BE_ID");
+		return -1;
+	}
+
+	cli->args.dev = nvm_dev_openf(cli->args.dev_path, cli->evars.be_id);
+	if (!cli->args.dev) {
+		perror("nvm_dev_openf");
+		return -1;
+	}
+
+	cli->args.geo = nvm_dev_get_geo(cli->args.dev);
+
+	if ((_evar_pmode(cli) < 0) ||
+	    nvm_dev_set_pmode(cli->args.dev, cli->evars.pmode)) {
+		perror("NVM_CLI_PMODE");
+		return -1;
+	}
+
+	if ((_evar_meta_mode(cli) < 0) ||
+	    nvm_dev_set_meta_mode(cli->args.dev, cli->evars.meta_mode)) {
+		perror("NVM_CLI_META_MODE");
+		return -1;
+	}
+
+	if ((_evar_erase_naddrs_max(cli) < 0) ||
+	    nvm_dev_set_erase_naddrs_max(cli->args.dev,
+					 cli->evars.erase_naddrs_max)) {
+		perror("NVM_CLI_ERASE_NADDRS_MAX");
+		return -1;
+	}
+	if ((_evar_write_naddrs_max(cli) < 0) ||
+	    nvm_dev_set_write_naddrs_max(cli->args.dev,
+					 cli->evars.write_naddrs_max)) {
+		perror("NVM_CLI_WRITE_NADDRS_MAX");
+		return -1;
+	}
+	if ((_evar_read_naddrs_max(cli) < 0) ||
+	    nvm_dev_set_read_naddrs_max(cli->args.dev,
+					 cli->evars.read_naddrs_max)) {
+		perror("NVM_CLI_READ_NADDRS_MAX");
+		return -1;
+	}
+
+	if (_evar_noverify(cli) < 0) {
+		perror("NVM_CLI_NOVERIFY");
+		return -1;
+	}
+
+	if (_evar_meta_pr(cli) < 0) {
+		perror("NVM_CLI_META_PR");
+		return -1;
+	}
+	
+	for (int i = 0; (i < cli->args.naddrs) && (!cli->evars.noverify); ++i) {
+		int bounds = nvm_addr_check(cli->args.addrs[i], cli->args.geo);
+
+		if (bounds) {
+			nvm_addr_pr(cli->args.addrs[i]);
+			printf("Exceeded:\n");
+			nvm_bounds_pr(bounds);
+			errno = EINVAL;
+			return -1;
+		}
+	}
+
+	if (cli->opts.verbose) {
+		printf("\n** Verbose enabled -- printing CLI state -- BEGIN\n");
+		nvm_cli_pr(cli);
+		printf("** Verbose enabled -- printing CLI state -- END\n\n");
+	}
+
+	return 0;
+}
+
+int _help_wanted(int argc, char *argv[])
+{
+	int help_wanted = 0;
+
+	for (int i = 0; i < argc; ++i) {
+		help_wanted = strlen(argv[i]) == 2 &&
+				(strncmp(argv[i], "-h", 2) == 0);
+		if (help_wanted)
+			break;
+	}
+
+	return help_wanted;
+}
+
+int nvm_cli_init(struct nvm_cli *cli, int argc, char *argv[])
+{
+	int state = 0;
+	int ret;
+
+	// Get the command-line name
+	ret = _parse_cli_name(argc, argv, cli);
+	if (ret < 0) {
+		errno = EINVAL;
+		return -1;
+	}
+	state += ret;
+
+	// Set to usage state when -h or no arguments are given
+	if ((argc == 1) || _help_wanted(argc, argv)) {
+		cli->opts.help = 1;
+		return 0;
+	}
+
+	// Get the command
+	ret = _parse_cmd(argc - state, argv + state, cli);
+	if (ret < 0) {
+		errno = EINVAL;
+		return -1;
+	}
+	state += ret;
+
+	// Grab the positional command arguments
+	ret = _parse_cmd_args(argc - state, argv + state, cli);
+	if (ret < 0) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	// Grab the option arguments
+	ret = _parse_options(argc - state, argv + state, cli);
+	if (ret < 0) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	// Setup environment and device
+	ret = _evar_and_dev_setup(cli);
+	if (ret < 0) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	return 0;
+}
+
+int nvm_cli_run(struct nvm_cli *cli)
+{
+	int res = 0;
+
+	if (!cli) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	if (cli->opts.help) {	// NOTE: -h ==> Print usage and return
+		nvm_cli_usage_pr(cli);
+		return 0;
+	}
+
+	res = cli->cmd.func(cli);
+	if (res)
+		perror(cli->cmd.name);
+
+	return res ? 1 : 0;
+}
+
+void nvm_cli_destroy(struct nvm_cli *cli)
+{
+	if (!cli)
+		return;
+
+	nvm_dev_close(cli->args.dev);
+}
+
+void _nvm_cli_opts_mask_pr(int mask) {
+	if (!mask)
+		return;
+
+	for (int i = 0; i < 10; ++i) {
+		int opt = 1 << i;
+
+		if (!(mask & opt))
+			continue;
+
+		switch(opt) {
+		case NVM_CLI_OPT_HELP:
+			printf(" [-h]");
+			break;
+		case NVM_CLI_OPT_BRIEF:
+			printf(" [-b]");
+			break;
+		case NVM_CLI_OPT_VERBOSE:
+			printf(" [-v]");
+			break;
+		case NVM_CLI_OPT_FILE_INPUT:
+			printf(" [-i FILE]");
+			break;
+		case NVM_CLI_OPT_FILE_OUTPUT:
+			printf(" [-o FILE]");
+			break;
+		case NVM_CLI_OPT_VAL_DEC:
+			printf(" [-n val]");
+			break;
+		case NVM_CLI_OPT_VAL_HEX:
+			printf(" [-x 0xVAL]");
+			break;
+		}
+	}
+}
+
+void _nvm_cli_opts_mask_descr_pr(int mask) {
+	if (!mask)
+		return;
+
+	for (int i = 0; i < 10; ++i) {
+		int opt = 1 << i;
+
+		if (!(mask & opt))
+			continue;
+
+		switch(opt) {
+		case NVM_CLI_OPT_HELP:
+			printf(" -h %5s %s", " ", "Print usage");
+			break;
+		case NVM_CLI_OPT_BRIEF:
+			printf(" -b %5s %s", " ", "Brief, minimal output");
+			break;
+		case NVM_CLI_OPT_VERBOSE:
+			printf(" -v %5s %s", " ", "Dump CLI state to stdout");
+			break;
+		case NVM_CLI_OPT_FILE_INPUT:
+			printf(" -i %5s %s", "FILE", "Path to input file");
+			break;
+		case NVM_CLI_OPT_FILE_OUTPUT:
+			printf(" -o %5s %s", "FILE", "Path to output file");
+			break;
+		case NVM_CLI_OPT_VAL_DEC:
+			printf(" -n %5s %s", "val", "Integer value");
+			break;
+		case NVM_CLI_OPT_VAL_HEX:
+			printf(" -x %5s %s", "0xVAL", "Hexadecimal value");
+			break;
+		case NVM_CLI_OPT_NONE:
 			break;
 		}
 		printf("\n");
 	}
 }
 
-NVM_CLI_CMD *nvm_cli_setup(int argc, char **argv, NVM_CLI_CMD cmds[], int ncmds)
+void nvm_cli_usage_pr(struct nvm_cli *cli)
 {
-	NVM_CLI_CMD *cmd = NULL;
-	char cmd_name[NVM_CLI_CMD_LEN];
-	char dev_path[NVM_DEV_PATH_LEN+1];
+	int all_opts = 0;
 
-	if (argc < 3) {		// Need at lest: <cli> <cmd> <dev_path>
-		return NULL;
-	}
-							// Get `cmd_name`
-	if (strlen(argv[1]) < 1 || strlen(argv[1]) > (NVM_CLI_CMD_LEN-1)) {
-		printf("FAILED: invalid cmd(%s)\n", argv[1]);
-		return NULL;
-	}
-	memset(cmd_name, 0, sizeof(cmd_name));
-	strcpy(cmd_name, argv[1]);
+	if (!cli)
+		return;
 
-	for (int i = 0; i < ncmds; ++i) {		// Get `cmd`
-		if (strcmp(cmd_name, cmds[i].name) == 0) {
-			cmd = &cmds[i];
+	if (cli->title) {
+		printf("%s -- ", cli->title);
+		nvm_ver_pr();
+		printf("\n");
+	}
+
+	if (cli->descr_short) {
+		printf("\n%s\n", cli->descr_short);
+	}
+
+	printf("\nUsage:\n");
+
+	for (int i = 0; i < cli->ncmds; ++i) {
+		printf(" %s %10s ", cli->name, cli->cmds[i].name);
+
+		switch(cli->cmds[i].arg_type) {
+		case NVM_CLI_ARG_ADDR:
+			printf("dev_path 0xADDR");
 			break;
-		}
-	}
-	if (!cmd) {
-		printf("FAILED: invalid cmd(%s)\n", cmd_name);
-		return NULL;
-	}
-							// Get `dev_path`
-	if (strlen(argv[2]) < 1 || strlen(argv[2]) > NVM_DEV_PATH_LEN) {
-		printf("FAILED: invalid dev_path(%s)\n", argv[2]);
-		return NULL;
-	}
-	memset(dev_path, 0, sizeof(dev_path));
-	strcpy(dev_path, argv[2]);
-
-	int be_id = nvm_cli_be_id();
-	if (be_id < 0) {
-		perror("FAILED: Using NVM_CLI_BE_ID");
-		return NULL;
-	}
-
-	args.dev = nvm_dev_openf(dev_path, be_id);	// Open device
-	if (!args.dev) {
-		perror("nvm_dev_open");
-		return NULL;
-	}
-
-	int pmode = nvm_cli_pmode(args.dev);
-	if (pmode < 0) {
-		perror("FAILED: Using NVM_CLI_PMODE");
-		return NULL;
-	}
-	nvm_dev_set_pmode(args.dev, pmode);
-
-	int meta_mode = nvm_cli_meta_mode(args.dev);
-	if (meta_mode < 0) {
-		perror("FAILED: Using NVM_CLI_META_MODE");
-		return NULL;
-	}
-	nvm_dev_set_meta_mode(args.dev, meta_mode);
-
-	if (getenv("NVM_CLI_ERASE_NADDRS_MAX")) {
-		int erase_naddrs_max = atoi(getenv("NVM_CLI_ERASE_NADDRS_MAX"));
-		if (nvm_dev_set_erase_naddrs_max(args.dev, erase_naddrs_max)) {
-			perror("nvm_dev_erase_naddrs_max");
-			return NULL;
-		}
-	}
-
-	if (getenv("NVM_CLI_READ_NADDRS_MAX")) {
-		int read_naddrs_max = atoi(getenv("NVM_CLI_READ_NADDRS_MAX"));
-		if (nvm_dev_set_read_naddrs_max(args.dev, read_naddrs_max)) {
-			perror("nvm_dev_read_naddrs_max");
-			return NULL;
-		}
-	}
-
-	if (getenv("NVM_CLI_WRITE_NADDRS_MAX")) {
-		int write_naddrs_max = atoi(getenv("NVM_CLI_WRITE_NADDRS_MAX"));
-		if (nvm_dev_set_write_naddrs_max(args.dev, write_naddrs_max)) {
-			perror("nvm_dev_write_naddrs_max");
-			return NULL;
-		}
-	}
-
-	args.geo = nvm_dev_get_geo(args.dev);	// Get geometry
-	args.addrs[0].ppa = 0;
-
-	switch(cmd->argt) {				// Get variable params
-		case NVM_CLI_ARG_CH_LUN_BLK_PG:
-			if (argc < 7) {
-				printf("FAILED: Invalid argc\n");
-				return NULL;
-			}
-
-			args.addrs[0].g.blk = atoi(argv[6]);
-
-		case NVM_CLI_ARG_CH_LUN_BLK:
-			if (argc < 6) {
-				printf("FAILED: Invalid argc\n");
-				return NULL;
-			}
-
-			args.addrs[0].g.blk = atoi(argv[5]);
-
-		case NVM_CLI_ARG_CH_LUN:
-			if (argc < 5) {
-				printf("FAILED: Invalid argc\n");
-				return NULL;
-			}
-
-			args.addrs[0].g.lun = atoi(argv[4]);
-			args.addrs[0].g.ch = atoi(argv[3]);
-			args.naddrs = 1;
+		case NVM_CLI_ARG_ADDR_LIST:
+			printf("dev_path 0xADDR [0xADDR...]");
 			break;
 
-		case NVM_CLI_ARG_CH_LUN_PL_BLK_PG_SEC:
-			if (argc != 9) {
-				printf("FAILED: Invalid argc\n");
-				return NULL;
-			}
-
-			args.addrs[0].g.sec = atoi(argv[8]);
-			args.addrs[0].g.pg = atoi(argv[7]);
-			args.addrs[0].g.blk = atoi(argv[6]);
-			args.addrs[0].g.pl = atoi(argv[5]);
-			args.addrs[0].g.lun = atoi(argv[4]);
-			args.addrs[0].g.ch = atoi(argv[3]);
-			args.naddrs = 1;
+		case NVM_CLI_ARG_DECVAL:
+			printf("dev_path val");
+			break;
+		case NVM_CLI_ARG_DECVAL_LIST:
+			printf("dev_path val [val...]");
 			break;
 
-		case NVM_CLI_ARG_LINE:
-			if (argc < 8) {
-				printf("FAILED: Invalid argc\n");
-				return NULL;
-			}
-
-			args.addrs[0].ppa = 0;	// Span begins at
-			args.addrs[0].g.ch = atoi(argv[3]);
-			args.addrs[0].g.lun = atoi(argv[5]);
-			args.addrs[0].g.blk = atoi(argv[7]);
-
-			args.addrs[1].ppa = 0;	// Span ends at
-			args.addrs[1].g.ch = atoi(argv[4]);
-			args.addrs[1].g.lun = atoi(argv[6]);
-			args.addrs[1].g.blk = atoi(argv[7]);
-
-			args.naddrs = 2;
+		case NVM_CLI_ARG_HEXVAL:
+			printf("dev_path 0xVAL");
+			break;
+		case NVM_CLI_ARG_HEXVAL_LIST:
+			printf("dev_path 0xVAL [0xVAL...]");
 			break;
 
-		case NVM_CLI_ARG_ADDRLIST:
-			if (argc < 4) {
-				printf("FAILED: Invalid argc\n");
-				return NULL;
-			}
-
-			args.naddrs = argc - 3;
-			for (int i = 0; i < args.naddrs; ++i) {
-				args.addrs[i].ppa = strtol(argv[i+3], NULL,
-								16);
-			}
+		case NVM_CLI_ARG_ADDR_LUN:
+			printf("dev_path ch lun");
 			break;
-
-		case NVM_CLI_ARG_INTLIST:
-			if (argc < 4) {
-				printf("FAILED: Invalid argc\n");
-				return NULL;
-			}
-
-			args.nlbas = argc - 3;
-			for (int i = 0; i < args.nlbas; ++i) {
-				args.lbas[i] = atol(argv[i+3]);
-			}
+		case NVM_CLI_ARG_ADDR_BLK:
+			printf("dev_path ch lun blk");
 			break;
-
+		case NVM_CLI_ARG_ADDR_PG:
+			printf("dev_path ch lun blk pg");
+			break;
+		case NVM_CLI_ARG_ADDR_SEC:
+			printf("dev_path ch lun pl blk pg sec");
+			break;
+		case NVM_CLI_ARG_VBLK_LINE:
+			printf("dev_path ch_bgn ch_end lun_bgn lun_end blk");
+			break;
 
 		case NVM_CLI_ARG_COUNT_OFFSET:
-			args.count = atol(argv[3]);
-			args.offset = atol(argv[4]);
+			printf("dev_path count offset");
+			break;
+
+		case NVM_CLI_ARG_REGISTER:
+			printf("dev_path register");
+			break;
+		case NVM_CLI_ARG_REGISTER_VALUE:
+			printf("dev_path register value");
+			break;
+
+		case NVM_CLI_ARG_DEV_PATH:
+			printf("dev_path");
 			break;
 
 		case NVM_CLI_ARG_NONE:
 			break;
-	}
-
-	// Verify that addresses are within device bounds
-	if (!getenv("NVM_CLI_NOVERIFY"))
-		for (int i = 0; i < args.naddrs; ++i) {
-			int bounds = nvm_addr_check(args.addrs[i], args.geo);
-
-			if (bounds) {
-				nvm_addr_pr(args.addrs[i]);
-				printf("Exceeded:\n");
-				nvm_bounds_pr(bounds);
-				return NULL;
-			}
 		}
 
-	cmd->args = &args;
-
-	return cmd;
-}
-
-void nvm_cli_teardown(NVM_CLI_CMD *cmd)
-{
-	if (!cmd)
-		return;
-
-	if (args.dev) {
-		nvm_dev_close(args.dev);
+		all_opts |= cli->cmds[i].opt_types;
+		_nvm_cli_opts_mask_pr(cli->cmds[i].opt_types);
+		printf("\n");
 	}
+
+	if (all_opts) {
+		printf("\nOptions:\n");
+		_nvm_cli_opts_mask_descr_pr(all_opts);
+	}
+
+	if (!cli->descr_long) {
+		printf("\nSee: http://lightnvm.io/liblightnvm/cli/ for usage examples\n");
+		return;
+	}
+
+	if (strlen(cli->descr_long) > 4) {
+		printf("\nDescription:\n");
+		printf("\n%s\n", cli->descr_long);
+	}
+
+	return;
 }
 
+void nvm_cli_cmd_args_pr(struct nvm_cli_cmd_args *args) {
+	printf("cli-args {\n");
+	printf(" dev_path(%s)\n", args->dev_path);
+	printf("}\n");
+
+	printf("cli-args-ndec_vals(%d) {\n", args->ndec_vals);
+	if (args->ndec_vals)
+		for (int i = 0; i < args->ndec_vals; ++i)
+			printf(" %d: %lu\n", i, args->dec_vals[i]);
+	printf("},\n");
+
+	printf("cli-args-nhex_vals(%d) {\n", args->nhex_vals);
+	if (args->nhex_vals)
+		for (int i = 0; i < args->nhex_vals; ++i)
+			printf(" %d: 0x%016lx\n", i, args->hex_vals[i]);
+	printf("},\n");
+
+	printf("cli-args-");
+	nvm_addr_prn(args->addrs, args->naddrs);
+
+	printf("cli-");
+	nvm_dev_pr(args->dev);
+}
+
+void nvm_cli_opts_pr(struct nvm_cli_opts *opts)
+{
+	printf("cli-opts {\n");
+	printf(" mask(0x%08x),\n", opts->mask);
+	printf(" help(%d),\n", opts->help);
+	printf(" brief(%d),\n", opts->brief);
+	printf(" verbose(%d),\n", opts->verbose);
+	printf(" dec_val(%ld),\n", opts->dec_val);
+	printf(" hex_val(0x%016lx),\n", opts->hex_val);
+	printf(" file_input(%s),\n", opts->file_input);
+	printf(" file_output(%s),\n", opts->file_output);
+	printf("}\n");
+}
+
+void nvm_cli_evars_pr(struct nvm_cli_evars *evars)
+{
+	printf("cli-evars {\n");
+	printf(" be_id(%d),\n", evars->be_id);
+	printf(" pmode(%d),\n", evars->pmode);
+	printf(" meta_mode(%d),\n", evars->meta_mode);
+	printf(" noverify(%d),\n", evars->noverify);
+	printf(" erase_naddrs_max(%d),\n", evars->erase_naddrs_max);
+	printf(" read_naddrs_max(%d),\n", evars->read_naddrs_max);
+	printf(" write_naddrs_max(%d),\n", evars->write_naddrs_max);
+	printf(" meta_pr(%d),\n", evars->meta_pr);
+	printf("}\n");
+}
+
+void nvm_cli_pr(struct nvm_cli *cli)
+{
+	printf("cli {\n");
+	printf(" ncmds(%d),\n", cli->ncmds);
+	printf(" name(%s),\n", cli->name);
+	printf("}\n");
+	nvm_cli_evars_pr(&cli->evars);
+	nvm_cli_opts_pr(&cli->opts);
+	nvm_cli_cmd_args_pr(&cli->args);
+}

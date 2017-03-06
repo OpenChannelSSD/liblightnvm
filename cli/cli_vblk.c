@@ -1,591 +1,407 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
+#include <stdio.h>
 #include <errno.h>
-#include <liblightnvm.h>
-#include "liblightnvm_cli.h"
+#include <liblightnvm_cli.h>
 
-int erase(NVM_CLI_CMD_ARGS *args)
+ssize_t _vblk_erase(struct nvm_cli *cli, struct nvm_vblk *vblk)
 {
 	ssize_t res = 0;
 
-	for (int i = 0; i < args->naddrs; ++i) {
-		struct nvm_vblk *vblk;
-		
-		vblk = nvm_vblk_alloc(args->dev, &args->addrs[i], 1);
-		if (!vblk) {
-			perror("nvm_vblk_alloc");
-			return errno;
-		}
+	printf("** nvm_vblk_erase(...): pmode(%s)\n",
+		nvm_pmode_str(nvm_dev_get_pmode(cli->args.dev))
+	);
+	nvm_vblk_pr(vblk);
 
-		printf("** nvm_vblk_erase(...): pmode(%s)\n",
-			nvm_pmode_str(nvm_dev_get_pmode(args->dev))
-		);
-		nvm_vblk_pr(vblk);
+	nvm_cli_timer_start();
+	res = nvm_vblk_erase(vblk);
+	if (res < 0)
+		perror("nvm_vblk_erase");
+	nvm_cli_timer_stop();
+	nvm_cli_timer_pr("nvm_vblk_erase");
 
-		nvm_timer_start();
-		res = nvm_vblk_erase(vblk);
-		if (res < 0)
-			perror("nvm_vblk_erase");
-		nvm_timer_stop();
-		nvm_timer_pr("nvm_vblk_erase");
-
-		nvm_vblk_free(vblk);
-	}
-
-	return res < 0;
+	return res;
 }
 
-int read(NVM_CLI_CMD_ARGS *args)
+ssize_t _vblk_write(struct nvm_cli *cli, struct nvm_vblk *vblk)
 {
+	const struct nvm_geo *geo = nvm_dev_get_geo(cli->args.dev);
+	const size_t nbytes = nvm_vblk_get_nbytes(vblk);
+	char *buf = NULL;
 	ssize_t res = 0;
 
-	for (int i = 0; i < args->naddrs; ++i) {
-		char *buf;
-		struct nvm_vblk *vblk;
-		size_t nbytes;
-		const struct nvm_geo *geo;
+	printf("** nvm_vblk_write(...): pmode(%s)\n",
+		nvm_pmode_str(nvm_dev_get_pmode(cli->args.dev))
+	);
+	nvm_vblk_pr(vblk);
 
-		vblk = nvm_vblk_alloc(args->dev, &args->addrs[i], 1);
-		if (!vblk) {
-			perror("nvm_vblk_alloc");
-			return errno;
-		}
-
-		nbytes = nvm_vblk_get_nbytes(vblk);
-		geo = nvm_dev_get_geo(args->dev);
-
-		printf("** nvm_vblk_read(...): pmode(%s)\n",
-			nvm_pmode_str(nvm_dev_get_pmode(args->dev))
-		);
-		nvm_vblk_pr(vblk);
-
-		nvm_timer_start();
-		buf = nvm_buf_alloc(geo, nbytes);
-		if (!buf) {
-			perror("nvm_buf_alloc");
-			return errno;
-		}
-		nvm_timer_stop();
-		nvm_timer_pr("nvm_buf_alloc");
-
-		nvm_timer_start();
-		res = nvm_vblk_read(vblk, buf, nbytes);
-		if (res < 0)
-			perror("nvm_vblk_read");
-		nvm_timer_stop();
-		nvm_timer_pr("nvm_vblk_read");
-
-		if (getenv("NVM_CLI_BUF_PR")) {
-			printf("** READ:\n");
-			nvm_buf_pr(buf, nbytes);
-		}
-
-		free(buf);
-		nvm_vblk_free(vblk);
+	nvm_cli_timer_start();		// Allocate write buffer
+	buf = nvm_buf_alloc(geo, nbytes);
+	if (!buf) {
+		perror("nvm_buf_alloc");
+		return -1;
 	}
+	nvm_cli_timer_stop();
+	nvm_cli_timer_pr("nvm_buf_alloc");
 
-	return res < 0;
+	nvm_cli_timer_start();		// Allocate write buffer
+	if ((cli->opts.mask & NVM_CLI_OPT_FILE_INPUT) &&
+	     cli->opts.file_input) {	// Fill with content from file
+		if (nvm_buf_from_file(buf, nbytes, cli->opts.file_input)) {
+			perror("nvm_buf_from_file");
+			free(buf);
+			return -1;
+		}
+	} else {
+		nvm_buf_fill(buf, nbytes);	// Fill with synthetic payload
+	}
+	nvm_cli_timer_stop();
+	nvm_cli_timer_pr("nvm_buf_fill|nvm_buf_from_file");
+
+	nvm_cli_timer_start();		// Write buffer to device
+	res = nvm_vblk_write(vblk, buf, nbytes);
+	if (res < 0)
+		perror("nvm_vblk_write");
+	nvm_cli_timer_stop();
+	nvm_cli_timer_pr("nvm_vblk_write");
+
+	free(buf);
+
+	return res;
 }
 
-int write(NVM_CLI_CMD_ARGS *args)
+ssize_t _vblk_read(struct nvm_cli *cli, struct nvm_vblk *vblk)
 {
+	const struct nvm_geo *geo = nvm_dev_get_geo(cli->args.dev);
+	const size_t nbytes = nvm_vblk_get_nbytes(vblk);
+	char *buf = NULL;
 	ssize_t res = 0;
 
-	for (int i = 0; i < args->naddrs; ++i) {
-		char *buf;
-		struct nvm_vblk *vblk;
-		size_t nbytes;
-		const struct nvm_geo *geo;
+	printf("** nvm_vblk_read(...): pmode(%s)\n",
+		nvm_pmode_str(nvm_dev_get_pmode(cli->args.dev))
+	);
+	nvm_vblk_pr(vblk);
 
-		vblk = nvm_vblk_alloc(args->dev, &args->addrs[i], 1);
-		if (!vblk) {
-			perror("nvm_vblk_alloc");
-			return errno;
-		}
+	nvm_cli_timer_start();		// Allocate read buffer
+	buf = nvm_buf_alloc(geo, nbytes);
+	if (!buf) {
+		perror("nvm_buf_alloc");
+		return -1;
+	}
+	nvm_cli_timer_stop();
+	nvm_cli_timer_pr("nvm_buf_alloc");
 
-		nbytes = nvm_vblk_get_nbytes(vblk);
-		geo = nvm_dev_get_geo(args->dev);
+	nvm_cli_timer_start();		// Read from device into buffer
+	res = nvm_vblk_read(vblk, buf, nbytes);
+	if (res < 0)
+		perror("nvm_vblk_read");
+	nvm_cli_timer_stop();
+	nvm_cli_timer_pr("nvm_vblk_read");
 
-		printf("** nvm_vblk_write(...): pmode(%s)\n",
-			nvm_pmode_str(nvm_dev_get_pmode(args->dev))
-		);
-
-		nvm_vblk_pr(vblk);
-
-		nvm_timer_start();
-		buf = nvm_buf_alloc(geo, nbytes);
-		if (!buf) {
-			perror("nvm_buf_alloc");
-			return errno;
-		}
-		nvm_buf_fill(buf, nbytes);
-		nvm_timer_stop();
-		nvm_timer_pr("nvm_buf_alloc");
-
-		nvm_timer_start();
-		res = nvm_vblk_write(vblk, buf, nbytes);
-		if (res < 0)
-			perror("nvm_vblk_write");
-		nvm_timer_stop();
-		nvm_timer_pr("nvm_vblk_write");
-
-		free(buf);
-		nvm_vblk_free(vblk);
+	if ((cli->opts.mask & NVM_CLI_OPT_FILE_OUTPUT) &&
+	     cli->opts.file_output) {	// Write buffer to file system
+		if (nvm_buf_to_file(buf, nbytes, cli->opts.file_output))
+			perror("nvm_buf_to_file");
 	}
 
-	return res < 0;
+	free(buf);
+
+	return res;
 }
 
-int pad(NVM_CLI_CMD_ARGS *args)
+ssize_t _vblk_pad(struct nvm_cli *cli, struct nvm_vblk *vblk)
 {
 	ssize_t res = 0;
 
-	for (int i = 0; i < args->naddrs; ++i) {
-		struct nvm_vblk *vblk;
+	printf("** nvm_vblk_pad(...): pmode(%s)\n",
+		nvm_pmode_str(nvm_dev_get_pmode(cli->args.dev))
+	);
+	nvm_vblk_pr(vblk);
 
-		vblk = nvm_vblk_alloc(args->dev, &args->addrs[i], 1);
-		if (!vblk) {
-			perror("nvm_vblk_alloc");
-			return errno;
-		}
+	nvm_cli_timer_start();
+	res = nvm_vblk_pad(vblk);
+	if (res < 0)
+		perror("nvm_vblk_pad");
+	nvm_cli_timer_stop();
+	nvm_cli_timer_pr("nvm_vblk_pad");
 
-		printf("** nvm_vblk_pad(...): pmode(%s)\n",
-			nvm_pmode_str(nvm_dev_get_pmode(args->dev))
-		);
-
-		nvm_vblk_pr(vblk);
-
-		nvm_timer_start();
-		res = nvm_vblk_pad(vblk);
-		if (res < 0)
-			perror("nvm_vblk_pad");
-		nvm_timer_stop();
-		nvm_timer_pr("nvm_vblk_pad");
-
-		nvm_vblk_free(vblk);
-	}
-
-	return res < 0;
+	return res;
 }
 
-int line_erase(NVM_CLI_CMD_ARGS *args)
+/**
+ * Construct plane-spanning block
+ */
+int erase(struct nvm_cli *cli)
 {
+	struct nvm_vblk *vblk = NULL;
 	ssize_t res = 0;
-
-	struct nvm_vblk *vblk;
-	struct nvm_addr bgn, end;
-
-	bgn = args->addrs[0];
-	end = args->addrs[1];
 	
-	vblk = nvm_vblk_alloc_line(args->dev, bgn.g.ch, end.g.ch, bgn.g.lun,
+	vblk = nvm_vblk_alloc(cli->args.dev, &cli->args.addrs[0], 1);
+	if (!vblk) {
+		perror("nvm_vblk_alloc");
+		return -1;
+	}
+
+	res = _vblk_erase(cli, vblk);
+
+	nvm_vblk_free(vblk);
+
+	return res < 0 ? -1 : 0;
+}
+
+int write(struct nvm_cli *cli)
+{
+	struct nvm_vblk *vblk = NULL;
+	ssize_t res = 0;
+
+	vblk = nvm_vblk_alloc(cli->args.dev, &cli->args.addrs[0], 1);
+	if (!vblk) {
+		perror("nvm_vblk_alloc");
+		return -1;
+	}
+
+	res = _vblk_write(cli, vblk);
+
+	nvm_vblk_free(vblk);
+
+	return res < 0 ? -1 : 0;
+}
+
+int read(struct nvm_cli *cli)
+{
+	struct nvm_vblk *vblk = NULL;
+	ssize_t res = 0;
+
+	vblk = nvm_vblk_alloc(cli->args.dev, &cli->args.addrs[0], 1);
+	if (!vblk) {
+		perror("nvm_vblk_alloc");
+		return -1;
+	}
+
+	res = _vblk_read(cli, vblk);
+
+	nvm_vblk_free(vblk);
+
+	return res < 0 ? -1 : 0;
+}
+
+int pad(struct nvm_cli *cli)
+{
+	struct nvm_vblk *vblk = NULL;
+	ssize_t res = 0;
+
+	vblk = nvm_vblk_alloc(cli->args.dev, &cli->args.addrs[0], 1);
+	if (!vblk) {
+		perror("nvm_vblk_alloc");
+		return -1;
+	}
+
+	res = _vblk_read(cli, vblk);
+
+	nvm_vblk_free(vblk);
+
+	return res < 0 ? -1 : 0;
+}
+
+int line_erase(struct nvm_cli *cli)
+{
+	struct nvm_addr bgn = cli->args.addrs[0],
+			end = cli->args.addrs[1];
+	struct nvm_vblk *vblk = NULL;
+	ssize_t res = 0;
+	
+	vblk = nvm_vblk_alloc_line(cli->args.dev, bgn.g.ch, end.g.ch, bgn.g.lun,
 				   end.g.lun, bgn.g.blk);
 	if (!vblk) {
 		perror("nvm_vblk_alloc");
-		return errno;
+		return -1;
 	}
 
-	printf("** nvm_vblk_erase(...): pmode(%s)\n",
-		nvm_pmode_str(nvm_dev_get_pmode(args->dev))
-	);
-
-	nvm_vblk_pr(vblk);
-
-	nvm_timer_start();
-	res = nvm_vblk_erase(vblk);
-	if (res < 0)
-		perror("nvm_vblk_erase");
-	nvm_timer_stop();
-	nvm_timer_pr("nvm_vblk_erase");
-
-	nvm_vblk_free(vblk);
-
-	return res < 0;
-}
-
-int line_read(NVM_CLI_CMD_ARGS *args)
-{
-	ssize_t res = 0;
-
-	struct nvm_addr bgn, end;
-	struct nvm_vblk *vblk;
-	size_t nbytes;
-	const struct nvm_geo *geo;
-	char *buf;
-
-	bgn = args->addrs[0];
-	end = args->addrs[1];
-
-	vblk = nvm_vblk_alloc_line(args->dev, bgn.g.ch, end.g.ch, bgn.g.lun,
-				   end.g.lun, end.g.blk);
-	if (!vblk) {
-		perror("nvm_vblk_alloc");
-		return errno;
-	}
-	nbytes = nvm_vblk_get_nbytes(vblk);
-	geo = nvm_dev_get_geo(args->dev);
-
-	printf("** nvm_vblk_read(...): pmode(%s)\n",
-		nvm_pmode_str(nvm_dev_get_pmode(args->dev))
-	);
-	nvm_vblk_pr(vblk);
-
-	nvm_timer_start();
-	buf = nvm_buf_alloc(geo, nbytes);
-	if (!buf) {
-		perror("nvm_buf_alloc");
-		return errno;
-	}
-	nvm_timer_stop();
-	nvm_timer_pr("nvm_buf_alloc");
-
-	nvm_timer_start();
-	res = nvm_vblk_read(vblk, buf, nbytes);
-	if (res < 0)
-		perror("nvm_vblk_read");
-	nvm_timer_stop();
-	nvm_timer_pr("nvm_vblk_read");
-
-	if (getenv("NVM_CLI_BUF_PR")) {
-		printf("** READ:\n");
-		nvm_buf_pr(buf, nbytes);
-	}
-
-	free(buf);
-	nvm_vblk_free(vblk);
-
-	return res < 0;
-}
-
-int line_write(NVM_CLI_CMD_ARGS *args)
-{
-	ssize_t res = 0;
-
-	struct nvm_addr bgn, end;
-	struct nvm_vblk *vblk;
-	size_t nbytes;
-	const struct nvm_geo *geo;
-	char *buf;
-
-	bgn = args->addrs[0];
-	end = args->addrs[1];
-
-	vblk = nvm_vblk_alloc_line(args->dev, bgn.g.ch, end.g.ch, bgn.g.lun,
-				   end.g.lun, end.g.blk);
-	if (!vblk) {
-		perror("nvm_vblk_alloc");
-		return errno;
-	}
-	nbytes = nvm_vblk_get_nbytes(vblk);
-	geo = nvm_dev_get_geo(args->dev);
-
-	printf("** nvm_vblk_write(...):\n");
-	nvm_vblk_pr(vblk);
-
-	nvm_timer_start();
-	buf = nvm_buf_alloc(geo, nbytes);
-	if (!buf) {
-		perror("nvm_buf_alloc");
-		return errno;
-	}
-	nvm_buf_fill(buf, nbytes);
-	nvm_timer_stop();
-	nvm_timer_pr("nvm_buf_alloc");
-
-	nvm_timer_start();
-	res = nvm_vblk_write(vblk, buf, nbytes);
-	if (res < 0)
-		perror("nvm_vblk_write");
-	nvm_timer_stop();
-	nvm_timer_pr("nvm_vblk_write");
-
-	free(buf);
-	nvm_vblk_free(vblk);
-
-	return res < 0;
-}
-
-int line_pad(NVM_CLI_CMD_ARGS *args)
-{
-	ssize_t res = 0;
-
-	struct nvm_vblk *vblk;
-	struct nvm_addr bgn, end;
-
-	bgn = args->addrs[0];
-	end = args->addrs[1];
-
-	vblk = nvm_vblk_alloc_line(args->dev, bgn.g.ch, end.g.ch, bgn.g.lun,
-				   end.g.lun, end.g.blk);
-	if (!vblk) {
-		perror("nvm_vblk_alloc");
-		return errno;
-	}
-
-	printf("** nvm_vblk_pad(...):\n");
-	nvm_vblk_pr(vblk);
-
-	nvm_timer_start();
-	res = nvm_vblk_pad(vblk);
-	if (res < 0)
-		perror("nvm_vblk_pad");
-	nvm_timer_stop();
-	nvm_timer_pr("nvm_vblk_pad");
-
-	nvm_vblk_free(vblk);
-
-	return res < 0;
-}
-
-int line_to_file(NVM_CLI_CMD_ARGS *args)
-{
-	ssize_t res = 0;
-
-	struct nvm_addr bgn, end;
-	struct nvm_vblk *vblk;
-	size_t nbytes;
-	const struct nvm_geo *geo;
-	char *buf;
-
-	bgn = args->addrs[0];
-	end = args->addrs[1];
-
-	vblk = nvm_vblk_alloc_line(args->dev, bgn.g.ch, end.g.ch, bgn.g.lun,
-				   end.g.lun, end.g.blk);
-	if (!vblk) {
-		perror("nvm_vblk_alloc");
-		return errno;
-	}
-	nbytes = nvm_vblk_get_nbytes(vblk);
-	geo = nvm_dev_get_geo(args->dev);
-
-	printf("** nvm_vblk_read(...):\n");
-	nvm_vblk_pr(vblk);
-
-	nvm_timer_start();
-	buf = nvm_buf_alloc(geo, nbytes);
-	if (!buf) {
-		perror("nvm_buf_alloc");
-		return errno;
-	}
-	nvm_timer_stop();
-	nvm_timer_pr("nvm_buf_alloc");
-
-	nvm_timer_start();
-	res = nvm_vblk_read(vblk, buf, nbytes);
-	if (res < 0)
-		perror("nvm_vblk_read");
-	nvm_timer_stop();
-	nvm_timer_pr("nvm_vblk_read");
-
-	{
-		FILE *file_handle;
-		char file_name[1024];
-
-		sprintf(file_name, "vblk_line_%016lx_%016lx.bin", bgn.ppa, end.ppa);
-		file_handle = fopen(file_name, "wb");
-		fwrite(buf, 1, nbytes, file_handle);
-		fclose(file_handle);
-	}
-
-	free(buf);
-	nvm_vblk_free(vblk);
-
-	return res < 0;
-}
-
-int set_erase(NVM_CLI_CMD_ARGS *args)
-{
-	ssize_t res = 0;
-
-	struct nvm_vblk *vblk;
+	res = _vblk_erase(cli, vblk);
 	
-	vblk = nvm_vblk_alloc(args->dev, args->addrs, args->naddrs);
-	if (!vblk) {
-		perror("nvm_vblk_alloc");
-		return errno;
-	}
-
-	printf("** nvm_vblk_erase(...): pmode(%s)\n",
-		nvm_pmode_str(nvm_dev_get_pmode(args->dev))
-	);
-
-	nvm_vblk_pr(vblk);
-
-	nvm_timer_start();
-	res = nvm_vblk_erase(vblk);
-	if (res < 0)
-		perror("nvm_vblk_erase");
-	nvm_timer_stop();
-	nvm_timer_pr("nvm_vblk_erase");
-
 	nvm_vblk_free(vblk);
 
-	return res < 0;
+	return res < 0 ? -1 : 0;
 }
 
-int set_read(NVM_CLI_CMD_ARGS *args)
+int line_write(struct nvm_cli *cli)
 {
+	struct nvm_addr bgn = cli->args.addrs[0],
+			end = cli->args.addrs[1];
+	struct nvm_vblk *vblk = NULL;
 	ssize_t res = 0;
-
-	struct nvm_vblk *vblk;
-	size_t nbytes;
-	const struct nvm_geo *geo;
-	char *buf;
-
-	vblk = nvm_vblk_alloc(args->dev, args->addrs, args->naddrs);
+	
+	vblk = nvm_vblk_alloc_line(cli->args.dev, bgn.g.ch, end.g.ch, bgn.g.lun,
+				   end.g.lun, bgn.g.blk);
 	if (!vblk) {
 		perror("nvm_vblk_alloc");
-		return errno;
-	}
-	nbytes = nvm_vblk_get_nbytes(vblk);
-	geo = nvm_dev_get_geo(args->dev);
-
-	printf("** nvm_vblk_read(...): pmode(%s)\n",
-		nvm_pmode_str(nvm_dev_get_pmode(args->dev))
-	);
-	nvm_vblk_pr(vblk);
-
-	nvm_timer_start();
-	buf = nvm_buf_alloc(geo, nbytes);
-	if (!buf) {
-		perror("nvm_buf_alloc");
-		return errno;
-	}
-	nvm_timer_stop();
-	nvm_timer_pr("nvm_buf_alloc");
-
-	nvm_timer_start();
-	res = nvm_vblk_read(vblk, buf, nbytes);
-	if (res < 0)
-		perror("nvm_vblk_read");
-	nvm_timer_stop();
-	nvm_timer_pr("nvm_vblk_read");
-
-	if (getenv("NVM_CLI_BUF_PR")) {
-		printf("** READ:\n");
-		nvm_buf_pr(buf, nbytes);
+		return -1;
 	}
 
-	free(buf);
+	res = _vblk_write(cli, vblk);
+	
 	nvm_vblk_free(vblk);
 
-	return res < 0;
+	return res < 0 ? -1 : 0;
 }
 
-int set_write(NVM_CLI_CMD_ARGS *args)
+int line_read(struct nvm_cli *cli)
 {
+	struct nvm_addr bgn = cli->args.addrs[0],
+			end = cli->args.addrs[1];
+	struct nvm_vblk *vblk = NULL;
 	ssize_t res = 0;
-
-	struct nvm_vblk *vblk;
-	size_t nbytes;
-	const struct nvm_geo *geo;
-	char *buf;
-
-	vblk = nvm_vblk_alloc(args->dev, args->addrs, args->naddrs);
+	
+	vblk = nvm_vblk_alloc_line(cli->args.dev, bgn.g.ch, end.g.ch, bgn.g.lun,
+				   end.g.lun, bgn.g.blk);
 	if (!vblk) {
 		perror("nvm_vblk_alloc");
-		return errno;
+		return -1;
 	}
-	nbytes = nvm_vblk_get_nbytes(vblk);
-	geo = nvm_dev_get_geo(args->dev);
 
-	printf("** nvm_vblk_write(...): pmode(%s)\n",
-		nvm_pmode_str(nvm_dev_get_pmode(args->dev))
-	);
-	nvm_vblk_pr(vblk);
-
-	nvm_timer_start();
-	buf = nvm_buf_alloc(geo, nbytes);
-	if (!buf) {
-		perror("nvm_buf_alloc");
-		return errno;
-	}
-	nvm_buf_fill(buf, nbytes);
-	nvm_timer_stop();
-	nvm_timer_pr("nvm_buf_alloc");
-
-	nvm_timer_start();
-	res = nvm_vblk_write(vblk, buf, nbytes);
-	if (res < 0)
-		perror("nvm_vblk_write");
-	nvm_timer_stop();
-	nvm_timer_pr("nvm_vblk_write");
-
-	free(buf);
+	res = _vblk_read(cli, vblk);
+	
 	nvm_vblk_free(vblk);
 
-	return res < 0;
+	return res < 0 ? -1 : 0;
 }
 
-int set_pad(NVM_CLI_CMD_ARGS *args)
+int line_pad(struct nvm_cli *cli)
 {
+	struct nvm_addr bgn = cli->args.addrs[0],
+			end = cli->args.addrs[1];
+	struct nvm_vblk *vblk = NULL;
 	ssize_t res = 0;
+	
+	vblk = nvm_vblk_alloc_line(cli->args.dev, bgn.g.ch, end.g.ch, bgn.g.lun,
+				   end.g.lun, bgn.g.blk);
+	if (!vblk) {
+		perror("nvm_vblk_alloc");
+		return -1;
+	}
 
-	struct nvm_vblk *vblk;
+	res = _vblk_pad(cli, vblk);
+	
+	nvm_vblk_free(vblk);
 
-	vblk = nvm_vblk_alloc(args->dev, args->addrs, args->naddrs);
+	return res < 0 ? -1 : 0;
+}
+
+int set_erase(struct nvm_cli *cli)
+{
+	struct nvm_vblk *vblk = NULL;
+	ssize_t res = 0;
+	
+	vblk = nvm_vblk_alloc(cli->args.dev, cli->args.addrs, cli->args.naddrs);
+	if (!vblk) {
+		perror("nvm_vblk_alloc");
+		return -1;
+	}
+
+	res = _vblk_erase(cli, vblk);
+
+	nvm_vblk_free(vblk);
+
+	return res < 0 ? -1 : 0;
+}
+
+int set_write(struct nvm_cli *cli)
+{
+	struct nvm_vblk *vblk = NULL;
+	ssize_t res = 0;
+	
+	vblk = nvm_vblk_alloc(cli->args.dev, cli->args.addrs, cli->args.naddrs);
 	if (!vblk) {
 		perror("nvm_vblk_alloc");
 		return errno;
 	}
 
-	printf("** nvm_vblk_pad(...): pmode(%s)\n",
-		nvm_pmode_str(nvm_dev_get_pmode(args->dev))
-	);
-	nvm_vblk_pr(vblk);
-
-	nvm_timer_start();
-	res = nvm_vblk_pad(vblk);
-	if (res < 0)
-		perror("nvm_vblk_pad");
-	nvm_timer_stop();
-	nvm_timer_pr("nvm_vblk_pad");
+	res = _vblk_write(cli, vblk);
 
 	nvm_vblk_free(vblk);
 
-	return res < 0;
+	return res < 0 ? -1 : 0;
+}
+
+int set_read(struct nvm_cli *cli)
+{
+	struct nvm_vblk *vblk = NULL;
+	ssize_t res = 0;
+	
+	vblk = nvm_vblk_alloc(cli->args.dev, cli->args.addrs, cli->args.naddrs);
+	if (!vblk) {
+		perror("nvm_vblk_alloc");
+		return errno;
+	}
+
+	res = _vblk_read(cli, vblk);
+
+	nvm_vblk_free(vblk);
+
+	return res < 0 ? -1 : 0;
+}
+
+int set_pad(struct nvm_cli *cli)
+{
+	struct nvm_vblk *vblk = NULL;
+	ssize_t res = 0;
+	
+	vblk = nvm_vblk_alloc(cli->args.dev, cli->args.addrs, cli->args.naddrs);
+	if (!vblk) {
+		perror("nvm_vblk_alloc");
+		return errno;
+	}
+
+	res = _vblk_pad(cli, vblk);
+
+	nvm_vblk_free(vblk);
+
+	return res < 0 ? -1 : 0;
 }
 
 //
 // Remaining code is CLI boiler-plate
 //
-static NVM_CLI_CMD cmds[] = {
-	{"erase",	erase,	NVM_CLI_ARG_ADDRLIST,	NULL},
-	{"read",	read,	NVM_CLI_ARG_ADDRLIST,	NULL},
-	{"write",	write,	NVM_CLI_ARG_ADDRLIST,	NULL},
-	{"pad",		pad,	NVM_CLI_ARG_ADDRLIST,	NULL},
+static struct nvm_cli_cmd cmds[] = {
+	{"erase",	erase,	NVM_CLI_ARG_ADDR,	NVM_CLI_OPT_DEFAULT},
+	{"write",	write,	NVM_CLI_ARG_ADDR,	NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_INPUT},
+	{"read",	read,	NVM_CLI_ARG_ADDR,	NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
+	{"pad",		pad,	NVM_CLI_ARG_ADDR,	NVM_CLI_OPT_DEFAULT},
 
-	{"set_erase",	set_erase,	NVM_CLI_ARG_ADDRLIST,	NULL},
-	{"set_read",	set_read,	NVM_CLI_ARG_ADDRLIST,	NULL},
-	{"set_write",	set_write,	NVM_CLI_ARG_ADDRLIST,	NULL},
-	{"set_pad",	set_pad,	NVM_CLI_ARG_ADDRLIST,	NULL},
+	{"set_erase",	set_erase,	NVM_CLI_ARG_ADDR_LIST,	NVM_CLI_OPT_DEFAULT},
+	{"set_write",	set_write,	NVM_CLI_ARG_ADDR_LIST,	NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_INPUT},
+	{"set_read",	set_read,	NVM_CLI_ARG_ADDR_LIST,	NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
+	{"set_pad",	set_pad,	NVM_CLI_ARG_ADDR_LIST,	NVM_CLI_OPT_DEFAULT},
 
-	{"line_erase",	line_erase,	NVM_CLI_ARG_LINE,	NULL},
-	{"line_read",	line_read,	NVM_CLI_ARG_LINE,	NULL},
-	{"line_write",	line_write,	NVM_CLI_ARG_LINE,	NULL},
-	{"line_pad",	line_pad,	NVM_CLI_ARG_LINE,	NULL},
-	{"line_to_file",line_to_file,	NVM_CLI_ARG_LINE,	NULL},
+	{"line_erase",	line_erase,	NVM_CLI_ARG_VBLK_LINE,	NVM_CLI_OPT_DEFAULT},
+	{"line_write",	line_write,	NVM_CLI_ARG_VBLK_LINE,	NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_INPUT},
+	{"line_read",	line_read,	NVM_CLI_ARG_VBLK_LINE,	NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
+	{"line_pad",	line_pad,	NVM_CLI_ARG_VBLK_LINE,	NVM_CLI_OPT_DEFAULT},
 };
 
-static int ncmds = sizeof(cmds) / sizeof(cmds[0]);
+/* Define the CLI */
+static struct nvm_cli cli = {
+	.title = "NVM Virtual Block (nvm_vblk_*)",
+	.descr_short = "Erase, write, and read virtual blocks",
+	.cmds = cmds,
+	.ncmds = sizeof(cmds) / sizeof(cmds[0]),
+};
 
+/* Initialize and run */
 int main(int argc, char **argv)
 {
-	NVM_CLI_CMD *cmd;
-	int ret = 0;
+	int res = 0;
 
-	cmd = nvm_cli_setup(argc, argv, cmds, ncmds);
-	if (cmd) {
-		ret = cmd->func(cmd->args);
-	} else {
-		nvm_cli_usage(argv[0], "NVM Virtual Block (nvm_vblk_*)", cmds,
-			      ncmds);
-		ret = 1;
+	if (nvm_cli_init(&cli, argc, argv) < 0) {
+		perror("FAILED");
+		return 1;
 	}
-	nvm_cli_teardown(cmd);
 
-	return ret != 0;
+	res = nvm_cli_run(&cli);
+	if (res)
+		perror(cli.cmd.name);
+	
+	nvm_cli_destroy(&cli);
+
+	return res;
 }
-
