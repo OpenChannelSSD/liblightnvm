@@ -34,7 +34,7 @@ def produce_usage_output(args):
             print("FAILED: executing(%s) => skipping update" % cmd_fn)
             continue
 
-        _update_file(usage_path, out)
+        _update_file(usage_path, out+err)
 
 def produce_cmd_output(args):
     """Do the actual work"""
@@ -58,7 +58,7 @@ def produce_cmd_output(args):
             if code:
                 print("FAILED: CMD(%s) CHECK THE OUTPUT" % cmd)
 
-            output.append(out)
+            output.append(out+err)
 
         _update_file(cmd_path.replace(".cmd", ".out"), "\n".join(output))
 
