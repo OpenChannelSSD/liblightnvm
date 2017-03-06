@@ -131,7 +131,7 @@ doc-publish:
 	cp -r $(BUILD_DIR)/doc/sphinx/html/. $(BUILD_DIR)/ghpages/
 	touch $(BUILD_DIR)/ghpages/.nojekyll
 	cd $(BUILD_DIR)/ghpages && git config user.name "Mr. Robot"
-	cd $(BUILD_DIR)/ghpages && config user.email "foo@example.com"
+	cd $(BUILD_DIR)/ghpages && git config user.email "foo@example.com"
 	cd $(BUILD_DIR)/ghpages && git add .
 	cd $(BUILD_DIR)/ghpages && git commit -m "Autogen docs for `git rev-parse --short HEAD`."
 	cd $(BUILD_DIR)/ghpages && git push origin --delete gh-pages
