@@ -740,6 +740,28 @@ void nvm_buf_fill(char *buf, size_t nbytes);
 void nvm_buf_pr(char *buf, size_t nbytes);
 
 /**
+ * Write content of buffer into file
+ *
+ * @param buf Pointer to the buffer
+ * @param nbytes Size of buf
+ * @param path Destination where buffer will be dumped to
+ *
+ * @returns 0 on success, -1 on error and errno set to indicate the error.
+ */
+int nvm_buf_to_file(char *buf, size_t nbytes, const char *path);
+
+/**
+ * Read content of file into buffer
+ *
+ * @param buf Pointer to the buffer
+ * @param nbytes Size of buf
+ * @param path Source to read from
+ *
+ * @returns 0 on success, -1 on error and errno set to indicate the error.
+ */
+int nvm_buf_from_file(char *buf, size_t nbytes, const char *path);
+
+/**
  * Erase nvm at given addresses
  *
  * @note

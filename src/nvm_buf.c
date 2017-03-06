@@ -68,3 +68,36 @@ void nvm_buf_pr(char *buf, size_t nbytes)
 	printf("\n** NVM_BUF_PR - END **\n");
 }
 
+int nvm_buf_from_file(char *buf, size_t nbytes, const char *path)
+{
+	FILE *fhandle = NULL;
+	size_t fcount = 0;
+
+	fhandle = fopen(path, "rb");
+	fcount = fread(buf, 1, nbytes, fhandle);
+	fclose(fhandle);
+
+	if (fcount != nbytes) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	return 0;
+}
+
+int nvm_buf_to_file(char *buf, size_t nbytes, const char *path)
+{
+	FILE *fhandle = NULL;
+	size_t fcount = 0;
+
+	fhandle = fopen(path, "wb");
+	fcount = fwrite(buf, 1, nbytes, fhandle);
+	fclose(fhandle);
+
+	if (fcount != nbytes) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	return 0;
+}
