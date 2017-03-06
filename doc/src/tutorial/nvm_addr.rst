@@ -21,7 +21,7 @@ Yielding:
 .. literalinclude:: nvm_addr_00.out
    :language: bash
 
-The above hexidecimal-value can be given to any CLI command taking an ``addr``
+The above hexadecimal-value can be given to any CLI command taking an ``0xADDR``
 as parameter.
 
 .. NOTE:: Addresses are zero-indexed, so channel 4 is the fifth channel

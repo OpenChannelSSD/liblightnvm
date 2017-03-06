@@ -1,14 +1,22 @@
 NVM bad-block-table (nvm_bbt_*) -- Ver { major(0), minor(0), patch(1) }
 
+Retrieve (get) and modify (set/mark) the bad block table
+
 Usage:
- nvm_bbt        get dev_path ch lun
- nvm_bbt      set_f dev_path ch lun
- nvm_bbt      set_b dev_path ch lun
- nvm_bbt      set_g dev_path ch lun
- nvm_bbt      set_d dev_path ch lun
- nvm_bbt      set_h dev_path ch lun
- nvm_bbt     mark_f dev_path addr [addr...]
- nvm_bbt     mark_b dev_path addr [addr...]
- nvm_bbt     mark_g dev_path addr [addr...]
- nvm_bbt     mark_d dev_path addr [addr...]
- nvm_bbt     mark_h dev_path addr [addr...]
+ nvm_bbt        get dev_path ch lun [-h] [-v]
+ nvm_bbt      set_f dev_path ch lun [-h] [-v]
+ nvm_bbt      set_b dev_path ch lun [-h] [-v]
+ nvm_bbt      set_g dev_path ch lun [-h] [-v]
+ nvm_bbt      set_d dev_path ch lun [-h] [-v]
+ nvm_bbt      set_h dev_path ch lun [-h] [-v]
+ nvm_bbt     mark_f dev_path 0xADDR [0xADDR...] [-h] [-v]
+ nvm_bbt     mark_b dev_path 0xADDR [0xADDR...] [-h] [-v]
+ nvm_bbt     mark_g dev_path 0xADDR [0xADDR...] [-h] [-v]
+ nvm_bbt     mark_d dev_path 0xADDR [0xADDR...] [-h] [-v]
+ nvm_bbt     mark_h dev_path 0xADDR [0xADDR...] [-h] [-v]
+
+Options:
+ -h       Print usage
+ -v       Dump CLI state to stdout
+
+See: http://lightnvm.io/liblightnvm/cli/ for usage examples

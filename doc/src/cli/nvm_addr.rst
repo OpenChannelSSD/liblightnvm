@@ -12,8 +12,8 @@ nvm_addr
 Address Formats
 ---------------
 
-The command-line parameter ``addr`` is a textual hexidecimal representation of
-a physical address in generic format.
+The command-line parameter ``0xADDR`` is a textual hexadecimal representation
+of a physical address in generic format.
 
 Generic Format
 ~~~~~~~~~~~~~~
@@ -80,19 +80,18 @@ With plane-hint enabled perform a read command consisting of eight addresses:
 .. literalinclude:: nvm_addr_read_00.out
    :language: bash
 
-Set the environment var ``NVM_CLI_BUF_PR`` to dump the read data to std:
+Use the ``-o FILE`` option, to dump the data read from device to file:
 
 .. literalinclude:: nvm_addr_read_01.cmd
    :language: bash
 
 .. literalinclude:: nvm_addr_read_01.out
    :language: bash
-   :lines: 1-15
 
-.. code-block:: none
+Which can then be inspected with for example ``hexdump``:
 
-   ... output for bytes 128-32160 omitted for brevity ...
-
-.. literalinclude:: nvm_addr_read_01.out
+.. literalinclude:: nvm_addr_read_03.cmd
    :language: bash
-   :lines: 1017-
+
+.. literalinclude:: nvm_addr_read_03.out
+   :language: bash

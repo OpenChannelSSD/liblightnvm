@@ -3,6 +3,16 @@
 nvm_buf - Buffer Allocation
 ===========================
 
+nvm_buf_to_file
+---------------
+
+.. doxygenfunction:: nvm_buf_to_file
+
+nvm_buf_from_file
+-----------------
+
+.. doxygenfunction:: nvm_buf_from_file
+
 nvm_buf_alloc
 -------------
 

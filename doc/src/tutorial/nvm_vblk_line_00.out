@@ -132,9 +132,9 @@ vblk-naddrs(128) {
  126: (0x0e0700000000000a){ ch(14), lun(07), pl(0), blk(0010), pg(000), sec(0) }
  127: (0x0f0700000000000a){ ch(15), lun(07), pl(0), blk(0010), pg(000), sec(0) }
 }
-Ran nvm_vblk_erase, elapsed wall-clock: 0.084381
+Ran nvm_vblk_erase, elapsed wall-clock: 0.085158
 
-** nvm_vblk_write(...):
+** nvm_vblk_write(...): pmode(DUAL)
 vblk {
  nbytes(2147483648b:2048Mb),
 }
@@ -268,8 +268,9 @@ vblk-naddrs(128) {
  126: (0x0e0700000000000a){ ch(14), lun(07), pl(0), blk(0010), pg(000), sec(0) }
  127: (0x0f0700000000000a){ ch(15), lun(07), pl(0), blk(0010), pg(000), sec(0) }
 }
-Ran nvm_buf_alloc, elapsed wall-clock: 0.889654
-Ran nvm_vblk_write, elapsed wall-clock: 1.512385
+Ran nvm_buf_alloc, elapsed wall-clock: 0.000016
+Ran nvm_buf_fill|nvm_buf_from_file, elapsed wall-clock: 0.891824
+Ran nvm_vblk_write, elapsed wall-clock: 1.505167
 
 ** nvm_vblk_read(...): pmode(DUAL)
 vblk {
@@ -405,5 +406,5 @@ vblk-naddrs(128) {
  126: (0x0e0700000000000a){ ch(14), lun(07), pl(0), blk(0010), pg(000), sec(0) }
  127: (0x0f0700000000000a){ ch(15), lun(07), pl(0), blk(0010), pg(000), sec(0) }
 }
-Ran nvm_buf_alloc, elapsed wall-clock: 0.000013
-Ran nvm_vblk_read, elapsed wall-clock: 0.531340
+Ran nvm_buf_alloc, elapsed wall-clock: 0.000025
+Ran nvm_vblk_read, elapsed wall-clock: 0.531009

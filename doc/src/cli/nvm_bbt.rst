@@ -4,12 +4,12 @@ nvm_bbt
 =======
 
 .. literalinclude:: nvm_bbt_usage.out
-   :language: bash
+   :language: none
 
 .. tip:: See section :ref:`sec-cli-env` for a full list of environment
   variables modifying command behavior
 
-.. SEEALSO:: See :ref:`sec-cli-nvm_addr` on how to construct the ``addr`` parameter
+.. SEEALSO:: See :ref:`sec-cli-nvm_addr` on how to construct the ``0xADDR`` parameter
 
 Update block state
 ------------------

@@ -4,7 +4,7 @@ nvm_vblk
 ========
 
 .. literalinclude:: nvm_vblk_usage.out
-   :language: bash
+   :language: none
 
 A virtual block consists, at a minimum, of the physical blocks at a given block
 address across all planes in a LUN. The minimum construction encapsulates
@@ -15,10 +15,14 @@ Increased utilization of parallel units in a device is achieved by constructing
 a virtual block as either a :ref:`sec-cli-vblk-set` or a
 :ref:`sec-cli-vblk-line`.
 
+The write operation by default uses a synthetically constructed payload, use
+the ``-i FILE`` option to provide a payload from file. Payloads can likewise be
+dumped to file system when read using the ``-o FILE`` option.
+
 .. tip:: See section :ref:`sec-cli-env` for a full list of environment
   variables modifying command behavior
 
-.. SEEALSO:: See :ref:`sec-cli-nvm_addr` on how to construct the ``addr`` parameter
+.. SEEALSO:: See :ref:`sec-cli-nvm_addr` on how to construct the ``0xADDR`` parameter
 
 .. _sec-cli-vblk-plane:
 

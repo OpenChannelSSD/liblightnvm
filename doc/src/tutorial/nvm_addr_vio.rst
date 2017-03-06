@@ -164,19 +164,24 @@ We can read a single sector:
 .. literalinclude:: nvm_addr_vio_06.cmd
    :language: bash
 
-Yielding:
-
 .. literalinclude:: nvm_addr_vio_06.out
    :language: bash
 
-Setting the environment var ``NVM_CLI_BUF_PR``:
+The data read from device can be written to a file system using the ``-o FILE``
+option:
 
 .. literalinclude:: nvm_addr_vio_07.cmd
    :language: bash
 
-Will dump the read payload to stdout:
-
 .. literalinclude:: nvm_addr_vio_07.out
+   :language: bash
+
+The payload is then available by inspection, e.g. with ``hexdump``:
+
+.. literalinclude:: nvm_addr_vio_08.cmd
+   :language: bash
+
+.. literalinclude:: nvm_addr_vio_08.out
    :language: bash
 
 
@@ -191,12 +196,12 @@ Non-Contiguous Read
 
 Reading pages 500, 200, 0, and 6 across planes:
 
-.. literalinclude:: nvm_addr_vio_08.cmd
+.. literalinclude:: nvm_addr_vio_09.cmd
    :language: bash
 
 Successfully yielding:
 
-.. literalinclude:: nvm_addr_vio_08.out
+.. literalinclude:: nvm_addr_vio_09.out
    :language: bash
 
 It is worth mentioning that the vectorized reads can be non-contiguous not only

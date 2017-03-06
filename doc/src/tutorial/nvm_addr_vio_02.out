@@ -4,3 +4,6 @@
 (0x000000020000000a){ ch(00), lun(00), pl(0), blk(0010), pg(000), sec(2) }
 (0x000000030000000a){ ch(00), lun(00), pl(0), blk(0010), pg(000), sec(3) }
 nvm_ret { result(0x2), status(0) }
+nvm_addr_write: Input/output error
+write: Invalid argument
+write: Invalid argument

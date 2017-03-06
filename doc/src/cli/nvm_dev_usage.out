@@ -1,4 +1,12 @@
 NVM Device (nvm_dev_*) -- Ver { major(0), minor(0), patch(1) }
 
+Retrieve device information
+
 Usage:
- nvm_dev       info dev_path 
+ nvm_dev       info dev_path [-h] [-v]
+
+Options:
+ -h       Print usage
+ -v       Dump CLI state to stdout
+
+See: http://lightnvm.io/liblightnvm/cli/ for usage examples

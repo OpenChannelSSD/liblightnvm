@@ -4,7 +4,7 @@ nvm_dev
 =======
 
 .. literalinclude:: nvm_dev_usage.out
-   :language: bash
+   :language: none
 
 .. tip:: See section :ref:`sec-cli-env` for a full list of environment
   variables modifying command behavior
