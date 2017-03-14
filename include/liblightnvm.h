@@ -914,6 +914,16 @@ struct nvm_addr nvm_addr_dev2gen(struct nvm_dev *dev, uint64_t addr);
  */
 uint64_t nvm_addr_dev2lba(struct nvm_dev *dev, uint64_t addr);
 
+/**
+ * Converts a given physical address on device-format to lba-offset-format
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @param addr The physical address on device-format to convert
+ * @return Physical address on lba-offset-format
+ */
+uint64_t nvm_addr_dev2off(struct nvm_dev *dev, uint64_t addr);
+
+/**
  * Converts a given physical address on generic-format to byte offset
  *
  * @param dev Device handle obtained with `nvm_dev_open`
