@@ -29,6 +29,10 @@
 #ifndef __INTERNAL_NVM_BE_IOCTL_H
 #define __INTERNAL_NVM_BE_IOCTL_H
 
+struct nvm_dev *nvm_be_ioctl_open(const char *dev_path);
+
+void nvm_be_ioctl_close(struct nvm_dev *dev);
+
 int nvm_be_ioctl_user(struct nvm_dev *dev, struct nvm_cmd *cmd,
 		      struct nvm_ret *ret);
 
