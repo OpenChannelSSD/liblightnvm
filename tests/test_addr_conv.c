@@ -74,14 +74,29 @@ void _test_FMT_CONV(int func)
 			conv = nvm_addr_gen2dev(dev, expected);
 			actual = nvm_addr_dev2gen(dev, conv);
 			break;
+
 		case 1:
 			conv = nvm_addr_gen2off(dev, expected);
 			actual = nvm_addr_off2gen(dev, conv);
 			break;
+
 		case 2:
 			conv = nvm_addr_gen2lba(dev, expected);
 			actual = nvm_addr_lba2gen(dev, conv);
 			break;
+
+		case 3:
+			conv = nvm_addr_gen2dev(dev, expected);
+			conv = nvm_addr_dev2lba(dev, conv);
+			actual = nvm_addr_lba2gen(dev, conv);
+			break;
+
+		case 4:
+			conv = nvm_addr_gen2dev(dev, expected);
+			conv = nvm_addr_dev2off(dev, conv);
+			actual = nvm_addr_off2gen(dev, conv);
+			break;
+
 		default:
 			CU_FAIL("Invalid format");
 			return;
@@ -119,6 +134,22 @@ void test_FMT_GEN_LBA(void)
 	_test_FMT_CONV(2);
 }
 
+/**
+ * Tests: gen <-> dev <-> LBA
+ */
+void test_FMT_GEN_DEV_LBA(void)
+{
+	_test_FMT_CONV(3);
+}
+
+/**
+ * Tests: gen <-> dev <-> off
+ */
+void test_FMT_GEN_DEV_OFF(void)
+{
+	_test_FMT_CONV(4);
+}
+
 int main(int argc, char **argv)
 {
 	switch(argc) {
@@ -147,6 +178,8 @@ int main(int argc, char **argv)
 	(NULL == CU_add_test(pSuite, "fmt gen <-> dev", test_FMT_GEN_DEV)) ||
 	(NULL == CU_add_test(pSuite, "fmt gen <-> lba", test_FMT_GEN_LBA)) ||
 	(NULL == CU_add_test(pSuite, "fmt gen <-> off", test_FMT_GEN_OFF)) ||
+	(NULL == CU_add_test(pSuite, "fmt gen -> dev -> lba -> gen", test_FMT_GEN_DEV_LBA)) ||
+	(NULL == CU_add_test(pSuite, "fmt gen -> dev -> off -> gen", test_FMT_GEN_DEV_OFF)) ||
 	0)
 	{
 		CU_cleanup_registry();
