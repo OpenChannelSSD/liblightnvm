@@ -107,6 +107,11 @@ uint64_t nvm_addr_gen2lba(struct nvm_dev *dev, struct nvm_addr addr)
 	return nvm_addr_gen2off(dev, addr) >> NVM_UNIVERSAL_SECT_SH;
 }
 
+uint64_t nvm_addr_dev2off(struct nvm_dev *dev, uint64_t addr)
+{
+	return addr << dev->ssw;
+}
+
 inline struct nvm_addr nvm_addr_dev2gen(struct nvm_dev *dev, uint64_t addr)
 {
 	struct nvm_addr gen;
