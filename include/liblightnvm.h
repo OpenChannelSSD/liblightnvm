@@ -65,6 +65,34 @@ enum nvm_pmode {
 	NVM_FLAG_PMODE_QUAD = 0x2	///< Quad-plane (NVM_IO_QUAD_ACCESS)
 };
 
+/**
+ * Encoding descriptor for physical address format for NAND
+ */
+struct spec_ppaf_nand {
+	union {
+		struct {
+			uint8_t ch_off;		///< Offset in bits for channel
+			uint8_t ch_len;		///< Nr. of bits repr. channel
+			uint8_t lun_off;	///< Offset in bits for LUN
+			uint8_t lun_len;	///< Nr. of bits repr. LUN
+			uint8_t pl_off;		///< Offset in bits for plane
+			uint8_t pl_len;		///< Nr. of bits repr. plane
+			uint8_t blk_off;	///< Offset in bits for block
+			uint8_t blk_len;	///< Nr. of bits repr. block
+			uint8_t pg_off;		///< Offset in bits for page
+			uint8_t pg_len;		///< Nr. of bits repr. page
+			uint8_t sec_off;	///< Offset in bits for sector
+			uint8_t sec_len;	///< Nr. of bits repr. sector
+			uint8_t rsvd[4];
+		} n;
+
+		/**
+		* Address format formed as anonymous consecutive fields
+		*/
+		uint8_t a[16];
+	};
+};
+
 #define NVM_FLAG_DEFAULT (NVM_FLAG_PMODE_SNGL | NVM_FLAG_SCRBL);
 
 /**
