@@ -128,6 +128,11 @@ int nvm_dev_get_meta_mode(struct nvm_dev *dev)
 	return dev->meta_mode;
 }
 
+const struct spec_ppaf_nand *nvm_dev_get_ppaf(struct nvm_dev *dev)
+{
+	return &dev->ppaf;
+}
+
 int nvm_dev_set_meta_mode(struct nvm_dev *dev, int meta_mode)
 {
 	switch (meta_mode) {
