@@ -608,6 +608,15 @@ int nvm_dev_get_pmode(struct nvm_dev *dev);
 int nvm_dev_get_fd(struct nvm_dev *dev);
 
 /**
+ * Returns the ppa-format of the given device
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @return On success, ppa-format is returned
+ *
+ */
+const struct spec_ppaf_nand *nvm_dev_get_ppaf(struct nvm_dev *dev);
+
+/**
  * Set the default plane-mode for the given device
  *
  * @param dev Device handle obtained with `nvm_dev_open`
