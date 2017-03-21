@@ -90,6 +90,11 @@ int nvm_dev_get_verid(struct nvm_dev *dev)
 	return dev->verid;
 }
 
+int nvm_dev_get_fd(struct nvm_dev *dev)
+{
+	return dev->fd;
+}
+
 int nvm_dev_get_be_id(struct nvm_dev *dev)
 {
 	return dev->be->id;
