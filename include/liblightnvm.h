@@ -600,6 +600,14 @@ int nvm_dev_get_pmode(struct nvm_dev *dev);
 
 
 /**
+ * Returns the file-descriptor associated with the given device
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @return On success, file descriptor is returned
+ */
+int nvm_dev_get_fd(struct nvm_dev *dev);
+
+/**
  * Set the default plane-mode for the given device
  *
  * @param dev Device handle obtained with `nvm_dev_open`
