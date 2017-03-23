@@ -36,25 +36,32 @@
 
 void nvm_ret_pr(struct nvm_ret *ret)
 {
-	printf("nvm_ret { result(0x%x), status(%lu) }\n", ret->result,
-	       ret->status);
+	printf("nvm_ret: {");
+	printf("result: 0x%x, ", ret->result);
+	printf("status: %lu",ret->status);
+	printf("}\n");
 }
 
 void nvm_addr_pr(struct nvm_addr addr)
 {
-	printf("(0x%016lx){ ch(%02d), lun(%02d), pl(%d), ",
-	       addr.ppa, addr.g.ch, addr.g.lun, addr.g.pl);
-	printf("blk(%04d), pg(%03d), sec(%d) }\n",
-	       addr.g.blk, addr.g.pg, addr.g.sec);
+	printf("0x%016lx: {", addr.ppa);
+	printf("ch: %02d, ", addr.g.ch);
+	printf("lun: %02d, ", addr.g.lun);
+	printf("pl: %d, ", addr.g.pl);
+	printf("blk: %04d, ", addr.g.blk);
+	printf("pg: %03d, ", addr.g.pg);
+	printf("sec: %d", addr.g.sec);
+	printf("}\n");
 }
 
 void nvm_addr_prn(struct nvm_addr *addr, unsigned int naddrs)
 {
-	printf("naddrs(%d) {\n", naddrs);
+	printf("naddrs: %d\n", naddrs);
+	printf("addrs:\n");
 	for (unsigned int i = 0; (i < naddrs) && addr; ++i) {
-		printf(" %02d: ", i); nvm_addr_pr(addr[i]);
+		printf("  - ");
+		nvm_addr_pr(addr[i]);
 	}
-	printf("}\n");
 }
 
 int nvm_addr_check(struct nvm_addr addr, const struct nvm_geo *geo)
