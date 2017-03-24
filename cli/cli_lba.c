@@ -18,17 +18,16 @@ int cmd_pwrite(struct nvm_cli *cli)
 
 	buf = nvm_buf_alloc(args->geo, count);
 	if (!buf) {
-		perror("nvm_buf_alloc");
+		nvm_cli_perror("nvm_buf_alloc");
 		return -1;
 	}
 	nvm_buf_fill(buf, count);
 
-	printf("** nvm_lba_pwrite(...): count(%lu), offset(%ld)\n",
-	       count, offset);
+	nvm_cli_info_pr("nvm_lba_pwrite: {count: %lu, offset: %ld}", count, offset);
 
 	err = nvm_lba_pwrite(args->dev, buf, count, offset);
 	if (err) {
-		perror("nvm_lba_pwrite");
+		nvm_cli_perror("nvm_lba_pwrite");
 		nvm_ret_pr(&ret);
 	}
 
@@ -48,23 +47,22 @@ int cmd_pread(struct nvm_cli *cli)
 
 	buf = nvm_buf_alloc(args->geo, count);
 	if (!buf) {
-		perror("nvm_buf_alloc");
+		nvm_cli_perror("nvm_buf_alloc");
 		return -1;
 	}
 
-	printf("** nvm_lba_pread(...): count(%lu), offset(%ld)\n",
-	       count, offset);
+	nvm_cli_info_pr("nvm_lba_pread: {count: %lu, offset: %ld}", count, offset);
 
 	err = nvm_lba_pread(args->dev, buf, count, offset);
 	if (err) {
-		perror("nvm_lba_pread");
+		nvm_cli_perror("nvm_lba_pread");
 		nvm_ret_pr(&ret);
 	}
 
 	if ((cli->opts.mask & NVM_CLI_OPT_FILE_OUTPUT) &&
 	     cli->opts.file_output) {	// Write buffer to file system
 		if (nvm_buf_to_file(buf, count, cli->opts.file_output))
-			perror("nvm_buf_to_file");
+			nvm_cli_perror("nvm_buf_to_file");
 	}
 
 	free(buf);
@@ -95,14 +93,12 @@ int main(int argc, char **argv)
 	int res = 0;
 
 	if (nvm_cli_init(&cli, argc, argv) < 0) {
-		perror("FAILED");
+		nvm_cli_perror("FAILED");
 		return 1;
 	}
 
 	res = nvm_cli_run(&cli);
-	if (res)
-		perror(cli.cmd.name);
-	
+
 	nvm_cli_destroy(&cli);
 
 	return res;
