@@ -437,10 +437,10 @@ size_t nvm_vblk_get_pos_write(struct nvm_vblk *vblk)
 
 void nvm_vblk_pr(struct nvm_vblk *vblk)
 {
-	printf("vblk {\n");
-	printf(" nbytes(%lub:%luMb),\n", vblk->nbytes, vblk->nbytes >> 20);
-	printf("}\n");
-	printf("vblk-");
+	printf("vblk:\n");
+	printf("  dev: {pmode: '%s'}\n", nvm_pmode_str(nvm_dev_get_pmode(vblk->dev)));
+	printf("  nbytes: %lu\n", vblk->nbytes);
+	printf("  nmbytes: %lu\n", vblk->nbytes >> 20);
         nvm_addr_prn(vblk->blks, vblk->nblks);
 }
 
