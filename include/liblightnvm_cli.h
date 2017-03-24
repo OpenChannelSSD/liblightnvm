@@ -170,6 +170,8 @@ void nvm_cli_evars_pr(struct nvm_cli_evars *evars);
 
 void nvm_cli_pr(struct nvm_cli *cli);
 
+void nvm_cli_info_pr(const char *format, ...);
+
 /**
  * Start the global timer
  *
