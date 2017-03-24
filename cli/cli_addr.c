@@ -25,7 +25,7 @@ ssize_t _write(struct nvm_cli *cli, int with_meta)
 	if ((cli->opts.mask & NVM_CLI_OPT_FILE_INPUT) &&
 	     cli->opts.file_input) {	// Fill buf with content from file
 		if (nvm_buf_from_file(buf, buf_nbytes, cli->opts.file_output)) {
-			perror("nvm_buf_from_file");
+			nvm_cli_perror("nvm_buf_from_file");
 			free(buf);
 			return -1;
 		}
@@ -36,7 +36,7 @@ ssize_t _write(struct nvm_cli *cli, int with_meta)
 	if (with_meta) {				// metadata buffer
 		meta = nvm_buf_alloc(args->geo, meta_tbytes);
 		if (!meta) {
-			perror("nvm_buf_alloc");
+			nvm_cli_perror("nvm_buf_alloc");
 			free(buf);
 			return -1;
 		}
@@ -44,7 +44,7 @@ ssize_t _write(struct nvm_cli *cli, int with_meta)
 			meta[i] = (i / args->naddrs) % args->naddrs + 65;
 	}
 
-	printf("** nvm_addr_write(...) : pmode(%s)\n", nvm_pmode_str(pmode));
+	nvm_cli_info_pr("nvm_addr_write : {pmode: %s}", nvm_pmode_str(pmode));
 	for (int i = 0; i < args->naddrs; ++i) {
 		nvm_addr_pr(args->addrs[i]);
 	}
@@ -52,7 +52,7 @@ ssize_t _write(struct nvm_cli *cli, int with_meta)
 	err = nvm_addr_write(args->dev, args->addrs, args->naddrs, buf, meta,
 			     pmode, &ret);
 	if (err) {
-		perror("nvm_addr_write");
+		nvm_cli_perror("nvm_addr_write");
 		nvm_ret_pr(&ret);
 	}
 
@@ -76,46 +76,46 @@ ssize_t _read(struct nvm_cli *cli, int with_meta)
 
 	buf = nvm_buf_alloc(args->geo, buf_nbytes);	// data buffer
 	if (!buf) {
-		perror("nvm_buf_alloc");
+		nvm_cli_perror("nvm_buf_alloc");
 		return -1;
 	}
 
 	if (with_meta) {				// metadata buffer
 		meta = nvm_buf_alloc(args->geo, meta_tbytes);
 		if (!meta) {
-			perror("nvm_buf_alloc");
+			nvm_cli_perror("nvm_buf_alloc");
 			free(buf);
 			return -1;
 		}
 		memset(meta, 0, meta_tbytes);
 	}
 
-	printf("** nvm_addr_read(...) : pmode(%s)\n", nvm_pmode_str(pmode));
+	nvm_cli_info_pr("nvm_addr_read: {pmode: %s}", nvm_pmode_str(pmode));
 	for (int i = 0; i < args->naddrs; ++i) {
 		nvm_addr_pr(args->addrs[i]);
 	}
 
 	if (meta && cli->evars.meta_pr) {
-		printf("** Before read meta_tbytes(%d) meta:\n", meta_tbytes);
+		nvm_cli_info_pr("before_read: {meta_tbytes: %d}", meta_tbytes);
 		nvm_buf_pr(meta, meta_tbytes);
 	}
 
 	err = nvm_addr_read(args->dev, args->addrs, args->naddrs, buf, meta,
 			    pmode, &ret);
 	if (err) {
-		perror("nvm_addr_read");
+		nvm_cli_perror("nvm_addr_read");
 		nvm_ret_pr(&ret);
 	}
 	
 	if (meta && cli->evars.meta_pr) {
-		printf("** After read meta_tbytes(%d) meta:\n", meta_tbytes);
+		nvm_cli_info_pr("after_read: {meta_tbytes: %d}", meta_tbytes);
 		nvm_buf_pr(meta, meta_tbytes);
 	}
 
 	if ((cli->opts.mask & NVM_CLI_OPT_FILE_OUTPUT) &&
 	     cli->opts.file_output) {	// Write buffer to file system
 		if (nvm_buf_to_file(buf, buf_nbytes, cli->opts.file_output))
-			perror("nvm_buf_to_file");
+			nvm_cli_perror("nvm_buf_to_file");
 	}
 
 	free(buf);
@@ -131,7 +131,7 @@ int erase(struct nvm_cli *cli)
 	struct nvm_ret ret = {0,0};
 	ssize_t err = 0;
 
-	printf("** nvm_addr_erase(...) : pmode(%s)\n", nvm_pmode_str(pmode));
+	nvm_cli_info_pr("nvm_addr_erase: {pmode: %s}", nvm_pmode_str(pmode));
 	for (int i = 0; i < args->naddrs; ++i) {
 		nvm_addr_pr(args->addrs[i]);
 	}
@@ -139,7 +139,7 @@ int erase(struct nvm_cli *cli)
 	err = nvm_addr_erase(args->dev, args->addrs, args->naddrs, pmode,
 			     &ret);
 	if (err) {
-		perror("nvm_addr_erase");
+		nvm_cli_perror("nvm_addr_erase");
 		nvm_ret_pr(&ret);
 	}
 
@@ -179,9 +179,8 @@ int cmd_gen2dev(struct nvm_cli *cli)
 	struct nvm_cli_cmd_args *args = &cli->args;
 
 	for (int i = 0; i < args->naddrs; ++i) {
-		printf("gen-addr"); nvm_addr_pr(args->addrs[i]);
-		printf("dev-addr(0x%016lx)\n",
-		       nvm_addr_gen2dev(args->dev, args->addrs[i]));
+		printf("gen: "); nvm_addr_pr(args->addrs[i]);
+		printf("dev: 0x%016lx\n", nvm_addr_gen2dev(args->dev, args->addrs[i]));
 	}
 
 	return 0;
@@ -192,9 +191,8 @@ int cmd_gen2lba(struct nvm_cli *cli)
 	struct nvm_cli_cmd_args *args = &cli->args;
 
 	for (int i = 0; i < args->naddrs; ++i) {
-		printf("gen-addr"); nvm_addr_pr(args->addrs[i]);
-		printf("lba-addr(%064ld)\n",
-		       nvm_addr_gen2lba(args->dev, args->addrs[i]));
+		printf("gen: "); nvm_addr_pr(args->addrs[i]);
+		printf("lba: %064ld\n", nvm_addr_gen2lba(args->dev, args->addrs[i]));
 	}
 
 	return 0;
@@ -205,9 +203,8 @@ int cmd_gen2off(struct nvm_cli *cli)
 	struct nvm_cli_cmd_args *args = &cli->args;
 
 	for (int i = 0; i < args->naddrs; ++i) {
-		printf("gen-addr"); nvm_addr_pr(args->addrs[i]);
-		printf("off-addr(%064ld)\n",
-		       nvm_addr_gen2off(args->dev, args->addrs[i]));
+		printf("gen: "); nvm_addr_pr(args->addrs[i]);
+		printf("off: %064ld\n", nvm_addr_gen2off(args->dev, args->addrs[i]));
 	}
 
 	return 0;
@@ -218,8 +215,8 @@ int cmd_dev2gen(struct nvm_cli *cli)
 	struct nvm_cli_cmd_args *args = &cli->args;
 
 	for (int i = 0; i < args->nhex_vals; ++i) {
-		printf("dev-addr(%016lx)\n", args->hex_vals[i]);
-		nvm_addr_pr(nvm_addr_dev2gen(args->dev, args->hex_vals[i]));
+		printf("dev: %016lx\n", args->hex_vals[i]);
+		printf("gen: "); nvm_addr_pr(nvm_addr_dev2gen(args->dev, args->hex_vals[i]));
 	}
 
 	return 0;
@@ -230,8 +227,8 @@ int cmd_lba2gen(struct nvm_cli *cli)
 	struct nvm_cli_cmd_args *args = &cli->args;
 
 	for (int i = 0; i < args->ndec_vals; ++i) {
-		printf("lba-addr(%064ld)\n", args->dec_vals[i]);
-		nvm_addr_pr(nvm_addr_lba2gen(args->dev, args->dec_vals[i]));
+		printf("lba: %064ld\n", args->dec_vals[i]);
+		printf("gen: "); nvm_addr_pr(nvm_addr_lba2gen(args->dev, args->dec_vals[i]));
 	}
 
 	return 0;
@@ -242,8 +239,8 @@ int cmd_off2gen(struct nvm_cli *cli)
 	struct nvm_cli_cmd_args *args = &cli->args;
 
 	for (int i = 0; i < args->ndec_vals; ++i) {
-		printf("off-addr(%064ld)\n", args->dec_vals[i]);
-		nvm_addr_pr(nvm_addr_off2gen(args->dev, args->dec_vals[i]));
+		printf("off: %064ld\n", args->dec_vals[i]);
+		printf("gen: "); nvm_addr_pr(nvm_addr_off2gen(args->dev, args->dec_vals[i]));
 	}
 
 	return 0;
@@ -284,15 +281,14 @@ int main(int argc, char **argv)
 	int res = 0;
 
 	if (nvm_cli_init(&cli, argc, argv) < 0) {
-		perror("FAILED");
+		nvm_cli_perror("nvm_cli_init");
 		return 1;
 	}
 
 	res = nvm_cli_run(&cli);
-	if (res)
-		perror(cli.cmd.name);
-	
+
 	nvm_cli_destroy(&cli);
 
 	return res;
 }
+
