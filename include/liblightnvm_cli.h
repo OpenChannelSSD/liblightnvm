@@ -172,6 +172,8 @@ void nvm_cli_pr(struct nvm_cli *cli);
 
 void nvm_cli_info_pr(const char *format, ...);
 
+void nvm_cli_perror(const char *msg);
+
 /**
  * Start the global timer
  *
