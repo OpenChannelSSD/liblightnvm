@@ -27,6 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
@@ -62,7 +63,7 @@ double nvm_cli_timer_elapsed(void)
 
 void nvm_cli_timer_pr(const char *tool)
 {
-    printf("Ran %s, elapsed wall-clock: %lf\n", tool, nvm_cli_timer_elapsed());
+	printf("%s: {elapsed: %lf}\n", tool, nvm_cli_timer_elapsed());
 }
 
 int _parse_options(int argc, char *argv[], struct nvm_cli *cli)
@@ -645,13 +646,13 @@ int _evar_and_dev_setup(struct nvm_cli *cli)
 	}
 
 	if (_evar_be_id(cli) < 0) {		// Backend identifier
-		perror("NVM_CLI_BE_ID");
+		perror("# NVM_CLI_BE_ID");
 		return -1;
 	}
 
 	cli->args.dev = nvm_dev_openf(cli->args.dev_path, cli->evars.be_id);
 	if (!cli->args.dev) {
-		perror("nvm_dev_openf");
+		perror("# nvm_dev_openf");
 		return -1;
 	}
 
@@ -659,42 +660,42 @@ int _evar_and_dev_setup(struct nvm_cli *cli)
 
 	if ((_evar_pmode(cli) < 0) ||
 	    nvm_dev_set_pmode(cli->args.dev, cli->evars.pmode)) {
-		perror("NVM_CLI_PMODE");
+		perror("# NVM_CLI_PMODE");
 		return -1;
 	}
 
 	if ((_evar_meta_mode(cli) < 0) ||
 	    nvm_dev_set_meta_mode(cli->args.dev, cli->evars.meta_mode)) {
-		perror("NVM_CLI_META_MODE");
+		perror("# NVM_CLI_META_MODE");
 		return -1;
 	}
 
 	if ((_evar_erase_naddrs_max(cli) < 0) ||
 	    nvm_dev_set_erase_naddrs_max(cli->args.dev,
 					 cli->evars.erase_naddrs_max)) {
-		perror("NVM_CLI_ERASE_NADDRS_MAX");
+		perror("# NVM_CLI_ERASE_NADDRS_MAX");
 		return -1;
 	}
 	if ((_evar_write_naddrs_max(cli) < 0) ||
 	    nvm_dev_set_write_naddrs_max(cli->args.dev,
 					 cli->evars.write_naddrs_max)) {
-		perror("NVM_CLI_WRITE_NADDRS_MAX");
+		perror("# NVM_CLI_WRITE_NADDRS_MAX");
 		return -1;
 	}
 	if ((_evar_read_naddrs_max(cli) < 0) ||
 	    nvm_dev_set_read_naddrs_max(cli->args.dev,
 					 cli->evars.read_naddrs_max)) {
-		perror("NVM_CLI_READ_NADDRS_MAX");
+		perror("# NVM_CLI_READ_NADDRS_MAX");
 		return -1;
 	}
 
 	if (_evar_noverify(cli) < 0) {
-		perror("NVM_CLI_NOVERIFY");
+		perror("# NVM_CLI_NOVERIFY");
 		return -1;
 	}
 
 	if (_evar_meta_pr(cli) < 0) {
-		perror("NVM_CLI_META_PR");
+		perror("# NVM_CLI_META_PR");
 		return -1;
 	}
 	
@@ -703,7 +704,7 @@ int _evar_and_dev_setup(struct nvm_cli *cli)
 
 		if (bounds) {
 			nvm_addr_pr(cli->args.addrs[i]);
-			printf("Exceeded:\n");
+			nvm_cli_info_pr("Exceeded");
 			nvm_bounds_pr(bounds);
 			errno = EINVAL;
 			return -1;
@@ -711,9 +712,9 @@ int _evar_and_dev_setup(struct nvm_cli *cli)
 	}
 
 	if (cli->opts.verbose) {
-		printf("\n** Verbose enabled -- printing CLI state -- BEGIN\n");
+		nvm_cli_info_pr("Verbose enabled -- printing CLI state -- BEGIN");
 		nvm_cli_pr(cli);
-		printf("** Verbose enabled -- printing CLI state -- END\n\n");
+		nvm_cli_info_pr("Verbose enabled -- printing CLI state -- END");
 	}
 
 	return 0;
@@ -786,7 +787,7 @@ int nvm_cli_init(struct nvm_cli *cli, int argc, char *argv[])
 
 int nvm_cli_run(struct nvm_cli *cli)
 {
-	int res = 0;
+	int res;
 
 	if (!cli) {
 		errno = EINVAL;
@@ -799,8 +800,11 @@ int nvm_cli_run(struct nvm_cli *cli)
 	}
 
 	res = cli->cmd.func(cli);
-	if (res)
-		perror(cli->cmd.name);
+	if (res) {
+		char msg[1024];
+		sprintf(msg, "# %s", cli->cmd.name);
+		perror(msg);
+	}
 
 	return res ? 1 : 0;
 }
@@ -991,9 +995,8 @@ void nvm_cli_usage_pr(struct nvm_cli *cli)
 }
 
 void nvm_cli_cmd_args_pr(struct nvm_cli_cmd_args *args) {
-	printf("cli-args {\n");
-	printf(" dev_path(%s)\n", args->dev_path);
-	printf("}\n");
+	printf("cli_args:\n");
+	printf("  dev_path: '%s'\n", args->dev_path);
 
 	printf("cli-args-ndec_vals(%d) {\n", args->ndec_vals);
 	if (args->ndec_vals)
@@ -1016,39 +1019,60 @@ void nvm_cli_cmd_args_pr(struct nvm_cli_cmd_args *args) {
 
 void nvm_cli_opts_pr(struct nvm_cli_opts *opts)
 {
-	printf("cli-opts {\n");
-	printf(" mask(0x%08x),\n", opts->mask);
-	printf(" help(%d),\n", opts->help);
-	printf(" brief(%d),\n", opts->brief);
-	printf(" verbose(%d),\n", opts->verbose);
-	printf(" dec_val(%ld),\n", opts->dec_val);
-	printf(" hex_val(0x%016lx),\n", opts->hex_val);
-	printf(" file_input(%s),\n", opts->file_input);
-	printf(" file_output(%s),\n", opts->file_output);
-	printf("}\n");
+	printf("cli_opts:\n");
+	printf("  mask: 0x%08x\n", opts->mask);
+	printf("  help: %d\n", opts->help);
+	printf("  brief: %d\n", opts->brief);
+	printf("  verbose: %d\n", opts->verbose);
+	printf("  dec_val: %ld\n", opts->dec_val);
+	printf("  hex_val: 0x%016lx\n", opts->hex_val);
+	printf("  file_input: %s\n", opts->file_input);
+	printf("  file_output: %s\n", opts->file_output);
 }
 
 void nvm_cli_evars_pr(struct nvm_cli_evars *evars)
 {
-	printf("cli-evars {\n");
-	printf(" be_id(%d),\n", evars->be_id);
-	printf(" pmode(%d),\n", evars->pmode);
-	printf(" meta_mode(%d),\n", evars->meta_mode);
-	printf(" noverify(%d),\n", evars->noverify);
-	printf(" erase_naddrs_max(%d),\n", evars->erase_naddrs_max);
-	printf(" read_naddrs_max(%d),\n", evars->read_naddrs_max);
-	printf(" write_naddrs_max(%d),\n", evars->write_naddrs_max);
-	printf(" meta_pr(%d),\n", evars->meta_pr);
-	printf("}\n");
+	printf("cli_evars:\n");
+	printf("  be_id: %d\n", evars->be_id);
+	printf("  pmode: 0x%02x\n", evars->pmode);
+	printf("  meta_mode: %d\n", evars->meta_mode);
+	printf("  noverify: %d\n", evars->noverify);
+	printf("  erase_naddrs_max: %d\n", evars->erase_naddrs_max);
+	printf("  read_naddrs_max: %d\n", evars->read_naddrs_max);
+	printf("  write_naddrs_max: %d\n", evars->write_naddrs_max);
+	printf("  meta_pr: %d\n", evars->meta_pr);
 }
 
 void nvm_cli_pr(struct nvm_cli *cli)
 {
-	printf("cli {\n");
-	printf(" ncmds(%d),\n", cli->ncmds);
-	printf(" name(%s),\n", cli->name);
-	printf("}\n");
+	printf("cli:\n");
+	printf("  ncmds: %d\n", cli->ncmds);
+	printf("  name: '%s'\n", cli->name);
 	nvm_cli_evars_pr(&cli->evars);
 	nvm_cli_opts_pr(&cli->opts);
 	nvm_cli_cmd_args_pr(&cli->args);
 }
+
+void nvm_cli_info_pr(const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+
+	printf("# ");
+	vprintf(format, args);
+	printf("\n");
+
+	va_end(args);
+}
+
+void nvm_cli_perror(const char *msg)
+{
+	char foo[1024];
+
+	if (strlen(msg) > 1000)
+		return;
+
+	sprintf(foo, "# %s", msg);
+	perror(foo);
+}
+
