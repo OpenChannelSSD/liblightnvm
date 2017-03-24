@@ -3,20 +3,18 @@
 #include <stdio.h>
 #include <errno.h>
 #include <liblightnvm_cli.h>
+#include <nvm_utils.h>
 
-ssize_t _vblk_erase(struct nvm_cli *cli, struct nvm_vblk *vblk)
+ssize_t _vblk_erase(struct nvm_cli *NVM_UNUSED(cli), struct nvm_vblk *vblk)
 {
 	ssize_t res = 0;
 
-	printf("** nvm_vblk_erase(...): pmode(%s)\n",
-		nvm_pmode_str(nvm_dev_get_pmode(cli->args.dev))
-	);
 	nvm_vblk_pr(vblk);
 
 	nvm_cli_timer_start();
 	res = nvm_vblk_erase(vblk);
 	if (res < 0)
-		perror("nvm_vblk_erase");
+		nvm_cli_perror("nvm_vblk_erase");
 	nvm_cli_timer_stop();
 	nvm_cli_timer_pr("nvm_vblk_erase");
 
@@ -30,15 +28,12 @@ ssize_t _vblk_write(struct nvm_cli *cli, struct nvm_vblk *vblk)
 	char *buf = NULL;
 	ssize_t res = 0;
 
-	printf("** nvm_vblk_write(...): pmode(%s)\n",
-		nvm_pmode_str(nvm_dev_get_pmode(cli->args.dev))
-	);
 	nvm_vblk_pr(vblk);
 
 	nvm_cli_timer_start();		// Allocate write buffer
 	buf = nvm_buf_alloc(geo, nbytes);
 	if (!buf) {
-		perror("nvm_buf_alloc");
+		nvm_cli_perror("nvm_buf_alloc");
 		return -1;
 	}
 	nvm_cli_timer_stop();
@@ -48,7 +43,7 @@ ssize_t _vblk_write(struct nvm_cli *cli, struct nvm_vblk *vblk)
 	if ((cli->opts.mask & NVM_CLI_OPT_FILE_INPUT) &&
 	     cli->opts.file_input) {	// Fill with content from file
 		if (nvm_buf_from_file(buf, nbytes, cli->opts.file_input)) {
-			perror("nvm_buf_from_file");
+			nvm_cli_perror("nvm_buf_from_file");
 			free(buf);
 			return -1;
 		}
@@ -56,12 +51,12 @@ ssize_t _vblk_write(struct nvm_cli *cli, struct nvm_vblk *vblk)
 		nvm_buf_fill(buf, nbytes);	// Fill with synthetic payload
 	}
 	nvm_cli_timer_stop();
-	nvm_cli_timer_pr("nvm_buf_fill|nvm_buf_from_file");
+	nvm_cli_timer_pr("nvm_buf_fill");
 
 	nvm_cli_timer_start();		// Write buffer to device
 	res = nvm_vblk_write(vblk, buf, nbytes);
 	if (res < 0)
-		perror("nvm_vblk_write");
+		nvm_cli_perror("nvm_vblk_write");
 	nvm_cli_timer_stop();
 	nvm_cli_timer_pr("nvm_vblk_write");
 
@@ -77,15 +72,12 @@ ssize_t _vblk_read(struct nvm_cli *cli, struct nvm_vblk *vblk)
 	char *buf = NULL;
 	ssize_t res = 0;
 
-	printf("** nvm_vblk_read(...): pmode(%s)\n",
-		nvm_pmode_str(nvm_dev_get_pmode(cli->args.dev))
-	);
 	nvm_vblk_pr(vblk);
 
 	nvm_cli_timer_start();		// Allocate read buffer
 	buf = nvm_buf_alloc(geo, nbytes);
 	if (!buf) {
-		perror("nvm_buf_alloc");
+		nvm_cli_perror("nvm_buf_alloc");
 		return -1;
 	}
 	nvm_cli_timer_stop();
@@ -94,14 +86,14 @@ ssize_t _vblk_read(struct nvm_cli *cli, struct nvm_vblk *vblk)
 	nvm_cli_timer_start();		// Read from device into buffer
 	res = nvm_vblk_read(vblk, buf, nbytes);
 	if (res < 0)
-		perror("nvm_vblk_read");
+		nvm_cli_perror("nvm_vblk_read");
 	nvm_cli_timer_stop();
 	nvm_cli_timer_pr("nvm_vblk_read");
 
 	if ((cli->opts.mask & NVM_CLI_OPT_FILE_OUTPUT) &&
 	     cli->opts.file_output) {	// Write buffer to file system
 		if (nvm_buf_to_file(buf, nbytes, cli->opts.file_output))
-			perror("nvm_buf_to_file");
+			nvm_cli_perror("nvm_buf_to_file");
 	}
 
 	free(buf);
@@ -109,19 +101,16 @@ ssize_t _vblk_read(struct nvm_cli *cli, struct nvm_vblk *vblk)
 	return res;
 }
 
-ssize_t _vblk_pad(struct nvm_cli *cli, struct nvm_vblk *vblk)
+ssize_t _vblk_pad(struct nvm_cli *NVM_UNUSED(cli), struct nvm_vblk *vblk)
 {
 	ssize_t res = 0;
 
-	printf("** nvm_vblk_pad(...): pmode(%s)\n",
-		nvm_pmode_str(nvm_dev_get_pmode(cli->args.dev))
-	);
 	nvm_vblk_pr(vblk);
 
 	nvm_cli_timer_start();
 	res = nvm_vblk_pad(vblk);
 	if (res < 0)
-		perror("nvm_vblk_pad");
+		nvm_cli_perror("nvm_vblk_pad");
 	nvm_cli_timer_stop();
 	nvm_cli_timer_pr("nvm_vblk_pad");
 
@@ -138,7 +127,7 @@ int erase(struct nvm_cli *cli)
 	
 	vblk = nvm_vblk_alloc(cli->args.dev, &cli->args.addrs[0], 1);
 	if (!vblk) {
-		perror("nvm_vblk_alloc");
+		nvm_cli_perror("nvm_vblk_alloc");
 		return -1;
 	}
 
@@ -156,7 +145,7 @@ int write(struct nvm_cli *cli)
 
 	vblk = nvm_vblk_alloc(cli->args.dev, &cli->args.addrs[0], 1);
 	if (!vblk) {
-		perror("nvm_vblk_alloc");
+		nvm_cli_perror("nvm_vblk_alloc");
 		return -1;
 	}
 
@@ -174,7 +163,7 @@ int read(struct nvm_cli *cli)
 
 	vblk = nvm_vblk_alloc(cli->args.dev, &cli->args.addrs[0], 1);
 	if (!vblk) {
-		perror("nvm_vblk_alloc");
+		nvm_cli_perror("nvm_vblk_alloc");
 		return -1;
 	}
 
@@ -192,7 +181,7 @@ int pad(struct nvm_cli *cli)
 
 	vblk = nvm_vblk_alloc(cli->args.dev, &cli->args.addrs[0], 1);
 	if (!vblk) {
-		perror("nvm_vblk_alloc");
+		nvm_cli_perror("nvm_vblk_alloc");
 		return -1;
 	}
 
@@ -213,7 +202,7 @@ int line_erase(struct nvm_cli *cli)
 	vblk = nvm_vblk_alloc_line(cli->args.dev, bgn.g.ch, end.g.ch, bgn.g.lun,
 				   end.g.lun, bgn.g.blk);
 	if (!vblk) {
-		perror("nvm_vblk_alloc");
+		nvm_cli_perror("nvm_vblk_alloc");
 		return -1;
 	}
 
@@ -234,7 +223,7 @@ int line_write(struct nvm_cli *cli)
 	vblk = nvm_vblk_alloc_line(cli->args.dev, bgn.g.ch, end.g.ch, bgn.g.lun,
 				   end.g.lun, bgn.g.blk);
 	if (!vblk) {
-		perror("nvm_vblk_alloc");
+		nvm_cli_perror("nvm_vblk_alloc");
 		return -1;
 	}
 
@@ -255,7 +244,7 @@ int line_read(struct nvm_cli *cli)
 	vblk = nvm_vblk_alloc_line(cli->args.dev, bgn.g.ch, end.g.ch, bgn.g.lun,
 				   end.g.lun, bgn.g.blk);
 	if (!vblk) {
-		perror("nvm_vblk_alloc");
+		nvm_cli_perror("nvm_vblk_alloc");
 		return -1;
 	}
 
@@ -276,7 +265,7 @@ int line_pad(struct nvm_cli *cli)
 	vblk = nvm_vblk_alloc_line(cli->args.dev, bgn.g.ch, end.g.ch, bgn.g.lun,
 				   end.g.lun, bgn.g.blk);
 	if (!vblk) {
-		perror("nvm_vblk_alloc");
+		nvm_cli_perror("nvm_vblk_alloc");
 		return -1;
 	}
 
@@ -294,7 +283,7 @@ int set_erase(struct nvm_cli *cli)
 	
 	vblk = nvm_vblk_alloc(cli->args.dev, cli->args.addrs, cli->args.naddrs);
 	if (!vblk) {
-		perror("nvm_vblk_alloc");
+		nvm_cli_perror("nvm_vblk_alloc");
 		return -1;
 	}
 
@@ -312,7 +301,7 @@ int set_write(struct nvm_cli *cli)
 	
 	vblk = nvm_vblk_alloc(cli->args.dev, cli->args.addrs, cli->args.naddrs);
 	if (!vblk) {
-		perror("nvm_vblk_alloc");
+		nvm_cli_perror("nvm_vblk_alloc");
 		return errno;
 	}
 
@@ -330,7 +319,7 @@ int set_read(struct nvm_cli *cli)
 	
 	vblk = nvm_vblk_alloc(cli->args.dev, cli->args.addrs, cli->args.naddrs);
 	if (!vblk) {
-		perror("nvm_vblk_alloc");
+		nvm_cli_perror("nvm_vblk_alloc");
 		return errno;
 	}
 
@@ -348,7 +337,7 @@ int set_pad(struct nvm_cli *cli)
 	
 	vblk = nvm_vblk_alloc(cli->args.dev, cli->args.addrs, cli->args.naddrs);
 	if (!vblk) {
-		perror("nvm_vblk_alloc");
+		nvm_cli_perror("nvm_vblk_alloc");
 		return errno;
 	}
 
@@ -393,14 +382,12 @@ int main(int argc, char **argv)
 	int res = 0;
 
 	if (nvm_cli_init(&cli, argc, argv) < 0) {
-		perror("FAILED");
+		nvm_cli_perror("FAILED");
 		return 1;
 	}
 
 	res = nvm_cli_run(&cli);
-	if (res)
-		perror(cli.cmd.name);
-	
+
 	nvm_cli_destroy(&cli);
 
 	return res;
