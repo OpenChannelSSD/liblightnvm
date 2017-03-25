@@ -330,42 +330,37 @@ void nvm_bbt_free(struct nvm_bbt *bbt)
 
 void nvm_bbt_pr(const struct nvm_bbt *bbt)
 {
-	int nnotfree = 0;
 	uint64_t npl_blks, nplanes;
 
 	if (!bbt) {
-		printf("bbt { NULL }\n");
+		printf("bbt: ~\n");
 		return;
 	}
 
 	nplanes = bbt->dev->geo.nplanes;
 	npl_blks = bbt->nblks / nplanes;
 
-	printf("bbt {\n");
-	printf(" addr"); nvm_addr_pr(bbt->addr);
-	printf(" nblks(%lu),\n", bbt->nblks);
-	printf(" npl_blks(%lu) {", npl_blks);
+	printf("bbt:\n");
+	printf("  addr: "); nvm_addr_pr(bbt->addr);
+	printf("  nblks: %lu\n", bbt->nblks);
+	printf("  npl_blks: %lu\n", npl_blks);
+	printf("  pl_blks:\n");
 	for (uint64_t blk = 0; blk < bbt->nblks; ++blk) {
 		if (!(blk % nplanes))
-			printf("\n  blk(%04lu): [ ", blk / nplanes);
+			printf("    %04lu: [ ", blk / nplanes);
+
+		if (blk % nplanes)
+			printf(", ");
 
 		nvm_bbt_state_pr(bbt->blks[blk]);
-		printf(" ");
-		if (bbt->blks[blk]) {
-			++nnotfree;
-		}
 
 		if (!((blk+1) % nplanes))
-			printf("]");
+			printf(" ]\n");
 	}
-	printf("\n },\n");
-	printf(" tnotfree(%d) {\n", nnotfree);
-	printf("  nbad(%u),\n", bbt->nbad);
-	printf("  ngbad(%u),\n", bbt->ngbad);
-	printf("  ndmrk(%u),\n", bbt->ndmrk);
-	printf("  nhmrk(%u)\n", bbt->nhmrk);
-	printf(" }\n");
-	printf("}\n");
+	printf("  nbad: %u\n", bbt->nbad);
+	printf("  gbad: %u\n", bbt->ngbad);
+	printf("  ndmrk: %u\n", bbt->ndmrk);
+	printf("  nhmrk: %u\n", bbt->nhmrk);
 }
 
 void nvm_bbt_state_pr(int state)
