@@ -59,13 +59,14 @@ void nvm_buf_pr(char *buf, size_t nbytes)
 {
 	const int width = 32;
 
-	printf("** NVM_BUF_PR - BEGIN **");
+	// TODO: YAML
+	printf("# NVM_BUF_PR - BEGIN **\n");
 	for (size_t i = 0; i < nbytes; i++) {
 		if (!(i % width))
-			printf("\ni[%lu,%lu]: ", i, i+(width-1));
+			printf("\ni[%lu,%lu]: ", i, i + (width - 1));
 		printf(" %c", buf[i]);
 	}
-	printf("\n** NVM_BUF_PR - END **\n");
+	printf("# NVM_BUF_PR - END\n");
 }
 
 int nvm_buf_from_file(char *buf, size_t nbytes, const char *path)
