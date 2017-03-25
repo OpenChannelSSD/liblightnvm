@@ -35,21 +35,22 @@
 void nvm_bounds_pr(int mask)
 {
 	if (!mask) {
-		printf("No bounds\n");
+		printf("bounds: ~\n");
 		return;
 	}
 
+	printf("bounds:\n");
 	if (mask & NVM_BOUNDS_CHANNEL)
-		printf("Channel bound\n");
+		printf("- channel\n");
 	if (mask & NVM_BOUNDS_LUN)
-		printf("LUN bound\n");
+		printf("- lun\n");
 	if (mask & NVM_BOUNDS_PLANE)
-		printf("Plane bound\n");
+		printf("- plane\n");
 	if (mask & NVM_BOUNDS_BLOCK)
-		printf("Block bound\n");
+		printf("- block\n");
 	if (mask & NVM_BOUNDS_PAGE)
-		printf("Page bound\n");
+		printf("- page\n");
 	if (mask & NVM_BOUNDS_SECTOR)
-		printf("Sector bound\n");
+		printf("- sector\n");
 }
 
