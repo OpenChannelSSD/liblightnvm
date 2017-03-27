@@ -38,7 +38,6 @@
 #include <nvm_be.h>
 #include <nvm_dev.h>
 #include <nvm_debug.h>
-#include <nvm_spec.h>
 
 static inline uint64_t _ilog2(uint64_t x)
 {
@@ -118,8 +117,8 @@ int nvm_be_ioctl_admin(struct nvm_dev *dev, struct nvm_cmd *cmd,
 	return 0;
 }
 
-static inline void _construct_ppaf_mask(struct spec_ppaf_nand *ppaf,
-					struct spec_ppaf_nand_mask *mask)
+static inline void _construct_ppaf_mask(struct nvm_spec_ppaf_nand *ppaf,
+					struct nvm_spec_ppaf_nand_mask *mask)
 {
 	for (int i = 0 ; i < 12; ++i) {
 		if ((i % 2)) {
@@ -133,7 +132,7 @@ static inline void _construct_ppaf_mask(struct spec_ppaf_nand *ppaf,
 static inline int _ioctl_fill_geo(struct nvm_dev *dev, struct nvm_ret *ret)
 {
 	struct nvm_cmd cmd = {.cdw={0}};
-	struct spec_identify *idf;
+	struct nvm_spec_identify *idf;
 	int err;
 
 	err = posix_memalign((void **)&idf, 4096, sizeof(*idf));
