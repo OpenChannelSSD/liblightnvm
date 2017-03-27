@@ -167,7 +167,7 @@ static int sysattr2int(struct udev_device *dev, const char *attr, int *val)
 }
 
 static int sysattr2fmt(struct udev_device *dev, const char *attr,
-		   struct spec_ppaf_nand  *fmt, struct spec_ppaf_nand_mask *mask)
+		       struct nvm_spec_ppaf_nand  *fmt, struct nvm_spec_ppaf_nand_mask *mask)
 {
 	const char *dev_path;
 	char path[4096];
