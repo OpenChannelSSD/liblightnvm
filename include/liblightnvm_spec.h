@@ -215,29 +215,29 @@ struct nvm_spec_bbt {
 	uint8_t		blk[];
 };
 
-void nvm_spec_identify_pr(struct nvm_spec_identify *idf);
+void nvm_spec_identify_pr(const struct nvm_spec_identify *idf);
 
-void nvm_spec_lbaf_pr(struct nvm_spec_lbaf *lbaf);
+void nvm_spec_lbaf_pr(const struct nvm_spec_lbaf *lbaf);
 
 /**
  * Prints a humanly readable representation of the give address format mask
  *
  * @param ppaf The address format to print
  */
-void nvm_spec_ppaf_nand_pr(struct nvm_spec_ppaf_nand *ppaf);
+void nvm_spec_ppaf_nand_pr(const struct nvm_spec_ppaf_nand *ppaf);
 
 /**
  * Prints a humanly readable representation of the give address format mask
  *
  * @param fmt The address format mask to print
  */
-void nvm_spec_ppaf_nand_mask_pr(struct nvm_spec_ppaf_nand_mask *mask);
+void nvm_spec_ppaf_nand_mask_pr(const struct nvm_spec_ppaf_nand_mask *mask);
 
 /**
  * Prints a humanly readable representation of the given spec_bbt
  *
  * @param ppaf The address format to print
  */
-void nvm_spec_bbt_pr(struct nvm_spec_bbt *bbt);
+void nvm_spec_bbt_pr(const struct nvm_spec_bbt *bbt);
 
 #endif /* __LIBLIGHTNVM_SPEC_H */
