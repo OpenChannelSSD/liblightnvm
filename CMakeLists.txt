@@ -39,7 +39,7 @@ set(HEADER_FILES
 	include/nvm_debug.h
 	include/nvm_dev.h
 	include/nvm_omp.h
-	include/nvm_spec.h
+	include/liblightnvm_spec.h
 	include/nvm_utils.h
 	include/nvm_vblk.h)
 
@@ -96,6 +96,8 @@ set_target_properties(lightnvm_a PROPERTIES OUTPUT_NAME lightnvm)
 
 install(TARGETS lightnvm_a DESTINATION lib COMPONENT lib)
 
+install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm_spec.h"
+	DESTINATION include COMPONENT dev)
 install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm.h"
 	DESTINATION include COMPONENT dev)
 
