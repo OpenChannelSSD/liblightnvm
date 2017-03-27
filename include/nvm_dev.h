@@ -30,7 +30,6 @@
 #define __INTERNAL_NVM_DEV_H
 
 #include <liblightnvm.h>
-#include <nvm_spec.h>
 
 struct nvm_dev {
 	int fd;				///< Device IOCTL handle
@@ -38,8 +37,8 @@ struct nvm_dev {
 	char path[NVM_DEV_PATH_LEN];	///< Device path e.g. "/dev/nvme0n1"
 	int nsid;			///< NVME namespace identifier
 	uint8_t verid;			///< Open-Channel SSD version identifier
-	struct spec_ppaf_nand ppaf;	///< Device address format
-	struct spec_ppaf_nand_mask mask;///< Device address format mask
+	struct nvm_spec_ppaf_nand ppaf;	///< Device address format
+	struct nvm_spec_ppaf_nand_mask mask;///< Device address format mask
 	struct nvm_geo geo;		///< Device geometry
 	uint64_t ssw;			///< Bit-width for LBA fmt conversion
 	int pmode;			///< Default plane-mode I/O
