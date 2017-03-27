@@ -38,6 +38,7 @@ extern "C" {
 
 #include <stdint.h>
 #include <sys/types.h>
+#include <liblightnvm_spec.h>
 
 #define NVM_NADDR_MAX 64
 
@@ -65,35 +66,6 @@ enum nvm_pmode {
 	NVM_FLAG_PMODE_DUAL = 0x1,	///< Dual-plane (NVM_IO_DUAL_ACCESS)
 	NVM_FLAG_PMODE_QUAD = 0x2	///< Quad-plane (NVM_IO_QUAD_ACCESS)
 };
-
-/**
- * Encoding descriptor for physical address format for NAND
- */
-struct spec_ppaf_nand {
-	union {
-		struct {
-			uint8_t ch_off;		///< Offset in bits for channel
-			uint8_t ch_len;		///< Nr. of bits repr. channel
-			uint8_t lun_off;	///< Offset in bits for LUN
-			uint8_t lun_len;	///< Nr. of bits repr. LUN
-			uint8_t pl_off;		///< Offset in bits for plane
-			uint8_t pl_len;		///< Nr. of bits repr. plane
-			uint8_t blk_off;	///< Offset in bits for block
-			uint8_t blk_len;	///< Nr. of bits repr. block
-			uint8_t pg_off;		///< Offset in bits for page
-			uint8_t pg_len;		///< Nr. of bits repr. page
-			uint8_t sec_off;	///< Offset in bits for sector
-			uint8_t sec_len;	///< Nr. of bits repr. sector
-			uint8_t rsvd[4];
-		} n;
-
-		/**
-		* Address format formed as anonymous consecutive fields
-		*/
-		uint8_t a[16];
-	};
-};
-
 #define NVM_FLAG_DEFAULT (NVM_FLAG_PMODE_SNGL | NVM_FLAG_SCRBL);
 
 /**
@@ -547,7 +519,6 @@ void nvm_bbt_free(struct nvm_bbt *bbt);
  */
 void nvm_bbt_pr(const struct nvm_bbt *bbt);
 
-
 /**
  * Prints a humanly readable representation of the given bad-block-table state
  */
@@ -599,7 +570,6 @@ void nvm_dev_pr(struct nvm_dev *dev);
  */
 int nvm_dev_get_pmode(struct nvm_dev *dev);
 
-
 /**
  * Returns the file-descriptor associated with the given device
  *
@@ -615,7 +585,7 @@ int nvm_dev_get_fd(struct nvm_dev *dev);
  * @return On success, ppa-format is returned
  *
  */
-const struct spec_ppaf_nand *nvm_dev_get_ppaf(struct nvm_dev *dev);
+const struct nvm_spec_ppaf_nand *nvm_dev_get_ppaf(struct nvm_dev *dev);
 
 /**
  * Set the default plane-mode for the given device
