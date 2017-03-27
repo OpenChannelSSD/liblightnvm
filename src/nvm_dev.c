@@ -144,6 +144,11 @@ const struct nvm_spec_ppaf_nand *nvm_dev_get_ppaf(struct nvm_dev *dev)
 	return &dev->ppaf;
 }
 
+const struct nvm_spec_ppaf_nand_mask *nvm_dev_get_ppaf_mask(struct nvm_dev *dev)
+{
+	return &dev->mask;
+}
+
 int nvm_dev_set_meta_mode(struct nvm_dev *dev, int meta_mode)
 {
 	switch (meta_mode) {
