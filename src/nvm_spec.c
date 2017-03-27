@@ -36,7 +36,7 @@
 #include <nvm_utils.h>
 #include <nvm_debug.h>
 
-void _s12_identify_pr(struct nvm_spec_identify *identify)
+void _s12_identify_pr(const struct nvm_spec_identify *identify)
 {
 	struct s12_identify idf = identify->s12;
 
@@ -78,7 +78,7 @@ void _s12_identify_pr(struct nvm_spec_identify *identify)
 	}
 }
 
-void _s20_identify_pr(struct nvm_spec_identify *identify)
+void _s20_identify_pr(const struct nvm_spec_identify *identify)
 {
 	struct s20_identify idf = identify->s20;
 
@@ -106,7 +106,7 @@ void _s20_identify_pr(struct nvm_spec_identify *identify)
 	nvm_spec_ppaf_nand_pr(&idf.ppaf);
 }
 
-void nvm_spec_identify_pr(struct nvm_spec_identify *identify)
+void nvm_spec_identify_pr(const struct nvm_spec_identify *identify)
 {
 	if (!identify) {
 		printf("nvm_spec_identify: ~\n");
@@ -127,7 +127,7 @@ void nvm_spec_identify_pr(struct nvm_spec_identify *identify)
 	}
 }
 
-void nvm_spec_ppaf_nand_pr(struct nvm_spec_ppaf_nand *ppaf)
+void nvm_spec_ppaf_nand_pr(const struct nvm_spec_ppaf_nand *ppaf)
 {
 	printf("ppaf:\n");
 	printf("  ch_off: %02u\n", ppaf->n.ch_off);
@@ -144,7 +144,7 @@ void nvm_spec_ppaf_nand_pr(struct nvm_spec_ppaf_nand *ppaf)
 	printf("  sec_len: %02u\n", ppaf->n.sec_len);
 }
 
-void nvm_spec_ppaf_nand_mask_pr(struct nvm_spec_ppaf_nand_mask *mask)
+void nvm_spec_ppaf_nand_mask_pr(const struct nvm_spec_ppaf_nand_mask *mask)
 {
 	printf("ppaf_mask:\n");
 	printf("  ch:  '"NVM_I64_FMT"'\n", NVM_I64_TO_STR(mask->n.ch));
@@ -155,7 +155,7 @@ void nvm_spec_ppaf_nand_mask_pr(struct nvm_spec_ppaf_nand_mask *mask)
 	printf("  sec: '"NVM_I64_FMT"'\n", NVM_I64_TO_STR(mask->n.sec));
 }
 
-void nvm_spec_lbaf_pr(struct nvm_spec_lbaf *lbaf)
+void nvm_spec_lbaf_pr(const struct nvm_spec_lbaf *lbaf)
 {
 	printf("lbaf:\n");
 	printf("  ch_len: %u\n", lbaf->ch_len);
@@ -164,7 +164,7 @@ void nvm_spec_lbaf_pr(struct nvm_spec_lbaf *lbaf)
 	printf("  sec_len: %u\n", lbaf->sec_len);
 }
 
-void nvm_spec_bbt_pr(struct nvm_spec_bbt *bbt)
+void nvm_spec_bbt_pr(const struct nvm_spec_bbt *bbt)
 {
 	if (!bbt) {
 		printf("nvm_spec_bbt: ~\n");
