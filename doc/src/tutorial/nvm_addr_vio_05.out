@@ -1,19 +1,19 @@
-** nvm_vblk_erase(...): pmode(DUAL)
-vblk {
- nbytes(16777216b:16Mb),
-}
-vblk-naddrs(1) {
- 00: (0x000000000000000a){ ch(00), lun(00), pl(0), blk(0010), pg(000), sec(0) }
-}
-Ran nvm_vblk_erase, elapsed wall-clock: 0.005731
+vblk:
+  dev: {pmode: 'DUAL'}
+  nbytes: 16777216
+  nmbytes: 16
+naddrs: 1
+addrs:
+  - 0x000000000000000a: {ch: 00, lun: 00, pl: 0, blk: 0010, pg: 000, sec: 0}
+nvm_vblk_erase: {elapsed: 0.005633}
 
-** nvm_vblk_write(...): pmode(DUAL)
-vblk {
- nbytes(16777216b:16Mb),
-}
-vblk-naddrs(1) {
- 00: (0x000000000000000a){ ch(00), lun(00), pl(0), blk(0010), pg(000), sec(0) }
-}
-Ran nvm_buf_alloc, elapsed wall-clock: 0.000012
-Ran nvm_buf_fill|nvm_buf_from_file, elapsed wall-clock: 0.020306
-Ran nvm_vblk_write, elapsed wall-clock: 0.925050
+vblk:
+  dev: {pmode: 'DUAL'}
+  nbytes: 16777216
+  nmbytes: 16
+naddrs: 1
+addrs:
+  - 0x000000000000000a: {ch: 00, lun: 00, pl: 0, blk: 0010, pg: 000, sec: 0}
+nvm_buf_alloc: {elapsed: 0.000012}
+nvm_buf_fill: {elapsed: 0.019201}
+nvm_vblk_write: {elapsed: 0.861263}

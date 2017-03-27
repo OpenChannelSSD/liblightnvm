@@ -3,18 +3,18 @@ NVM Virtual Block (nvm_vblk_*) -- Ver { major(0), minor(0), patch(1) }
 Erase, write, and read virtual blocks
 
 Usage:
- nvm_vblk      erase dev_path 0xADDR [-h] [-v]
- nvm_vblk      write dev_path 0xADDR [-h] [-v] [-i FILE]
- nvm_vblk       read dev_path 0xADDR [-h] [-v] [-o FILE]
- nvm_vblk        pad dev_path 0xADDR [-h] [-v]
- nvm_vblk  set_erase dev_path 0xADDR [0xADDR...] [-h] [-v]
- nvm_vblk  set_write dev_path 0xADDR [0xADDR...] [-h] [-v] [-i FILE]
- nvm_vblk   set_read dev_path 0xADDR [0xADDR...] [-h] [-v] [-o FILE]
- nvm_vblk    set_pad dev_path 0xADDR [0xADDR...] [-h] [-v]
- nvm_vblk line_erase dev_path ch_bgn ch_end lun_bgn lun_end blk [-h] [-v]
- nvm_vblk line_write dev_path ch_bgn ch_end lun_bgn lun_end blk [-h] [-v] [-i FILE]
- nvm_vblk  line_read dev_path ch_bgn ch_end lun_bgn lun_end blk [-h] [-v] [-o FILE]
- nvm_vblk   line_pad dev_path ch_bgn ch_end lun_bgn lun_end blk [-h] [-v]
+ nvm_vblk        erase dev_path 0xADDR [-h] [-v]
+ nvm_vblk        write dev_path 0xADDR [-h] [-v] [-i FILE]
+ nvm_vblk         read dev_path 0xADDR [-h] [-v] [-o FILE]
+ nvm_vblk          pad dev_path 0xADDR [-h] [-v]
+ nvm_vblk    set_erase dev_path 0xADDR [0xADDR...] [-h] [-v]
+ nvm_vblk    set_write dev_path 0xADDR [0xADDR...] [-h] [-v] [-i FILE]
+ nvm_vblk     set_read dev_path 0xADDR [0xADDR...] [-h] [-v] [-o FILE]
+ nvm_vblk      set_pad dev_path 0xADDR [0xADDR...] [-h] [-v]
+ nvm_vblk   line_erase dev_path ch_bgn ch_end lun_bgn lun_end blk [-h] [-v]
+ nvm_vblk   line_write dev_path ch_bgn ch_end lun_bgn lun_end blk [-h] [-v] [-i FILE]
+ nvm_vblk    line_read dev_path ch_bgn ch_end lun_bgn lun_end blk [-h] [-v] [-o FILE]
+ nvm_vblk     line_pad dev_path ch_bgn ch_end lun_bgn lun_end blk [-h] [-v]
 
 Options:
  -h       Print usage

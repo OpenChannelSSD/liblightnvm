@@ -3,19 +3,19 @@ NVM address (nvm_addr_*) -- Ver { major(0), minor(0), patch(1) }
 Construct / convert addresses and perform vector IO
 
 Usage:
- nvm_addr      erase dev_path 0xADDR [0xADDR...] [-h] [-v]
- nvm_addr      write dev_path 0xADDR [0xADDR...] [-h] [-v] [-i FILE]
- nvm_addr   write_wm dev_path 0xADDR [0xADDR...] [-h] [-v] [-i FILE]
- nvm_addr       read dev_path 0xADDR [0xADDR...] [-h] [-v] [-o FILE]
- nvm_addr    read_wm dev_path 0xADDR [0xADDR...] [-h] [-v] [-o FILE]
- nvm_addr   from_geo dev_path ch lun pl blk pg sec [-h] [-v]
- nvm_addr   from_hex dev_path 0xADDR [0xADDR...] [-h] [-v]
- nvm_addr    gen2dev dev_path 0xADDR [0xADDR...] [-h] [-v]
- nvm_addr    gen2lba dev_path 0xADDR [0xADDR...] [-h] [-v]
- nvm_addr    gen2off dev_path 0xADDR [0xADDR...] [-h] [-v]
- nvm_addr    dev2gen dev_path 0xVAL [0xVAL...] [-h] [-v]
- nvm_addr    lba2gen dev_path val [val...] [-h] [-v]
- nvm_addr    off2gen dev_path val [val...] [-h] [-v]
+ nvm_addr        erase dev_path 0xADDR [0xADDR...] [-h] [-v]
+ nvm_addr        write dev_path 0xADDR [0xADDR...] [-h] [-v] [-i FILE]
+ nvm_addr     write_wm dev_path 0xADDR [0xADDR...] [-h] [-v] [-i FILE]
+ nvm_addr         read dev_path 0xADDR [0xADDR...] [-h] [-v] [-o FILE]
+ nvm_addr      read_wm dev_path 0xADDR [0xADDR...] [-h] [-v] [-o FILE]
+ nvm_addr     from_geo dev_path ch lun pl blk pg sec [-h] [-v]
+ nvm_addr     from_hex dev_path 0xADDR [0xADDR...] [-h] [-v]
+ nvm_addr      gen2dev dev_path 0xADDR [0xADDR...] [-h] [-v]
+ nvm_addr      gen2lba dev_path 0xADDR [0xADDR...] [-h] [-v]
+ nvm_addr      gen2off dev_path 0xADDR [0xADDR...] [-h] [-v]
+ nvm_addr      dev2gen dev_path 0xVAL [0xVAL...] [-h] [-v]
+ nvm_addr      lba2gen dev_path val [val...] [-h] [-v]
+ nvm_addr      off2gen dev_path val [val...] [-h] [-v]
 
 Options:
  -h       Print usage

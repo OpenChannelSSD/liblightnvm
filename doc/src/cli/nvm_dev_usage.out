@@ -3,7 +3,8 @@ NVM Device (nvm_dev_*) -- Ver { major(0), minor(0), patch(1) }
 Retrieve device information
 
 Usage:
- nvm_dev       info dev_path [-h] [-v]
+ nvm_dev          geo dev_path [-h] [-v]
+ nvm_dev         info dev_path [-h] [-v]
 
 Options:
  -h       Print usage

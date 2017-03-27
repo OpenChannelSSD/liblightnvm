@@ -1,10 +1,10 @@
-** nvm_vblk_write(...): pmode(DUAL)
-vblk {
- nbytes(16777216b:16Mb),
-}
-vblk-naddrs(1) {
- 00: (0x020500000000002a){ ch(02), lun(05), pl(0), blk(0042), pg(000), sec(0) }
-}
-Ran nvm_buf_alloc, elapsed wall-clock: 0.000011
-Ran nvm_buf_fill|nvm_buf_from_file, elapsed wall-clock: 0.020462
-Ran nvm_vblk_write, elapsed wall-clock: 0.927700
+vblk:
+  dev: {pmode: 'DUAL'}
+  nbytes: 16777216
+  nmbytes: 16
+naddrs: 1
+addrs:
+  - 0x020500000000002a: {ch: 02, lun: 05, pl: 0, blk: 0042, pg: 000, sec: 0}
+nvm_buf_alloc: {elapsed: 0.000012}
+nvm_buf_fill: {elapsed: 0.021147}
+nvm_vblk_write: {elapsed: 0.923969}
