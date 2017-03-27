@@ -80,8 +80,10 @@ void nvm_dev_pr(struct nvm_dev *dev)
 	printf("  bbts_cached: %d\n", dev->bbts_cached);
 
 	printf("dev_"); nvm_geo_pr(&dev->geo);
-	printf("dev_"); spec_ppaf_nand_pr(&dev->ppaf);
-	printf("dev_"); spec_ppaf_nand_mask_pr(&dev->mask);
+	printf("dev_");
+    nvm_spec_ppaf_nand_pr(&dev->ppaf);
+	printf("dev_");
+	nvm_spec_ppaf_nand_mask_pr(&dev->mask);
 }
 
 const struct nvm_geo * nvm_dev_get_geo(struct nvm_dev *dev)
@@ -137,7 +139,7 @@ int nvm_dev_get_meta_mode(struct nvm_dev *dev)
 	return dev->meta_mode;
 }
 
-const struct spec_ppaf_nand *nvm_dev_get_ppaf(struct nvm_dev *dev)
+const struct nvm_spec_ppaf_nand *nvm_dev_get_ppaf(struct nvm_dev *dev)
 {
 	return &dev->ppaf;
 }
