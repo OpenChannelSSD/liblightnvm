@@ -59,26 +59,29 @@ const char *nvm_pmode_str(int pmode) {
 void nvm_dev_pr(struct nvm_dev *dev)
 {
 	if (!dev) {
-		printf("dev { NULL }\n");
+		printf("dev: ~\n");
 		return;
 	}
 
-	printf("dev {\n");
-	printf(" verid(0x%02x), be->id(0x%02x),\n",
-	       dev->verid, dev->be->id);
-	printf(" path(%s), name(%s), fd(%d),\n",
-	       dev->path, dev->name, dev->fd);
-	printf(" ssw(%lu), pmode(%s),\n", dev->ssw, nvm_pmode_str(dev->pmode));
+	printf("dev:\n");
+	printf("  verid: 0x%02x\n", dev->verid);
+	printf("  be_id: 0x%02x\n", dev->be->id);
+	printf("  name: '%s'\n", dev->name);
+	printf("  path: '%s'\n", dev->path);
+	printf("  fd: %d\n", dev->fd);
+	printf("  ssw: %lu\n", dev->ssw);
+	printf("  pmode: '%s'\n", nvm_pmode_str(dev->pmode));
 
-	printf(" erase_naddrs_max(%d),", dev->erase_naddrs_max);
-	printf(" read_naddrs_max(%d),", dev->read_naddrs_max);
-	printf(" write_naddrs_max(%d),\n",dev->write_naddrs_max);
-	       
-	printf(" meta_mode(%d),\n", dev->meta_mode);
-	printf(" bbts_cached(%d)\n},\n", dev->bbts_cached);
-	printf("dev-"); nvm_geo_pr(&dev->geo);
-	printf("dev-"); spec_ppaf_nand_pr(&dev->ppaf);
-	printf("dev-"); spec_ppaf_nand_mask_pr(&dev->mask);
+	printf("  erase_naddrs_max: %d\n", dev->erase_naddrs_max);
+	printf("  read_naddrs_max: %d\n", dev->read_naddrs_max);
+	printf("  write_naddrs_max: %d\n",dev->write_naddrs_max);
+
+	printf("  meta_mode: %d\n", dev->meta_mode);
+	printf("  bbts_cached: %d\n", dev->bbts_cached);
+
+	printf("dev_"); nvm_geo_pr(&dev->geo);
+	printf("dev_"); spec_ppaf_nand_pr(&dev->ppaf);
+	printf("dev_"); spec_ppaf_nand_mask_pr(&dev->mask);
 }
 
 const struct nvm_geo * nvm_dev_get_geo(struct nvm_dev *dev)
