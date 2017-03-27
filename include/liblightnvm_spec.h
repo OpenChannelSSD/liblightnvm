@@ -71,20 +71,20 @@ struct nvm_spec_ppaf_nand {
  * - Open-Channel Solid State Drives NVMe Specification Revision 2.0
  */
 enum nvm_spec_12_opcodes {
-	S12_OPC_IDF = 0xE2,
-	S12_OPC_SET_BBT = 0xF1,
-	S12_OPC_GET_BBT = 0xF2,
-	S12_OPC_ERASE = 0x90,
-	S12_OPC_WRITE = 0x91,
-	S12_OPC_READ = 0x92,
+	NVM_S12_OPC_IDF = 0xE2,
+	NVM_S12_OPC_SET_BBT = 0xF1,
+	NVM_S12_OPC_GET_BBT = 0xF2,
+	NVM_S12_OPC_ERASE = 0x90,
+	NVM_S12_OPC_WRITE = 0x91,
+	NVM_S12_OPC_READ = 0x92,
 };
 
 /**
  * Specification version identifier
  */
 enum nvm_spec_verid {
-	SPEC_VERID_12 = 0x1,
-	SPEC_VERID_20 = 0x2,
+	NVM_SPEC_VERID_12 = 0x1,
+	NVM_SPEC_VERID_20 = 0x2,
 };
 
 /**
