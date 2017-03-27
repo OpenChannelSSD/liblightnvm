@@ -31,15 +31,16 @@
 
 void nvm_geo_pr(const struct nvm_geo *geo)
 {
-	printf("geo {\n");
-	printf(" nchannels(%lu), nluns(%lu), nplanes(%lu),\n",
-	       geo->nchannels, geo->nluns, geo->nplanes);
-	printf(" nblocks(%lu), npages(%lu), nsectors(%lu),\n",
-	       geo->nblocks, geo->npages, geo->nsectors);
-	printf(" page_nbytes(%lu), sector_nbytes(%lu), meta_nbytes(%lu),\n",
-	       geo->page_nbytes, geo->sector_nbytes, geo->meta_nbytes);
-	printf(" tbytes(%lub:%luMb),\n",
-	       geo->tbytes, geo->tbytes >> 20);
-	printf("}\n");
+	printf("geo:\n");
+	printf("  nchannels: %lu\n", geo->nchannels);
+	printf("  nluns: %lu\n", geo->nluns);
+	printf("  nplanes: %lu\n", geo->nplanes);
+	printf("  nblocks: %lu\n", geo->nblocks);
+	printf("  npages: %lu\n", geo->npages);
+	printf("  nsectors: %lu\n", geo->nsectors);
+	printf("  page_nbytes: %lu\n", geo->page_nbytes);
+	printf("  sector_nbytes: %lu\n", geo->sector_nbytes);
+	printf("  meta_nbytes: %lu\n", geo->meta_nbytes);	
+	printf("  tbytes: %lu\n", geo->tbytes);
+	printf("  tmbytes: %lu\n", geo->tbytes >> 20);
 }
-
