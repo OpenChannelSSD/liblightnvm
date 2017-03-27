@@ -1,5 +1,5 @@
 /*
- * nvm_spec - internal header for liblightnvm
+ * nvm_spec - Printers and helper functions
  *
  * Copyright (C) 2015-2017 Javier Gonzáles <javier@cnexlabs.com>
  * Copyright (C) 2015-2017 Matias Bjørling <matias@cnexlabs.com>
@@ -32,15 +32,15 @@
 #include <liblightnvm.h>
 #include <nvm_be.h>
 #include <nvm_dev.h>
-#include <nvm_spec.h>
+#include <liblightnvm_spec.h>
 #include <nvm_utils.h>
 #include <nvm_debug.h>
 
-void _s12_identify_pr(struct spec_identify *identify)
+void _s12_identify_pr(struct nvm_spec_identify *identify)
 {
 	struct s12_identify idf = identify->s12;
 
-	printf("spec_identify:\n");
+	printf("nvm_spec_identify:\n");
 	printf("  verid: "NVM_I8_FMT"\n", NVM_I8_TO_STR(idf.verid));
 	printf("  vnvmt(%u)\n", idf.vnvmt);
 	printf("  cgroups(%u),\n", idf.cgroups);
@@ -78,11 +78,11 @@ void _s12_identify_pr(struct spec_identify *identify)
 	}
 }
 
-void _s20_identify_pr(struct spec_identify *identify)
+void _s20_identify_pr(struct nvm_spec_identify *identify)
 {
 	struct s20_identify idf = identify->s20;
 
-	printf("spec_identify:\n");
+	printf("nvm_spec_identify:\n");
 	printf("  verid: "NVM_I8_FMT"\n", NVM_I8_TO_STR(idf.verid));
 	printf("  mccap: "NVM_I32_FMT"\n", NVM_I32_TO_STR(idf.mccap));
 	printf("  num_ch: %u\n", idf.num_ch);
@@ -100,14 +100,16 @@ void _s20_identify_pr(struct spec_identify *identify)
 	printf("  twrm: %d\n", idf.twrm);
 	printf("  tcet: %d\n", idf.tcet);
 	printf("  tcem: %d\n", idf.tcem);
-	printf("spec_identify_"); spec_lbaf_pr(&idf.lbaf);
-	printf("spec_identify_"); spec_ppaf_nand_pr(&idf.ppaf);
+	printf("spec_identify_");
+	nvm_spec_lbaf_pr(&idf.lbaf);
+	printf("spec_identify_");
+	nvm_spec_ppaf_nand_pr(&idf.ppaf);
 }
 
-void spec_identify_pr(struct spec_identify *identify)
+void nvm_spec_identify_pr(struct nvm_spec_identify *identify)
 {
 	if (!identify) {
-		printf("spec_identify: ~\n");
+		printf("nvm_spec_identify: ~\n");
 		return;
 	}
 
@@ -120,12 +122,12 @@ void spec_identify_pr(struct spec_identify *identify)
 		break;
 
 	default:
-		printf("spec_identify:\n");
+		printf("nvm_spec_identify:\n");
 		printf("  verid("NVM_I8_FMT"),\n", NVM_I8_TO_STR(identify->s.verid));
 	}
 }
 
-void spec_ppaf_nand_pr(struct spec_ppaf_nand *ppaf)
+void nvm_spec_ppaf_nand_pr(struct nvm_spec_ppaf_nand *ppaf)
 {
 	printf("ppaf:\n");
 	printf("  ch_off: %02u\n", ppaf->n.ch_off);
@@ -142,7 +144,7 @@ void spec_ppaf_nand_pr(struct spec_ppaf_nand *ppaf)
 	printf("  sec_len: %02u\n", ppaf->n.sec_len);
 }
 
-void spec_ppaf_nand_mask_pr(struct spec_ppaf_nand_mask *mask)
+void nvm_spec_ppaf_nand_mask_pr(struct nvm_spec_ppaf_nand_mask *mask)
 {
 	printf("ppaf_mask:\n");
 	printf("  ch:  '"NVM_I64_FMT"'\n", NVM_I64_TO_STR(mask->n.ch));
@@ -153,7 +155,7 @@ void spec_ppaf_nand_mask_pr(struct spec_ppaf_nand_mask *mask)
 	printf("  sec: '"NVM_I64_FMT"'\n", NVM_I64_TO_STR(mask->n.sec));
 }
 
-void spec_lbaf_pr(struct spec_lbaf *lbaf)
+void nvm_spec_lbaf_pr(struct nvm_spec_lbaf *lbaf)
 {
 	printf("lbaf:\n");
 	printf("  ch_len: %u\n", lbaf->ch_len);
@@ -162,14 +164,39 @@ void spec_lbaf_pr(struct spec_lbaf *lbaf)
 	printf("  sec_len: %u\n", lbaf->sec_len);
 }
 
-struct spec_bbt *spec_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
-			      struct nvm_ret *ret)
+void nvm_spec_bbt_pr(struct nvm_spec_bbt *bbt)
+{
+	if (!bbt) {
+		printf("nvm_spec_bbt: ~\n");
+		return;
+	}
+
+	printf("nvm_spec_bbt:\n");
+	printf("  tblkid: %c%c%c%c\n",
+		   bbt->tblid[0], bbt->tblid[1], bbt->tblid[2], bbt->tblid[3]);
+	printf("  verid: %u\n", bbt->verid);
+	printf("  revid: %u\n", bbt->revid);
+	printf("  rvsd1: %u\n", bbt->rvsd1);
+	printf("  tblks: %u\n", bbt->tblks);
+	printf("  tfact: %u\n", bbt->tfact);
+	printf("  tgrown: %u\n", bbt->tgrown);
+	printf("  tdresv: %u\n", bbt->tdresv);
+	printf("  thresv: %u\n", bbt->thresv);
+	printf("  rsvd2: ~\n");
+
+	printf("  tblks:\n");
+	for (uint32_t i = 0; i < bbt->tblks; ++i) {
+		printf("    - %u\n", bbt->blk[i]);
+	}
+}
+
+struct nvm_spec_bbt *nvm_spec_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
+				      struct nvm_ret *ret)
 {
 	struct nvm_cmd cmd = {.cdw={0}};
-	struct spec_bbt *spec_bbt;
+	struct nvm_spec_bbt *spec_bbt;
 	size_t spec_bbt_sz;
 	int err;
-
 
 	uint32_t nblks = dev->geo.nblocks * dev->geo.nplanes;
 	spec_bbt_sz = sizeof(*spec_bbt) + sizeof(*(spec_bbt->blk)) * nblks;
@@ -204,8 +231,8 @@ struct spec_bbt *spec_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 	return spec_bbt;
 }
 
-int spec_bbt_set(struct nvm_dev *dev, struct nvm_addr addrs[],
-		 int naddrs, uint16_t flags, struct nvm_ret *ret)
+int nvm_spec_bbt_set(struct nvm_dev *dev, struct nvm_addr *addrs,
+		     int naddrs, uint16_t flags, struct nvm_ret *ret)
 {
 	struct nvm_cmd cmd = {.cdw={0}};
 	uint64_t dev_addrs[naddrs];
@@ -254,28 +281,3 @@ int spec_bbt_set(struct nvm_dev *dev, struct nvm_addr addrs[],
 	return 0;
 }
 
-void spec_bbt_pr(struct spec_bbt *bbt)
-{
-	if (!bbt) {
-		printf("spec_bbt: ~\n");
-		return;
-	}
-
-	printf("spec_bbt:\n");
-	printf("  tblkid: %c%c%c%c\n",
-		   bbt->tblid[0], bbt->tblid[1], bbt->tblid[2], bbt->tblid[3]);
-	printf("  verid: %u\n", bbt->verid);
-	printf("  revid: %u\n", bbt->revid);
-	printf("  rvsd1: %u\n", bbt->rvsd1);
-	printf("  tblks: %u\n", bbt->tblks);
-	printf("  tfact: %u\n", bbt->tfact);
-	printf("  tgrown: %u\n", bbt->tgrown);
-	printf("  tdresv: %u\n", bbt->tdresv);
-	printf("  thresv: %u\n", bbt->thresv);
-	printf("  rsvd2: ~\n");
-
-	printf("  tblks:\n");
-	for (uint32_t i = 0; i < bbt->tblks; ++i) {
-		printf("    - %u\n", bbt->blk[i]);
-	}
-}
