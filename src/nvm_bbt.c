@@ -78,7 +78,7 @@ static inline int _refresh_counters(struct nvm_dev *dev, struct nvm_bbt *bbt)
 		}
 	}
 
-	if (dev->verid == SPEC_VERID_20) {
+	if (dev->verid == NVM_SPEC_VERID_20) {
 		nbad = nbad / dev->geo.nplanes;
 		ngbad = ngbad / dev->geo.nplanes;
 		ndmrk = ndmrk / dev->geo.nplanes;

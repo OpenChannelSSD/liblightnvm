@@ -114,10 +114,10 @@ void nvm_spec_identify_pr(const struct nvm_spec_identify *identify)
 	}
 
 	switch(identify->s.verid) {
-	case SPEC_VERID_12:
+	case NVM_SPEC_VERID_12:
 		_s12_identify_pr(identify);
 		break;
-	case SPEC_VERID_20:
+	case NVM_SPEC_VERID_20:
 		_s20_identify_pr(identify);
 		break;
 
@@ -207,7 +207,7 @@ struct nvm_spec_bbt *nvm_spec_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 		return NULL;
 	}
 
-	cmd.vadmin.opcode = S12_OPC_GET_BBT;
+	cmd.vadmin.opcode = NVM_S12_OPC_GET_BBT;
 	cmd.vadmin.addr = (uint64_t)spec_bbt;
 	cmd.vadmin.data_len = spec_bbt_sz;
 	cmd.vadmin.ppa_list = nvm_addr_gen2dev(dev, addr);
@@ -266,7 +266,7 @@ int nvm_spec_bbt_set(struct nvm_dev *dev, struct nvm_addr *addrs,
 		dev_addrs[i] = nvm_addr_gen2dev(dev, addrs[i]);
 	}
 
-	cmd.vadmin.opcode = S12_OPC_SET_BBT;	// Construct command
+	cmd.vadmin.opcode = NVM_S12_OPC_SET_BBT;	// Construct command
 	cmd.vadmin.control = flags;
 	cmd.vadmin.nppas = naddrs - 1;		// Unnatural numbers: counting from zero
 	cmd.vadmin.ppa_list = naddrs == 1 ? dev_addrs[0] : (uint64_t)dev_addrs;

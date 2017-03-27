@@ -52,8 +52,8 @@ int nvm_be_lba_vuser(struct nvm_dev *dev, struct nvm_cmd *cmd,
 	}
 
 	switch(opcode) {
-	case S12_OPC_READ:
-	case S12_OPC_WRITE:
+	case NVM_S12_OPC_READ:
+	case NVM_S12_OPC_WRITE:
 		break;
 
 	default:
@@ -77,10 +77,10 @@ int nvm_be_lba_vuser(struct nvm_dev *dev, struct nvm_cmd *cmd,
 		buf = ((char *)cmd->vuser.addr) + (i * count);
 
 		switch (opcode) {	// Perform the IO
-		case S12_OPC_READ:
+		case NVM_S12_OPC_READ:
 			res = pread(dev->fd, buf, count, lba);
 			break;
-		case S12_OPC_WRITE:
+		case NVM_S12_OPC_WRITE:
 			res = pwrite(dev->fd, buf, count, lba);
 			break;
 

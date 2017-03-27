@@ -141,7 +141,7 @@ static inline int _ioctl_fill_geo(struct nvm_dev *dev, struct nvm_ret *ret)
 		return -1;
 	}
 
-	cmd.vadmin.opcode = S12_OPC_IDF;	// Setup command
+	cmd.vadmin.opcode = NVM_S12_OPC_IDF;	// Setup command
 	cmd.vadmin.addr = (uint64_t)idf;
 	cmd.vadmin.data_len = sizeof(*idf);
 
@@ -152,7 +152,7 @@ static inline int _ioctl_fill_geo(struct nvm_dev *dev, struct nvm_ret *ret)
 	}
 
 	switch (idf->s.verid) {
-	case SPEC_VERID_12:
+	case NVM_SPEC_VERID_12:
 		dev->geo.page_nbytes = idf->s12.grp[0].fpg_sz;
 		dev->geo.sector_nbytes = idf->s12.grp[0].csecs;
 		dev->geo.meta_nbytes = idf->s12.grp[0].sos;
@@ -166,7 +166,7 @@ static inline int _ioctl_fill_geo(struct nvm_dev *dev, struct nvm_ret *ret)
 		dev->ppaf = idf->s12.ppaf;
 		break;
 
-	case SPEC_VERID_20:
+	case NVM_SPEC_VERID_20:
 		dev->geo.sector_nbytes = idf->s20.csecs;
 		dev->geo.meta_nbytes = idf->s20.sos;
 		dev->geo.page_nbytes = idf->s20.mw_min * dev->geo.sector_nbytes;
