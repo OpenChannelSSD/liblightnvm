@@ -44,7 +44,8 @@ void nvm_ret_pr(const struct nvm_ret *ret)
 
 void nvm_addr_pr(struct nvm_addr addr)
 {
-	printf("0x%016lx: {", addr.ppa);
+	printf("addr: {");
+	printf("ppa: 0x%016lx, ", addr.ppa);
 	printf("ch: %02d, ", addr.g.ch);
 	printf("lun: %02d, ", addr.g.lun);
 	printf("pl: %d, ", addr.g.pl);
