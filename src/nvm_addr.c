@@ -34,7 +34,7 @@
 #include <nvm_debug.h>
 #include <nvm_utils.h>
 
-void nvm_ret_pr(struct nvm_ret *ret)
+void nvm_ret_pr(const struct nvm_ret *ret)
 {
 	printf("nvm_ret: {");
 	printf("result: 0x%x, ", ret->result);

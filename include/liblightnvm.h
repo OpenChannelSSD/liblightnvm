@@ -420,7 +420,7 @@ ssize_t nvm_lba_pwrite(struct nvm_dev *dev, const void *buf, size_t count,
  *
  * @param ret Pointer to the `struct nvm_ret` to print
  */
-void nvm_ret_pr(struct nvm_ret *ret);
+void nvm_ret_pr(const struct nvm_ret *ret);
 
 /**
  * Retrieves a bad block table from device
