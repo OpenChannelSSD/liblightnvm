@@ -112,10 +112,11 @@ enum nvm_cli_opt_type {
 	NVM_CLI_OPT_HELP = 1,
 	NVM_CLI_OPT_BRIEF = 1 << 1,
 	NVM_CLI_OPT_VERBOSE = 1 << 2,
-	NVM_CLI_OPT_FILE_INPUT = 1 << 3,
-	NVM_CLI_OPT_FILE_OUTPUT = 1 << 4,
-	NVM_CLI_OPT_VAL_DEC = 1 << 5,
-	NVM_CLI_OPT_VAL_HEX = 1 << 6,
+	NVM_CLI_OPT_STATUS = 1 << 3,
+	NVM_CLI_OPT_FILE_INPUT = 1 << 4,
+	NVM_CLI_OPT_FILE_OUTPUT = 1 << 5,
+	NVM_CLI_OPT_VAL_DEC = 1 << 6,
+	NVM_CLI_OPT_VAL_HEX = 1 << 7,
 };
 
 #define NVM_CLI_OPT_DEFAULT (NVM_CLI_OPT_HELP | NVM_CLI_OPT_VERBOSE)
@@ -128,6 +129,7 @@ struct nvm_cli_opts {
 	int help;		///< For NVM_CLI_OPT_HELP
 	int brief;		///< For NVM_CLI_OPT_BRIEF
 	int verbose;		///< For NVM_CLI_OPT_VERBOSE
+	int status;		///< FOR NVM_CLI_OPT_STATUS
 	char *file_input;	///< For NVM_CLI_OPT_FILE_INPUT
 	char *file_output;	///< For NVM_CLI_OPT_FILE_OUTPUT
 	size_t dec_val;		///< For NVM_CLI_OPT_VAL_DEC
