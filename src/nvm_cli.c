@@ -1086,3 +1086,9 @@ void nvm_cli_perror(const char *msg)
 	perror(foo);
 }
 
+void nvm_cli_status_pr(const char *task, size_t cur, size_t total)
+{
+	printf("status: {task: '%s', cur: %lu, total: %lu}\n",
+	       task, cur, total);
+}
+
