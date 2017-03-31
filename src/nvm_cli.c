@@ -82,6 +82,10 @@ int _parse_options(int argc, char *argv[], struct nvm_cli *cli)
 			cli->opts.mask |= NVM_CLI_OPT_VERBOSE;
 			cli->opts.verbose = 1;
 			break;
+		case 's':
+			cli->opts.mask |= NVM_CLI_OPT_STATUS;
+			cli->opts.status = 1;
+			break;
 		case 'i':
 			cli->opts.mask |= NVM_CLI_OPT_FILE_INPUT;
 			cli->opts.file_input = optarg;
@@ -837,6 +841,9 @@ void _nvm_cli_opts_mask_pr(int mask) {
 		case NVM_CLI_OPT_VERBOSE:
 			printf(" [-v]");
 			break;
+		case NVM_CLI_OPT_STATUS:
+			printf(" [-s]");
+			break;
 		case NVM_CLI_OPT_FILE_INPUT:
 			printf(" [-i FILE]");
 			break;
@@ -872,6 +879,9 @@ void _nvm_cli_opts_mask_descr_pr(int mask) {
 			break;
 		case NVM_CLI_OPT_VERBOSE:
 			printf(" -v %5s %s", " ", "Dump CLI state to stdout");
+			break;
+		case NVM_CLI_OPT_STATUS:
+			printf(" -s %5s %s", " ", "Dump status msgs to stdout");
 			break;
 		case NVM_CLI_OPT_FILE_INPUT:
 			printf(" -i %5s %s", "FILE", "Path to input file");
