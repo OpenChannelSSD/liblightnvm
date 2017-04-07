@@ -308,6 +308,24 @@ int _parse_cmd_arg_decval_list(int argc, char *argv[], struct nvm_cli *cli)
 	return inc;
 }
 
+int _parse_cmd_arg_decval_begin_end(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 2;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+	
+	cli->args.dec_vals[0] = atoi(argv[0]);
+	cli->args.dec_vals[1] = atoi(argv[1]);
+
+	cli->args.ndec_vals = inc;
+
+	return inc;
+}
+
+
 int _parse_cmd_arg_hexval(int argc, char *argv[], struct nvm_cli *cli)
 {
 	const int inc = 1;
@@ -377,6 +395,12 @@ int _parse_cmd_args(int argc, char *argv[], struct nvm_cli *cli)
 
 	case NVM_CLI_ARG_DECVAL_LIST:
 		ret = _parse_cmd_arg_decval_list(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_DECVAL_BEGIN_END:
+		ret = _parse_cmd_arg_decval_begin_end(argc - inc, argv + inc, cli);
 		if (ret < 0)
 			return -1;
 		return inc + ret;
@@ -937,6 +961,9 @@ void nvm_cli_usage_pr(struct nvm_cli *cli)
 			break;
 		case NVM_CLI_ARG_DECVAL_LIST:
 			printf("dev_path val [val...]");
+			break;
+		case NVM_CLI_ARG_DECVAL_BEGIN_END:
+			printf("dev_path begin end");
 			break;
 
 		case NVM_CLI_ARG_HEXVAL:
