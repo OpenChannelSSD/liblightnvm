@@ -56,57 +56,74 @@ const char *nvm_pmode_str(int pmode) {
 	}
 }
 
-void nvm_dev_pr(struct nvm_dev *dev)
+void nvm_dev_attr_pr(const struct nvm_dev *dev)
+{
+	if (!dev) {
+		printf("attr: ~\n");
+		return;
+	}
+
+	printf("attr:\n");
+	printf("  verid: 0x%02x\n", nvm_dev_get_verid(dev));
+	printf("  be_id: 0x%02x\n", nvm_dev_get_be_id(dev));
+	printf("  name: '%s'\n", nvm_dev_get_name(dev));
+	printf("  path: '%s'\n", nvm_dev_get_path(dev));
+	printf("  fd: %d\n", nvm_dev_get_fd(dev));
+	printf("  ssw: %lu\n", dev->ssw);
+	printf("  pmode: '%s'\n", nvm_pmode_str(nvm_dev_get_pmode(dev)));
+
+	printf("  erase_naddrs_max: %d\n", dev->erase_naddrs_max);
+	printf("  read_naddrs_max: %d\n", dev->read_naddrs_max);
+	printf("  write_naddrs_max: %d\n",dev->write_naddrs_max);
+
+	printf("  meta_mode: %d\n", nvm_dev_get_meta_mode(dev));
+	printf("  bbts_cached: %d\n", nvm_dev_get_bbts_cached(dev));
+}
+
+void nvm_dev_pr(const struct nvm_dev *dev)
 {
 	if (!dev) {
 		printf("dev: ~\n");
 		return;
 	}
 
-	printf("dev:\n");
-	printf("  verid: 0x%02x\n", dev->verid);
-	printf("  be_id: 0x%02x\n", dev->be->id);
-	printf("  name: '%s'\n", dev->name);
-	printf("  path: '%s'\n", dev->path);
-	printf("  fd: %d\n", dev->fd);
-	printf("  ssw: %lu\n", dev->ssw);
-	printf("  pmode: '%s'\n", nvm_pmode_str(dev->pmode));
-
-	printf("  erase_naddrs_max: %d\n", dev->erase_naddrs_max);
-	printf("  read_naddrs_max: %d\n", dev->read_naddrs_max);
-	printf("  write_naddrs_max: %d\n",dev->write_naddrs_max);
-
-	printf("  meta_mode: %d\n", dev->meta_mode);
-	printf("  bbts_cached: %d\n", dev->bbts_cached);
-
+	printf("dev_"); nvm_dev_attr_pr(dev);
 	printf("dev_"); nvm_geo_pr(&dev->geo);
-	printf("dev_");
-    nvm_spec_ppaf_nand_pr(&dev->ppaf);
-	printf("dev_");
-	nvm_spec_ppaf_nand_mask_pr(&dev->mask);
+	printf("dev_"); nvm_spec_ppaf_nand_pr(&dev->ppaf);
+	printf("dev_"); nvm_spec_ppaf_nand_mask_pr(&dev->mask);
 }
 
-const struct nvm_geo * nvm_dev_get_geo(struct nvm_dev *dev)
+const struct nvm_geo * nvm_dev_get_geo(const struct nvm_dev *dev)
 {
 	return &dev->geo;
 }
 
-int nvm_dev_get_verid(struct nvm_dev *dev)
+int nvm_dev_get_verid(const struct nvm_dev *dev)
 {
 	return dev->verid;
 }
 
-int nvm_dev_get_fd(struct nvm_dev *dev)
+int nvm_dev_get_fd(const struct nvm_dev *dev)
 {
 	return dev->fd;
 }
 
-int nvm_dev_get_be_id(struct nvm_dev *dev)
+int nvm_dev_get_be_id(const struct nvm_dev *dev)
 {
 	return dev->be->id;
 }
 
-int nvm_dev_get_pmode(struct nvm_dev *dev)
+const char *nvm_dev_get_name(const struct nvm_dev *dev)
+{
+	return dev->name;
+}
+
+const char *nvm_dev_get_path(const struct nvm_dev *dev)
+{
+	return dev->path;
+}
+
+int nvm_dev_get_pmode(const struct nvm_dev *dev)
 {
 	return dev->pmode;
 }
@@ -134,19 +151,9 @@ int nvm_dev_set_pmode(struct nvm_dev *dev, int pmode)
 	}
 }
 
-int nvm_dev_get_meta_mode(struct nvm_dev *dev)
+int nvm_dev_get_meta_mode(const struct nvm_dev *dev)
 {
 	return dev->meta_mode;
-}
-
-const struct nvm_spec_ppaf_nand *nvm_dev_get_ppaf(struct nvm_dev *dev)
-{
-	return &dev->ppaf;
-}
-
-const struct nvm_spec_ppaf_nand_mask *nvm_dev_get_ppaf_mask(struct nvm_dev *dev)
-{
-	return &dev->mask;
 }
 
 int nvm_dev_set_meta_mode(struct nvm_dev *dev, int meta_mode)
@@ -168,24 +175,24 @@ int nvm_dev_set_meta_mode(struct nvm_dev *dev, int meta_mode)
 	}
 }
 
-int nvm_dev_get_nsid(struct nvm_dev *dev)
+const struct nvm_spec_ppaf_nand *nvm_dev_get_ppaf(const struct nvm_dev *dev)
+{
+	return &dev->ppaf;
+}
+
+const struct nvm_spec_ppaf_nand_mask *nvm_dev_get_ppaf_mask(const struct nvm_dev *dev)
+{
+	return &dev->mask;
+}
+
+int nvm_dev_get_nsid(const struct nvm_dev *dev)
 {
 	return dev->nsid;
 }
 
-int nvm_dev_get_erase_naddrs_max(struct nvm_dev *dev)
+int nvm_dev_get_erase_naddrs_max(const struct nvm_dev *dev)
 {
 	return dev->erase_naddrs_max;
-}
-
-int nvm_dev_get_read_naddrs_max(struct nvm_dev *dev)
-{
-	return dev->read_naddrs_max;
-}
-
-int nvm_dev_get_write_naddrs_max(struct nvm_dev *dev)
-{
-	return dev->write_naddrs_max;
 }
 
 int nvm_dev_set_erase_naddrs_max(struct nvm_dev *dev, int naddrs)
@@ -204,25 +211,9 @@ int nvm_dev_set_erase_naddrs_max(struct nvm_dev *dev, int naddrs)
 	return 0;
 }
 
-int nvm_dev_get_bbts_cached(struct nvm_dev *dev)
+int nvm_dev_get_read_naddrs_max(const struct nvm_dev *dev)
 {
-	return dev->bbts_cached;
-}
-
-int nvm_dev_set_bbts_cached(struct nvm_dev *dev, int bbts_cached)
-{
-	switch(bbts_cached) {
-	case 0:
-	case 1:
-		break;
-	default:
-		errno = EINVAL;
-		return -1;
-	}
-
-	dev->bbts_cached = bbts_cached;
-
-	return 0;
+	return dev->read_naddrs_max;
 }
 
 int nvm_dev_set_read_naddrs_max(struct nvm_dev *dev, int naddrs)
@@ -245,6 +236,11 @@ int nvm_dev_set_read_naddrs_max(struct nvm_dev *dev, int naddrs)
 	return 0;
 }
 
+int nvm_dev_get_write_naddrs_max(const struct nvm_dev *dev)
+{
+	return dev->write_naddrs_max;
+}
+
 int nvm_dev_set_write_naddrs_max(struct nvm_dev *dev, int naddrs)
 {
 	if (naddrs > NVM_NADDR_MAX) {
@@ -265,6 +261,27 @@ int nvm_dev_set_write_naddrs_max(struct nvm_dev *dev, int naddrs)
 	}
 
 	dev->write_naddrs_max = naddrs;
+
+	return 0;
+}
+
+int nvm_dev_get_bbts_cached(const struct nvm_dev *dev)
+{
+	return dev->bbts_cached;
+}
+
+int nvm_dev_set_bbts_cached(struct nvm_dev *dev, int bbts_cached)
+{
+	switch(bbts_cached) {
+	case 0:
+	case 1:
+		break;
+	default:
+		errno = EINVAL;
+		return -1;
+	}
+
+	dev->bbts_cached = bbts_cached;
 
 	return 0;
 }
