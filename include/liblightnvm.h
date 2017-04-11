@@ -556,19 +556,18 @@ struct nvm_dev *nvm_dev_openf(const char *dev_path, int flags);
 void nvm_dev_close(struct nvm_dev *dev);
 
 /**
- * Prints information about the device associated with the given handle
+ * Prints misc. device attribute associated with the given handle
  *
  * @param dev Device handle obtained with `nvm_dev_open`
  */
-void nvm_dev_pr(struct nvm_dev *dev);
+void nvm_dev_attr_pr(const struct nvm_dev *dev);
 
 /**
- * Returns the default plane_mode of the given device
+ * Prints all information about the device associated with the given handle
  *
  * @param dev Device handle obtained with `nvm_dev_open`
- * @return On success, pmode flag is returned
  */
-int nvm_dev_get_pmode(struct nvm_dev *dev);
+void nvm_dev_pr(const struct nvm_dev *dev);
 
 /**
  * Returns the file-descriptor associated with the given device
@@ -576,25 +575,48 @@ int nvm_dev_get_pmode(struct nvm_dev *dev);
  * @param dev Device handle obtained with `nvm_dev_open`
  * @return On success, file descriptor is returned
  */
-int nvm_dev_get_fd(struct nvm_dev *dev);
+int nvm_dev_get_fd(const struct nvm_dev *dev);
 
 /**
- * Returns the ppa-format of the given device
+ * Returns the name associated with the given device
  *
  * @param dev Device handle obtained with `nvm_dev_open`
- * @return On success, ppa-format is returned
- *
+ * @return On success, string is returned. On error, NULL is returned.
  */
-const struct nvm_spec_ppaf_nand *nvm_dev_get_ppaf(struct nvm_dev *dev);
+const char *nvm_dev_get_name(const struct nvm_dev *dev);
 
 /**
- * Returns the ppa-format mask of the given device
+ * Returns the path associated with the given device
  *
  * @param dev Device handle obtained with `nvm_dev_open`
- * @return On success, ppa-format mask is returned
- *
+ * @return On success, string is returned. On error, NULL is returned.
  */
-const struct nvm_spec_ppaf_nand_mask *nvm_dev_get_ppaf_mask(struct nvm_dev *dev);
+const char *nvm_dev_get_path(const struct nvm_dev *dev);
+
+/**
+ * Returns the NVME namespace identifier of the given device
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ *
+ * @return On success, NVME namespace identifier is returned.
+ */
+int nvm_dev_get_nsid(const struct nvm_dev *dev);
+
+/**
+ * Returns the verid of the given device
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @return On success, verid is returned
+ */
+int nvm_dev_get_verid(const struct nvm_dev *dev);
+
+/**
+ * Returns the default plane_mode of the given device
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @return On success, pmode flag is returned
+ */
+int nvm_dev_get_pmode(const struct nvm_dev *dev);
 
 /**
  * Set the default plane-mode for the given device
@@ -607,12 +629,22 @@ const struct nvm_spec_ppaf_nand_mask *nvm_dev_get_ppaf_mask(struct nvm_dev *dev)
 int nvm_dev_set_pmode(struct nvm_dev *dev, int pmode);
 
 /**
- * Returns the verid of the given device
+ * Returns the ppa-format of the given device
  *
  * @param dev Device handle obtained with `nvm_dev_open`
- * @return On success, verid is returned
+ * @return On success, ppa-format is returned
+ *
  */
-int nvm_dev_get_verid(struct nvm_dev *dev);
+const struct nvm_spec_ppaf_nand *nvm_dev_get_ppaf(const struct nvm_dev *dev);
+
+/**
+ * Returns the ppa-format mask of the given device
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @return On success, ppa-format mask is returned
+ *
+ */
+const struct nvm_spec_ppaf_nand_mask *nvm_dev_get_ppaf_mask(const struct nvm_dev *dev);
 
 /**
  * Returns the 'meta-mode' of the given device
@@ -620,22 +652,16 @@ int nvm_dev_get_verid(struct nvm_dev *dev);
  * @param dev Device handle obtained with `nvm_dev_open`
  * @return On success, meta-mode is returned
  */
-int nvm_dev_get_meta_mode(struct nvm_dev *dev);
+int nvm_dev_get_meta_mode(const struct nvm_dev *dev);
 
 /**
- * Set the default meta mode
- *
- */
-int nvm_dev_set_meta_mode(struct nvm_dev *dev, int meta_mode);
-
-/**
- * Returns the NVME namespace identifier of the given device
+ * Set the default 'meta-mode' of the given device
  *
  * @param dev Device handle obtained with `nvm_dev_open`
- *
- * @return On success, NVME namespace identifier is returned.
+ * @returns On success, 0 is returned. On error, -1 is returned and errno set to
+ * indicate the error.
  */
-int nvm_dev_get_nsid(struct nvm_dev *dev);
+int nvm_dev_set_meta_mode(struct nvm_dev *dev, int meta_mode);
 
 /**
  * Returns the maximum number of addresses to use when sending erases to device.
@@ -643,7 +669,7 @@ int nvm_dev_get_nsid(struct nvm_dev *dev);
  *
  * @param dev Device handle obtained with `nvm_dev_open`
  */
-int nvm_dev_get_erase_naddrs_max(struct nvm_dev *dev);
+int nvm_dev_get_erase_naddrs_max(const struct nvm_dev *dev);
 
 /**
  * Returns whether caching is enabled for bad-block-tables on the device.
@@ -654,14 +680,14 @@ int nvm_dev_get_erase_naddrs_max(struct nvm_dev *dev);
  *
  * @param dev Device handle obtained with `nvm_dev_open`
  */
-int nvm_dev_get_bbts_cached(struct nvm_dev *dev);
+int nvm_dev_get_bbts_cached(const struct nvm_dev *dev);
 
 /**
  * Returns the backend identifier associated with the given device
  *
  * @param dev Device handle obtained with `nvm_dev_open`
  */
-int nvm_dev_get_be_id(struct nvm_dev *dev);
+int nvm_dev_get_be_id(const struct nvm_dev *dev);
 
 /**
  * Set the maximum number of addresses to use for reads, that is, when invoking
@@ -669,7 +695,7 @@ int nvm_dev_get_be_id(struct nvm_dev *dev);
  *
  * @param dev Device handle obtained with `nvm_dev_open`
  */
-int nvm_dev_get_read_naddrs_max(struct nvm_dev *dev);
+int nvm_dev_get_read_naddrs_max(const struct nvm_dev *dev);
 
 /**
  * Set the maximum number of addresses to use for writes, that is, when invoking
@@ -677,7 +703,7 @@ int nvm_dev_get_read_naddrs_max(struct nvm_dev *dev);
  *
  * @param dev Device handle obtained with `nvm_dev_open`
  */
-int nvm_dev_get_write_naddrs_max(struct nvm_dev *dev);
+int nvm_dev_get_write_naddrs_max(const struct nvm_dev *dev);
 
 /**
  * Set the maximum number of addresses to use for erases, that is, when invoking
@@ -732,7 +758,7 @@ int nvm_dev_set_write_naddrs_max(struct nvm_dev *dev, int naddrs);
  *
  * @returns The geometry (struct nvm_geo) of given device handle
  */
-const struct nvm_geo *nvm_dev_get_geo(struct nvm_dev *dev);
+const struct nvm_geo *nvm_dev_get_geo(const struct nvm_dev *dev);
 
 /**
  * Allocate a buffer aligned to match the given geometry
