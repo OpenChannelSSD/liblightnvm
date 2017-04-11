@@ -16,7 +16,7 @@ int cmd_attr(struct nvm_cli *cli)
 int cmd_geo(struct nvm_cli *cli)
 {
 	nvm_cli_info_pr("Device information -- nvm_geo_pr");
-	nvm_geo_pr(nvm_dev_get_geo(cli->args.dev));
+	printf("dev_"); nvm_geo_pr(nvm_dev_get_geo(cli->args.dev));
 
 	return 0;
 }
@@ -24,8 +24,8 @@ int cmd_geo(struct nvm_cli *cli)
 int cmd_ppaf(struct nvm_cli *cli)
 {
 	nvm_cli_info_pr("Device information -- nvm_spec_(ppaf|ppaf_mask)_pr");
-	nvm_spec_ppaf_nand_pr(nvm_dev_get_ppaf(cli->args.dev));
-	nvm_spec_ppaf_nand_mask_pr(nvm_dev_get_ppaf_mask(cli->args.dev));
+	printf("dev_"); nvm_spec_ppaf_nand_pr(nvm_dev_get_ppaf(cli->args.dev));
+	printf("dev_"); nvm_spec_ppaf_nand_mask_pr(nvm_dev_get_ppaf_mask(cli->args.dev));
 
 	return 0;
 }
@@ -36,7 +36,7 @@ int cmd_info(struct nvm_cli *cli)
 
 	if (cli->opts.brief) {
 		printf("dev_"); nvm_dev_attr_pr(cli->args.dev);
-		nvm_geo_pr(nvm_dev_get_geo(cli->args.dev));
+		printf("dev_"); nvm_geo_pr(nvm_dev_get_geo(cli->args.dev));
 	} else {
 		nvm_dev_pr(cli->args.dev);
 	}
