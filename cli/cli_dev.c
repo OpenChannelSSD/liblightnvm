@@ -33,7 +33,13 @@ int cmd_ppaf(struct nvm_cli *cli)
 int cmd_info(struct nvm_cli *cli)
 {
 	nvm_cli_info_pr("Device information -- nvm_dev_pr");
-	nvm_dev_pr(cli->args.dev);
+
+	if (cli->opts.brief) {
+		printf("dev_"); nvm_dev_attr_pr(cli->args.dev);
+		nvm_geo_pr(nvm_dev_get_geo(cli->args.dev));
+	} else {
+		nvm_dev_pr(cli->args.dev);
+	}
 
 	return 0;
 }
@@ -47,7 +53,7 @@ static struct nvm_cli_cmd cmds[] = {
 	{"attr", cmd_attr, NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_HELP},
 	{"geo", cmd_geo, NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_HELP},
 	{"ppaf", cmd_ppaf, NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_HELP},
-	{"info", cmd_info, NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_HELP},
+	{"info", cmd_info, NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_HELP | NVM_CLI_OPT_BRIEF},
 };
 
 /* Define the CLI */
