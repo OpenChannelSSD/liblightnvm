@@ -5,6 +5,14 @@
 #include <liblightnvm.h>
 #include <liblightnvm_cli.h>
 
+int cmd_attr(struct nvm_cli *cli)
+{
+	nvm_cli_info_pr("Device information -- nvm_dev_attr_pr");
+	printf("dev_"); nvm_dev_attr_pr(cli->args.dev);
+
+	return 0;
+}
+
 int cmd_geo(struct nvm_cli *cli)
 {
 	nvm_cli_info_pr("Device information -- nvm_geo_pr");
@@ -36,9 +44,10 @@ int cmd_info(struct nvm_cli *cli)
 
 /* Define commands */
 static struct nvm_cli_cmd cmds[] = {
-	{"geo", cmd_geo, NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_DEFAULT},
-	{"ppaf", cmd_ppaf, NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_DEFAULT},
-	{"info", cmd_info, NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_DEFAULT},
+	{"attr", cmd_attr, NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_HELP},
+	{"geo", cmd_geo, NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_HELP},
+	{"ppaf", cmd_ppaf, NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_HELP},
+	{"info", cmd_info, NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_HELP},
 };
 
 /* Define the CLI */
