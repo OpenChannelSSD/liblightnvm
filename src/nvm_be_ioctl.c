@@ -164,6 +164,7 @@ static inline int _ioctl_fill_geo(struct nvm_dev *dev, struct nvm_ret *ret)
 		dev->geo.npages = idf->s12.grp[0].num_pg;
 
 		dev->ppaf = idf->s12.ppaf;
+		dev->mccap = idf->s12.grp[0].mccap;
 		break;
 
 	case NVM_SPEC_VERID_20:
@@ -179,7 +180,7 @@ static inline int _ioctl_fill_geo(struct nvm_dev *dev, struct nvm_ret *ret)
 		dev->geo.nsectors = dev->geo.page_nbytes / dev->geo.sector_nbytes;
 
 		dev->ppaf = idf->s20.ppaf;
-
+		dev->mccap = idf->s20.mccap;
 		break;
 
 	default:

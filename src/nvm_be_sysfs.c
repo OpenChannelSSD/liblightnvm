@@ -319,6 +319,26 @@ static int dev_attr_fill(struct nvm_dev *dev)
 	}
 	dev->verid = val;
 
+	if (sysattr2int(udev_dev, "lightnvm/media_capabilities", &val)) {
+		NVM_DEBUG("FAILED: capabilities dev->name(%s)\n", dev->name);
+		errno = EIO;
+		return -1;
+	}
+	switch(dev->verid) {
+	case NVM_SPEC_VERID_12:
+		dev->mccap = val;
+		break;
+	case NVM_SPEC_VERID_20:
+		// The mccap exposed in sysfs on a 2.0 device is 1.2 fmt
+		// it is weird, but how it is. So we shift it back.
+		dev->mccap = (val & NVM_SPEC_12_MCCAP_SUSPENSION) >> 1;
+		dev->mccap |= (val & NVM_SPEC_20_MCCAP_VCOPY) ? NVM_SPEC_20_MCCAP_VCOPY : 0;
+		break;
+	default:
+		NVM_DEBUG("BAD dev->verid: %d", dev->verid);
+		break;
+	}
+
 	udev_device_unref(udev_dev);
 	udev_unref(udev);
 

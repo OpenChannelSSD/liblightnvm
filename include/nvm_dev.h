@@ -41,6 +41,7 @@ struct nvm_dev {
 	struct nvm_spec_ppaf_nand_mask mask;///< Device address format mask
 	struct nvm_geo geo;		///< Device geometry
 	uint64_t ssw;			///< Bit-width for LBA fmt conversion
+	uint32_t mccap;			///< Media-controller capabilities
 	int pmode;			///< Default plane-mode I/O
 	int erase_naddrs_max;		///< Maximum # of cmd-addrs. for erase
 	int read_naddrs_max;		///< Maximum # of cmd-addrs. for read

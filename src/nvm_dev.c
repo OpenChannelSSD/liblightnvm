@@ -70,6 +70,7 @@ void nvm_dev_attr_pr(const struct nvm_dev *dev)
 	printf("  path: '%s'\n", nvm_dev_get_path(dev));
 	printf("  fd: %d\n", nvm_dev_get_fd(dev));
 	printf("  ssw: %lu\n", dev->ssw);
+	printf("  mccap: "NVM_I32_FMT"\n", NVM_I32_TO_STR(nvm_dev_get_mccap(dev)));
 	printf("  pmode: '%s'\n", nvm_pmode_str(nvm_dev_get_pmode(dev)));
 
 	printf("  erase_naddrs_max: %d\n", dev->erase_naddrs_max);
@@ -121,6 +122,11 @@ const char *nvm_dev_get_name(const struct nvm_dev *dev)
 const char *nvm_dev_get_path(const struct nvm_dev *dev)
 {
 	return dev->path;
+}
+
+uint32_t nvm_dev_get_mccap(const struct nvm_dev *dev)
+{
+	return dev->mccap;
 }
 
 int nvm_dev_get_pmode(const struct nvm_dev *dev)

@@ -611,6 +611,14 @@ int nvm_dev_get_nsid(const struct nvm_dev *dev);
 int nvm_dev_get_verid(const struct nvm_dev *dev);
 
 /**
+ * Returns the media-controller capabilities mask of the given device
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @return On success, capabilities mask is returned
+ */
+uint32_t nvm_dev_get_mccap(const struct nvm_dev *dev);
+
+/**
  * Returns the default plane_mode of the given device
  *
  * @param dev Device handle obtained with `nvm_dev_open`

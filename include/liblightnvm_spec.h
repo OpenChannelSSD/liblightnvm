@@ -35,6 +35,18 @@
 #include <stdint.h>
 #include <sys/types.h>
 
+enum nvm_spec_12_mccap {
+	NVM_SPEC_12_MCCAP_SLCMODE = 0x1,
+	NVM_SPEC_12_MCCAP_SUSPENSION = 0x1 << 1,
+	NVM_SPEC_12_MCCAP_SCRAMBLER = 0x1 << 2,
+	NVM_SPEC_12_MCCAP_ENCRYPTION = 0x1 << 3,
+};
+
+enum nvm_spec_20_mccap {
+	NVM_SPEC_20_MCCAP_SUSPENSION = 0x1,
+	NVM_SPEC_20_MCCAP_VCOPY = 0x1 << 16,
+};
+
 /**
  * Encoding descriptor for physical address format for NAND
  */
