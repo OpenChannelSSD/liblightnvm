@@ -162,7 +162,12 @@ static int sysattr2int(struct udev_device *dev, const char *attr, int *val)
 	}
 	fclose(fp);
 
-	*val = atoi(buf);
+	if ((strlen(buf) > 2) && (buf[0] == '0') && (buf[1] == 'x')) {
+		*val = strtol(buf, NULL, 16);
+	} else {
+		*val = atoi(buf);
+	}
+
 	return 0;
 }
 
