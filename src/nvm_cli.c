@@ -130,6 +130,30 @@ int _parse_cmd_arg_count_offset(int argc, char *argv[], struct nvm_cli *cli)
 	return inc;
 }
 
+int _parse_cmd_arg_vcopy(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 6;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.addrs[0].ppa = 0;
+	cli->args.addrs[0].g.ch = atoi(argv[0]);
+	cli->args.addrs[0].g.lun = atoi(argv[1]);
+	cli->args.addrs[0].g.blk = atoi(argv[2]);
+
+	cli->args.addrs[1].ppa = 0;
+	cli->args.addrs[1].g.ch = atoi(argv[3]);
+	cli->args.addrs[1].g.lun = atoi(argv[4]);
+	cli->args.addrs[1].g.blk = atoi(argv[5]);
+
+	cli->args.naddrs = 2;
+
+	return inc;
+}
+
 int _parse_cmd_arg_vblk_line(int argc, char *argv[], struct nvm_cli *cli)
 {
 	const int inc = 5;
@@ -449,6 +473,12 @@ int _parse_cmd_args(int argc, char *argv[], struct nvm_cli *cli)
 
 	case NVM_CLI_ARG_ADDR_SEC:
 		ret = _parse_cmd_arg_addr_sec(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_VCOPY:
+		ret = _parse_cmd_arg_vcopy(argc - inc, argv + inc, cli);
 		if (ret < 0)
 			return -1;
 		return inc + ret;
@@ -984,6 +1014,9 @@ void nvm_cli_usage_pr(struct nvm_cli *cli)
 			break;
 		case NVM_CLI_ARG_ADDR_SEC:
 			printf("dev_path ch lun pl blk pg sec");
+			break;
+		case NVM_CLI_ARG_VCOPY:
+			printf("dev_path ch lun blk ch lun blk");
 			break;
 		case NVM_CLI_ARG_VBLK_LINE:
 			printf("dev_path ch_bgn ch_end lun_bgn lun_end blk");
