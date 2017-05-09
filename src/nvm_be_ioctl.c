@@ -26,7 +26,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -257,7 +256,7 @@ struct nvm_dev *nvm_be_ioctl_open(const char *dev_path)
 	strncpy(dev->path, dev_path, NVM_DEV_PATH_LEN);
 	strncpy(dev->name, dev_path+5, NVM_DEV_NAME_LEN);
 
-	dev->fd = open(dev->path, O_RDWR | O_DIRECT);
+	dev->fd = open(dev->path, O_RDONLY);
 	if (dev->fd < 0) {
 		NVM_DEBUG("FAILED: open(dev->path(%s)), dev->fd(%d)\n",
 			  dev->path, dev->fd);
