@@ -36,9 +36,9 @@
 #include <nvm_utils.h>
 #include <nvm_debug.h>
 
-void _s12_identify_pr(const struct nvm_spec_identify *identify)
+void _nvm_spec_identify_s12_pr(const struct nvm_spec_identify *identify)
 {
-	struct s12_identify idf = identify->s12;
+	struct nvm_spec_identify_s12 idf = identify->s12;
 
 	printf("nvm_spec_identify:\n");
 	printf("  verid: "NVM_I8_FMT"\n", NVM_I8_TO_STR(idf.verid));
@@ -50,7 +50,7 @@ void _s12_identify_pr(const struct nvm_spec_identify *identify)
 	printf("spec_identify_cgrps:\n");
 
 	for (int i = 0; i < idf.cgroups; ++i) {
-		struct spec_cgrp grp = idf.grp[i];
+		struct nvm_spec_cgrp grp = idf.grp[i];
 
 		printf("  mtype: 0x%02x)\n", grp.mtype);
 		if (grp.mtype)
@@ -78,9 +78,9 @@ void _s12_identify_pr(const struct nvm_spec_identify *identify)
 	}
 }
 
-void _s20_identify_pr(const struct nvm_spec_identify *identify)
+void _nvm_spec_identify_s20_pr(const struct nvm_spec_identify *identify)
 {
-	struct s20_identify idf = identify->s20;
+	struct nvm_spec_identify_s20 idf = identify->s20;
 
 	printf("nvm_spec_identify:\n");
 	printf("  verid: "NVM_I8_FMT"\n", NVM_I8_TO_STR(idf.verid));
@@ -115,10 +115,10 @@ void nvm_spec_identify_pr(const struct nvm_spec_identify *identify)
 
 	switch(identify->s.verid) {
 	case NVM_SPEC_VERID_12:
-		_s12_identify_pr(identify);
+		_nvm_spec_identify_s12_pr(identify);
 		break;
 	case NVM_SPEC_VERID_20:
-		_s20_identify_pr(identify);
+		_nvm_spec_identify_s20_pr(identify);
 		break;
 
 	default:

@@ -134,77 +134,80 @@ struct nvm_spec_lbaf {
 	uint8_t rsvd[4];
 };
 
+struct nvm_spec_cgrp {
+	uint8_t mtype;
+	uint8_t fmtype;
+	uint8_t rsvd_2_3[2];
+	uint8_t num_ch;
+	uint8_t num_lun;
+	uint8_t num_pln;
+	uint8_t rsdv_7;
+	uint16_t num_blk;
+	uint16_t num_pg;
+	uint16_t fpg_sz;
+	uint16_t csecs;
+	uint16_t sos;
+	uint8_t rsvd_18_19[2];
+	uint32_t trdt;
+	uint32_t trdm;
+	uint32_t tprt;
+	uint32_t tprm;
+	uint32_t tbet;
+	uint32_t tbem;
+	uint32_t mpos;
+	uint32_t mccap;
+	uint16_t cpar;
+	uint8_t rsvd_54_63[10];
+	uint8_t mts[896];
+};
+
+struct nvm_spec_identify_s12 {
+	uint8_t verid;
+	uint8_t vnvmt;
+	uint8_t cgroups;
+	uint8_t rsvd3;
+	uint32_t cap;
+	uint32_t dom;
+	struct nvm_spec_ppaf_nand ppaf;
+	uint8_t rsdv_028_255[228];
+	struct nvm_spec_cgrp grp[4];
+};
+
+struct nvm_spec_identify_s20 {
+	uint8_t verid;
+	uint8_t rsvd_001_003[3];
+	struct nvm_spec_lbaf lbaf;
+	struct nvm_spec_ppaf_nand ppaf;
+	uint8_t rsvd_028_031[4];
+	uint32_t mccap;
+	uint8_t rsvd_036_063[28];
+	uint16_t num_ch;
+	uint16_t num_lun;
+	uint32_t num_chk;
+	uint32_t clba;
+	uint32_t csecs;
+	uint32_t sos;
+	uint8_t rsvd_084_127[44];
+	uint32_t mw_min;
+	uint32_t mw_opt;
+	uint32_t mw_cunits;
+	uint8_t rsvd_140_191[52];
+	uint32_t trdt;
+	uint32_t trdm;
+	uint32_t twrt;
+	uint32_t twrm;
+	uint32_t tcet;
+	uint32_t tcem;
+	uint8_t rsvd_216_255[41];
+};
+
 /**
  * Identify command data structure
  */
 struct nvm_spec_identify {
 	union {
-		struct s12_identify {
-			uint8_t verid;
-			uint8_t vnvmt;
-			uint8_t cgroups;
-			uint8_t rsvd3;
-			uint32_t cap;
-			uint32_t dom;
-			struct nvm_spec_ppaf_nand ppaf;
-			uint8_t rsdv_028_255[228];
-
-			struct spec_cgrp {
-				uint8_t mtype;
-				uint8_t fmtype;
-				uint8_t rsvd_2_3[2];
-				uint8_t num_ch;
-				uint8_t num_lun;
-				uint8_t num_pln;
-				uint8_t rsdv_7;
-				uint16_t num_blk;
-				uint16_t num_pg;
-				uint16_t fpg_sz;
-				uint16_t csecs;
-				uint16_t sos;
-				uint8_t rsvd_18_19[2];
-				uint32_t trdt;
-				uint32_t trdm;
-				uint32_t tprt;
-				uint32_t tprm;
-				uint32_t tbet;
-				uint32_t tbem;
-				uint32_t mpos;
-				uint32_t mccap;
-				uint16_t cpar;
-				uint8_t rsvd_54_63[10];
-				uint8_t mts[896];
-			} grp[4];
-
-		} s12;	///< Revision 1.2 fields
-
-		struct s20_identify {
-			uint8_t verid;
-			uint8_t rsvd_001_003[3];
-			struct nvm_spec_lbaf lbaf;
-			struct nvm_spec_ppaf_nand ppaf;
-			uint8_t rsvd_028_031[4];
-			uint32_t mccap;
-			uint8_t rsvd_036_063[28];
-			uint16_t num_ch;
-			uint16_t num_lun;
-			uint32_t num_chk;
-			uint32_t clba;
-			uint32_t csecs;
-			uint32_t sos;
-			uint8_t rsvd_084_127[44];
-			uint32_t mw_min;
-			uint32_t mw_opt;
-			uint32_t mw_cunits;
-			uint8_t rsvd_140_191[52];
-			uint32_t trdt;
-			uint32_t trdm;
-			uint32_t twrt;
-			uint32_t twrm;
-			uint32_t tcet;
-			uint32_t tcem;
-			uint8_t rsvd_216_255[41];
-		} s20;	///< Revision 2.0 fields
+		struct nvm_spec_identify_s12 s12;
+		struct nvm_spec_identify_s20 s20;
 
 		struct {
 			uint8_t verid;
