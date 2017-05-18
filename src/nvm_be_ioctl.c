@@ -26,6 +26,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#define _GNU_SOURCE
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -35,6 +36,7 @@
 #include <linux/nvme_ioctl.h>
 #include <liblightnvm.h>
 #include <nvm_be.h>
+#include <nvm_be_ioctl.h>
 #include <nvm_dev.h>
 #include <nvm_debug.h>
 
@@ -235,7 +237,7 @@ static inline int _ioctl_fill_geo(struct nvm_dev *dev, struct nvm_ret *ret)
 	return 0;
 }
 
-struct nvm_dev *nvm_be_ioctl_open(const char *dev_path)
+struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags)
 {
 	struct nvm_dev *dev = NULL;
 	struct nvm_ret ret = {0,0};
@@ -256,7 +258,14 @@ struct nvm_dev *nvm_be_ioctl_open(const char *dev_path)
 	strncpy(dev->path, dev_path, NVM_DEV_PATH_LEN);
 	strncpy(dev->name, dev_path+5, NVM_DEV_NAME_LEN);
 
-	dev->fd = open(dev->path, O_RDONLY);
+	switch (flags) {
+	case NVM_BE_IOCTL_WRITABLE:
+		dev->fd = open(dev->path, O_RDWR | O_DIRECT);
+		break;
+	default:
+		dev->fd = open(dev->path, O_RDONLY);
+		break;
+	}
 	if (dev->fd < 0) {
 		NVM_DEBUG("FAILED: open(dev->path(%s)), dev->fd(%d)\n",
 			  dev->path, dev->fd);

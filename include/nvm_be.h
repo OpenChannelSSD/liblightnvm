@@ -42,7 +42,7 @@ struct nvm_be {
 	/**
 	 * Open a device
 	 */
-	struct nvm_dev *(*open)(const char *);
+	struct nvm_dev *(*open)(const char *, int flags);
 
 	/**
 	 * Close the given device

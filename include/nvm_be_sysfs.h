@@ -29,7 +29,7 @@
 #ifndef __INTERNAL_NVM_BE_SYSFS_H
 #define __INTERNAL_NVM_BE_SYSFS_H
 
-struct nvm_dev *nvm_be_sysfs_open(const char *dev_path);
+struct nvm_dev *nvm_be_sysfs_open(const char *dev_path, int flags);
 
 void nvm_be_sysfs_close(struct nvm_dev *dev);
 

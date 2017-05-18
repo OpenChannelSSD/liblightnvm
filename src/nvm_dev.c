@@ -301,7 +301,7 @@ struct nvm_dev * nvm_dev_openf(const char *dev_path, int flags) {
 		if (be && !(nvm_backends[i]->id & be))
 			continue;
 
-		dev = nvm_backends[i]->open(dev_path);
+		dev = nvm_backends[i]->open(dev_path, 0x0);
 		if (dev) {
 			dev->be = nvm_backends[i];
 			break;

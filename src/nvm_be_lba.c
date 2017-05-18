@@ -1,5 +1,5 @@
 /*
- * be_lba - Backend based on kernel support for NVM IOCTL and LBA for IO
+ * be_lba - Backend based on kernel support for NVM IOCTL and LBA for VECTOR IO
  *
  * Copyright (C) 2015-2017 Javier Gonzáles <javier@cnexlabs.com>
  * Copyright (C) 2015-2017 Matias Bjørling <matias@cnexlabs.com>
@@ -38,6 +38,7 @@
 #include <nvm_be_ioctl.h>
 #include <nvm_be_sysfs.h>
 #include <nvm_dev.h>
+#include <nvm_utils.h>
 #include <nvm_debug.h>
 
 int nvm_be_lba_vuser(struct nvm_dev *dev, struct nvm_cmd *cmd,
@@ -96,11 +97,16 @@ int nvm_be_lba_vuser(struct nvm_dev *dev, struct nvm_cmd *cmd,
 	return 0;
 }
 
+struct nvm_dev *nvm_be_lba_open(const char *dev_path, int NVM_UNUSED(flags))
+{
+	return nvm_be_ioctl_open(dev_path, NVM_BE_IOCTL_WRITABLE);
+}
+
 struct nvm_be nvm_be_lba = {
 	.id = NVM_BE_LBA,
 
-	.open = nvm_be_sysfs_open,
-	.close = nvm_be_sysfs_close,
+	.open = nvm_be_lba_open,
+	.close = nvm_be_ioctl_close,
 
 	.user = nvm_be_ioctl_user,
 	.admin = nvm_be_ioctl_admin,

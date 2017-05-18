@@ -38,6 +38,7 @@
 #include <nvm_be_ioctl.h>
 #include <nvm_dev.h>
 #include <nvm_debug.h>
+#include <nvm_utils.h>
 
 static inline uint64_t _ilog2(uint64_t x)
 {
@@ -386,7 +387,7 @@ void nvm_be_sysfs_close(struct nvm_dev *dev)
 	close(dev->fd);
 }
 
-struct nvm_dev *nvm_be_sysfs_open(const char *dev_path)
+struct nvm_dev *nvm_be_sysfs_open(const char *dev_path, int NVM_UNUSED(flags))
 {
 	struct nvm_dev *dev;
 	int err;

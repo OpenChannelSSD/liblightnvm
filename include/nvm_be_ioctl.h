@@ -29,7 +29,11 @@
 #ifndef __INTERNAL_NVM_BE_IOCTL_H
 #define __INTERNAL_NVM_BE_IOCTL_H
 
-struct nvm_dev *nvm_be_ioctl_open(const char *dev_path);
+enum nvm_be_ioctl_flags {
+	NVM_BE_IOCTL_WRITABLE = 0x1
+};
+
+struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags);
 
 void nvm_be_ioctl_close(struct nvm_dev *dev);
 
