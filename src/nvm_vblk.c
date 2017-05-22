@@ -441,6 +441,7 @@ void nvm_vblk_pr(struct nvm_vblk *vblk)
 	printf("  dev: {pmode: '%s'}\n", nvm_pmode_str(nvm_dev_get_pmode(vblk->dev)));
 	printf("  nbytes: %lu\n", vblk->nbytes);
 	printf("  nmbytes: %lu\n", vblk->nbytes >> 20);
+	printf("  struct_nbytes: %lu\n", sizeof(*vblk));
         nvm_addr_prn(vblk->blks, vblk->nblks);
 }
 
