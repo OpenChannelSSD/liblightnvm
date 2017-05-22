@@ -101,6 +101,43 @@ ssize_t _vblk_read(struct nvm_cli *cli, struct nvm_vblk *vblk)
 	return res;
 }
 
+ssize_t _vblk_pread(struct nvm_cli *cli, struct nvm_vblk *vblk)
+{
+	const struct nvm_geo *geo = nvm_dev_get_geo(cli->args.dev);
+	char *buf = NULL;
+	ssize_t res = 0;
+	size_t nbytes = cli->args.dec_vals[0];
+	size_t offset = cli->args.dec_vals[1];
+
+	nvm_vblk_pr(vblk);
+
+	nvm_cli_timer_start();		// Allocate read buffer
+	buf = nvm_buf_alloc(geo, nbytes);
+	if (!buf) {
+		nvm_cli_perror("nvm_buf_alloc");
+		return -1;
+	}
+	nvm_cli_timer_stop();
+	nvm_cli_timer_pr("nvm_buf_alloc");
+
+	nvm_cli_timer_start();		// Read from device into buffer
+	res = nvm_vblk_pread(vblk, buf, nbytes, offset);
+	if (res < 0)
+		nvm_cli_perror("nvm_vblk_pread");
+	nvm_cli_timer_stop();
+	nvm_cli_timer_pr("nvm_vblk_pread");
+
+	if ((cli->opts.mask & NVM_CLI_OPT_FILE_OUTPUT) &&
+	     cli->opts.file_output) {	// Write buffer to file system
+		if (nvm_buf_to_file(buf, nbytes, cli->opts.file_output))
+			nvm_cli_perror("nvm_buf_to_file");
+	}
+
+	free(buf);
+
+	return res;
+}
+
 ssize_t _vblk_pad(struct nvm_cli *NVM_UNUSED(cli), struct nvm_vblk *vblk)
 {
 	ssize_t res = 0;
@@ -255,6 +292,27 @@ int line_read(struct nvm_cli *cli)
 	return res < 0 ? -1 : 0;
 }
 
+int line_pread(struct nvm_cli *cli)
+{
+	struct nvm_addr bgn = cli->args.addrs[0],
+			end = cli->args.addrs[1];
+	struct nvm_vblk *vblk = NULL;
+	ssize_t res = 0;
+	
+	vblk = nvm_vblk_alloc_line(cli->args.dev, bgn.g.ch, end.g.ch, bgn.g.lun,
+				   end.g.lun, bgn.g.blk);
+	if (!vblk) {
+		nvm_cli_perror("nvm_vblk_alloc");
+		return -1;
+	}
+
+	res = _vblk_pread(cli, vblk);
+	
+	nvm_vblk_free(vblk);
+
+	return res < 0 ? -1 : 0;
+}
+
 int line_pad(struct nvm_cli *cli)
 {
 	struct nvm_addr bgn = cli->args.addrs[0],
@@ -365,6 +423,7 @@ static struct nvm_cli_cmd cmds[] = {
 	{"line_erase",	line_erase,	NVM_CLI_ARG_VBLK_LINE,	NVM_CLI_OPT_DEFAULT},
 	{"line_write",	line_write,	NVM_CLI_ARG_VBLK_LINE,	NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_INPUT},
 	{"line_read",	line_read,	NVM_CLI_ARG_VBLK_LINE,	NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
+	{"line_pread",	line_pread,	NVM_CLI_ARG_VBLK_LINE_POS,	NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
 	{"line_pad",	line_pad,	NVM_CLI_ARG_VBLK_LINE,	NVM_CLI_OPT_DEFAULT},
 };
 
