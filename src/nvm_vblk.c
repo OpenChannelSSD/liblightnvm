@@ -340,7 +340,7 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 
 	const int SPAGE_NADDRS = geo->nplanes * geo->nsectors;
 	const int CMD_NSPAGES = _cmd_nspages(vblk->nblks,
-				vblk->dev->write_naddrs_max / SPAGE_NADDRS);
+				vblk->dev->read_naddrs_max / SPAGE_NADDRS);
 
 	const int ALIGN = SPAGE_NADDRS * geo->sector_nbytes;
 	const int NTHREADS = vblk->nblks < CMD_NSPAGES ? 1 : vblk->nblks / CMD_NSPAGES;
