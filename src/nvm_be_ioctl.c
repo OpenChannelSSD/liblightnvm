@@ -195,7 +195,7 @@ static inline int _ioctl_fill_geo(struct nvm_dev *dev, struct nvm_ret *ret)
 	_construct_ppaf_mask(&dev->ppaf, &dev->mask);
 
 	// WARN: HOTFIX for reports of unrealisticly large OOB area
-	if (dev->geo.meta_nbytes > 100) {
+	if (dev->geo.meta_nbytes > (dev->geo.sector_nbytes * 0.1)) {
 		dev->geo.meta_nbytes = 16;	// Naively hope this is right
 	}
 	dev->geo.nsectors = dev->geo.page_nbytes / dev->geo.sector_nbytes;

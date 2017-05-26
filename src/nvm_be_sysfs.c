@@ -343,7 +343,7 @@ static int dev_attr_fill(struct nvm_dev *dev)
 	udev_unref(udev);
 
 	// WARN: HOTFIX for reports of unrealisticly large OOB area
-	if (geo->meta_nbytes > 100) {
+	if (geo->meta_nbytes > (dev->geo.sector_nbytes * 0.1)) {
 		geo->meta_nbytes = 16;	// Naively hope this is right
 	}
 
