@@ -136,11 +136,12 @@ static inline int _ioctl_fill_geo(struct nvm_dev *dev, struct nvm_ret *ret)
 	struct nvm_spec_identify *idf;
 	int err;
 
-	err = posix_memalign((void **)&idf, 4096, sizeof(*idf));
-	if (err) {
+	idf = aligned_alloc(4096, sizeof(*idf));
+	if (!idf) {
 		errno = ENOMEM;
 		return -1;
 	}
+	memset(idf, 0, sizeof(*idf));
 
 	cmd.vadmin.opcode = NVM_S12_OPC_IDF;	// Setup command
 	cmd.vadmin.addr = (uint64_t)idf;
@@ -249,7 +250,7 @@ struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags)
 		return NULL;
 	}
 
-	dev = malloc(sizeof(*dev));
+	dev = calloc(1, sizeof(*dev));
 	if (!dev) {
 		NVM_DEBUG("FAILED: allocating 'struct nvm_dev'\n");
 		return NULL;	// Propagate errno from malloc
