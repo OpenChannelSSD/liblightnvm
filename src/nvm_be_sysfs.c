@@ -64,22 +64,27 @@ struct udev_device *udev_dev_find(struct udev *udev, const char *subsystem,
 	struct udev_device *dev = NULL;
 
 	struct udev_enumerate *enumerate;
-	struct udev_list_entry *devices, *dev_list_entry;
+	struct udev_list_entry *devices;
+	struct udev_list_entry *dev_list_entry;
 
 	enumerate = udev_enumerate_new(udev);	/* Search 'subsystem' */
+	if (!enumerate) {
+		errno = ENOMEM;
+		return NULL;
+	}
+
 	udev_enumerate_add_match_subsystem(enumerate, subsystem);
 	udev_enumerate_scan_devices(enumerate);
 	devices = udev_enumerate_get_list_entry(enumerate);
 	udev_list_entry_foreach(dev_list_entry, devices) {
-		const char *path;
-		int path_len;
+		const char *path = udev_list_entry_get_name(dev_list_entry);
 
-		path = udev_list_entry_get_name(dev_list_entry);
 		if (!path) {
 			NVM_DEBUG("FAILED: retrieving path from entry\n");
 			continue;
 		}
-		path_len = strlen(path);
+
+		int path_len = strlen(path);
 
 		if (dev_name) {			/* Compare name */
 			int dev_name_len = strlen(dev_name);
@@ -97,10 +102,7 @@ struct udev_device *udev_dev_find(struct udev *udev, const char *subsystem,
 		}
 
 		if (devtype) {			/* Compare device type */
-			const char *sys_devtype;
-			int sys_devtype_match;
-
-			sys_devtype = udev_device_get_devtype(dev);
+			const char *sys_devtype = udev_device_get_devtype(dev);
 			if (!sys_devtype) {
 				NVM_DEBUG("FAILED: sys_devtype(%s)", sys_devtype);
 				udev_device_unref(dev);
@@ -108,7 +110,7 @@ struct udev_device *udev_dev_find(struct udev *udev, const char *subsystem,
 				continue;
 			}
 
-			sys_devtype_match = strcmp(devtype, sys_devtype);
+			int sys_devtype_match = strcmp(devtype, sys_devtype);
 			if (sys_devtype_match != 0) {
 				NVM_DEBUG("FAILED: %s != %s\n", devtype, sys_devtype);
 				udev_device_unref(dev);
@@ -119,6 +121,8 @@ struct udev_device *udev_dev_find(struct udev *udev, const char *subsystem,
 
 		break;
 	}
+
+	udev_enumerate_unref(enumerate);
 
 	return dev;
 }
@@ -228,6 +232,8 @@ static int dev_attr_fill(struct nvm_dev *dev)
 	struct nvm_geo *geo;
 	int val;
 
+	errno = 0;
+
 	udev = udev_new();
 	if (!udev) {
 		NVM_DEBUG("FAILED: udev_new for name(%s)\n", dev->name);
@@ -248,7 +254,7 @@ static int dev_attr_fill(struct nvm_dev *dev)
 	if (sysattr2fmt(udev_dev, "lightnvm/ppa_format", &dev->ppaf, &dev->mask)) {
 		NVM_DEBUG("FAILED: ppa_format for name(%s)\n", dev->name);
 		errno = EIO;
-		return -1;
+		goto exit;
 	}
 
 	/*
@@ -259,70 +265,70 @@ static int dev_attr_fill(struct nvm_dev *dev)
 	if (sysattr2int(udev_dev, "lightnvm/num_channels", &val)) {
 		NVM_DEBUG("FAILED: num_channels for dev->name(%s)\n", dev->name);
 		errno = EIO;
-		return -1;
+		goto exit;
 	}
 	geo->nchannels = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/num_luns", &val)) {
 		NVM_DEBUG("FAILED: num_luns for dev->name(%s)\n", dev->name);
 		errno = EIO;
-		return -1;
+		goto exit;
 	}
 	geo->nluns = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/num_planes", &val)) {
 		NVM_DEBUG("FAILED: num_planes for dev->name(%s)\n", dev->name);
 		errno = EIO;
-		return -1;
+		goto exit;
 	}
 	geo->nplanes = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/num_blocks", &val)) {
 		NVM_DEBUG("FAILED: num_blocks for dev->name(%s)\n", dev->name);
 		errno = EIO;
-		return -1;
+		goto exit;
 	}
 	geo->nblocks = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/num_pages", &val)) {
 		NVM_DEBUG("FAILED: num_pages for dev->name(%s)\n", dev->name);
 		errno = EIO;
-		return -1;
+		goto exit;
 	}
 	geo->npages = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/page_size", &val)) {
 		NVM_DEBUG("FAILED: page_size for dev->name(%s)\n", dev->name);
 		errno = EIO;
-		return -1;
+		goto exit;
 	}
 	geo->page_nbytes = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/hw_sector_size", &val)) {
 		NVM_DEBUG("FAILED: hw_sector_size for dev->name(%s)\n", dev->name);
 		errno = EIO;
-		return -1;
+		goto exit;
 	}
 	geo->sector_nbytes = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/oob_sector_size", &val)) {
 		NVM_DEBUG("FAILED: oob_sector_size dev->name(%s)\n", dev->name);
 		errno = EIO;
-		return -1;
+		goto exit;
 	}
 	geo->meta_nbytes = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/version", &val)) {
 		NVM_DEBUG("FAILED: version dev->name(%s)\n", dev->name);
 		errno = EIO;
-		return -1;
+		goto exit;
 	}
 	dev->verid = val;
 
 	if (sysattr2int(udev_dev, "lightnvm/media_capabilities", &val)) {
 		NVM_DEBUG("FAILED: capabilities dev->name(%s)\n", dev->name);
 		errno = EIO;
-		return -1;
+		goto exit;
 	}
 	switch(dev->verid) {
 	case NVM_SPEC_VERID_12:
@@ -338,9 +344,6 @@ static int dev_attr_fill(struct nvm_dev *dev)
 		NVM_DEBUG("BAD dev->verid: %d", dev->verid);
 		break;
 	}
-
-	udev_device_unref(udev_dev);
-	udev_unref(udev);
 
 	// WARN: HOTFIX for reports of unrealisticly large OOB area
 	if (geo->meta_nbytes > (dev->geo.sector_nbytes * 0.1)) {
@@ -370,7 +373,7 @@ static int dev_attr_fill(struct nvm_dev *dev)
 		break;
 	default:
 		errno = EINVAL;
-		return -1;
+		goto exit;
 	}
 
 	dev->erase_naddrs_max = NVM_NADDR_MAX;
@@ -379,7 +382,11 @@ static int dev_attr_fill(struct nvm_dev *dev)
 
 	dev->meta_mode = NVM_META_MODE_NONE;
 
-	return 0;
+exit:
+	udev_device_unref(udev_dev);
+	udev_unref(udev);
+
+	return errno ? -1 : 0;
 }
 
 void nvm_be_sysfs_close(struct nvm_dev *dev)
