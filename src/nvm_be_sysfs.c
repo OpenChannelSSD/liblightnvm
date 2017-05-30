@@ -232,8 +232,6 @@ static int dev_attr_fill(struct nvm_dev *dev)
 	struct nvm_geo *geo;
 	int val;
 
-	errno = 0;
-
 	udev = udev_new();
 	if (!udev) {
 		NVM_DEBUG("FAILED: udev_new for name(%s)\n", dev->name);
@@ -342,7 +340,8 @@ static int dev_attr_fill(struct nvm_dev *dev)
 		break;
 	default:
 		NVM_DEBUG("BAD dev->verid: %d", dev->verid);
-		break;
+		errno = EIO;
+		goto exit;
 	}
 
 	// WARN: HOTFIX for reports of unrealisticly large OOB area
@@ -372,6 +371,7 @@ static int dev_attr_fill(struct nvm_dev *dev)
 		dev->pmode = NVM_FLAG_PMODE_SNGL;
 		break;
 	default:
+		NVM_DEBUG("FAILED: invalid geo->nplanes: %lu", geo->nplanes);
 		errno = EINVAL;
 		goto exit;
 	}
@@ -382,6 +382,7 @@ static int dev_attr_fill(struct nvm_dev *dev)
 
 	dev->meta_mode = NVM_META_MODE_NONE;
 
+	errno = 0;
 exit:
 	udev_device_unref(udev_dev);
 	udev_unref(udev);
@@ -416,8 +417,8 @@ struct nvm_dev *nvm_be_sysfs_open(const char *dev_path, int NVM_UNUSED(flags))
 
 	dev->fd = open(dev->path, O_RDONLY);
 	if (dev->fd < 0) {
-		NVM_DEBUG("FAILED: open dev->path(%s) dev->fd(%d)\n",
-			  dev->path, dev->fd);
+		NVM_DEBUG("FAILED: open dev->path:%s, dev->fd: %d, errno: %d\n",
+			  dev->path, dev->fd, errno);
 
 		free(dev);
 
