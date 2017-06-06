@@ -5,7 +5,7 @@
 =============
 
 Assuming that you have met the :ref:`sec-prereqs`, and running Ubuntu Linux
-(16.04/xenial), here is what you need to take liblightnvm for a spin:
+(16.04/xenial), then build and install liblightnvm for source:
 
 .. code-block:: bash
 
@@ -13,7 +13,7 @@ Assuming that you have met the :ref:`sec-prereqs`, and running Ubuntu Linux
   cd liblightnvm
   make dev
 
-Or install using deb-packages:
+Or, install from deb-packages:
 
 .. code-block:: bash
 
