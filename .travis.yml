@@ -18,6 +18,7 @@ env:
     - NVM_VERSION="0.0.1"
     - DIST_NAME=ubuntu
   matrix:
+    - DIST_VERS=17.04 DIST_CODE=zesty
     - DIST_VERS=16.04 DIST_CODE=xenial
     - DIST_VERS=14.04 DIST_CODE=trusty
 
