@@ -4,7 +4,7 @@ if (NOT TESTS)
 	return()
 endif()
 
-find_library (CUNIT NAMES libcunit.a)
+find_library (CUNIT NAMES cunit)
 if ( "${CUNIT}" STREQUAL "CUNIT-NOTFOUND" )
 	message(FATAL_ERROR
 		"Please install libcunit (e.g. 'libcunit1-dev' on Ubuntu 16.04)")
