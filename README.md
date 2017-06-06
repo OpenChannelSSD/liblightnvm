@@ -2,8 +2,6 @@ User space I/O library for Open-channel SSDs
 ============================================
 
 **Status** [![Build Status](https://travis-ci.org/OpenChannelSSD/liblightnvm.svg?branch=master)](https://travis-ci.org/OpenChannelSSD/liblightnvm)
-**deb** [![Download deb](https://api.bintray.com/packages/openchannelssd/debs/liblightnvm/images/download.svg)](https://bintray.com/openchannelssd/debs/liblightnvm/_latestVersion)
-**tgz** [![Download tgz](https://api.bintray.com/packages/openchannelssd/binaries/liblightnvm/images/download.svg)](https://bintray.com/openchannelssd/binaries/liblightnvm/_latestVersion)
 **docs** [http://lightnvm.io/liblightnvm](http://lightnvm.io/liblightnvm)
 
 liblightnvm is a user space library that manages provisioning of and I/O
