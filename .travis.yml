@@ -49,7 +49,8 @@ before_script:
 script:
   - CONTAINER_ID=$(cat container.id)
   - docker ps -a
-  - docker exec -t ${TAG} make clean make-pkg
+  - echo "** Build everything"
+  - docker exec -t ${TAG} make clean cli tests make-pkg
   - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm0-cli.deb .
   - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm0-dev.deb .
   - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm0-lib.deb .
