@@ -9,10 +9,9 @@ Assuming that you have met the :ref:`sec-prereqs`, and running Ubuntu Linux
 
 .. code-block:: bash
 
-  echo "deb https://dl.bintray.com/openchannelssd/debs xenial main" | sudo tee -a /etc/apt/sources.list
-  sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
-  sudo apt-get update
-  sudo apt-get install liblightnvm
+  git clone https://github.com/OpenChannelSSD/liblightnvm.git
+  cd liblightnvm
+  make dev
 
 With the library installed, try the following examples of the :ref:`sec-c-api`
 and :ref:`sec-cli`.
