@@ -32,7 +32,7 @@ on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 # ones.
 extensions = [
     'sphinx.ext.todo',
-    'sphinx.ext.pngmath',
+    'sphinx.ext.imgmath',
     'sphinxcontrib.bibtex',
     'breathe',
 #    'rst2pdf.pdfbuilder'
