@@ -48,7 +48,7 @@ install-pkg:
 
 .PHONY: uninstall-pkg
 uninstall-pkg:
-	sudo apt-get --yes remove liblightnvm || true
+	sudo apt-get --yes remove liblightnvm-* || true
 
 .PHONY: clean
 clean:
