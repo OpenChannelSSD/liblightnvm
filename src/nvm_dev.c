@@ -308,8 +308,10 @@ struct nvm_dev * nvm_dev_openf(const char *dev_path, int flags) {
 		}
 	}
 
-	if (!dev)
+	if (!dev) {
+		errno = errno ? errno : EIO;
 		return NULL;
+	}
 
 	dev->bbts_cached = 0;
 	dev->nbbts = dev->geo.nchannels * dev->geo.nluns;
