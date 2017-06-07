@@ -198,7 +198,7 @@ static inline ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
 
 	switch (cmd.vuser.result) {
 	case 0x0:	// All good
-		return 0;
+	case 0x700:	// As good as it gets..
 	case 0x4700:	// As good as it gets..
 		return 0;
 
