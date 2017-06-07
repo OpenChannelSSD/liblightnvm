@@ -191,20 +191,16 @@ static inline ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
 		nvm_addr_prn(addrs, naddrs);
 	}
 #endif
-	if (err) {	// Give up on errors
-		errno = EIO;
-		return -1;
-	}
+	if (!err)
+		return 0;		// No errors, we can return
 
 	switch (cmd.vuser.result) {
-	case 0x0:	// All good
-	case 0x700:	// As good as it gets..
-	case 0x4700:	// As good as it gets..
+	case 0x700:			// Ignore: Acceptable error
+	case 0x4700:			// Ignore: Acceptable error
 		return 0;
 
-	default:	// Everything else is an error
-		errno = EIO;
-		return -1;
+	default:
+		return -1;		// Propagate errno from backend
 	}
 }
 
