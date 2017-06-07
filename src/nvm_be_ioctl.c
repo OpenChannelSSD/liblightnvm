@@ -60,7 +60,10 @@ int nvm_be_ioctl_vuser(struct nvm_dev *dev, struct nvm_cmd *cmd,
 		ret->status = cmd->vuser.status;
 	}
 
-	if (err || cmd->vuser.result) {
+	if (err == -1)
+		return err;		// Propagate errno from IOCTL error
+
+	if (cmd->vuser.result) {	// Construct errno on cmd error
 		errno = EIO;
 		return -1;
 	}
@@ -78,7 +81,10 @@ int nvm_be_ioctl_vadmin(struct nvm_dev *dev, struct nvm_cmd *cmd,
 		ret->status = cmd->vadmin.status;
 	}
 
-	if (err || cmd->vadmin.result) {
+	if (err == -1)
+		return err;		// Propagate errno from IOCTL error
+
+	if (cmd->vadmin.result) {	// Construct errno on cmd error
 		errno = EIO;
 		return -1;
 	}
@@ -90,14 +96,14 @@ int nvm_be_ioctl_user(struct nvm_dev *dev, struct nvm_cmd *cmd,
 		      struct nvm_ret *ret)
 {
 	const int err = ioctl(dev->fd, NVME_IOCTL_SUBMIT_IO, cmd);
+
 	if (ret) {
 		ret->result = 0x0;
 		ret->status = 0x0;
 	}
-	if (err) {
-		errno = EIO;
-		return -1;
-	}
+
+	if (err == -1)
+		return err;		// Propagate errno from IOCTL error
 
 	return 0;
 }
@@ -106,11 +112,16 @@ int nvm_be_ioctl_admin(struct nvm_dev *dev, struct nvm_cmd *cmd,
 		       struct nvm_ret *ret)
 {
 	const int err = ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, cmd);
+
 	if (ret) {
 		ret->result = cmd->admin.result;
 		ret->status = 0x0;
 	}
-	if (err) {
+
+	if (err == -1)
+		return err;		// Propagate errno from IOCTL error
+
+	if (cmd->vadmin.result) {	// Construct errno on cmd error
 		errno = EIO;
 		return -1;
 	}
