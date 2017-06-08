@@ -132,7 +132,8 @@ ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 	const int BLK_NADDRS = PMODE ? 1 : geo->nplanes;
 	const int CMD_NBLKS = _cmd_nblks(vblk->nblks,
 				vblk->dev->erase_naddrs_max / BLK_NADDRS);
-	const int NTHREADS = vblk->nblks < CMD_NBLKS ? 1 : vblk->nblks / CMD_NBLKS;
+	//const int NTHREADS = vblk->nblks < CMD_NBLKS ? 1 : vblk->nblks / CMD_NBLKS;
+	const int NTHREADS = 1;
 
 	/**
 	 * Plane-mode is supported as all or nothing
