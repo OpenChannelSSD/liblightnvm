@@ -24,7 +24,7 @@ ssize_t _write(struct nvm_cli *cli, int with_meta)
 
 	if ((cli->opts.mask & NVM_CLI_OPT_FILE_INPUT) &&
 	     cli->opts.file_input) {	// Fill buf with content from file
-		if (nvm_buf_from_file(buf, buf_nbytes, cli->opts.file_output)) {
+		if (nvm_buf_from_file(buf, buf_nbytes, cli->opts.file_input)) {
 			nvm_cli_perror("nvm_buf_from_file");
 			free(buf);
 			return -1;
