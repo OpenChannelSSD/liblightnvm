@@ -109,7 +109,11 @@ ssize_t _read(struct nvm_cli *cli, int with_meta)
 	
 	if (meta && cli->evars.meta_pr) {
 		nvm_cli_info_pr("after_read: {meta_tbytes: %d}", meta_tbytes);
-		nvm_buf_pr(meta, meta_tbytes);
+		for (int i = 0; i < meta_tbytes; ++i) {
+			if (i)
+				printf(", ");
+			printf("0x%0x", meta[i]);
+		}
 	}
 
 	if ((cli->opts.mask & NVM_CLI_OPT_FILE_OUTPUT) &&
