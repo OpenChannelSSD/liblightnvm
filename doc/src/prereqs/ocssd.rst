@@ -1,6 +1,6 @@
 .. _sec-prereqs-ocssd:
 
-An Open-Channel SSD
+Open-Channel SSD
 ===================
 
 Physical
