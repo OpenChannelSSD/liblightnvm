@@ -40,6 +40,7 @@ Then use the following flags to setup a device:
   mdts=10,\
   nlbaf=5,\
   lba_index=3\
+  ll2pmode=0\
   lbbtable=$DRIVE_BBT,\
   lmetadata=$DRIVE_METADATA,\
   lmetasize=$DRIVE_METASIZE
