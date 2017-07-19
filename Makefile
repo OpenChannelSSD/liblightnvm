@@ -64,7 +64,7 @@ dev: uninstall-pkg clean cli tests make-pkg install-pkg
 
 # builds lib, cli
 .PHONY: devonly
-devonly: cli install
+devonly: cli make install
 
 .PHONY: tags
 tags:
