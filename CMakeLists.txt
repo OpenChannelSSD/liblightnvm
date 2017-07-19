@@ -23,12 +23,13 @@ if (OPENMP_FOUND)
 endif()
 message("CORE-CMAKE_C_FLAGS(${CMAKE_C_FLAGS})")
 
-find_package(udev REQUIRED lightnvm)
+find_package(udev)
 set_package_properties(udev PROPERTIES DESCRIPTION "Queriying OpenChannel SSDs via sysfs/udev.")
-set_package_properties(udev PROPERTIES TYPE REQUIRED PURPOSE "Queriying OpenChannel SSDs via sysfs/udev.")
+set_package_properties(udev PROPERTIES TYPE RECOMMENDED PURPOSE "Queriying OpenChannel SSDs via sysfs/udev.")
 if ( NOT ${UDEV_FOUND} )
-	message(FATAL_ERROR
-		"Please install libudev ('libudev-dev' on Ubuntu)")
+	message(ERROR "Please install libudev ('libudev-dev' on Ubuntu) for be_sysfs support")
+else()
+	add_definitions(-DNVM_BE_SYSFS_ENABLED)
 endif()
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DNVM_DEBUG_ENABLED")
@@ -83,7 +84,9 @@ set_target_properties(lightnvm PROPERTIES
 	VERSION ${NVM_VERSION}
 	SOVERSION ${NVM_VERSION_MAJOR}
 	)
-target_link_libraries(lightnvm udev ${CMAKE_THREAD_LIBS_INIT})
+if (${UDEV_FOUND})
+	target_link_libraries(lightnvm udev ${CMAKE_THREAD_LIBS_INIT})
+endif()
 
 install(TARGETS lightnvm DESTINATION lib COMPONENT lib)
 
@@ -91,7 +94,9 @@ install(TARGETS lightnvm DESTINATION lib COMPONENT lib)
 # STATIC: Here we define the static library
 #
 add_library(lightnvm_a STATIC ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(lightnvm_a udev ${CMAKE_THREAD_LIBS_INIT})
+if (${UDEV_FOUND})
+	target_link_libraries(lightnvm_a udev ${CMAKE_THREAD_LIBS_INIT})
+endif()
 set_target_properties(lightnvm_a PROPERTIES OUTPUT_NAME lightnvm)
 
 install(TARGETS lightnvm_a DESTINATION lib COMPONENT lib)
