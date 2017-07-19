@@ -2,6 +2,7 @@ BUILD_TYPE?=Release
 BUILD_DIR?=build
 BUILD_TESTS?=OFF
 BUILD_CLI?=OFF
+INSTALL_PREFIX?=/usr/local
 
 #
 # Traditional build commands / make interface
@@ -27,7 +28,7 @@ cmake_check:
 .PHONY: configure
 configure: cmake_check
 	mkdir -p $(BUILD_DIR)
-	cd $(BUILD_DIR) && cmake -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DTESTS=$(BUILD_TESTS) -DCLI=$(BUILD_CLI) ../
+	cd $(BUILD_DIR) && cmake -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DTESTS=$(BUILD_TESTS) -DCLI=$(BUILD_CLI) -DCMAKE_INSTALL_PREFIX:PATH=$(INSTALL_PREFIX) ../
 	@echo "Modify build configuration in '$(BUILD_DIR)'"
 
 .PHONY: make
