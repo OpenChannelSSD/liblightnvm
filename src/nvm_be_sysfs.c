@@ -32,7 +32,9 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <errno.h>
+#ifdef NVM_BE_SYSFS_ENABLED
 #include <libudev.h>
+#endif
 #include <liblightnvm.h>
 #include <nvm_be.h>
 #include <nvm_be_ioctl.h>
@@ -40,6 +42,7 @@
 #include <nvm_debug.h>
 #include <nvm_utils.h>
 
+#ifdef NVM_BE_SYSFS_ENABLED
 static inline uint64_t _ilog2(uint64_t x)
 {
 	uint64_t val = 0;
@@ -435,6 +438,42 @@ struct nvm_dev *nvm_be_sysfs_open(const char *dev_path, int NVM_UNUSED(flags))
 
 	return dev;
 }
+#else
+struct nvm_dev* nvm_be_sysfs_open(const char *NVM_UNUSED(dev_path), int NVM_UNUSED(flags))
+{
+	errno = ENOSYS;
+	return NULL;
+}
+
+void nvm_be_sysfs_close(struct nvm_dev *NVM_UNUSED(dev)) {
+	errno = ENOSYS;
+	return;
+}
+
+int nvm_be_sysfs_user(struct nvm_dev *NVM_UNUSED(dev), struct nvm_cmd *NVM_UNUSED(cmd), struct nvm_ret *NVM_UNUSED(ret))
+{
+	errno = ENOSYS;
+	return -1;
+}
+
+int nvm_be_sysfs_admin(struct nvm_dev *NVM_UNUSED(dev), struct nvm_cmd *NVM_UNUSED(cmd), struct nvm_ret *NVM_UNUSED(ret))
+{
+	errno = ENOSYS;
+	return -1;
+}
+
+int nvm_be_sysfs_vuser(struct nvm_dev *NVM_UNUSED(dev), struct nvm_cmd *NVM_UNUSED(cmd), struct nvm_ret *NVM_UNUSED(ret))
+{
+	errno = ENOSYS;
+	return -1;
+}
+
+int nvm_be_sysfs_vadmin(struct nvm_dev *NVM_UNUSED(dev), struct nvm_cmd *NVM_UNUSED(cmd), struct nvm_ret *NVM_UNUSED(ret))
+{
+	errno = ENOSYS;
+	return -1;
+}
+#endif
 
 struct nvm_be nvm_be_sysfs = {
 	.id = NVM_BE_SYSFS,
