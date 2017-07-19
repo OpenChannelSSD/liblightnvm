@@ -32,7 +32,6 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <libudev.h>
 #include <liblightnvm.h>
 #include <nvm_be.h>
 #include <nvm_be_ioctl.h>
