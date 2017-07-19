@@ -62,6 +62,10 @@ all: clean default install
 .PHONY: dev
 dev: uninstall-pkg clean cli tests make-pkg install-pkg
 
+# builds lib, cli
+.PHONY: devonly
+devonly: cli install
+
 .PHONY: tags
 tags:
 	ctags * -R .
