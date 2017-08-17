@@ -665,7 +665,12 @@ int nvm_dev_get_meta_mode(const struct nvm_dev *dev);
 /**
  * Set the default 'meta-mode' of the given device
  *
+ * The meta-mode is a setting used by the nvm_vblk interface to write
+ * pseudo-meta data to the out-of-bound area.
+ *
  * @param dev Device handle obtained with `nvm_dev_open`
+ * @param meta_mode One of: NVM_META_MODE_[NONE|ALPHA|CONST]
+ *
  * @returns On success, 0 is returned. On error, -1 is returned and errno set to
  * indicate the error.
  */
