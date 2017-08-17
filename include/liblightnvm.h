@@ -1126,18 +1126,40 @@ int nvm_vblk_get_naddrs(struct nvm_vblk *vblk);
 size_t nvm_vblk_get_nbytes(struct nvm_vblk *vblk);
 
 /**
- * Retrieve the current cursor position for read to the virtual block
+ * Retrieve the read cursor position for the given virtual block
  *
  * @param vblk The entity to retrieve information from
  */
 size_t nvm_vblk_get_pos_read(struct nvm_vblk *vblk);
 
 /**
- * Retrieve the current cursor position for writes to the virtual block
+ * Retrieve the write cursor position for the given virtual block
  *
  * @param vblk The entity to retrieve information from
  */
 size_t nvm_vblk_get_pos_write(struct nvm_vblk *vblk);
+
+/**
+ * Set the read cursor position for the given virtual block
+ *
+ * @param vblk The vblk to change 
+ * @param pos The new read cursor
+ *
+ * @returns On success, 0 is returned. On error, -1 is returned and `errno` set
+ * to indicate the error
+ */
+int nvm_vblk_set_pos_read(struct nvm_vblk *vblk, size_t pos);
+
+/**
+ * Set the write cursor position for the given virtual block
+ *
+ * @param vblk The vblk to change
+ * @param pos The new write cursor
+ *
+ * @returns On success, 0 is returned. On error, -1 is returned and `errno` set
+ * to indicate the error
+ */
+int nvm_vblk_set_pos_write(struct nvm_vblk *vblk, size_t pos);
 
 /**
  * Print the virtual block in a humanly readable form

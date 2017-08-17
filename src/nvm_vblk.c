@@ -436,6 +436,30 @@ size_t nvm_vblk_get_pos_write(struct nvm_vblk *vblk)
 	return vblk->pos_write;
 }
 
+int nvm_vblk_set_pos_read(struct nvm_vblk *vblk, size_t pos)
+{
+	if (pos > vblk->nbytes) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	vblk->pos_read = pos;
+
+	return 0;
+}
+
+int nvm_vblk_set_pos_write(struct nvm_vblk *vblk, size_t pos)
+{
+	if (pos > vblk->nbytes) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	vblk->pos_write = pos;
+
+	return 0;
+}
+
 void nvm_vblk_pr(struct nvm_vblk *vblk)
 {
 	printf("vblk:\n");
