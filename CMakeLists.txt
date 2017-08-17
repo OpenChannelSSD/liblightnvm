@@ -56,6 +56,7 @@ set(HEADER_FILES
 
 set(SOURCE_FILES
 	src/nvm_spec.c
+	src/nvm_be.c
 	src/nvm_be_ioctl.c
 	src/nvm_be_sysfs.c
 	src/nvm_be_lba.c
