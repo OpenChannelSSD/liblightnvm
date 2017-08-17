@@ -1,5 +1,5 @@
 /*
- * nvm_be - internal header for library backends
+ * be - Provides fall-back methods for backends which are not supported
  *
  * Copyright (C) 2015-2017 Javier Gonzáles <javier@cnexlabs.com>
  * Copyright (C) 2015-2017 Matias Bjørling <matias@cnexlabs.com>
@@ -26,68 +26,54 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef __INTERNAL_NVM_BE_H
-#define __INTERNAL_NVM_BE_H
+#include <errno.h>
+#include <stdlib.h>
+#include <liblightnvm.h>
+#include <nvm_be.h>
+#include <nvm_utils.h>
 
-/**
- * Backend interface
- */
-struct nvm_be {
+struct nvm_dev* nvm_be_nosys_open(const char *NVM_UNUSED(dev_path),
+				  int NVM_UNUSED(flags))
+{
+	errno = ENOSYS;
+	return NULL;
+}
 
-	/**
-	 * Backend identifier
-	 */
-	enum nvm_be_id id;
+void nvm_be_nosys_close(struct nvm_dev *NVM_UNUSED(dev))
+{
+	errno = ENOSYS;
+	return;
+}
 
-	/**
-	 * Open a device
-	 */
-	struct nvm_dev *(*open)(const char *, int flags);
+int nvm_be_nosys_user(struct nvm_dev *NVM_UNUSED(dev),
+		      struct nvm_cmd *NVM_UNUSED(cmd),
+		      struct nvm_ret *NVM_UNUSED(ret))
+{
+	errno = ENOSYS;
+	return -1;
+}
 
-	/**
-	 * Close the given device
-	 */
-	void (*close)(struct nvm_dev *);
+int nvm_be_nosys_admin(struct nvm_dev *NVM_UNUSED(dev),
+		       struct nvm_cmd *NVM_UNUSED(cmd),
+		       struct nvm_ret *NVM_UNUSED(ret))
+{
+	errno = ENOSYS;
+	return -1;
+}
 
-	/**
-	 * Send an user command to device
-	 */
-	int (*user)(struct nvm_dev *, struct nvm_cmd *, struct nvm_ret *);
+int nvm_be_nosys_vuser(struct nvm_dev *NVM_UNUSED(dev),
+		       struct nvm_cmd *NVM_UNUSED(cmd),
+		       struct nvm_ret *NVM_UNUSED(ret))
+{
+	errno = ENOSYS;
+	return -1;
+}
 
-	/**
-	 * Send an admin command to device
-	 */
-	int (*admin)(struct nvm_dev *, struct nvm_cmd *, struct nvm_ret *);
+int nvm_be_nosys_vadmin(struct nvm_dev *NVM_UNUSED(dev),
+			struct nvm_cmd *NVM_UNUSED(cmd),
+			struct nvm_ret *NVM_UNUSED(ret))
+{
+	errno = ENOSYS;
+	return -1;
+}
 
-	/**
-	 * Send a vector user command to device
-	 */
-	int (*vuser)(struct nvm_dev *, struct nvm_cmd *, struct nvm_ret *);
-
-	/**
-	 * Send a vector admin command to device
-	 */
-	int (*vadmin)(struct nvm_dev *, struct nvm_cmd *, struct nvm_ret *);
-};
-
-struct nvm_dev* nvm_be_nosys_open(const char *dev_path, int flags);
-
-void nvm_be_nosys_close(struct nvm_dev *dev);
-
-int nvm_be_nosys_user(struct nvm_dev *dev, struct nvm_cmd *cmd,
-		      struct nvm_ret *ret);
-
-int nvm_be_nosys_admin(struct nvm_dev *dev, struct nvm_cmd *cmd,
-		       struct nvm_ret *ret);
-
-int nvm_be_nosys_vuser(struct nvm_dev *dev, struct nvm_cmd *cmd,
-		       struct nvm_ret *ret);
-
-int nvm_be_nosys_vadmin(struct nvm_dev *dev, struct nvm_cmd *cmd,
-			struct nvm_ret *ret);
-
-extern struct nvm_be nvm_be_ioctl;
-extern struct nvm_be nvm_be_sysfs;
-extern struct nvm_be nvm_be_lba;
-
-#endif /* __INTERNAL_NVM_BE_H */
