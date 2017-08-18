@@ -28,7 +28,7 @@ cmake_check:
 .PHONY: configure
 configure: cmake_check
 	mkdir -p $(BUILD_DIR)
-	cd $(BUILD_DIR) && cmake -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DTESTS=$(BUILD_TESTS) -DCLI=$(BUILD_CLI) -DCMAKE_INSTALL_PREFIX:PATH=$(INSTALL_PREFIX) ../
+	cd $(BUILD_DIR) && cmake -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DTESTS=$(BUILD_TESTS) -DCLI=$(BUILD_CLI) -DCMAKE_INSTALL_PREFIX:PATH=$(INSTALL_PREFIX) -G "Unix Makefiles" ../
 	@echo "Modify build configuration in '$(BUILD_DIR)'"
 
 .PHONY: make
