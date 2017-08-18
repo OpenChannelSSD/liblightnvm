@@ -64,7 +64,6 @@ set(SOURCE_FILES
 	src/nvm_buf.c
 	src/nvm_bbt.c
 	src/nvm_geo.c
-	src/nvm_lba.c
 	src/nvm_ver.c
 	src/nvm_cmd.c
 	src/nvm_addr.c
