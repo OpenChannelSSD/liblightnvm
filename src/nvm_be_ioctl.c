@@ -26,6 +26,23 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifndef NVM_BE_IOCTL_ENABLED
+#include <liblightnvm.h>
+#include <nvm_be.h>
+struct nvm_be nvm_be_ioctl = {
+	.id = NVM_BE_IOCTL,
+
+	.open = nvm_be_nosys_open,
+	.close = nvm_be_nosys_close,
+
+	.user = nvm_be_nosys_user,
+	.admin = nvm_be_nosys_admin,
+
+	.vuser = nvm_be_nosys_vuser,
+	.vadmin = nvm_be_nosys_vadmin
+};
+#else
 #define _GNU_SOURCE
 #include <stdlib.h>
 #include <unistd.h>
@@ -317,4 +334,5 @@ struct nvm_be nvm_be_ioctl = {
 	.vuser = nvm_be_ioctl_vuser,
 	.vadmin = nvm_be_ioctl_vadmin,
 };
+#endif
 
