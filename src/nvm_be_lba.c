@@ -26,16 +26,30 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <liblightnvm.h>
+#include <nvm_be.h>
+
+#ifndef NVM_BE_LBA_ENABLED
+struct nvm_be nvm_be_lba = {
+	.id = NVM_BE_LBA,
+
+	.open = nvm_be_nosys_open,
+	.close = nvm_be_nosys_close,
+
+	.user = nvm_be_nosys_user,
+	.admin = nvm_be_nosys_admin,
+
+	.vuser = nvm_be_nosys_vuser,
+	.vadmin = nvm_be_nosys_vadmin
+};
+#else
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <liblightnvm.h>
-#include <nvm_be.h>
 #include <nvm_be_ioctl.h>
-#include <nvm_be_sysfs.h>
 #include <nvm_dev.h>
 #include <nvm_utils.h>
 #include <nvm_debug.h>
@@ -113,4 +127,5 @@ struct nvm_be nvm_be_lba = {
 	.vuser = nvm_be_lba_vuser,
 	.vadmin = nvm_be_ioctl_vadmin
 };
+#endif
 
