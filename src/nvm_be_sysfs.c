@@ -26,23 +26,35 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <liblightnvm.h>
+#include <nvm_be.h>
+
+#ifndef NVM_BE_SYSFS_ENABLED
+struct nvm_be nvm_be_sysfs = {
+	.id = NVM_BE_SYSFS,
+
+	.open = nvm_be_nosys_open,
+	.close = nvm_be_nosys_close,
+
+	.user = nvm_be_nosys_user,
+	.admin = nvm_be_nosys_admin,
+
+	.vuser = nvm_be_nosys_vuser,
+	.vadmin = nvm_be_nosys_vadmin
+};
+#else
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <errno.h>
-#ifdef NVM_BE_SYSFS_ENABLED
 #include <libudev.h>
-#endif
-#include <liblightnvm.h>
-#include <nvm_be.h>
-#include <nvm_be_ioctl.h>
 #include <nvm_dev.h>
 #include <nvm_debug.h>
 #include <nvm_utils.h>
+#include <nvm_be_ioctl.h>
 
-#ifdef NVM_BE_SYSFS_ENABLED
 static inline uint64_t _ilog2(uint64_t x)
 {
 	uint64_t val = 0;
@@ -438,42 +450,6 @@ struct nvm_dev *nvm_be_sysfs_open(const char *dev_path, int NVM_UNUSED(flags))
 
 	return dev;
 }
-#else
-struct nvm_dev* nvm_be_sysfs_open(const char *NVM_UNUSED(dev_path), int NVM_UNUSED(flags))
-{
-	errno = ENOSYS;
-	return NULL;
-}
-
-void nvm_be_sysfs_close(struct nvm_dev *NVM_UNUSED(dev)) {
-	errno = ENOSYS;
-	return;
-}
-
-int nvm_be_sysfs_user(struct nvm_dev *NVM_UNUSED(dev), struct nvm_cmd *NVM_UNUSED(cmd), struct nvm_ret *NVM_UNUSED(ret))
-{
-	errno = ENOSYS;
-	return -1;
-}
-
-int nvm_be_sysfs_admin(struct nvm_dev *NVM_UNUSED(dev), struct nvm_cmd *NVM_UNUSED(cmd), struct nvm_ret *NVM_UNUSED(ret))
-{
-	errno = ENOSYS;
-	return -1;
-}
-
-int nvm_be_sysfs_vuser(struct nvm_dev *NVM_UNUSED(dev), struct nvm_cmd *NVM_UNUSED(cmd), struct nvm_ret *NVM_UNUSED(ret))
-{
-	errno = ENOSYS;
-	return -1;
-}
-
-int nvm_be_sysfs_vadmin(struct nvm_dev *NVM_UNUSED(dev), struct nvm_cmd *NVM_UNUSED(cmd), struct nvm_ret *NVM_UNUSED(ret))
-{
-	errno = ENOSYS;
-	return -1;
-}
-#endif
 
 struct nvm_be nvm_be_sysfs = {
 	.id = NVM_BE_SYSFS,
@@ -487,4 +463,5 @@ struct nvm_be nvm_be_sysfs = {
 	.vuser = nvm_be_ioctl_vuser,
 	.vadmin = nvm_be_ioctl_vadmin
 };
+#endif
 
