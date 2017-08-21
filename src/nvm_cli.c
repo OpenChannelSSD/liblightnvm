@@ -774,6 +774,10 @@ int _evar_and_dev_setup(struct nvm_cli *cli)
 		return -1;
 	}
 
+	if (cli->cmd.arg_type == NVM_CLI_ARG_NONE) {
+		return 0;
+	}
+
 	cli->args.dev = nvm_dev_openf(cli->args.dev_path, cli->evars.be_id);
 	if (!cli->args.dev) {
 		perror("# nvm_dev_openf");
