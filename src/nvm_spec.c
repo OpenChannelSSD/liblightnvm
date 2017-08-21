@@ -217,14 +217,14 @@ struct nvm_spec_bbt *nvm_spec_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 	if (err || (spec_bbt->tblks != nblks)) {
 		NVM_DEBUG("FAILED: be execution failed");
 		errno = EIO;
-		free(spec_bbt);
+		nvm_buf_free(spec_bbt);
 		return NULL;
 	}
 	if (!(spec_bbt->tblid[0] == 'B' && spec_bbt->tblid[1] == 'B' &&
 	      spec_bbt->tblid[2] == 'L' && spec_bbt->tblid[3] == 'T')) {
 		NVM_DEBUG("FAILED: invalid format of returned bbt");
 		errno = EIO;
-		free(spec_bbt);
+		nvm_buf_free(spec_bbt);
 		return NULL;
 	}
 
