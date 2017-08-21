@@ -468,7 +468,7 @@ void nvm_vblk_pr(struct nvm_vblk *vblk)
 	printf("  nmbytes: %zu\n", vblk->nbytes >> 20);
 	printf("  pos_write: %zu\n", vblk->pos_write);
 	printf("  pos_read: %zu\n", vblk->pos_read);
-	printf("  struct_nbytes: %lu\n", sizeof(*vblk));
+	printf("  struct_nbytes: %zu\n", sizeof(*vblk));
         nvm_addr_prn(vblk->blks, vblk->nblks);
 }
 

@@ -34,11 +34,11 @@
 struct nvm_vblk {
 	struct nvm_dev *dev;
 	struct nvm_addr blks[128];
-	int nblks;
+	int32_t nblks;
 	size_t nbytes;
 	size_t pos_write;
 	size_t pos_read;
-	int nthreads;
+	int32_t nthreads;
 };
 
 #endif /* __INTERNAL_NVM_VBLK_H */
