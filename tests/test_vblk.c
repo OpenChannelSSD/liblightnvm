@@ -98,8 +98,8 @@ int teardown(void)
 	geo = NULL;
 	nvm_vblk_free(vblk);
 	nvm_dev_close(dev);
-	free(buf_r);
-	free(buf_w);
+	nvm_buf_free(buf_r);
+	nvm_buf_free(buf_w);
 
 	return 0;
 }
@@ -196,7 +196,7 @@ void test_VBLK_RAND(void)
 				if (VERBOSE)
 					perror("nvm_vblk_pread");
 				CU_FAIL("FAILED: nvm_vblk_pread");
-				free(buf);
+				nvm_buf_free(buf);
 				return;
 			}
 			CU_ASSERT(res == (ssize_t)count);
@@ -205,14 +205,14 @@ void test_VBLK_RAND(void)
 				if (VERBOSE)
 					print_mismatch(buf_w + offset, buf, count);
 				CU_FAIL("FAILED: buffer mismatch");
-				free(buf);
+				nvm_buf_free(buf);
 				return;
 			}
 
 			nbytes_read += res;
 		}
 
-		free(buf);
+		nvm_buf_free(buf);
 	}
 }
 
