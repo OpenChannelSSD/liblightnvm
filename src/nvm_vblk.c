@@ -305,7 +305,8 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf, size_t count,
 		{}
 	}
 
-	free(padding_buf);
+	nvm_buf_free(padding_buf);
+	nvm_buf_free(meta);
 
 	if (nerr) {
 		errno = EIO;
