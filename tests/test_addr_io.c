@@ -208,10 +208,10 @@ void _test_1ADDR(int use_meta)
 	failed = 0;
 
 exit_naddr:
-	free(meta_r);
-	free(buf_r);
-	free(meta_w);
-	free(buf_w);
+	nvm_buf_free(meta_r);
+	nvm_buf_free(buf_r);
+	nvm_buf_free(meta_w);
+	nvm_buf_free(buf_w);
 
 	if (failed)
 		printf("Failure on PPA(0x%016lx)\n", blk_addr.ppa);
@@ -364,10 +364,10 @@ void _test_NADDR(int use_meta, int pmode)
 	failed = 0;
 
 exit_naddr:
-	free(meta_r);
-	free(buf_r);
-	free(meta_w);
-	free(buf_w);
+	nvm_buf_free(meta_r);
+	nvm_buf_free(buf_r);
+	nvm_buf_free(meta_w);
+	nvm_buf_free(buf_w);
 
 	if (failed)
 		printf("Failure on PPA(0x%016lx)\n", blk_addr.ppa);

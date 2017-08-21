@@ -71,7 +71,7 @@ int setup(void)
 {
 	size_t buf_nbytes;
 	ssize_t res;
-	char *buf;
+	char *buf = NULL;
 
 	srand(SEED);
 
@@ -117,7 +117,7 @@ int setup(void)
 	res = nvm_vblk_erase(blk);
 	if (res < 0) {
 		nvm_vblk_free(blk);
-		free(buf);
+		nvm_buf_free(buf);
 
 		errno = EIO;
 		return -1;
@@ -126,13 +126,13 @@ int setup(void)
 	res = nvm_vblk_write(blk, buf, buf_nbytes);
 	if (res < 0) {
 		nvm_vblk_free(blk);
-		free(buf);
+		nvm_buf_free(buf);
 
 		errno = EIO;
 		return -1;
 	}
 
-	free(buf);
+	nvm_buf_free(buf);
 	return 0;
 }
 
