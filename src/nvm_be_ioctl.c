@@ -164,7 +164,7 @@ static inline int _ioctl_fill_geo(struct nvm_dev *dev, struct nvm_ret *ret)
 	struct nvm_spec_identify *idf;
 	int err;
 
-	idf = aligned_alloc(4096, sizeof(*idf));
+	idf = nvm_buf_alloca(4096, sizeof(*idf));
 	if (!idf) {
 		errno = ENOMEM;
 		return -1;
@@ -177,7 +177,7 @@ static inline int _ioctl_fill_geo(struct nvm_dev *dev, struct nvm_ret *ret)
 
 	err = nvm_be_ioctl_vadmin(dev, &cmd, ret);
 	if (err) {
-		free(idf);
+		nvm_buf_free(idf);
 		return -1;			// NOTE: Propagate errno
 	}
 
@@ -216,7 +216,7 @@ static inline int _ioctl_fill_geo(struct nvm_dev *dev, struct nvm_ret *ret)
 	default:
 		NVM_DEBUG("Unsupported Version ID(%d)", idf->s.verid);
 		errno = ENOSYS;
-		free(idf);
+		nvm_buf_free(idf);
 		return -1;
 	}
 
@@ -251,7 +251,7 @@ static inline int _ioctl_fill_geo(struct nvm_dev *dev, struct nvm_ret *ret)
 		break;
 	default:
 		errno = EINVAL;
-		free(idf);
+		nvm_buf_free(idf);
 		return -1;
 	}
 
@@ -261,7 +261,7 @@ static inline int _ioctl_fill_geo(struct nvm_dev *dev, struct nvm_ret *ret)
 
 	dev->meta_mode = NVM_META_MODE_NONE;
 
-	free(idf);
+	nvm_buf_free(idf);
 
 	return 0;
 }
