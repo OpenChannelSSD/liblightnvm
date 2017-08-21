@@ -464,8 +464,10 @@ void nvm_vblk_pr(struct nvm_vblk *vblk)
 {
 	printf("vblk:\n");
 	printf("  dev: {pmode: '%s'}\n", nvm_pmode_str(nvm_dev_get_pmode(vblk->dev)));
-	printf("  nbytes: %lu\n", vblk->nbytes);
-	printf("  nmbytes: %lu\n", vblk->nbytes >> 20);
+	printf("  nblks: %"PRIi32"\n", vblk->nblks);
+	printf("  nmbytes: %zu\n", vblk->nbytes >> 20);
+	printf("  pos_write: %zu\n", vblk->pos_write);
+	printf("  pos_read: %zu\n", vblk->pos_read);
 	printf("  struct_nbytes: %lu\n", sizeof(*vblk));
         nvm_addr_prn(vblk->blks, vblk->nblks);
 }
