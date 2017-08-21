@@ -26,7 +26,7 @@ ssize_t _write(struct nvm_cli *cli, int with_meta)
 	     cli->opts.file_input) {	// Fill buf with content from file
 		if (nvm_buf_from_file(buf, buf_nbytes, cli->opts.file_input)) {
 			nvm_cli_perror("nvm_buf_from_file");
-			free(buf);
+			nvm_buf_free(buf);
 			return -1;
 		}
 	} else {			// Fill buf with synthetic payload
@@ -37,7 +37,7 @@ ssize_t _write(struct nvm_cli *cli, int with_meta)
 		meta = nvm_buf_alloc(args->geo, meta_tbytes);
 		if (!meta) {
 			nvm_cli_perror("nvm_buf_alloc");
-			free(buf);
+			nvm_buf_free(buf);
 			return -1;
 		}
 		for (int i = 0; i < meta_tbytes; ++i)
@@ -56,8 +56,8 @@ ssize_t _write(struct nvm_cli *cli, int with_meta)
 		nvm_ret_pr(&ret);
 	}
 
-	free(buf);
-	free(meta);
+	nvm_buf_free(buf);
+	nvm_buf_free(meta);
 
 	return err;
 }
@@ -84,7 +84,7 @@ ssize_t _read(struct nvm_cli *cli, int with_meta)
 		meta = nvm_buf_alloc(args->geo, meta_tbytes);
 		if (!meta) {
 			nvm_cli_perror("nvm_buf_alloc");
-			free(buf);
+			nvm_buf_free(buf);
 			return -1;
 		}
 		memset(meta, 0, meta_tbytes);
@@ -122,8 +122,8 @@ ssize_t _read(struct nvm_cli *cli, int with_meta)
 			nvm_cli_perror("nvm_buf_to_file");
 	}
 
-	free(buf);
-	free(meta);
+	nvm_buf_free(buf);
+	nvm_buf_free(meta);
 
 	return err;
 }
