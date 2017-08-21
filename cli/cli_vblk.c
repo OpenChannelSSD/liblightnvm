@@ -45,7 +45,7 @@ ssize_t _vblk_write(struct nvm_cli *cli, struct nvm_vblk *vblk)
 	     cli->opts.file_input) {	// Fill with content from file
 		if (nvm_buf_from_file(buf, nbytes, cli->opts.file_input)) {
 			nvm_cli_perror("nvm_buf_from_file");
-			free(buf);
+			nvm_buf_free(buf);
 			return -1;
 		}
 	} else {
@@ -62,7 +62,7 @@ ssize_t _vblk_write(struct nvm_cli *cli, struct nvm_vblk *vblk)
 	if (res < 0)
 		nvm_cli_perror("nvm_vblk_write");
 
-	free(buf);
+	nvm_buf_free(buf);
 
 	return res;
 }
@@ -104,7 +104,7 @@ ssize_t _vblk_read(struct nvm_cli *cli, struct nvm_vblk *vblk)
 			nvm_cli_perror("nvm_buf_to_file");
 	}
 
-	free(buf);
+	nvm_buf_free(buf);
 
 	return res;
 }
@@ -142,7 +142,7 @@ ssize_t _vblk_pread(struct nvm_cli *cli, struct nvm_vblk *vblk)
 			nvm_cli_perror("nvm_buf_to_file");
 	}
 
-	free(buf);
+	nvm_buf_free(buf);
 
 	return res;
 }
