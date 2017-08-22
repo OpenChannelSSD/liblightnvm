@@ -31,8 +31,13 @@
 
 #include <liblightnvm.h>
 
+#if !defined(_WIN32) && !defined(HANDLE)
+typedef void* HANDLE;
+#endif
+
 struct nvm_dev {
 	int fd;				///< Device IOCTL handle
+	HANDLE handle;			///< Device Windows IOCTL handle
 	char name[NVM_DEV_NAME_LEN];	///< Device name e.g. "nvme0n1"
 	char path[NVM_DEV_PATH_LEN];	///< Device path e.g. "/dev/nvme0n1"
 	int nsid;			///< NVME namespace identifier
