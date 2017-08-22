@@ -43,6 +43,9 @@ install:
 make-pkg: configure
 	cd $(BUILD_DIR) && make package
 
+.PHONY: windows
+windows: cli make
+
 .PHONY: install-pkg
 install-pkg:
 	sudo dpkg -i $(BUILD_DIR)/*.deb
