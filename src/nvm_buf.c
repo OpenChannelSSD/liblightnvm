@@ -63,7 +63,7 @@ void nvm_buf_pr(char *buf, size_t nbytes)
 	printf("# NVM_BUF_PR - BEGIN **\n");
 	for (size_t i = 0; i < nbytes; i++) {
 		if (!(i % width))
-			printf("\ni[%lu,%lu]: ", i, i + (width - 1));
+			printf("\ni[%zu,%zu]: ", i, i + (width - 1));
 		printf(" %c", buf[i]);
 	}
 	printf("# NVM_BUF_PR - END\n");
