@@ -69,7 +69,7 @@ void nvm_dev_attr_pr(const struct nvm_dev *dev)
 	printf("  name: '%s'\n", nvm_dev_get_name(dev));
 	printf("  path: '%s'\n", nvm_dev_get_path(dev));
 	printf("  fd: %d\n", nvm_dev_get_fd(dev));
-	printf("  ssw: %lu\n", dev->ssw);
+	printf("  ssw: %"PRIu64"\n", dev->ssw);
 	printf("  mccap: "NVM_I32_FMT"\n", NVM_I32_TO_STR(nvm_dev_get_mccap(dev)));
 	printf("  pmode: '%s'\n", nvm_pmode_str(nvm_dev_get_pmode(dev)));
 
