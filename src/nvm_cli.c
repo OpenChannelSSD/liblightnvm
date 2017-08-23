@@ -1138,13 +1138,13 @@ void nvm_cli_cmd_args_pr(struct nvm_cli_cmd_args *args) {
 	printf("cli-args-ndec_vals(%d) {\n", args->ndec_vals);
 	if (args->ndec_vals)
 		for (int i = 0; i < args->ndec_vals; ++i)
-			printf(" %d: %lu\n", i, args->dec_vals[i]);
+			printf(" %d: %zu\n", i, args->dec_vals[i]);
 	printf("},\n");
 
 	printf("cli-args-nhex_vals(%d) {\n", args->nhex_vals);
 	if (args->nhex_vals)
 		for (int i = 0; i < args->nhex_vals; ++i)
-			printf(" %d: 0x%016lx\n", i, args->hex_vals[i]);
+			printf(" %d: 0x%016"PRIx64"\n", i, args->hex_vals[i]);
 	printf("},\n");
 
 	printf("cli-args-");
@@ -1161,8 +1161,8 @@ void nvm_cli_opts_pr(struct nvm_cli_opts *opts)
 	printf("  help: %d\n", opts->help);
 	printf("  brief: %d\n", opts->brief);
 	printf("  verbose: %d\n", opts->verbose);
-	printf("  dec_val: %ld\n", opts->dec_val);
-	printf("  hex_val: 0x%016lx\n", opts->hex_val);
+	printf("  dec_val: %zu\n", opts->dec_val);
+	printf("  hex_val: 0x%016"PRIx64"\n", opts->hex_val);
 	printf("  file_input: %s\n", opts->file_input);
 	printf("  file_output: %s\n", opts->file_output);
 }
@@ -1215,7 +1215,7 @@ void nvm_cli_perror(const char *msg)
 
 void nvm_cli_status_pr(const char *task, size_t cur, size_t total)
 {
-	printf("status: {task: '%s', cur: %lu, total: %lu}\n",
+	printf("status: {task: '%s', cur: %zu, total: %zu}\n",
 	       task, cur, total);
 }
 
