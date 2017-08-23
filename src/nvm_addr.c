@@ -38,14 +38,14 @@ void nvm_ret_pr(const struct nvm_ret *ret)
 {
 	printf("nvm_ret: {");
 	printf("result: 0x%x, ", ret->result);
-	printf("status: %lu",ret->status);
+	printf("status: %"PRIu64"",ret->status);
 	printf("}\n");
 }
 
 void nvm_addr_pr(struct nvm_addr addr)
 {
 	printf("addr: {");
-	printf("ppa: 0x%016lx, ", addr.ppa);
+	printf("ppa: 0x%016"PRIx64", ", addr.ppa);
 	printf("ch: %02d, ", addr.g.ch);
 	printf("lun: %02d, ", addr.g.lun);
 	printf("pl: %d, ", addr.g.pl);
