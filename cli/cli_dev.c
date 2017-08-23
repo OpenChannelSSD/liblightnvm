@@ -44,9 +44,11 @@ int cmd_info(struct nvm_cli *cli)
 	return 0;
 }
 
-int cmd_list(struct nvm_cli *cli)
+int cmd_enum(struct nvm_cli *cli)
 {
-	nvm_cli_info_pr("Device listing");
+	nvm_cli_info_pr("Device enumeration");
+
+	printf("huh %p\n", (void *)cli);
 
 	return 0;
 }
@@ -57,7 +59,7 @@ int cmd_list(struct nvm_cli *cli)
 
 /* Define commands */
 static struct nvm_cli_cmd cmds[] = {
-	{"list", cmd_list, NVM_CLI_ARG_NONE, NVM_CLI_OPT_HELP},
+	{"enum", cmd_enum, NVM_CLI_ARG_NONE, NVM_CLI_OPT_HELP},
 	{"attr", cmd_attr, NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_HELP},
 	{"geo", cmd_geo, NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_HELP},
 	{"ppaf", cmd_ppaf, NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_HELP},
