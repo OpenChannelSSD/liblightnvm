@@ -1,0 +1,80 @@
+
+## erase/write/read on /dev/nvme0n1 using 1 channel(s)
+nvm_vblk_erase: {elapsed: 0.0075, mb: 128.00, mbsec: 17180.09}
+nvm_vblk_write: {elapsed: 1.2807, mb: 128.00, mbsec: 99.95}
+nvm_vblk_read: {elapsed: 0.5189, mb: 128.00, mbsec: 246.66}
+
+## erase/write/read on /dev/nvme0n1 using 2 channel(s)
+nvm_vblk_erase: {elapsed: 0.0075, mb: 256.00, mbsec: 34158.22}
+nvm_vblk_write: {elapsed: 1.1039, mb: 256.00, mbsec: 231.91}
+nvm_vblk_read: {elapsed: 0.4730, mb: 256.00, mbsec: 541.20}
+
+## erase/write/read on /dev/nvme0n1 using 3 channel(s)
+nvm_vblk_erase: {elapsed: 0.0076, mb: 384.00, mbsec: 50672.60}
+nvm_vblk_write: {elapsed: 1.0633, mb: 384.00, mbsec: 361.13}
+nvm_vblk_read: {elapsed: 0.4499, mb: 384.00, mbsec: 853.57}
+
+## erase/write/read on /dev/nvme0n1 using 4 channel(s)
+nvm_vblk_erase: {elapsed: 0.0076, mb: 512.00, mbsec: 67274.44}
+nvm_vblk_write: {elapsed: 1.0382, mb: 512.00, mbsec: 493.18}
+nvm_vblk_read: {elapsed: 0.4612, mb: 512.00, mbsec: 1110.16}
+
+## erase/write/read on /dev/nvme0n1 using 5 channel(s)
+nvm_vblk_erase: {elapsed: 0.0077, mb: 640.00, mbsec: 83019.04}
+nvm_vblk_write: {elapsed: 1.0304, mb: 640.00, mbsec: 621.09}
+nvm_vblk_read: {elapsed: 0.4550, mb: 640.00, mbsec: 1406.72}
+
+## erase/write/read on /dev/nvme0n1 using 6 channel(s)
+nvm_vblk_erase: {elapsed: 0.0078, mb: 768.00, mbsec: 98961.31}
+nvm_vblk_write: {elapsed: 1.0403, mb: 768.00, mbsec: 738.24}
+nvm_vblk_read: {elapsed: 0.4597, mb: 768.00, mbsec: 1670.78}
+
+## erase/write/read on /dev/nvme0n1 using 7 channel(s)
+nvm_vblk_erase: {elapsed: 0.0078, mb: 896.00, mbsec: 114780.44}
+nvm_vblk_write: {elapsed: 1.0446, mb: 896.00, mbsec: 857.70}
+nvm_vblk_read: {elapsed: 0.4563, mb: 896.00, mbsec: 1963.67}
+
+## erase/write/read on /dev/nvme0n1 using 8 channel(s)
+nvm_vblk_erase: {elapsed: 0.0079, mb: 1024.00, mbsec: 130352.14}
+nvm_vblk_write: {elapsed: 1.0429, mb: 1024.00, mbsec: 981.87}
+nvm_vblk_read: {elapsed: 0.4476, mb: 1024.00, mbsec: 2287.67}
+
+## erase/write/read on /dev/nvme0n1 using 9 channel(s)
+nvm_vblk_erase: {elapsed: 0.0153, mb: 1152.00, mbsec: 75399.30}
+nvm_vblk_write: {elapsed: 1.0512, mb: 1152.00, mbsec: 1095.92}
+nvm_vblk_read: {elapsed: 0.4484, mb: 1152.00, mbsec: 2569.22}
+
+## erase/write/read on /dev/nvme0n1 using 10 channel(s)
+nvm_vblk_erase: {elapsed: 0.0153, mb: 1280.00, mbsec: 83640.17}
+nvm_vblk_write: {elapsed: 1.0599, mb: 1280.00, mbsec: 1207.64}
+nvm_vblk_read: {elapsed: 0.4478, mb: 1280.00, mbsec: 2858.25}
+
+## erase/write/read on /dev/nvme0n1 using 11 channel(s)
+nvm_vblk_erase: {elapsed: 0.0153, mb: 1408.00, mbsec: 91753.20}
+nvm_vblk_write: {elapsed: 1.0745, mb: 1408.00, mbsec: 1310.36}
+nvm_vblk_read: {elapsed: 0.4476, mb: 1408.00, mbsec: 3145.57}
+
+## erase/write/read on /dev/nvme0n1 using 12 channel(s)
+nvm_vblk_erase: {elapsed: 0.0154, mb: 1536.00, mbsec: 99520.56}
+nvm_vblk_write: {elapsed: 1.0989, mb: 1536.00, mbsec: 1397.71}
+nvm_vblk_read: {elapsed: 0.4479, mb: 1536.00, mbsec: 3429.56}
+
+## erase/write/read on /dev/nvme0n1 using 13 channel(s)
+nvm_vblk_erase: {elapsed: 0.0155, mb: 1664.00, mbsec: 107594.71}
+nvm_vblk_write: {elapsed: 1.1107, mb: 1664.00, mbsec: 1498.15}
+nvm_vblk_read: {elapsed: 0.4478, mb: 1664.00, mbsec: 3716.06}
+
+## erase/write/read on /dev/nvme0n1 using 14 channel(s)
+nvm_vblk_erase: {elapsed: 0.0155, mb: 1792.00, mbsec: 115890.91}
+nvm_vblk_write: {elapsed: 1.1299, mb: 1792.00, mbsec: 1586.03}
+nvm_vblk_read: {elapsed: 0.4482, mb: 1792.00, mbsec: 3998.48}
+
+## erase/write/read on /dev/nvme0n1 using 15 channel(s)
+nvm_vblk_erase: {elapsed: 0.0155, mb: 1920.00, mbsec: 123803.99}
+nvm_vblk_write: {elapsed: 1.1508, mb: 1920.00, mbsec: 1668.35}
+nvm_vblk_read: {elapsed: 0.4481, mb: 1920.00, mbsec: 4284.87}
+
+## erase/write/read on /dev/nvme0n1 using 16 channel(s)
+nvm_vblk_erase: {elapsed: 0.0156, mb: 2048.00, mbsec: 131197.52}
+nvm_vblk_write: {elapsed: 1.1719, mb: 2048.00, mbsec: 1747.59}
+nvm_vblk_read: {elapsed: 0.4482, mb: 2048.00, mbsec: 4569.70}
