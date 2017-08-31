@@ -13,10 +13,11 @@ ssize_t _vblk_erase(struct nvm_cli *NVM_UNUSED(cli), struct nvm_vblk *vblk)
 
 	nvm_cli_timer_start();
 	res = nvm_vblk_erase(vblk);
+	nvm_cli_timer_stop();
+	nvm_cli_timer_bw_pr("nvm_vblk_erase", nvm_vblk_get_nbytes(vblk));
+
 	if (res < 0)
 		nvm_cli_perror("nvm_vblk_erase");
-	nvm_cli_timer_stop();
-	nvm_cli_timer_pr("nvm_vblk_erase");
 
 	return res;
 }
@@ -53,12 +54,13 @@ ssize_t _vblk_write(struct nvm_cli *cli, struct nvm_vblk *vblk)
 	nvm_cli_timer_stop();
 	nvm_cli_timer_pr("nvm_buf_fill");
 
-	nvm_cli_timer_start();		// Write buffer to device
-	res = nvm_vblk_write(vblk, buf, nbytes);
+	nvm_cli_timer_start();
+	res = nvm_vblk_write(vblk, buf, nbytes);// Write buffer to device
+	nvm_cli_timer_stop();
+	nvm_cli_timer_bw_pr("nvm_vblk_write", nbytes);
+
 	if (res < 0)
 		nvm_cli_perror("nvm_vblk_write");
-	nvm_cli_timer_stop();
-	nvm_cli_timer_pr("nvm_vblk_write");
 
 	free(buf);
 
@@ -83,12 +85,18 @@ ssize_t _vblk_read(struct nvm_cli *cli, struct nvm_vblk *vblk)
 	nvm_cli_timer_stop();
 	nvm_cli_timer_pr("nvm_buf_alloc");
 
-	nvm_cli_timer_start();		// Read from device into buffer
-	res = nvm_vblk_read(vblk, buf, nbytes);
+	nvm_cli_timer_start();		// Allocate write buffer
+	nvm_buf_fill(buf, nbytes);	// Fill with synthetic payload
+	nvm_cli_timer_stop();
+	nvm_cli_timer_pr("nvm_buf_fill");
+
+	nvm_cli_timer_start();
+	res = nvm_vblk_read(vblk, buf, nbytes);	// READ: DEV -> BUFFER
+	nvm_cli_timer_stop();
+	nvm_cli_timer_bw_pr("nvm_vblk_read", nbytes);
+
 	if (res < 0)
 		nvm_cli_perror("nvm_vblk_read");
-	nvm_cli_timer_stop();
-	nvm_cli_timer_pr("nvm_vblk_read");
 
 	if ((cli->opts.mask & NVM_CLI_OPT_FILE_OUTPUT) &&
 	     cli->opts.file_output) {	// Write buffer to file system
@@ -122,10 +130,11 @@ ssize_t _vblk_pread(struct nvm_cli *cli, struct nvm_vblk *vblk)
 
 	nvm_cli_timer_start();		// Read from device into buffer
 	res = nvm_vblk_pread(vblk, buf, nbytes, offset);
+	nvm_cli_timer_stop();
+	nvm_cli_timer_bw_pr("nvm_vblk_pread", nbytes);
+
 	if (res < 0)
 		nvm_cli_perror("nvm_vblk_pread");
-	nvm_cli_timer_stop();
-	nvm_cli_timer_pr("nvm_vblk_pread");
 
 	if ((cli->opts.mask & NVM_CLI_OPT_FILE_OUTPUT) &&
 	     cli->opts.file_output) {	// Write buffer to file system
@@ -144,12 +153,13 @@ ssize_t _vblk_pad(struct nvm_cli *NVM_UNUSED(cli), struct nvm_vblk *vblk)
 
 	nvm_vblk_pr(vblk);
 
-	nvm_cli_timer_start();
+	nvm_cli_timer_start();		// Read from device into buffer
 	res = nvm_vblk_pad(vblk);
+	nvm_cli_timer_stop();
+	nvm_cli_timer_bw_pr("nvm_vblk_pad", nvm_vblk_get_nbytes(vblk));
+
 	if (res < 0)
 		nvm_cli_perror("nvm_vblk_pad");
-	nvm_cli_timer_stop();
-	nvm_cli_timer_pr("nvm_vblk_pad");
 
 	return res;
 }
