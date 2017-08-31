@@ -8,6 +8,8 @@ set(NVM_VERSION "${NVM_VERSION_MAJOR}.${NVM_VERSION_MINOR}.${NVM_VERSION_PATCH}"
 project(liblightnvm C)
 include(FeatureSummary)
 include(use_c11)
+include(CheckLibraryExists)
+include(CheckFunctionExists)
 
 use_c11()
 enable_c_flag("-std=c11")
@@ -30,6 +32,14 @@ if ( NOT ${UDEV_FOUND} )
 	message(ERROR "Please install libudev ('libudev-dev' on Ubuntu) for be_sysfs support")
 else()
 	add_definitions(-DNVM_BE_SYSFS_ENABLED)
+endif()
+
+check_library_exists(c clock_gettime "" LIBC_HAS_CLOCK_GETTIME)
+if (NOT LIBC_HAS_BLOCK_GETTIME)
+	check_library_exists(rt clock_gettime "time.h" LIBRT_HAS_CLOCK_GETTIME)
+	if (NOT LIBRT_HAS_CLOCK_GETTIME)
+		message( FATAL_ERROR "Cannot find clock_gettime" )
+	endif()
 endif()
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DNVM_DEBUG_ENABLED")
@@ -124,6 +134,9 @@ set(SOURCE_FILES
 
 add_library(${CLI_LIB} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${CLI_LIB} lightnvm)
+if (${LIBRT_HAS_CLOCK_GETTIME})
+	target_link_libraries(${CLI_LIB} rt)
+endif()
 set_target_properties(${CLI_LIB} PROPERTIES
 	VERSION ${NVM_VERSION}
 	SOVERSION ${NVM_VERSION_MAJOR}
@@ -135,6 +148,9 @@ install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm_cli.h"
 # STATIC: Here we define the static library
 add_library(${CLI_LIB_STATIC} STATIC ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${CLI_LIB_STATIC} lightnvm_a)
+if (${LIBRT_HAS_CLOCK_GETTIME})
+	target_link_libraries(${CLI_LIB_STATIC} rt)
+endif()
 set_target_properties(${CLI_LIB_STATIC} PROPERTIES OUTPUT_NAME ${CLI_LIB})
 install(TARGETS ${CLI_LIB_STATIC} DESTINATION lib COMPONENT cli)
 
