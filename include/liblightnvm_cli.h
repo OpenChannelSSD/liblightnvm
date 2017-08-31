@@ -196,11 +196,39 @@ size_t nvm_cli_timer_start(void);
 size_t nvm_cli_timer_stop(void);
 
 /**
- * Return elapsed time
+ * Return elapsed time in seconds
  *
  * @return Elapsed time, in seconds
  */
 double nvm_cli_timer_elapsed(void);
+
+/**
+ * Return elapsed time in seconds
+ *
+ * @return Elapsed time, in seconds
+ */
+double nvm_cli_timer_elapsed_secs(void);
+
+/**
+ * Return elapsed time in miliseconds
+ *
+ * @return Elapsed time, in miliseconds
+ */
+double nvm_cli_timer_elapsed_msecs(void);
+
+/**
+ * Return elapsed time in microseconds
+ *
+ * @return Elapsed time, in microseconds
+ */
+double nvm_cli_timer_elapsed_usecs(void);
+
+/**
+ * Return elapsed time in nanoseconds
+ *
+ * @return Elapsed time, in nanoseconds
+ */
+size_t nvm_cli_timer_elapsed_nsecs(void);
 
 /**
  * Print out elapsed time prefix with the given string
@@ -208,6 +236,8 @@ double nvm_cli_timer_elapsed(void);
  * @param tool Prefix to use
  */
 void nvm_cli_timer_pr(const char *tool);
+
+void nvm_cli_timer_bw_pr(const char *prefix, size_t nbytes);
 
 void nvm_cli_usage_pr(struct nvm_cli *cli);
 

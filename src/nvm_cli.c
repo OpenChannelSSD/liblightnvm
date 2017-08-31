@@ -32,38 +32,69 @@
 #include <stdio.h>
 #include <errno.h>
 #include <getopt.h>
-#include <sys/time.h>
+#include <time.h>
 #include <liblightnvm_cli.h>
 
 static size_t start, stop;
 
-static inline size_t wclock_sample(void)
+static inline size_t _clock_sample(void)
 {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return tv.tv_usec + tv.tv_sec * 1000000;
+	struct timespec ts;
+
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+
+	return ts.tv_nsec + ts.tv_sec * 1e9;
 }
 
 size_t nvm_cli_timer_start(void)
 {
-    start = wclock_sample();
-    return start;
+	start = _clock_sample();
+	return start;
 }
 
 size_t nvm_cli_timer_stop(void)
 {
-    stop = wclock_sample();
-    return stop;
+	stop = _clock_sample();
+	return stop;
 }
 
 double nvm_cli_timer_elapsed(void)
 {
-    return (stop-start)/(double)1000000.0;
+	return nvm_cli_timer_elapsed_secs();
+}
+
+double nvm_cli_timer_elapsed_secs(void)
+{
+	return (stop - start) / (double)1e9;
+}
+
+double nvm_cli_timer_elapsed_msecs(void)
+{
+	return (stop - start) / (double)1e6;
+}
+
+double nvm_cli_timer_elapsed_usecs(void)
+{
+	return (stop - start) / (double)1e3;
+}
+
+size_t nvm_cli_timer_elapsed_nsecs(void)
+{
+	return stop - start;
 }
 
 void nvm_cli_timer_pr(const char *tool)
 {
 	printf("%s: {elapsed: %lf}\n", tool, nvm_cli_timer_elapsed());
+}
+
+void nvm_cli_timer_bw_pr(const char *prefix, size_t nbytes)
+{
+	double secs = nvm_cli_timer_elapsed_secs();
+	double mb = nbytes / (double)1048576;
+
+	printf("%s: {elapsed: %.4f, mb: %.2f, mbsec: %.2f}\n",
+		prefix, secs, mb, mb / secs);
 }
 
 int _parse_options(int argc, char *argv[], struct nvm_cli *cli)
