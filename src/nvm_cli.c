@@ -131,7 +131,7 @@ int _parse_options(int argc, char *argv[], struct nvm_cli *cli)
 			break;
 		case 'x':
 			cli->opts.mask |= NVM_CLI_OPT_VAL_HEX;
-			cli->opts.hex_val = strtol(optarg, NULL, 16);
+			cli->opts.hex_val = strtoll(optarg, NULL, 16);
 			break;
 
 		case ':':
@@ -319,7 +319,7 @@ int _parse_cmd_arg_register(int argc, char *argv[], struct nvm_cli *cli)
 		return -1;
 	}
 
-	cli->args.hex_vals[(cli->args.nhex_vals)++] = strtol(argv[0], NULL, 16);
+	cli->args.hex_vals[(cli->args.nhex_vals)++] = strtoll(argv[0], NULL, 16);
 
 	return inc;
 }
@@ -333,8 +333,8 @@ int _parse_cmd_arg_register_value(int argc, char *argv[], struct nvm_cli *cli)
 		return -1;
 	}
 
-	cli->args.hex_vals[(cli->args.nhex_vals)++] = strtol(argv[0], NULL, 16);
-	cli->args.hex_vals[(cli->args.nhex_vals)++] = strtol(argv[1], NULL, 16);
+	cli->args.hex_vals[(cli->args.nhex_vals)++] = strtoll(argv[0], NULL, 16);
+	cli->args.hex_vals[(cli->args.nhex_vals)++] = strtoll(argv[1], NULL, 16);
 
 	return 1;
 }
@@ -348,7 +348,7 @@ int _parse_cmd_arg_addr(int argc, char *argv[], struct nvm_cli *cli)
 		return -1;
 	}
 
-	cli->args.addrs[(cli->args.naddrs)++].ppa = strtol(argv[0], NULL, 16);
+	cli->args.addrs[(cli->args.naddrs)++].ppa = strtoll(argv[0], NULL, 16);
 
 	return inc;
 }
@@ -357,8 +357,10 @@ int _parse_cmd_arg_addr_list(int argc, char *argv[], struct nvm_cli *cli)
 {
 	int inc = 0;
 	
-	for (int i = 0; (i < argc) && (argv[i][0] != '-'); ++i, ++inc)
-		cli->args.addrs[i].ppa = strtol(argv[i], NULL, 16);
+	for (int i = 0; (i < argc) && (argv[i][0] != '-'); ++i, ++inc) {
+		cli->args.addrs[i].ppa = strtoll(argv[i], NULL, 16);
+		NVM_DEBUG("i = %d, argv[i] = %s, ppa: %zu\n", i, argv[i], cli->args.addrs[i].ppa);
+	}
 	cli->args.naddrs = inc;
 
 	return inc;
@@ -417,7 +419,7 @@ int _parse_cmd_arg_hexval(int argc, char *argv[], struct nvm_cli *cli)
 		return -1;
 	}
 	
-	cli->args.hex_vals[(cli->args.nhex_vals)++] = strtol(argv[0], NULL, 16);
+	cli->args.hex_vals[(cli->args.nhex_vals)++] = strtoll(argv[0], NULL, 16);
 
 	return inc;
 }
@@ -427,7 +429,7 @@ int _parse_cmd_arg_hexval_list(int argc, char *argv[], struct nvm_cli *cli)
 	int inc = 0;
 	
 	for (int i = 0; (i < argc) && (argv[i][0] != '-'); ++i, ++inc)
-		cli->args.hex_vals[i] = strtol(argv[i], NULL, 16);
+		cli->args.hex_vals[i] = strtoll(argv[i], NULL, 16);
 
 	cli->args.nhex_vals = inc;
 
@@ -626,7 +628,7 @@ int _evar_pmode(struct nvm_cli *cli)
 		return 0;
 	}
 
-	switch(strtol(pmode_env, NULL, 16)) {
+	switch(strtoll(pmode_env, NULL, 16)) {
 	case NVM_FLAG_PMODE_QUAD:
 		if (geo->nplanes < 4) {	// Verify
 			errno = EINVAL;
@@ -715,7 +717,7 @@ int _evar_meta_mode(struct nvm_cli *cli)
 		return 0;
 	}
 
-	switch(strtol(meta_mode_env, NULL, 16)) {
+	switch(strtoll(meta_mode_env, NULL, 16)) {
 	case NVM_META_MODE_NONE:
 		cli->evars.meta_mode = NVM_META_MODE_NONE;
 		return 0;
@@ -740,7 +742,7 @@ int _evar_be_id(struct nvm_cli *cli)
 		return 0;
 	}
 
-	switch(strtol(id, NULL, 16)) {
+	switch(strtoll(id, NULL, 16)) {
 	case NVM_BE_ANY:
 		cli->evars.be_id = NVM_BE_ANY;
 		return 0;

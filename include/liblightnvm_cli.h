@@ -103,7 +103,7 @@ struct nvm_cli_cmd_args {
 	int naddrs;			///< Number of parsed gen addresses
 	size_t dec_vals[1024];		///< Parsed decimal dec_vals
 	int ndec_vals;			///< Number of parsed decical values
-	size_t hex_vals[1024];		///< Parsed decimal values
+	uint64_t hex_vals[1024];	///< Parsed decimal values
 	int nhex_vals;			///< Number of parsed decical values
 };
 
