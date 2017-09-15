@@ -31,16 +31,19 @@
 #include <liblightnvm.h>
 #include <nvm_be.h>
 #include <nvm_utils.h>
+#include <nvm_debug.h>
 
 struct nvm_dev* nvm_be_nosys_open(const char *NVM_UNUSED(dev_path),
 				  int NVM_UNUSED(flags))
 {
+	NVM_DEBUG("nvm_be_nosys_open");
 	errno = ENOSYS;
 	return NULL;
 }
 
 void nvm_be_nosys_close(struct nvm_dev *NVM_UNUSED(dev))
 {
+	NVM_DEBUG("nvm_be_nosys_close");
 	errno = ENOSYS;
 	return;
 }
@@ -49,6 +52,7 @@ int nvm_be_nosys_user(struct nvm_dev *NVM_UNUSED(dev),
 		      struct nvm_cmd *NVM_UNUSED(cmd),
 		      struct nvm_ret *NVM_UNUSED(ret))
 {
+	NVM_DEBUG("nvm_be_nosys_user");
 	errno = ENOSYS;
 	return -1;
 }
@@ -57,6 +61,7 @@ int nvm_be_nosys_admin(struct nvm_dev *NVM_UNUSED(dev),
 		       struct nvm_cmd *NVM_UNUSED(cmd),
 		       struct nvm_ret *NVM_UNUSED(ret))
 {
+	NVM_DEBUG("nvm_be_nosys_admin");
 	errno = ENOSYS;
 	return -1;
 }
@@ -65,6 +70,7 @@ int nvm_be_nosys_vuser(struct nvm_dev *NVM_UNUSED(dev),
 		       struct nvm_cmd *NVM_UNUSED(cmd),
 		       struct nvm_ret *NVM_UNUSED(ret))
 {
+	NVM_DEBUG("nvm_be_nosys_vuser");
 	errno = ENOSYS;
 	return -1;
 }
@@ -73,6 +79,7 @@ int nvm_be_nosys_vadmin(struct nvm_dev *NVM_UNUSED(dev),
 			struct nvm_cmd *NVM_UNUSED(cmd),
 			struct nvm_ret *NVM_UNUSED(ret))
 {
+	NVM_DEBUG("nvm_be_nosys_vadmin");
 	errno = ENOSYS;
 	return -1;
 }
