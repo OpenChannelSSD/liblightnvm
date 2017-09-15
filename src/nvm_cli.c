@@ -359,7 +359,6 @@ int _parse_cmd_arg_addr_list(int argc, char *argv[], struct nvm_cli *cli)
 	
 	for (int i = 0; (i < argc) && (argv[i][0] != '-'); ++i, ++inc) {
 		cli->args.addrs[i].ppa = strtoll(argv[i], NULL, 16);
-		NVM_DEBUG("i = %d, argv[i] = %s, ppa: %zu\n", i, argv[i], cli->args.addrs[i].ppa);
 	}
 	cli->args.naddrs = inc;
 
