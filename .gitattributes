@@ -1,0 +1,4 @@
+*		text=auto eol=lf
+nvme.h		-text
+nvmeIoctl.h	-text
+nvmeReg.h	-text
