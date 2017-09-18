@@ -40,6 +40,11 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 
+#ifdef _WIN32
+#include <Windows.h>
+typedef SSIZE_T ssize_t;
+#endif
+
 #include <sys/types.h>
 #include <liblightnvm_spec.h>
 
