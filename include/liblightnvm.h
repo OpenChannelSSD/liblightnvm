@@ -36,7 +36,10 @@
 extern "C" {
 #endif
 
+#include <inttypes.h>
 #include <stdint.h>
+#include <stdlib.h>
+
 #include <sys/types.h>
 #include <liblightnvm_spec.h>
 
