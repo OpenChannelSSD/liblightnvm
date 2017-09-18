@@ -89,5 +89,6 @@ int nvm_be_nosys_vadmin(struct nvm_dev *dev, struct nvm_cmd *cmd,
 extern struct nvm_be nvm_be_ioctl;
 extern struct nvm_be nvm_be_sysfs;
 extern struct nvm_be nvm_be_lba;
+extern struct nvm_be nvm_be_wioctl;
 
 #endif /* __INTERNAL_NVM_BE_H */
