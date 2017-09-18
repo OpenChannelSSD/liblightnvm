@@ -58,6 +58,7 @@ enum nvm_be_id {
 	NVM_BE_IOCTL = 0x1,	///< Flag for the IOCTL backend
 	NVM_BE_SYSFS = 0x2,	///< Flag for the IOCTL + sysfs backend
 	NVM_BE_LBA = 0x4,	///< Flag for the IOCTL + sysfs + LBA backend
+	NVM_BE_WIOCTL = 0x8,	///< Flag for the Windows IOCTL backend
 };
 #define NVM_BE_ALL (NVM_BE_IOCTL | NVM_BE_SYSFS | NVM_BE_LBA)	///< All be identifiers
 
