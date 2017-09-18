@@ -781,6 +781,8 @@ const struct nvm_geo *nvm_dev_get_geo(const struct nvm_dev *dev);
  *
  * @note
  * nbytes must be greater than zero and a multiple of minimal granularity
+ * @note
+ * Free the buffer using nvm_buf_free
  *
  * @param geo The geometry to get alignment information from
  * @param nbytes The size of the allocated buffer in bytes
@@ -791,12 +793,34 @@ const struct nvm_geo *nvm_dev_get_geo(const struct nvm_dev *dev);
 void *nvm_buf_alloc(const struct nvm_geo *geo, size_t nbytes);
 
 /**
+ * Allocate a buffer of the given size with the given alignment
+ *
+ * @note
+ * Free the buffer using nvm_buf_free
+ *
+ * @param alignment The alignment in bytes
+ * @param nbytes The size of the buffer in bytes
+ *
+ * @returns A pointer to the allocated memory. On error: NULL is returned and
+ * `errno` set appropriatly
+ */
+void *nvm_buf_alloca(size_t alignment, size_t nbytes);
+
+/**
  * Fills `buf` with chars A-Z
  *
  * @param buf Pointer to the buffer to fill
  * @param nbytes Amount of bytes to fill in buf
  */
 void nvm_buf_fill(char *buf, size_t nbytes);
+
+/**
+ * Free the given buffer, calling regular "free" on the buffer might fail
+ *
+ * @param buf Pointer to the buffer to fill
+ * @param nbytes Amount of bytes to fill in buf
+ */
+void nvm_buf_free(void *buf);
 
 /**
  * Prints `buf` to stdout
