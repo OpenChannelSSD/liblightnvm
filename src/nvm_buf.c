@@ -40,19 +40,51 @@ void *nvm_buf_alloc(const struct nvm_geo *geo, size_t nbytes)
 		errno = EINVAL;
 		return NULL;
 	}
-
+#ifdef WIN32
+	buf = _aligned_malloc(nbytes, geo->sector_nbytes);
+#else
 	buf = aligned_alloc(geo->sector_nbytes, nbytes);
+#endif
 	if (!buf)
 		return NULL;	// Propagate errno
 
 	return buf;
 }
 
+void *nvm_buf_alloca(size_t alignment, size_t nbytes)
+{
+	char *buf;
+
+	if (!nbytes) {
+		errno = EINVAL;
+		return NULL;
+	}
+#ifdef WIN32
+	buf = _aligned_malloc(nbytes, alignment);
+#else
+	buf = aligned_alloc(alignment, nbytes);
+#endif
+	if (!buf)
+		return NULL;	// Propagate errno
+
+	return buf;
+}
+
+
 void nvm_buf_fill(char *buf, size_t nbytes)
 {
 	#pragma omp parallel for schedule(static, 1)
 	for (size_t i = 0; i < nbytes; ++i)
 		buf[i] = (i % 26) + 65;
+}
+
+void nvm_buf_free(void *buf)
+{
+#ifdef WIN32
+	_aligned_free(buf);
+#else
+	free(buf);
+#endif
 }
 
 void nvm_buf_pr(char *buf, size_t nbytes)
