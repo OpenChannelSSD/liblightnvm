@@ -11,6 +11,34 @@ include(use_c11)
 include(CheckLibraryExists)
 include(CheckFunctionExists)
 
+#
+# BACKENDS -- begin
+#
+set(NVM_BE_IOCTL_ENABLED ${UNIX} CACHE BOOL "be_ioctl: Linux IOCTL backend")
+if (NVM_BE_IOCTL_ENABLED)
+	add_definitions(-DNVM_BE_IOCTL_ENABLED)
+endif()
+
+set(NVM_BE_LBA_ENABLED ${UNIX} CACHE BOOL "be_lba: Linux IOCTL/LBA backend")
+if (NVM_BE_LBA_ENABLED)
+	add_definitions(-DNVM_BE_LBA_ENABLED)
+endif()
+
+set(NVM_BE_SYSFS_ENABLED ${UNIX} CACHE BOOL "be_sysfs: Linux IOCTL/sysfs backend")
+if (NVM_BE_SYSFS_ENABLED)
+	find_package(udev)
+	set_package_properties(udev PROPERTIES DESCRIPTION "Queriying OpenChannel SSDs via sysfs/udev.")
+	set_package_properties(udev PROPERTIES TYPE RECOMMENDED PURPOSE "Queriying OpenChannel SSDs via sysfs/udev.")
+	if ( ${UDEV_FOUND} )
+		add_definitions(-DNVM_BE_SYSFS_ENABLED)
+	else()
+		message(FATAL_ERROR " Missing libudev; either install e.g. 'libudev-dev' or set NVM_BE_SYSFS_ENABLED=OFF")
+	endif()
+endif()
+#
+# BACKENDS -- end
+#
+
 use_c11()
 enable_c_flag("-std=c11")
 enable_c_flag("-Wall")
