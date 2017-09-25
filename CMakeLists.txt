@@ -58,16 +58,15 @@ endif()
 
 message( STATUS "CORE-CMAKE_C_FLAGS(${CMAKE_C_FLAGS})")
 
+check_library_exists(c clock_gettime "" LIBC_HAS_CLOCK_GETTIME)
+check_library_exists(rt clock_gettime "time.h" LIBRT_HAS_CLOCK_GETTIME)
+
 # On Windows we assume it is available via the TDM-GCC compiler suite
 if (WIN32)
 	message( WARNING "Skipping check for clock_gettime..." )
 else()
-	check_library_exists(c clock_gettime "" LIBC_HAS_CLOCK_GETTIME)
-	if (NOT LIBC_HAS_BLOCK_GETTIME)
-		check_library_exists(rt clock_gettime "time.h" LIBRT_HAS_CLOCK_GETTIME)
-		if (NOT LIBRT_HAS_CLOCK_GETTIME)
-			message( FATAL_ERROR "Cannot find clock_gettime" )
-		endif()
+	if (NOT LIBC_HAS_BLOCK_GETTIME AND NOT LIBRT_HAS_CLOCK_GETTIME)
+		message( FATAL_ERROR "Cannot find clock_gettime" )
 	endif()
 endif()
 
@@ -163,7 +162,7 @@ set(SOURCE_FILES
 
 add_library(${CLI_LIB} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${CLI_LIB} lightnvm)
-if (${LIBRT_HAS_CLOCK_GETTIME})
+if (NOT ${LIBC_HAS_CLOCK_GETTIME} AND ${LIBRT_HAS_CLOCK_GETTIME})
 	target_link_libraries(${CLI_LIB} rt)
 endif()
 set_target_properties(${CLI_LIB} PROPERTIES
@@ -177,7 +176,7 @@ install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm_cli.h"
 # STATIC: Here we define the static library
 add_library(${CLI_LIB_STATIC} STATIC ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${CLI_LIB_STATIC} lightnvm_a)
-if (${LIBRT_HAS_CLOCK_GETTIME})
+if (NOT ${LIBC_HAS_CLOCK_GETTIME} AND ${LIBRT_HAS_CLOCK_GETTIME})
 	target_link_libraries(${CLI_LIB_STATIC} rt)
 endif()
 set_target_properties(${CLI_LIB_STATIC} PROPERTIES OUTPUT_NAME ${CLI_LIB})
