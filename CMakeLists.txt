@@ -35,6 +35,11 @@ if (NVM_BE_SYSFS_ENABLED)
 		message( FATAL_ERROR "Missing libudev; either install e.g. 'libudev-dev' or set NVM_BE_SYSFS_ENABLED=OFF")
 	endif()
 endif()
+
+set(NVM_BE_WIOCTL_ENABLED ${WIN32} CACHE BOOL "be_wioctl: Windows IOCTL backend")
+if (NVM_BE_WIOCTL_ENABLED)
+	add_definitions(-DNVM_BE_WIOCTL_ENABLED)
+endif()
 #
 # BACKENDS -- end
 #
@@ -85,6 +90,7 @@ set(HEADER_FILES
 set(SOURCE_FILES
 	src/nvm_spec.c
 	src/nvm_be.c
+	src/nvm_be_wioctl.c
 	src/nvm_be_ioctl.c
 	src/nvm_be_sysfs.c
 	src/nvm_be_lba.c
