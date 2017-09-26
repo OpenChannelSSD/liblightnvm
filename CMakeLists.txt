@@ -11,6 +11,21 @@ include(use_c11)
 include(CheckLibraryExists)
 include(CheckFunctionExists)
 
+set(NVM_LIBRARY_SHARED TRUE CACHE BOOL "Produce a SHARED library")
+set(NVM_LIBRARY_STATIC TRUE CACHE BOOL "Produce a STATIC library")
+
+if (NOT (${NVM_LIBRARY_SHARED} OR ${NVM_LIBRARY_STATIC}))
+	message( FATAL_ERROR "You have chosen to build neither static nor shared" )
+endif()
+
+set(NVM_LIBRARY_TYPES "")
+if (${NVM_LIBRARY_SHARED})
+	list(APPEND NVM_LIBRARY_TYPES "SHARED")
+endif()
+if (${NVM_LIBRARY_STATIC})
+	list(APPEND NVM_LIBRARY_TYPES "STATIC")
+endif()
+
 #
 # BACKENDS -- begin
 #
@@ -25,15 +40,15 @@ if (NVM_BE_LBA_ENABLED)
 endif()
 
 set(NVM_BE_SYSFS_ENABLED ${UNIX} CACHE BOOL "be_sysfs: Linux IOCTL/sysfs backend")
-if (NVM_BE_SYSFS_ENABLED)
+if(NVM_BE_SYSFS_ENABLED)
 	find_package(udev)
 	set_package_properties(udev PROPERTIES DESCRIPTION "Queriying OpenChannel SSDs via sysfs/udev.")
 	set_package_properties(udev PROPERTIES TYPE RECOMMENDED PURPOSE "Queriying OpenChannel SSDs via sysfs/udev.")
-	if ( ${UDEV_FOUND} )
-		add_definitions(-DNVM_BE_SYSFS_ENABLED)
-	else()
+	if( NOT ${UDEV_FOUND} )
 		message( FATAL_ERROR "Missing libudev; either install e.g. 'libudev-dev' or set NVM_BE_SYSFS_ENABLED=OFF")
 	endif()
+
+	add_definitions(-DNVM_BE_SYSFS_ENABLED)
 endif()
 #
 # BACKENDS -- end
@@ -114,30 +129,29 @@ include_directories("${PROJECT_SOURCE_DIR}/include/linux/uapi")
 # static library
 #
 
-#
-# SHARED: Here we define the shared library with versioning and all that jazz
-#
-add_library(lightnvm SHARED ${HEADER_FILES} ${SOURCE_FILES})
-set_target_properties(lightnvm PROPERTIES
-	VERSION ${NVM_VERSION}
-	SOVERSION ${NVM_VERSION_MAJOR}
-	)
-if (${UDEV_FOUND})
-	target_link_libraries(lightnvm udev)
-endif()
+foreach(LTYPE ${NVM_LIBRARY_TYPES})
+	set(LNAME "lightnvm")
+	if ("${LTYPE}" STREQUAL "STATIC")
+		set(LNAME "lightnvm_a")
+	endif()
+	
+	add_library(${LNAME} ${LTYPE} ${HEADER_FILES} ${SOURCE_FILES})
+	set_target_properties(${LNAME} PROPERTIES OUTPUT_NAME lightnvm)
 
-install(TARGETS lightnvm DESTINATION lib COMPONENT lib)
+	if("${LTYPE}" STREQUAL "SHARED")
+		set_target_properties(${LNAME} PROPERTIES
+			VERSION ${NVM_VERSION}
+			SOVERSION ${NVM_VERSION_MAJOR}
+		)
+	endif()
 
-#
-# STATIC: Here we define the static library
-#
-add_library(lightnvm_a STATIC ${HEADER_FILES} ${SOURCE_FILES})
-if (${UDEV_FOUND})
-	target_link_libraries(lightnvm_a udev)
-endif()
-set_target_properties(lightnvm_a PROPERTIES OUTPUT_NAME lightnvm)
+	if(${NVM_BE_SYSFS_ENABLED} AND ${UDEV_FOUND})
+		target_link_libraries(${LNAME} udev)
+	endif()
 
-install(TARGETS lightnvm_a DESTINATION lib COMPONENT lib)
+	install(TARGETS ${LNAME} DESTINATION lib COMPONENT lib)
+endforeach()
+
 
 install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm_spec.h"
 	DESTINATION include COMPONENT dev)
@@ -160,27 +174,30 @@ set(SOURCE_FILES
 	src/nvm_cli.c
 )
 
-add_library(${CLI_LIB} SHARED ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(${CLI_LIB} lightnvm)
-if ((NOT ${LIBC_HAS_CLOCK_GETTIME}) AND (${LIBRT_HAS_CLOCK_GETTIME}))
-	target_link_libraries(${CLI_LIB} rt)
+if(${NVM_LIBRARY_SHARED})
+	add_library(${CLI_LIB} SHARED ${HEADER_FILES} ${SOURCE_FILES})
+	target_link_libraries(${CLI_LIB} lightnvm)
+	if ((NOT ${LIBC_HAS_CLOCK_GETTIME}) AND (${LIBRT_HAS_CLOCK_GETTIME}))
+		target_link_libraries(${CLI_LIB} rt)
+	endif()
+	set_target_properties(${CLI_LIB} PROPERTIES
+		VERSION ${NVM_VERSION}
+		SOVERSION ${NVM_VERSION_MAJOR}
+		)
+	install(TARGETS ${CLI_LIB} DESTINATION lib COMPONENT cli)
+	install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm_cli.h"
+		DESTINATION include COMPONENT cli)
 endif()
-set_target_properties(${CLI_LIB} PROPERTIES
-	VERSION ${NVM_VERSION}
-	SOVERSION ${NVM_VERSION_MAJOR}
-	)
-install(TARGETS ${CLI_LIB} DESTINATION lib COMPONENT cli)
-install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm_cli.h"
-	DESTINATION include COMPONENT cli)
 
-# STATIC: Here we define the static library
-add_library(${CLI_LIB_STATIC} STATIC ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(${CLI_LIB_STATIC} lightnvm_a)
-if ((NOT ${LIBC_HAS_CLOCK_GETTIME}) AND (${LIBRT_HAS_CLOCK_GETTIME}))
-	target_link_libraries(${CLI_LIB_STATIC} rt)
+if(${NVM_LIBRARY_STATIC})
+	add_library(${CLI_LIB_STATIC} STATIC ${HEADER_FILES} ${SOURCE_FILES})
+	target_link_libraries(${CLI_LIB_STATIC} lightnvm_a)
+	if ((NOT ${LIBC_HAS_CLOCK_GETTIME}) AND (${LIBRT_HAS_CLOCK_GETTIME}))
+		target_link_libraries(${CLI_LIB_STATIC} rt)
+	endif()
+	set_target_properties(${CLI_LIB_STATIC} PROPERTIES OUTPUT_NAME ${CLI_LIB})
+	install(TARGETS ${CLI_LIB_STATIC} DESTINATION lib COMPONENT cli)
 endif()
-set_target_properties(${CLI_LIB_STATIC} PROPERTIES OUTPUT_NAME ${CLI_LIB})
-install(TARGETS ${CLI_LIB_STATIC} DESTINATION lib COMPONENT cli)
 
 # CLI
 add_subdirectory(cli)
