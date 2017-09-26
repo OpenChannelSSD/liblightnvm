@@ -52,6 +52,7 @@ struct nvm_dev {
 	enum nvm_meta_mode meta_mode;	///< Flag to indicate the how meta is w
 	struct nvm_be *be;		///< Backend interface
 	int quirks;			///< Mask representing known quirks
+	void *be_state;			///< Backend state
 };
 
 #endif /* __INTERNAL_NVM_DEV_H */
