@@ -168,5 +168,6 @@ int nvm_be_populate_quirks(struct nvm_dev *dev, const char serial[]);
 extern struct nvm_be nvm_be_ioctl;
 extern struct nvm_be nvm_be_sysfs;
 extern struct nvm_be nvm_be_lba;
+extern struct nvm_be nvm_be_spdk;
 
 #endif /* __INTERNAL_NVM_BE_H */
