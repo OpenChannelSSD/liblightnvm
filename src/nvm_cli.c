@@ -646,11 +646,10 @@ int _evar_pmode(struct nvm_cli *cli)
 	case NVM_FLAG_PMODE_SNGL:
 		cli->evars.pmode = NVM_FLAG_PMODE_SNGL;
 		return 0;
-
-	default:
-		errno = EINVAL;
-		return -1;
 	}
+
+	errno = EINVAL;
+	return -1;
 }
 
 int _evar_noverify(struct nvm_cli *cli)
@@ -727,11 +726,10 @@ int _evar_meta_mode(struct nvm_cli *cli)
 	case NVM_META_MODE_CONST:
 		cli->evars.meta_mode = NVM_META_MODE_CONST;
 		return 0;
-
-	default:
-		errno = EINVAL;
-		return -1;
 	}
+
+	errno = EINVAL;
+	return -1;
 }
 
 int _evar_be_id(struct nvm_cli *cli)
@@ -755,11 +753,10 @@ int _evar_be_id(struct nvm_cli *cli)
 	case NVM_BE_LBA:
 		cli->evars.be_id = NVM_BE_LBA;
 		return 0;
-
-	default:
-		errno = EINVAL;
-		return -1;
 	}
+
+	errno = EINVAL;
+	return -1;
 }
 
 int _evar_and_dev_setup(struct nvm_cli *cli)
