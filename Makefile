@@ -1,9 +1,9 @@
 BUILD_TYPE?=Release
 BUILD_DIR?=build
-BUILD_TESTS?=OFF
-BUILD_CLI?=OFF
 INSTALL_PREFIX?=/usr/local
 NVM_LIBRARY_SHARED?=ON
+NVM_TESTS?=OFF
+NVM_CLI?=ON
 
 #
 # Traditional build commands / make interface
@@ -14,14 +14,6 @@ default: make
 debug:
 	$(eval BUILD_TYPE := Debug)
 
-.PHONY: tests
-tests:
-	$(eval BUILD_TESTS := ON)
-
-.PHONY: cli
-cli:
-	$(eval BUILD_CLI := ON)
-
 .PHONY: cmake_check
 cmake_check:
 	@cmake --version || (echo "\n** Please install 'cmake' **\n" && exit 1)
@@ -29,7 +21,13 @@ cmake_check:
 .PHONY: configure
 configure: cmake_check
 	mkdir -p $(BUILD_DIR)
-	cd $(BUILD_DIR) && cmake -DNVM_LIBRARY_SHARED=$(NVM_LIBRARY_SHARED) -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DTESTS=$(BUILD_TESTS) -DCLI=$(BUILD_CLI) -DCMAKE_INSTALL_PREFIX:PATH=$(INSTALL_PREFIX) -G "Unix Makefiles" ../
+	cd $(BUILD_DIR) && cmake \
+	-DNVM_LIBRARY_SHARED=$(NVM_LIBRARY_SHARED) \
+	-DTESTS=$(NVM_TESTS) \
+	-DCLI=$(NVM_CLI) \
+	-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
+	-DCMAKE_INSTALL_PREFIX:PATH=$(INSTALL_PREFIX) \
+	-G "Unix Makefiles" ../
 	@echo "Modify build configuration in '$(BUILD_DIR)'"
 
 .PHONY: make
@@ -59,13 +57,16 @@ clean:
 
 all: clean default install
 
-# Removes packages, cleans up, builds lib, cli, tests, pkg and installs
-.PHONY: dev
-dev: uninstall-pkg clean cli tests make-pkg install-pkg
+.PHONY: dev_opts
+dev_opts:
+	$(eval NVM_TESTS := ON)
+	$(eval NVM_CLI := ON)
+	$(eval NVM_LIBRARY_SHARED := ON)
 
-# builds lib, cli
-.PHONY: devonly
-devonly: cli make install
+# Uinstall packages, clean build, builds lib, cli, tests, pkg and installs
+.PHONY: dev
+dev: uninstall-pkg clean dev_opts make-pkg install-pkg
+
 
 .PHONY: tags
 tags:
