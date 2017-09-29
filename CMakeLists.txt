@@ -43,6 +43,18 @@ set(NVM_BE_SYSFS_ENABLED ${UNIX} CACHE BOOL "be_sysfs: Linux IOCTL/sysfs backend
 if(NVM_BE_SYSFS_ENABLED)
 	add_definitions(-DNVM_BE_SYSFS_ENABLED)
 endif()
+
+# SPDK is disabled by default
+set(NVM_BE_SPDK_ENABLED FALSE CACHE BOOL "be_spdk: SPDK backend")
+if(NVM_BE_SPDK_ENABLED)
+	if(NVM_LIBRARY_SHARED)
+		message( FATAL_ERROR "SHARED library is not compatible with SPDK backend; Set either NVM_BE_SPDK_ENABLE=OFF or NVM_LIBRARY_SHARED=OFF ")
+	endif()
+
+	# TODO: Fix this hardcoded path SPDK headers
+	include_directories(AFTER "/opt/spdk/include")
+	add_definitions(-DNVM_BE_SPDK_ENABLED)
+endif()
 #
 # BACKENDS -- end
 #
@@ -94,6 +106,7 @@ set(SOURCE_FILES
 	src/nvm_spec.c
 	src/nvm_be.c
 	src/nvm_be_ioctl.c
+	src/nvm_be_spdk.c
 	src/nvm_be_sysfs.c
 	src/nvm_be_lba.c
 	src/nvm_dev.c
@@ -136,6 +149,27 @@ foreach(LTYPE ${NVM_LIBRARY_TYPES})
 			VERSION ${NVM_VERSION}
 			SOVERSION ${NVM_VERSION_MAJOR}
 		)
+	endif()
+
+	if(${NVM_BE_SPDK_ENABLED})
+		link_directories(/opt/spdk/build/lib/)
+
+		target_link_libraries(${LNAME} spdk_nvme)
+		target_link_libraries(${LNAME} spdk_util)
+		target_link_libraries(${LNAME} spdk_log)
+		target_link_libraries(${LNAME}
+			/opt/spdk/build/lib/libspdk_env_dpdk.a)
+		target_link_libraries(${LNAME}
+			/opt/spdk/dpdk/build/lib/librte_eal.a)
+		target_link_libraries(${LNAME}
+			/opt/spdk/dpdk/build/lib/librte_mempool.a)
+		target_link_libraries(${LNAME}
+			/opt/spdk/dpdk/build/lib/librte_ring.a)
+		target_link_libraries(${LNAME}
+			/opt/spdk/dpdk/build/lib/librte_mempool_ring.a)
+		target_link_libraries(${LNAME} rt)
+		target_link_libraries(${LNAME} dl)
+		target_link_libraries(${LNAME} numa)
 	endif()
 
 	install(TARGETS ${LNAME} DESTINATION lib COMPONENT lib)
