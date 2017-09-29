@@ -86,6 +86,12 @@ int nvm_be_nosys_vuser(struct nvm_dev *dev, struct nvm_cmd *cmd,
 int nvm_be_nosys_vadmin(struct nvm_dev *dev, struct nvm_cmd *cmd,
 			struct nvm_ret *ret);
 
+/**
+ * Fill out the geometry and other properties of the given device using the
+ * given vadmin-backend function.
+ */
+int nvm_be_populate(struct nvm_dev *dev, int (*vadmin)(struct nvm_dev *, struct nvm_cmd *, struct nvm_ret *));
+
 extern struct nvm_be nvm_be_ioctl;
 extern struct nvm_be nvm_be_sysfs;
 extern struct nvm_be nvm_be_lba;
