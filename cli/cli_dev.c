@@ -5,7 +5,7 @@
 #include <liblightnvm.h>
 #include <liblightnvm_cli.h>
 
-int cmd_attr(struct nvm_cli *cli)
+static int cmd_attr(struct nvm_cli *cli)
 {
 	nvm_cli_info_pr("Device information -- nvm_dev_attr_pr");
 	printf("dev_"); nvm_dev_attr_pr(cli->args.dev);
@@ -13,7 +13,7 @@ int cmd_attr(struct nvm_cli *cli)
 	return 0;
 }
 
-int cmd_geo(struct nvm_cli *cli)
+static int cmd_geo(struct nvm_cli *cli)
 {
 	nvm_cli_info_pr("Device information -- nvm_geo_pr");
 	printf("dev_"); nvm_geo_pr(nvm_dev_get_geo(cli->args.dev));
@@ -21,7 +21,7 @@ int cmd_geo(struct nvm_cli *cli)
 	return 0;
 }
 
-int cmd_ppaf(struct nvm_cli *cli)
+static int cmd_ppaf(struct nvm_cli *cli)
 {
 	nvm_cli_info_pr("Device information -- nvm_spec_(ppaf|ppaf_mask)_pr");
 	printf("dev_"); nvm_spec_ppaf_nand_pr(nvm_dev_get_ppaf(cli->args.dev));
@@ -30,7 +30,7 @@ int cmd_ppaf(struct nvm_cli *cli)
 	return 0;
 }
 
-int cmd_info(struct nvm_cli *cli)
+static int cmd_info(struct nvm_cli *cli)
 {
 	nvm_cli_info_pr("Device information -- nvm_dev_pr");
 
@@ -44,7 +44,7 @@ int cmd_info(struct nvm_cli *cli)
 	return 0;
 }
 
-int cmd_enum(struct nvm_cli *cli)
+static int cmd_enum(struct nvm_cli *cli)
 {
 	nvm_cli_info_pr("Device enumeration");
 
