@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <liblightnvm_cli.h>
 
-ssize_t _write(struct nvm_cli *cli, int with_meta)
+static inline ssize_t _write(struct nvm_cli *cli, int with_meta)
 {
 	struct nvm_cli_cmd_args *args = &cli->args;
 	const int pmode = cli->evars.pmode;
@@ -62,7 +62,7 @@ ssize_t _write(struct nvm_cli *cli, int with_meta)
 	return err;
 }
 
-ssize_t _read(struct nvm_cli *cli, int with_meta)
+static inline ssize_t _read(struct nvm_cli *cli, int with_meta)
 {
 	struct nvm_cli_cmd_args *args = &cli->args;
 	const int pmode = cli->evars.pmode;
@@ -128,7 +128,7 @@ ssize_t _read(struct nvm_cli *cli, int with_meta)
 	return err;
 }
 
-int erase(struct nvm_cli *cli)
+static int cmd_addr_erase(struct nvm_cli *cli)
 {
 	struct nvm_cli_cmd_args *args = &cli->args;
 	const int pmode = cli->evars.pmode;
@@ -150,27 +150,27 @@ int erase(struct nvm_cli *cli)
 	return err ? 1 : 0;
 }
 
-int write(struct nvm_cli *cli)
+static int cmd_addr_write(struct nvm_cli *cli)
 {
 	return _write(cli, 0) ? 1 : 0;
 }
 
-int write_wm(struct nvm_cli *cli)
+static int cmd_addr_write_wm(struct nvm_cli *cli)
 {
 	return _write(cli, 1) ? 1 : 0;
 }
 
-int read(struct nvm_cli *cli)
+static int cmd_addr_read(struct nvm_cli *cli)
 {
 	return _read(cli, 0) ? 1 : 0;
 }
 
-int read_wm(struct nvm_cli *cli)
+static int cmd_addr_read_wm(struct nvm_cli *cli)
 {
 	return _read(cli, 1) ? 1 : 0;
 }
 
-int cmd_fmt(struct nvm_cli *cli)
+static int cmd_fmt(struct nvm_cli *cli)
 {
 	for (int i = 0; i < cli->args.naddrs; ++i)
 		nvm_addr_pr(cli->args.addrs[i]);
@@ -178,7 +178,7 @@ int cmd_fmt(struct nvm_cli *cli)
 	return 0;
 }
 
-int cmd_gen2dev(struct nvm_cli *cli)
+static int cmd_gen2dev(struct nvm_cli *cli)
 {
 	struct nvm_cli_cmd_args *args = &cli->args;
 
@@ -190,7 +190,7 @@ int cmd_gen2dev(struct nvm_cli *cli)
 	return 0;
 }
 
-int cmd_gen2lba(struct nvm_cli *cli)
+static int cmd_gen2lba(struct nvm_cli *cli)
 {
 	struct nvm_cli_cmd_args *args = &cli->args;
 
@@ -202,7 +202,7 @@ int cmd_gen2lba(struct nvm_cli *cli)
 	return 0;
 }
 
-int cmd_gen2off(struct nvm_cli *cli)
+static int cmd_gen2off(struct nvm_cli *cli)
 {
 	struct nvm_cli_cmd_args *args = &cli->args;
 
@@ -214,7 +214,7 @@ int cmd_gen2off(struct nvm_cli *cli)
 	return 0;
 }
 
-int cmd_dev2gen(struct nvm_cli *cli)
+static int cmd_dev2gen(struct nvm_cli *cli)
 {
 	struct nvm_cli_cmd_args *args = &cli->args;
 
@@ -226,7 +226,7 @@ int cmd_dev2gen(struct nvm_cli *cli)
 	return 0;
 }
 
-int cmd_lba2gen(struct nvm_cli *cli)
+static int cmd_lba2gen(struct nvm_cli *cli)
 {
 	struct nvm_cli_cmd_args *args = &cli->args;
 
@@ -238,7 +238,7 @@ int cmd_lba2gen(struct nvm_cli *cli)
 	return 0;
 }
 
-int cmd_off2gen(struct nvm_cli *cli)
+static int cmd_off2gen(struct nvm_cli *cli)
 {
 	struct nvm_cli_cmd_args *args = &cli->args;
 
@@ -256,11 +256,11 @@ int cmd_off2gen(struct nvm_cli *cli)
 
 /* Define commands */
 static struct nvm_cli_cmd cmds[] = {
-	{"erase",	erase,		NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
-	{"write",	write,		NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_INPUT},
-	{"write_wm",	write_wm,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_INPUT},
-	{"read",	read,		NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
-	{"read_wm",	read_wm,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
+	{"erase",	cmd_addr_erase,		NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
+	{"write",	cmd_addr_write,		NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_INPUT},
+	{"write_wm",	cmd_addr_write_wm,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_INPUT},
+	{"read",	cmd_addr_read,		NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
+	{"read_wm",	cmd_addr_read_wm,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
 	{"from_geo",	cmd_fmt,	NVM_CLI_ARG_ADDR_SEC, NVM_CLI_OPT_DEFAULT},
 	{"from_hex",	cmd_fmt,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
 	{"gen2dev",	cmd_gen2dev,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
