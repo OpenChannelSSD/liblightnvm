@@ -8,7 +8,7 @@
 #include <liblightnvm.h>
 #include "liblightnvm_cli.h"
 
-int get(struct nvm_cli *cli)
+static int get(struct nvm_cli *cli)
 {
 	const struct nvm_bbt* bbt;
 	struct nvm_ret ret = {0,0};
@@ -27,7 +27,7 @@ int get(struct nvm_cli *cli)
 	return 0;
 }
 
-int _set(struct nvm_cli_cmd_args *args, enum nvm_bbt_state state)
+static int _set(struct nvm_cli_cmd_args *args, enum nvm_bbt_state state)
 {
 	struct nvm_bbt* bbt;
 	struct nvm_ret ret = {0,0};
@@ -66,32 +66,32 @@ int _set(struct nvm_cli_cmd_args *args, enum nvm_bbt_state state)
 	return 0;
 }
 
-int set_f(struct nvm_cli *cli)
+static int set_f(struct nvm_cli *cli)
 {
 	return _set(&cli->args, NVM_BBT_FREE);
 }
 
-int set_b(struct nvm_cli *cli)
+static int set_b(struct nvm_cli *cli)
 {
 	return _set(&cli->args, NVM_BBT_BAD);
 }
 
-int set_g(struct nvm_cli *cli)
+static int set_g(struct nvm_cli *cli)
 {
 	return _set(&cli->args, NVM_BBT_GBAD);
 }
 
-int set_d(struct nvm_cli *cli)
+static int set_d(struct nvm_cli *cli)
 {
 	return _set(&cli->args, NVM_BBT_DMRK);
 }
 
-int set_h(struct nvm_cli *cli)
+static int set_h(struct nvm_cli *cli)
 {
 	return _set(&cli->args, NVM_BBT_HMRK);
 }
 
-int _mark(struct nvm_cli_cmd_args *args, enum nvm_bbt_state state)
+static int _mark(struct nvm_cli_cmd_args *args, enum nvm_bbt_state state)
 {
 	ssize_t err = 0;
 	struct nvm_ret ret = {0,0};
@@ -109,27 +109,27 @@ int _mark(struct nvm_cli_cmd_args *args, enum nvm_bbt_state state)
 	return err;
 }
 
-int mark_f(struct nvm_cli *cli)
+static int mark_f(struct nvm_cli *cli)
 {
 	return _mark(&cli->args, NVM_BBT_FREE);
 }
 
-int mark_b(struct nvm_cli *cli)
+static int mark_b(struct nvm_cli *cli)
 {
 	return _mark(&cli->args, NVM_BBT_BAD);
 }
 
-int mark_g(struct nvm_cli *cli)
+static int mark_g(struct nvm_cli *cli)
 {
 	return _mark(&cli->args, NVM_BBT_GBAD);
 }
 
-int mark_h(struct nvm_cli *cli)
+static int mark_h(struct nvm_cli *cli)
 {
 	return _mark(&cli->args, NVM_BBT_HMRK);
 }
 
-int mark_d(struct nvm_cli *cli)
+static int mark_d(struct nvm_cli *cli)
 {
 	return _mark(&cli->args, NVM_BBT_DMRK);
 }
