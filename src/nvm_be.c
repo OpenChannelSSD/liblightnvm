@@ -1,5 +1,5 @@
 /*
- * be - Provides fall-back methods for backends which are not supported
+ * be - Provides fall-back methods and helper functions for actual backends
  *
  * Copyright (C) 2015-2017 Javier Gonzáles <javier@cnexlabs.com>
  * Copyright (C) 2015-2017 Matias Bjørling <matias@cnexlabs.com>
