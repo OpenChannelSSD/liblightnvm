@@ -75,7 +75,9 @@ enum nvm_pmode {
  * Flags for device quirks
  */
 enum nvm_quirks {
-	NVM_QUIRK_PMODE_ERASE_RUNROLL = 0x1
+	NVM_QUIRK_PMODE_ERASE_RUNROLL = 0x1,
+	NVM_QUIRK_OOB_READ_1ST4BYTES_NULL = 0x2,
+	NVM_QUIRK_NSID_BY_CONVENTION = 0x4
 };
 
 /**
