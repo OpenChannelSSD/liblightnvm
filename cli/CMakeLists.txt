@@ -17,9 +17,7 @@ set(SOURCE_FILES
 )
 
 #
-# We link statically with liblightnvmc which in turn is linked statically with
-# liblightnvm. Thus the only runtime dependency is libudev (carried from
-# liblightnvm)
+# static linking, against lightnvm_a, to avoid runtime dependency on liblightnvm
 #
 foreach(SRC_FN ${SOURCE_FILES})
 	get_filename_component(SRC_FN_WE ${SRC_FN} NAME_WE)
