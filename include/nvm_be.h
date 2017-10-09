@@ -87,6 +87,13 @@ int nvm_be_nosys_vadmin(struct nvm_dev *dev, struct nvm_cmd *cmd,
 			struct nvm_ret *ret);
 
 /**
+ * Splits a dev_path such as "/dev/nvme0n1" into {nvme_name: nvme0, nsid: 1}
+ *
+ * @returns 0 on success, 1 on error and errno set to indicate the error.
+ */
+int nvm_be_split_dpath(const char *dev_path, char *nvme_name, int *nsid);
+
+/**
  * Fill out the geometry and other properties of the given device using the
  * given vadmin-backend function.
  */
