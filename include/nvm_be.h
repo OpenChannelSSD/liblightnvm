@@ -90,7 +90,14 @@ int nvm_be_nosys_vadmin(struct nvm_dev *dev, struct nvm_cmd *cmd,
  * Fill out the geometry and other properties of the given device using the
  * given vadmin-backend function.
  */
-int nvm_be_populate(struct nvm_dev *dev, int (*vadmin)(struct nvm_dev *, struct nvm_cmd *, struct nvm_ret *));
+int nvm_be_populate(struct nvm_dev *dev,
+	int (*vadmin)(struct nvm_dev *, struct nvm_cmd *, struct nvm_ret *));
+
+/**
+ * Fill out attribute values which are derived from those populated by
+ * `nvm_be_populate` and determine device quirks
+ */
+int nvm_be_populate_derived(struct nvm_dev *dev);
 
 extern struct nvm_be nvm_be_ioctl;
 extern struct nvm_be nvm_be_sysfs;
