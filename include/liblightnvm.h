@@ -72,6 +72,13 @@ enum nvm_pmode {
 #define NVM_FLAG_DEFAULT (NVM_FLAG_PMODE_SNGL | NVM_FLAG_SCRBL);
 
 /**
+ * Flags for device quirks
+ */
+enum nvm_quirks {
+	NVM_QUIRK_PMODE_ERASE_RUNROLL = 0x1
+};
+
+/**
  * Opaque handle for NVM devices
  *
  * @struct nvm_dev
