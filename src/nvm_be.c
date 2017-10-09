@@ -107,8 +107,10 @@ int nvm_be_nosys_vadmin(struct nvm_dev *NVM_UNUSED(dev),
 	return -1;
 }
 
-int nvm_be_populate(struct nvm_dev *dev, int (*vadmin)(struct nvm_dev *, struct nvm_cmd *, struct nvm_ret *))
+int nvm_be_populate(struct nvm_dev *dev,
+	int (*vadmin)(struct nvm_dev *, struct nvm_cmd *, struct nvm_ret *))
 {
+	struct nvm_geo *geo = &dev->geo;
 	struct nvm_cmd cmd = {.cdw={0}};
 	struct nvm_spec_identify *idf;
 	int err;
@@ -120,43 +122,43 @@ int nvm_be_populate(struct nvm_dev *dev, int (*vadmin)(struct nvm_dev *, struct 
 	}
 	memset(idf, 0, sizeof(*idf));
 
-	cmd.vadmin.opcode = NVM_S12_OPC_IDF;	// Setup command
+	cmd.vadmin.opcode = NVM_S12_OPC_IDF; // Setup command
 	cmd.vadmin.addr = (uint64_t)idf;
 	cmd.vadmin.data_len = sizeof(*idf);
 
 	err = vadmin(dev, &cmd, NULL);
 	if (err) {
 		nvm_buf_free(idf);
-		return -1;			// NOTE: Propagate errno
+		return -1; // NOTE: Propagate errno
 	}
 
 	switch (idf->s.verid) {
 	case NVM_SPEC_VERID_12:
-		dev->geo.page_nbytes = idf->s12.grp[0].fpg_sz;
-		dev->geo.sector_nbytes = idf->s12.grp[0].csecs;
-		dev->geo.meta_nbytes = idf->s12.grp[0].sos;
+		geo->page_nbytes = idf->s12.grp[0].fpg_sz;
+		geo->sector_nbytes = idf->s12.grp[0].csecs;
+		geo->meta_nbytes = idf->s12.grp[0].sos;
 
-		dev->geo.nchannels = idf->s12.grp[0].num_ch;
-		dev->geo.nluns = idf->s12.grp[0].num_lun;
-		dev->geo.nplanes = idf->s12.grp[0].num_pln;
-		dev->geo.nblocks = idf->s12.grp[0].num_blk;
-		dev->geo.npages = idf->s12.grp[0].num_pg;
+		geo->nchannels = idf->s12.grp[0].num_ch;
+		geo->nluns = idf->s12.grp[0].num_lun;
+		geo->nplanes = idf->s12.grp[0].num_pln;
+		geo->nblocks = idf->s12.grp[0].num_blk;
+		geo->npages = idf->s12.grp[0].num_pg;
 
 		dev->ppaf = idf->s12.ppaf;
 		dev->mccap = idf->s12.grp[0].mccap;
 		break;
 
 	case NVM_SPEC_VERID_20:
-		dev->geo.sector_nbytes = idf->s20.csecs;
-		dev->geo.meta_nbytes = idf->s20.sos;
-		dev->geo.page_nbytes = idf->s20.mw_min * dev->geo.sector_nbytes;
+		geo->sector_nbytes = idf->s20.csecs;
+		geo->meta_nbytes = idf->s20.sos;
+		geo->page_nbytes = idf->s20.mw_min * geo->sector_nbytes;
 
-		dev->geo.nchannels = idf->s20.num_ch;
-		dev->geo.nluns = idf->s20.num_lun;
-		dev->geo.nplanes = idf->s20.mw_opt / idf->s20.mw_min;
-		dev->geo.nblocks = idf->s20.num_chk;
-		dev->geo.npages = ((idf->s20.clba * idf->s20.csecs) / dev->geo.page_nbytes) / dev->geo.nplanes;
-		dev->geo.nsectors = dev->geo.page_nbytes / dev->geo.sector_nbytes;
+		geo->nchannels = idf->s20.num_ch;
+		geo->nluns = idf->s20.num_lun;
+		geo->nplanes = idf->s20.mw_opt / idf->s20.mw_min;
+		geo->nblocks = idf->s20.num_chk;
+		geo->npages = ((idf->s20.clba * idf->s20.csecs) / geo->page_nbytes) / geo->nplanes;
+		geo->nsectors = geo->page_nbytes / geo->sector_nbytes;
 
 		dev->ppaf = idf->s20.ppaf;
 		dev->mccap = idf->s20.mccap;
@@ -172,6 +174,13 @@ int nvm_be_populate(struct nvm_dev *dev, int (*vadmin)(struct nvm_dev *, struct 
 	dev->verid = idf->s.verid;
 	_construct_ppaf_mask(&dev->ppaf, &dev->mask);
 
+	nvm_buf_free(idf);
+
+	return 0;
+}
+
+int nvm_be_populate_derived(struct nvm_dev *dev)
+{
 	// WARN: HOTFIX for reports of unrealisticly large OOB area
 	if (dev->geo.meta_nbytes > (dev->geo.sector_nbytes * 0.1)) {
 		dev->geo.meta_nbytes = 16;	// Naively hope this is right
@@ -198,9 +207,10 @@ int nvm_be_populate(struct nvm_dev *dev, int (*vadmin)(struct nvm_dev *, struct 
 	case 1:
 		dev->pmode = NVM_FLAG_PMODE_SNGL;
 		break;
+
 	default:
+		NVM_DEBUG("FAILED: invalid geo->nplanes: %lu", geo->nplanes);
 		errno = EINVAL;
-		nvm_buf_free(idf);
 		return -1;
 	}
 
@@ -210,7 +220,10 @@ int nvm_be_populate(struct nvm_dev *dev, int (*vadmin)(struct nvm_dev *, struct 
 
 	dev->meta_mode = NVM_META_MODE_NONE;
 
-	nvm_buf_free(idf);
+	// TODO: Determine quirks
+	{
+	
+	}
 
 	return 0;
 }
