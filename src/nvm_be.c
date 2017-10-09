@@ -28,6 +28,7 @@
  */
 #include <errno.h>
 #include <stdlib.h>
+#include <dirent.h>
 #include <liblightnvm.h>
 #include <nvm_be.h>
 #include <nvm_dev.h>
@@ -131,6 +132,60 @@ int nvm_be_split_dpath(const char *dev_path, char *nvme_name, int *nsid)
 
 	strncpy(nvme_name, dev_path + 5, 5);
 	*nsid = val;
+
+	return 0;
+}
+
+int nvm_be_sysfs_exists(const char *nvme_name, int nsid)
+{
+	const int path_buf_len = 0x1000;
+	char path_buf[path_buf_len];
+
+	DIR* dir;
+	int ret;
+
+	memset(path_buf, 0, sizeof(char) * path_buf_len);
+	if (nsid) {
+		sprintf(path_buf, "/sys/class/nvme/%s/%sn%d/lightnvm",
+			nvme_name, nvme_name, nsid);
+	} else {
+		sprintf(path_buf, "/sys/class/nvme/%s", nvme_name);
+	}
+
+	dir = opendir(path_buf);
+	ret = dir != NULL;
+
+	if (dir)
+		closedir(dir);
+
+	return ret;
+}
+
+int nvm_be_sysfs_to_buf(const char *nvme_name, int nsid, const char *attr,
+			char *buf, int buf_len)
+{
+	const int path_buf_len = 0x1000;
+	char path_buf[path_buf_len];
+	FILE *fp;
+	char c;
+
+	memset(path_buf, 0, sizeof(char) * path_buf_len);
+	if (nsid) {
+		sprintf(path_buf, "/sys/class/nvme/%s/%sn%d/lightnvm/%s",
+			nvme_name, nvme_name, nsid, attr);
+	} else {
+		sprintf(path_buf, "/sys/class/nvme/%s/%s", nvme_name, attr);
+	}
+
+	fp = fopen(path_buf, "rb");
+	if (!fp)
+		return -1;	// Propagate errno
+
+	memset(buf, 0, sizeof(char) * buf_len);
+	for (int i = 0; (((c = getc(fp)) != EOF) && i < buf_len); ++i)
+		buf[i] = c;
+
+	fclose(fp);
 
 	return 0;
 }
