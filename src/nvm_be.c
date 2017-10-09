@@ -107,6 +107,34 @@ int nvm_be_nosys_vadmin(struct nvm_dev *NVM_UNUSED(dev),
 	return -1;
 }
 
+int nvm_be_split_dpath(const char *dev_path, char *nvme_name, int *nsid)
+{
+	const char prefix[] = "/dev/nvme";
+	const size_t prefix_len = strlen(prefix);
+	int val;
+
+	if (strlen(dev_path) < prefix_len + 3) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	if (strncmp(prefix, dev_path, prefix_len)) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	val = atoi(&dev_path[strlen(dev_path)-1]);
+	if ((val < 1) || (val > 1024)) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	strncpy(nvme_name, dev_path + 5, 5);
+	*nsid = val;
+
+	return 0;
+}
+
 int nvm_be_populate(struct nvm_dev *dev,
 	int (*vadmin)(struct nvm_dev *, struct nvm_cmd *, struct nvm_ret *))
 {
