@@ -26,8 +26,7 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/test_bbt.c)
 
 #
-# We link against the lightnvm_a to avoid the runtime dependency on liblightnvm.
-# Do note that the dependency on libudev is carried on from liblightnvm.
+# static linking, against lightnvm_a, to avoid runtime dependency on liblightnvm
 #
 foreach(SRC_FN ${SOURCE_FILES})
 	get_filename_component(SRC_FN_WE ${SRC_FN} NAME_WE)
