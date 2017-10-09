@@ -168,19 +168,23 @@ struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags)
 	if (dev->fd < 0) {
 		NVM_DEBUG("FAILED: open(dev->path(%s)), dev->fd(%d)\n",
 			  dev->path, dev->fd);
-
 		free(dev);
-
 		return NULL;	// Propagate errno from open
 	}
 
 	err = nvm_be_populate(dev, nvm_be_ioctl_vadmin);
 	if (err) {
-		NVM_DEBUG("FAILED: _ioctl_fill_geo, err(%d)", err);
-
+		NVM_DEBUG("FAILED: nvm_be_populate");
 		close(dev->fd);
 		free(dev);
+		return NULL;
+	}
 
+	err = nvm_be_populate_derived(dev);
+	if (err) {
+		NVM_DEBUG("FAILED: nvm_be_populate_derived");
+		close(dev->fd);
+		free(dev);
 		return NULL;
 	}
 
