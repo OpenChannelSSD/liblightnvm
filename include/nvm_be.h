@@ -94,6 +94,27 @@ int nvm_be_nosys_vadmin(struct nvm_dev *dev, struct nvm_cmd *cmd,
 int nvm_be_split_dpath(const char *dev_path, char *nvme_name, int *nsid);
 
 /**
+ * Check that the given NVMe device exists in sysfs
+ *
+ * When nsid > 0 /sys/class/nvme/{nvme_name}/{nvme_name}n{nsid}
+ * is checked for existance, /sys/class/nvme/{nvme_name} otherwise.
+ *
+ * @returns 1 when it exists 0 otherwise
+ */
+int nvm_be_sysfs_exists(const char *nvme_name, int nsid);
+
+/**
+ * Read sysfs attributes from NVMe devices.
+ *
+ * When nsid > 0 /sys/class/nvme/{nvme_name}/{nvme_name}n{nsid}/lightnvm/{attr}
+ * is read  /sys/class/nvme/{nvme_name}/{attr} otherwise.
+ *
+ * @returns 0 on success, -1 on error and errno set to indicate the error.
+ */
+int nvm_be_sysfs_to_buf(const char *nvme_name, int nsid, const char *attr,
+			char *buf, int buf_len);
+
+/**
  * Fill out the geometry and other properties of the given device using the
  * given vadmin-backend function.
  */
