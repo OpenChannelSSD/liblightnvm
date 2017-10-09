@@ -41,13 +41,6 @@ endif()
 
 set(NVM_BE_SYSFS_ENABLED ${UNIX} CACHE BOOL "be_sysfs: Linux IOCTL/sysfs backend")
 if(NVM_BE_SYSFS_ENABLED)
-	find_package(udev)
-	set_package_properties(udev PROPERTIES DESCRIPTION "Queriying OpenChannel SSDs via sysfs/udev.")
-	set_package_properties(udev PROPERTIES TYPE RECOMMENDED PURPOSE "Queriying OpenChannel SSDs via sysfs/udev.")
-	if( NOT ${UDEV_FOUND} )
-		message( FATAL_ERROR "Missing libudev; either install e.g. 'libudev-dev' or set NVM_BE_SYSFS_ENABLED=OFF")
-	endif()
-
 	add_definitions(-DNVM_BE_SYSFS_ENABLED)
 endif()
 #
@@ -143,10 +136,6 @@ foreach(LTYPE ${NVM_LIBRARY_TYPES})
 			VERSION ${NVM_VERSION}
 			SOVERSION ${NVM_VERSION_MAJOR}
 		)
-	endif()
-
-	if(${NVM_BE_SYSFS_ENABLED} AND ${UDEV_FOUND})
-		target_link_libraries(${LNAME} udev)
 	endif()
 
 	install(TARGETS ${LNAME} DESTINATION lib COMPONENT lib)
