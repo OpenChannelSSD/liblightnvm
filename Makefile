@@ -27,6 +27,7 @@ configure: cmake_check
 	-DCLI=$(NVM_CLI) \
 	-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
 	-DCMAKE_INSTALL_PREFIX:PATH=$(INSTALL_PREFIX) \
+	$(CMAKE_AUX) \
 	-G "Unix Makefiles" ../
 	@echo "Modify build configuration in '$(BUILD_DIR)'"
 
