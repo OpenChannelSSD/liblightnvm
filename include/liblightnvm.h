@@ -59,7 +59,7 @@ enum nvm_be_id {
 	NVM_BE_SYSFS = 0x2,	///< Flag for the IOCTL + sysfs backend
 	NVM_BE_LBA = 0x4,	///< Flag for the IOCTL + sysfs + LBA backend
 };
-#define NVM_BE_ALL (NVM_BE_IOCTL | NVM_BE_SYSFS | NVM_BE_LBA)	///< All be identifiers
+#define NVM_BE_ALL (NVM_BE_IOCTL | NVM_BE_SYSFS | NVM_BE_LBA)	///< All be idents
 
 /**
  * Plane-mode access for IO
