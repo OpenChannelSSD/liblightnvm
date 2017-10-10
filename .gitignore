@@ -8,7 +8,7 @@ tests/bin/*
 *.orig
 *~
 /*.patch
-
+*.pyc
 *.o
 *.o[ls]
 
