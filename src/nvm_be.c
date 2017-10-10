@@ -45,7 +45,7 @@ static inline uint64_t _ilog2(uint64_t x)
 	return val;
 }
 
-static inline void _construct_ppaf_mask(struct nvm_spec_ppaf_nand *ppaf,
+static inline void construct_ppaf_mask(struct nvm_spec_ppaf_nand *ppaf,
 					struct nvm_spec_ppaf_nand_mask *mask)
 {
 	for (int i = 0 ; i < 12; ++i) {
@@ -60,50 +60,99 @@ static inline void _construct_ppaf_mask(struct nvm_spec_ppaf_nand *ppaf,
 struct nvm_dev* nvm_be_nosys_open(const char *NVM_UNUSED(dev_path),
 				  int NVM_UNUSED(flags))
 {
-	NVM_DEBUG("nvm_be_nosys_open");
+	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
 	errno = ENOSYS;
 	return NULL;
 }
 
 void nvm_be_nosys_close(struct nvm_dev *NVM_UNUSED(dev))
 {
-	NVM_DEBUG("nvm_be_nosys_close");
+	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
 	errno = ENOSYS;
 	return;
 }
 
-int nvm_be_nosys_user(struct nvm_dev *NVM_UNUSED(dev),
-		      struct nvm_cmd *NVM_UNUSED(cmd),
+struct nvm_spec_idfy *nvm_be_nosys_idfy(struct nvm_dev *NVM_UNUSED(dev),
+					struct nvm_ret *NVM_UNUSED(ret))
+{
+	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
+	errno = ENOSYS;
+	return NULL;
+}
+
+		
+struct nvm_spec_rprt *nvm_be_nosys_rprt(struct nvm_dev *NVM_UNUSED(dev),
+					struct nvm_addr NVM_UNUSED(addr),
+					uint16_t NVM_UNUSED(naddrs),
+					int NVM_UNUSED(flags),
+				        struct nvm_ret *NVM_UNUSED(ret))
+{
+	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
+	errno = ENOSYS;
+	return NULL;
+}
+
+struct nvm_spec_bbt *nvm_be_nosys_gbbt(struct nvm_dev *NVM_UNUSED(dev),
+				       struct nvm_addr NVM_UNUSED(addr),
+				       struct nvm_ret *NVM_UNUSED(ret))
+{
+	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
+	errno = ENOSYS;
+	return NULL;
+}
+
+int nvm_be_nosys_sbbt(struct nvm_dev *NVM_UNUSED(dev),
+		      struct nvm_addr *NVM_UNUSED(addrs),
+		      int NVM_UNUSED(naddrs), uint16_t NVM_UNUSED(flags),
 		      struct nvm_ret *NVM_UNUSED(ret))
 {
-	NVM_DEBUG("nvm_be_nosys_user");
+	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
 	errno = ENOSYS;
 	return -1;
 }
 
-int nvm_be_nosys_admin(struct nvm_dev *NVM_UNUSED(dev),
-		       struct nvm_cmd *NVM_UNUSED(cmd),
+int nvm_be_nosys_erase(struct nvm_dev *NVM_UNUSED(dev),
+		       struct nvm_addr *NVM_UNUSED(addrs),
+		       int NVM_UNUSED(naddrs),
+		       uint16_t NVM_UNUSED(flags),
 		       struct nvm_ret *NVM_UNUSED(ret))
 {
-	NVM_DEBUG("nvm_be_nosys_admin");
+	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
 	errno = ENOSYS;
 	return -1;
 }
 
-int nvm_be_nosys_vuser(struct nvm_dev *NVM_UNUSED(dev),
-		       struct nvm_cmd *NVM_UNUSED(cmd),
+int nvm_be_nosys_write(struct nvm_dev *NVM_UNUSED(dev),
+		       struct nvm_addr *NVM_UNUSED(addrs),
+		       int NVM_UNUSED(naddrs),
+		       void *NVM_UNUSED(data), void *NVM_UNUSED(meta),
+		       uint16_t NVM_UNUSED(flags),
 		       struct nvm_ret *NVM_UNUSED(ret))
 {
-	NVM_DEBUG("nvm_be_nosys_vuser");
+	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
 	errno = ENOSYS;
 	return -1;
 }
 
-int nvm_be_nosys_vadmin(struct nvm_dev *NVM_UNUSED(dev),
-			struct nvm_cmd *NVM_UNUSED(cmd),
-			struct nvm_ret *NVM_UNUSED(ret))
+int nvm_be_nosys_read(struct nvm_dev *NVM_UNUSED(dev),
+		      struct nvm_addr *NVM_UNUSED(addrs),
+		      int NVM_UNUSED(naddrs), void *NVM_UNUSED(data),
+		      void *NVM_UNUSED(meta), uint16_t NVM_UNUSED(flags),
+		      struct nvm_ret *NVM_UNUSED(ret))
 {
-	NVM_DEBUG("nvm_be_nosys_vadmin");
+	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
+	errno = ENOSYS;
+	return -1;
+}
+
+int nvm_be_nosys_copy(struct nvm_dev *NVM_UNUSED(dev),
+		      struct nvm_addr NVM_UNUSED(src[]),
+		      struct nvm_addr NVM_UNUSED(dst[]),
+		      int NVM_UNUSED(naddrs),
+		      uint16_t NVM_UNUSED(flags),
+		      struct nvm_ret *NVM_UNUSED(ret))
+{
+	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
 	errno = ENOSYS;
 	return -1;
 }
@@ -136,180 +185,131 @@ int nvm_be_split_dpath(const char *dev_path, char *nvme_name, int *nsid)
 	return 0;
 }
 
-int nvm_be_sysfs_exists(const char *nvme_name, int nsid)
-{
-	const int path_buf_len = 0x1000;
-	char path_buf[path_buf_len];
-
-	DIR* dir;
-	int ret;
-
-	memset(path_buf, 0, sizeof(char) * path_buf_len);
-	if (nsid) {
-		sprintf(path_buf, "/sys/class/nvme/%s/%sn%d/lightnvm",
-			nvme_name, nvme_name, nsid);
-	} else {
-		sprintf(path_buf, "/sys/class/nvme/%s", nvme_name);
-	}
-
-	dir = opendir(path_buf);
-	ret = dir != NULL;
-
-	if (dir)
-		closedir(dir);
-
-	return ret;
-}
-
-int nvm_be_sysfs_to_buf(const char *nvme_name, int nsid, const char *attr,
-			char *buf, int buf_len)
-{
-	const int path_buf_len = 0x1000;
-	char path_buf[path_buf_len];
-	FILE *fp;
-	char c;
-
-	memset(path_buf, 0, sizeof(char) * path_buf_len);
-	if (nsid) {
-		sprintf(path_buf, "/sys/class/nvme/%s/%sn%d/lightnvm/%s",
-			nvme_name, nvme_name, nsid, attr);
-	} else {
-		sprintf(path_buf, "/sys/class/nvme/%s/%s", nvme_name, attr);
-	}
-
-	fp = fopen(path_buf, "rb");
-	if (!fp)
-		return -1;	// Propagate errno
-
-	memset(buf, 0, sizeof(char) * buf_len);
-	for (int i = 0; (((c = getc(fp)) != EOF) && i < buf_len); ++i)
-		buf[i] = c;
-
-	fclose(fp);
-
-	return 0;
-}
-
-int nvm_be_populate(struct nvm_dev *dev,
-	int (*vadmin)(struct nvm_dev *, struct nvm_cmd *, struct nvm_ret *))
+int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 {
 	struct nvm_geo *geo = &dev->geo;
-	struct nvm_cmd cmd = {.cdw={0}};
-	struct nvm_spec_identify *idf;
-	int err;
+	struct nvm_spec_idfy *idfy = NULL;
 
-	idf = nvm_buf_alloca(4096, sizeof(*idf));
-	if (!idf) {
-		errno = ENOMEM;
-		return -1;
-	}
-	memset(idf, 0, sizeof(*idf));
-
-	cmd.vadmin.opcode = NVM_S12_OPC_IDF; // Setup command
-	cmd.vadmin.addr = (uint64_t)idf;
-	cmd.vadmin.data_len = sizeof(*idf);
-
-	err = vadmin(dev, &cmd, NULL);
-	if (err) {
-		nvm_buf_free(idf);
+	idfy = be->idfy(dev, NULL);
+	if (!idfy) {
+		NVM_DEBUG("FAILED: nvm_cmd_idfy");
 		return -1; // NOTE: Propagate errno
 	}
 
-	switch (idf->s.verid) {
+	// Handle IDFY (draft / pre 2.0) reporting 2.0, mark as 1.3
+	if (idfy->s.verid == NVM_SPEC_VERID_20 && !(
+		idfy->s20.lbaf.pugrp_len &&
+		idfy->s20.lbaf.punit_len &&
+		idfy->s20.lbaf.chunk_len &&
+		idfy->s20.lbaf.sectr_len)) {
+		idfy->s.verid = NVM_SPEC_VERID_13;
+	}
+
+	#ifdef NVM_DEBUG_ENABLED
+	nvm_spec_idfy_pr(idfy);
+	#endif
+
+	switch (idfy->s.verid) {
 	case NVM_SPEC_VERID_12:
-		geo->page_nbytes = idf->s12.grp[0].fpg_sz;
-		geo->sector_nbytes = idf->s12.grp[0].csecs;
-		geo->meta_nbytes = idf->s12.grp[0].sos;
+		geo->page_nbytes = idfy->s12.grp[0].fpg_sz;
+		geo->sector_nbytes = idfy->s12.grp[0].csecs;
+		geo->meta_nbytes = idfy->s12.grp[0].sos;
 
-		geo->nchannels = idf->s12.grp[0].num_ch;
-		geo->nluns = idf->s12.grp[0].num_lun;
-		geo->nplanes = idf->s12.grp[0].num_pln;
-		geo->nblocks = idf->s12.grp[0].num_blk;
-		geo->npages = idf->s12.grp[0].num_pg;
+		geo->nchannels = idfy->s12.grp[0].num_ch;
+		geo->nluns = idfy->s12.grp[0].num_lun;
+		geo->nplanes = idfy->s12.grp[0].num_pln;
+		geo->nblocks = idfy->s12.grp[0].num_blk;
+		geo->npages = idfy->s12.grp[0].num_pg;
 
-		dev->ppaf = idf->s12.ppaf;
-		dev->mccap = idf->s12.grp[0].mccap;
+		dev->mccap = idfy->s12.grp[0].mccap;
+
+		dev->ppaf = idfy->s12.ppaf;
+		construct_ppaf_mask(&dev->ppaf, &dev->mask);
+
+		break;
+
+	case NVM_SPEC_VERID_13:
+		geo->sector_nbytes = idfy->s13.lgeo.nbytes;
+		geo->meta_nbytes = idfy->s13.lgeo.nbytes_oob;
+		geo->page_nbytes = idfy->s13.wrt.ws_min * geo->sector_nbytes;
+
+		geo->nchannels = idfy->s13.lgeo.npugrp;
+		geo->nluns = idfy->s13.lgeo.npunit;
+		geo->nplanes = idfy->s13.wrt.ws_opt / idfy->s13.wrt.ws_min;
+		geo->nblocks = idfy->s13.lgeo.nchunk;
+		geo->npages = ((idfy->s13.lgeo.nsectr * idfy->s13.lgeo.nbytes) / geo->page_nbytes) / geo->nplanes;
+		geo->nsectors = geo->page_nbytes / geo->sector_nbytes;
+
+		dev->mccap = idfy->s13.mccap;
+
+		dev->ppaf = idfy->s13.ppaf;
+		construct_ppaf_mask(&dev->ppaf, &dev->mask);
+
+		dev->lbaf = idfy->s20.lbaf;
+		dev->lgeo = idfy->s20.lgeo;
+
 		break;
 
 	case NVM_SPEC_VERID_20:
-		geo->sector_nbytes = idf->s20.csecs;
-		geo->meta_nbytes = idf->s20.sos;
-		geo->page_nbytes = idf->s20.mw_min * geo->sector_nbytes;
+		geo->sector_nbytes = idfy->s20.lgeo.nbytes;
+		geo->meta_nbytes = idfy->s20.lgeo.nbytes_oob;
+		geo->page_nbytes = idfy->s20.wrt.ws_min * geo->sector_nbytes;
 
-		geo->nchannels = idf->s20.num_ch;
-		geo->nluns = idf->s20.num_lun;
-		geo->nplanes = idf->s20.mw_opt / idf->s20.mw_min;
-		geo->nblocks = idf->s20.num_chk;
-		geo->npages = ((idf->s20.clba * idf->s20.csecs) / geo->page_nbytes) / geo->nplanes;
+		geo->nchannels = idfy->s20.lgeo.npugrp;
+		geo->nluns = idfy->s20.lgeo.npunit;
+		geo->nplanes = idfy->s20.wrt.ws_opt / idfy->s20.wrt.ws_min;
+		geo->nblocks = idfy->s20.lgeo.nchunk;
+		geo->npages = ((idfy->s20.lgeo.nsectr * idfy->s20.lgeo.nbytes) / geo->page_nbytes) / geo->nplanes;
 		geo->nsectors = geo->page_nbytes / geo->sector_nbytes;
 
-		dev->ppaf = idf->s20.ppaf;
-		dev->mccap = idf->s20.mccap;
+		dev->mccap = idfy->s20.mccap;
+
+		// NOTE: NO PPAF FOR 2.0 spec.
+		dev->lbaf = idfy->s20.lbaf;
+		dev->lgeo = idfy->s20.lgeo;
+
 		break;
 
 	default:
-		NVM_DEBUG("Unsupported Version ID(%d)", idf->s.verid);
+		NVM_DEBUG("Unsupported Version ID(%d)", idfy->s.verid);
 		errno = ENOSYS;
-		nvm_buf_free(idf);
+		nvm_buf_free(idfy);
 		return -1;
 	}
 
-	dev->verid = idf->s.verid;
-	_construct_ppaf_mask(&dev->ppaf, &dev->mask);
+	dev->verid = idfy->s.verid;
 
-	nvm_buf_free(idf);
+	nvm_buf_free(idfy);
 
 	return 0;
 }
 
-/**
- * Derives device quirks based on sysfs serial and device verid
- *
- * WARN: quirk-detection only works when sysfs attributes are available
- * TODO: Re-implement quirk-detection via the device backend
- *
- * @param dev The device to determine quirks and assign quirk_mask
- * @return 0 on success, 1 on error and errno set to indicate the error
- */
-static int nvm_be_quirks(struct nvm_dev *dev)
+int nvm_be_populate_quirks(struct nvm_dev *dev, const char serial[])
 {
-	const char serial[] = "CX8800ES";
-	const int serial_len = sizeof(serial) - 1;
-	const int buf_len = 0x100;
-	char buf[buf_len];
-	char name[buf_len];
-	int nsid = 0;
+	const int serial_len = strlen(serial);
 
-	memset(name, 0, sizeof(char) * buf_len);
-	if (nvm_be_split_dpath(dev->path, name, &nsid)) {
-		NVM_DEBUG("FAILED: determining quirks -- split_path");
-		return -1;
-	}
+	if (!strncmp("CX8800ES", serial, 8 < serial_len ? 8 : serial_len)) {
+		dev->quirks = NVM_QUIRK_PMODE_ERASE_RUNROLL;
 
-	if (nvm_be_sysfs_to_buf(name, 0, "serial", buf, buf_len)) {
-		NVM_DEBUG("FAILED: determining quirks -- sysfs_to_buf");
-		return -1;
-	}
+		switch(dev->verid) {
+		case NVM_SPEC_VERID_12:
+			dev->quirks |= NVM_QUIRK_OOB_2LRG;
+			break;
 
-	if (strncmp(buf, serial, serial_len)) {
-		NVM_DEBUG("INFO: no quirks for serial: %s", serial);
+		case NVM_SPEC_VERID_13:
+		case NVM_SPEC_VERID_20:
+			dev->quirks |= NVM_QUIRK_OOB_READ_1ST4BYTES_NULL;
+			break;
+		}
+
+	} else {
+		NVM_DEBUG("INFO: no known quirks for serial: %s", serial);
 		return 0;
-	}
-
-	dev->quirks = NVM_QUIRK_PMODE_ERASE_RUNROLL;
-	switch(dev->verid) {
-	case NVM_SPEC_VERID_12:
-		dev->quirks |= NVM_QUIRK_OOB_2LRG;
-		break;
-
-	case NVM_SPEC_VERID_20:
-		dev->quirks |= NVM_QUIRK_OOB_READ_1ST4BYTES_NULL;
-		break;
 	}
 
 	// HOTFIX: for reports of unrealisticly large OOB area
 	if ((dev->quirks & NVM_QUIRK_OOB_2LRG) &&
-		(dev->geo.meta_nbytes > (dev->geo.sector_nbytes * 0.1))) {
+	    (dev->geo.meta_nbytes > (dev->geo.sector_nbytes * 0.1))) {
 		dev->geo.meta_nbytes = 16; // Naively hope this is right
 	}
 	
@@ -355,8 +355,6 @@ int nvm_be_populate_derived(struct nvm_dev *dev)
 	dev->read_naddrs_max = NVM_NADDR_MAX;
 
 	dev->meta_mode = NVM_META_MODE_NONE;
-
-	nvm_be_quirks(dev);
 
 	return 0;
 }
