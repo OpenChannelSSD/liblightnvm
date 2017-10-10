@@ -262,25 +262,77 @@ int nvm_be_populate(struct nvm_dev *dev,
 	return 0;
 }
 
+/**
+ * Derives device quirks based on sysfs serial and device verid
+ *
+ * WARN: quirk-detection only works when sysfs attributes are available
+ * TODO: Re-implement quirk-detection via the device backend
+ *
+ * @param dev The device to determine quirks and assign quirk_mask
+ * @return 0 on success, 1 on error and errno set to indicate the error
+ */
+static int nvm_be_quirks(struct nvm_dev *dev)
+{
+	const char serial[] = "CX8800ES";
+	const int serial_len = sizeof(serial) - 1;
+	const int buf_len = 0x100;
+	char buf[buf_len];
+	char name[buf_len];
+	int nsid = 0;
+
+	memset(name, 0, sizeof(char) * buf_len);
+	if (nvm_be_split_dpath(dev->path, name, &nsid)) {
+		NVM_DEBUG("FAILED: determining quirks -- split_path");
+		return -1;
+	}
+
+	if (nvm_be_sysfs_to_buf(name, 0, "serial", buf, buf_len)) {
+		NVM_DEBUG("FAILED: determining quirks -- sysfs_to_buf");
+		return -1;
+	}
+
+	if (strncmp(buf, serial, serial_len)) {
+		NVM_DEBUG("INFO: no quirks for serial: %s", serial);
+		return 0;
+	}
+
+	dev->quirks = NVM_QUIRK_PMODE_ERASE_RUNROLL;
+	switch(dev->verid) {
+	case NVM_SPEC_VERID_12:
+		dev->quirks |= NVM_QUIRK_OOB_2LRG;
+		break;
+
+	case NVM_SPEC_VERID_20:
+		dev->quirks |= NVM_QUIRK_OOB_READ_1ST4BYTES_NULL;
+		break;
+	}
+
+	// HOTFIX: for reports of unrealisticly large OOB area
+	if ((dev->quirks & NVM_QUIRK_OOB_2LRG) &&
+		(dev->geo.meta_nbytes > (dev->geo.sector_nbytes * 0.1))) {
+		dev->geo.meta_nbytes = 16; // Naively hope this is right
+	}
+	
+	return 0;
+}
+
 int nvm_be_populate_derived(struct nvm_dev *dev)
 {
-	// WARN: HOTFIX for reports of unrealisticly large OOB area
-	if (dev->geo.meta_nbytes > (dev->geo.sector_nbytes * 0.1)) {
-		dev->geo.meta_nbytes = 16;	// Naively hope this is right
-	}
-	dev->geo.nsectors = dev->geo.page_nbytes / dev->geo.sector_nbytes;
+	struct nvm_geo *geo = &dev->geo;
+
+	geo->nsectors = geo->page_nbytes / geo->sector_nbytes;
 
 	/* Derive total number of bytes on device */
-	dev->geo.tbytes = dev->geo.nchannels * dev->geo.nluns * \
-			  dev->geo.nplanes * dev->geo.nblocks * \
-			  dev->geo.npages * dev->geo.nsectors * \
-			  dev->geo.sector_nbytes;
+	geo->tbytes = geo->nchannels * geo->nluns * \
+			geo->nplanes * geo->nblocks * \
+			geo->npages * geo->nsectors * \
+			geo->sector_nbytes;
 
 	/* Derive the sector-shift-width for LBA mapping */
-	dev->ssw = _ilog2(dev->geo.sector_nbytes);
+	dev->ssw = _ilog2(geo->sector_nbytes);
 
 	/* Derive a default plane mode */
-	switch(dev->geo.nplanes) {
+	switch(geo->nplanes) {
 	case 4:
 		dev->pmode = NVM_FLAG_PMODE_QUAD;
 		break;
@@ -292,7 +344,8 @@ int nvm_be_populate_derived(struct nvm_dev *dev)
 		break;
 
 	default:
-		NVM_DEBUG("FAILED: invalid geo->nplanes: %lu", geo->nplanes);
+		NVM_DEBUG("FAILED: invalid geo->>nplanes: %lu",
+			  geo->nplanes);
 		errno = EINVAL;
 		return -1;
 	}
@@ -303,10 +356,7 @@ int nvm_be_populate_derived(struct nvm_dev *dev)
 
 	dev->meta_mode = NVM_META_MODE_NONE;
 
-	// TODO: Determine quirks
-	{
-	
-	}
+	nvm_be_quirks(dev);
 
 	return 0;
 }
