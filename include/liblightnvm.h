@@ -650,6 +650,24 @@ int nvm_dev_get_pmode(const struct nvm_dev *dev);
 int nvm_dev_set_pmode(struct nvm_dev *dev, int pmode);
 
 /**
+ * Returns the mask of quirks for the given device
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @return On success, quirk mask is returned
+ */
+int nvm_dev_get_quirks(const struct nvm_dev *dev);
+
+/**
+ * Set the default plane-mode for the given device
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @param quirks Mask of `enum nvm_quirks`
+ *
+ * @returns 0 on success, -1 on error and errno set to indicate the error.
+ */
+int nvm_dev_set_quirks(struct nvm_dev *dev, int quirks);
+
+/**
  * Returns the ppa-format of the given device
  *
  * @param dev Device handle obtained with `nvm_dev_open`
