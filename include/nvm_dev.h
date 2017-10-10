@@ -51,6 +51,7 @@ struct nvm_dev {
 	struct nvm_bbt **bbts;		///< Cache of bad-block-tables
 	enum nvm_meta_mode meta_mode;	///< Flag to indicate the how meta is w
 	struct nvm_be *be;		///< Backend interface
+	int quirks;			///< Mask representing known quirks
 };
 
 #endif /* __INTERNAL_NVM_DEV_H */
