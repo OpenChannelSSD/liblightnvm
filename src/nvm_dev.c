@@ -129,6 +129,17 @@ uint32_t nvm_dev_get_mccap(const struct nvm_dev *dev)
 	return dev->mccap;
 }
 
+int nvm_dev_get_quirks(const struct nvm_dev *dev)
+{
+	return dev->quirks;
+}
+
+int nvm_dev_set_quirks(struct nvm_dev *dev, int quirks)
+{
+	dev->quirks = quirks;
+	return 0;
+}
+
 int nvm_dev_get_pmode(const struct nvm_dev *dev)
 {
 	return dev->pmode;
