@@ -903,6 +903,8 @@ int nvm_cli_init(struct nvm_cli *cli, int argc, char *argv[])
 	// Setup environment and device
 	ret = _evar_and_dev_setup(cli);
 	if (ret < 0) {
+		if (cli->args.dev)
+			nvm_dev_close(cli->args.dev);
 		errno = EINVAL;
 		return -1;
 	}
