@@ -186,6 +186,73 @@ int _parse_cmd_arg_vcopy(int argc, char *argv[], struct nvm_cli *cli)
 	return inc;
 }
 
+int _parse_cmd_arg_vcopy_s20(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 6;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.addrs[0].ppa = 0;
+	cli->args.addrs[0].l.pugrp = atoi(argv[0]);
+	cli->args.addrs[0].l.punit = atoi(argv[1]);
+	cli->args.addrs[0].l.chunk = atoi(argv[2]);
+
+	cli->args.addrs[1].ppa = 0;
+	cli->args.addrs[1].l.pugrp = atoi(argv[3]);
+	cli->args.addrs[1].l.punit = atoi(argv[4]);
+	cli->args.addrs[1].l.chunk = atoi(argv[5]);
+
+	cli->args.naddrs = 2;
+
+	return inc;
+}
+
+int _parse_cmd_arg_addr_s12(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 6;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.addrs[0].val = 0;
+
+	cli->args.addrs[0].g.ch = atoi(argv[0]);
+	cli->args.addrs[0].g.lun = atoi(argv[1]);
+	cli->args.addrs[0].g.blk = atoi(argv[2]);
+	cli->args.addrs[0].g.pl = atoi(argv[3]);
+	cli->args.addrs[0].g.pg = atoi(argv[4]);
+	cli->args.addrs[0].g.sec = atoi(argv[5]);
+
+	cli->args.naddrs = 1;
+
+	return inc;
+}
+
+int _parse_cmd_arg_addr_s20(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 4;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.addrs[0].val = 0;
+	cli->args.addrs[0].l.pugrp = atoi(argv[0]);
+	cli->args.addrs[0].l.punit = atoi(argv[1]);
+	cli->args.addrs[0].l.chunk = atoi(argv[2]);
+	cli->args.addrs[0].l.sectr = atoi(argv[3]);
+
+	cli->args.naddrs = 1;
+
+	return inc;
+}
+
 int _parse_cmd_arg_vblk_line(int argc, char *argv[], struct nvm_cli *cli)
 {
 	const int inc = 5;
@@ -253,6 +320,92 @@ int _parse_cmd_arg_addr_sec(int argc, char *argv[], struct nvm_cli *cli)
 	cli->args.addrs[0].g.pg = atoi(argv[4]);
 	cli->args.addrs[0].g.sec = atoi(argv[5]);
 	cli->args.naddrs = 1;
+
+	return inc;
+}
+
+int _parse_cmd_arg_addr_lun_hexval(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 3;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.addrs[0].ppa = 0;
+	cli->args.addrs[0].g.ch = atoi(argv[0]);
+	cli->args.addrs[0].g.lun = atoi(argv[1]);
+	cli->args.naddrs = 1;
+
+	cli->args.hex_vals[0] = strtoll(argv[2], NULL, 16);
+	cli->args.nhex_vals = 1;
+
+	return inc;
+}
+
+int _parse_cmd_arg_addr_blk_hexval(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 4;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.addrs[0].ppa = 0;
+	cli->args.addrs[0].g.ch = atoi(argv[0]);
+	cli->args.addrs[0].g.lun = atoi(argv[1]);
+	cli->args.addrs[0].g.blk = atoi(argv[2]);
+	cli->args.naddrs = 1;
+
+	cli->args.hex_vals[0] = strtoll(argv[3], NULL, 16);
+	cli->args.nhex_vals = 1;
+
+	return inc;
+}
+
+int _parse_cmd_arg_addr_chk_hexval(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 4;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.addrs[0].ppa = 0;
+	cli->args.addrs[0].l.pugrp = atoi(argv[0]);
+	cli->args.addrs[0].l.punit = atoi(argv[1]);
+	cli->args.addrs[0].l.chunk = atoi(argv[2]);
+	cli->args.naddrs = 1;
+
+	cli->args.hex_vals[0] = strtoll(argv[3], NULL, 16);
+	cli->args.nhex_vals = 1;
+
+	return inc;
+}
+
+int _parse_cmd_arg_addr_chk_val_hexval(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 5;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.addrs[0].ppa = 0;
+	cli->args.addrs[0].l.pugrp = atoi(argv[0]);
+	cli->args.addrs[0].l.punit = atoi(argv[1]);
+	cli->args.addrs[0].l.chunk = atoi(argv[2]);
+	cli->args.naddrs = 1;
+
+	cli->args.dec_vals[0] = strtoll(argv[3], NULL, 10);
+	cli->args.ndec_vals = 1;
+
+	cli->args.hex_vals[0] = strtoll(argv[4], NULL, 16);
+	cli->args.nhex_vals = 1;
 
 	return inc;
 }
@@ -365,6 +518,24 @@ int _parse_cmd_arg_addr_list(int argc, char *argv[], struct nvm_cli *cli)
 
 	return inc;
 }
+
+int _parse_cmd_arg_addr_src_dst(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 2;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.addrs[(cli->args.naddrs)++].ppa = strtoll(argv[0], NULL, 16);
+	cli->args.addrs[(cli->args.naddrs)++].ppa = strtoll(argv[1], NULL, 16);
+
+	cli->args.naddrs = 2;
+
+	return inc;
+}
+
 
 int _parse_cmd_arg_decval(int argc, char *argv[], struct nvm_cli *cli)
 {
@@ -513,6 +684,12 @@ int _parse_cmd_args(int argc, char *argv[], struct nvm_cli *cli)
 			return -1;
 		return inc + ret;
 
+	case NVM_CLI_ARG_ADDR_SRC_DST:
+		ret = _parse_cmd_arg_addr_src_dst(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
 	case NVM_CLI_ARG_ADDR_LUN:
 		ret = _parse_cmd_arg_addr_lun(argc - inc, argv + inc, cli);
 		if (ret < 0)
@@ -537,8 +714,50 @@ int _parse_cmd_args(int argc, char *argv[], struct nvm_cli *cli)
 			return -1;
 		return inc + ret;
 
+	case NVM_CLI_ARG_ADDR_LUN_HEXVAL:
+		ret = _parse_cmd_arg_addr_lun_hexval(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_ADDR_BLK_HEXVAL:
+		ret = _parse_cmd_arg_addr_blk_hexval(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_ADDR_CHK_HEXVAL:
+		ret = _parse_cmd_arg_addr_chk_hexval(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_ADDR_CHK_VAL_HEXVAL:
+		ret = _parse_cmd_arg_addr_chk_val_hexval(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
 	case NVM_CLI_ARG_VCOPY:
 		ret = _parse_cmd_arg_vcopy(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_VCOPY_S20:
+		ret = _parse_cmd_arg_vcopy_s20(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_ADDR_S12:
+		ret = _parse_cmd_arg_addr_s12(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_ADDR_S20:
+		ret = _parse_cmd_arg_addr_s20(argc - inc, argv + inc, cli);
 		if (ret < 0)
 			return -1;
 		return inc + ret;
@@ -825,7 +1044,7 @@ int _evar_and_dev_setup(struct nvm_cli *cli)
 	}
 	
 	for (int i = 0; (i < cli->args.naddrs) && (!cli->evars.noverify); ++i) {
-		int bounds = nvm_addr_check(cli->args.addrs[i], cli->args.geo);
+		int bounds = nvm_addr_check(cli->args.addrs[i], cli->args.dev);
 
 		if (bounds) {
 			nvm_addr_pr(cli->args.addrs[i]);
@@ -903,6 +1122,8 @@ int nvm_cli_init(struct nvm_cli *cli, int argc, char *argv[])
 	// Setup environment and device
 	ret = _evar_and_dev_setup(cli);
 	if (ret < 0) {
+		if (cli->args.dev)
+			nvm_dev_close(cli->args.dev);
 		errno = EINVAL;
 		return -1;
 	}
@@ -972,7 +1193,7 @@ void _nvm_cli_opts_mask_pr(int mask) {
 			printf(" [-o FILE]");
 			break;
 		case NVM_CLI_OPT_VAL_DEC:
-			printf(" [-n val]");
+			printf(" [-n VAL]");
 			break;
 		case NVM_CLI_OPT_VAL_HEX:
 			printf(" [-x 0xVAL]");
@@ -1052,6 +1273,9 @@ void nvm_cli_usage_pr(struct nvm_cli *cli)
 		case NVM_CLI_ARG_ADDR_LIST:
 			printf("dev_path 0xADDR [0xADDR...]");
 			break;
+		case NVM_CLI_ARG_ADDR_SRC_DST:
+			printf("dev_path 0xSRC 0xDST");
+			break;
 
 		case NVM_CLI_ARG_DECVAL:
 			printf("dev_path val");
@@ -1082,9 +1306,35 @@ void nvm_cli_usage_pr(struct nvm_cli *cli)
 		case NVM_CLI_ARG_ADDR_SEC:
 			printf("dev_path ch lun pl blk pg sec");
 			break;
+		case NVM_CLI_ARG_ADDR_LUN_HEXVAL:
+			printf("dev_path ch lun 0xVAL");
+			break;
+		case NVM_CLI_ARG_ADDR_BLK_HEXVAL:
+			printf("dev_path ch lun blk 0xVAL");
+			break;
+		case NVM_CLI_ARG_ADDR_CHK_HEXVAL:
+			printf("dev_path grp pu chk 0xVAL");
+			break;
+		case NVM_CLI_ARG_ADDR_CHK_VAL_HEXVAL:
+			printf("dev_path grp pu chk NADDRS 0xOPT");
+			break;
+
 		case NVM_CLI_ARG_VCOPY:
 			printf("dev_path ch lun blk ch lun blk");
 			break;
+
+		case NVM_CLI_ARG_VCOPY_S20:
+			printf("dev_path pugrp punit chunk pugrp punit chunk");
+			break;
+
+		case NVM_CLI_ARG_ADDR_S12:
+			printf("dev_path ch lun blk pl pg sec");
+			break;
+
+		case NVM_CLI_ARG_ADDR_S20:
+			printf("dev_path pugrp punit chunk sectr");
+			break;
+
 		case NVM_CLI_ARG_VBLK_LINE:
 			printf("dev_path ch_bgn ch_end lun_bgn lun_end blk");
 			break;
@@ -1151,7 +1401,7 @@ void nvm_cli_cmd_args_pr(struct nvm_cli_cmd_args *args) {
 	printf("},\n");
 
 	printf("cli-args-");
-	nvm_addr_prn(args->addrs, args->naddrs);
+	nvm_addr_prn(args->addrs, args->naddrs, args->dev);
 
 	printf("cli-");
 	nvm_dev_pr(args->dev);
