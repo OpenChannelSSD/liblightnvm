@@ -274,13 +274,16 @@ int nvm_dev_set_write_naddrs_max(struct nvm_dev *dev, int naddrs)
 		errno = EINVAL;
 		return -1;
 	}
-	if (dev->pmode && (naddrs % (dev->geo.nplanes * dev->geo.nsectors))) {
-		errno = EINVAL;
-		return -1;
-	}
-	if (naddrs % (dev->geo.nsectors)) {
-		errno = EINVAL;
-		return -1;
+	
+	if (dev->verid != NVM_SPEC_VERID_20) {
+		if (dev->pmode && (naddrs % (dev->geo.nplanes * dev->geo.nsectors))) {
+			errno = EINVAL;
+			return -1;
+		}
+		if (naddrs % (dev->geo.nsectors)) {
+			errno = EINVAL;
+			return -1;
+		}
 	}
 
 	dev->write_naddrs_max = naddrs;
