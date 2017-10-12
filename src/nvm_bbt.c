@@ -112,9 +112,9 @@ int nvm_bbt_flush(struct nvm_dev *dev, struct nvm_addr addr,
 	if (!cached)
 		return 0;			// Nothing to flush
 
-	spec = nvm_spec_bbt_get(dev, addr, ret);
+	spec = nvm_cmd_gbbt(dev, addr, ret);
 	if (!spec) {
-		NVM_DEBUG("FAILED: nvm_spec_bbt_get failed spec");
+		NVM_DEBUG("FAILED: nvm_cmd_gbbt failed spec");
 		return -1;			// Propagate `errno`
 	}
 
@@ -137,8 +137,9 @@ int nvm_bbt_flush(struct nvm_dev *dev, struct nvm_addr addr,
 		blk_addr.g.blk = i / dev->geo.nplanes;
 		blk_addr.g.pl = i % dev->geo.nplanes;
 
-		if (nvm_spec_bbt_set(dev, &blk_addr, 1, cached->blks[i], ret)) {
-			NVM_DEBUG("FAILED: nvm_spec_bbt_set");
+		if (nvm_cmd_sbbt(dev, &blk_addr, 1, cached->blks[i],
+					ret)) {
+			NVM_DEBUG("FAILED: nvm_cmd_sbbt");
 			free(spec);
 			return -1;		// Propagate `errno`
 		}
@@ -212,7 +213,7 @@ const struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 	}
 
 	/* Update bbt entry in managed memory area with bbt from device */
-	spec = nvm_spec_bbt_get(dev, addr, ret);
+	spec = nvm_cmd_gbbt(dev, addr, ret);
 	if (!spec) {
 		free(dev->bbts[bbt_idx]);
 		dev->bbts[bbt_idx] = NULL;
@@ -276,7 +277,7 @@ int nvm_bbt_mark(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		 uint16_t flags, struct nvm_ret *ret)
 {
 	if (!dev->bbts_cached)
-		return nvm_spec_bbt_set(dev, addrs, naddrs, flags, ret);
+		return nvm_cmd_sbbt(dev, addrs, naddrs, flags, ret);
 
 	/* Update bbt entries in managed memory */
 	for (int i = 0; i < naddrs; ++i) {
