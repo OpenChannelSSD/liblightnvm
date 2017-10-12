@@ -1,5 +1,5 @@
 /*
- * cmd - Lowest level command interface
+ * cmd - Encapsulation of command construction and execution
  *
  * Copyright (C) 2015-2017 Javier Gonzáles <javier@cnexlabs.com>
  * Copyright (C) 2015-2017 Matias Bjørling <matias@cnexlabs.com>
@@ -27,56 +27,63 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <inttypes.h>
+#include <string.h>
 #include <stdio.h>
+#include <errno.h>
 #include <liblightnvm.h>
 #include <nvm_be.h>
 #include <nvm_dev.h>
 #include <nvm_utils.h>
+#include <nvm_debug.h>
 
-int nvm_cmd_vuser(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret)
+int nvm_cmd_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+		  uint16_t flags, struct nvm_ret *ret)
 {
-	return dev->be->vuser(dev, cmd, ret);
+	return dev->be->erase(dev, addrs, naddrs, flags, ret);
 }
 
-int nvm_cmd_vadmin(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret)
+int nvm_cmd_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+		  void *data, void *meta, uint16_t flags,
+		  struct nvm_ret *ret)
 {
-	return dev->be->vadmin(dev, cmd, ret);
+	return dev->be->write(dev, addrs, naddrs, data, meta, flags, ret);
 }
 
-int nvm_cmd_user(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret)
+int nvm_cmd_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+		 void *data, void *meta, uint16_t flags,
+		 struct nvm_ret *ret)
 {
-	return dev->be->user(dev, cmd, ret);
+	return dev->be->read(dev, addrs, naddrs, data, meta, flags, ret);
 }
 
-int nvm_cmd_admin(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret)
+int nvm_cmd_copy(struct nvm_dev *dev, struct nvm_addr src[],
+		 struct nvm_addr dst[], int naddrs, uint16_t flags,
+		 struct nvm_ret *ret)
 {
-	return dev->be->admin(dev, cmd, ret);
+	return dev->be->copy(dev, src, dst, naddrs, flags, ret);
 }
 
-void nvm_cmd_vuser_pr(struct nvm_cmd *cmd)
+struct nvm_spec_idfy *nvm_cmd_idfy(struct nvm_dev *dev, struct nvm_ret *ret)
 {
-	printf("cmd.vuser:\n");
-	printf(" opcode: 0x%02"PRIx8"\n", cmd->vuser.opcode);
-	printf(" flags: 0x%02"PRIx8"\n", cmd->vuser.flags);
-	printf(" control: 0x%04"PRIx16"\n", cmd->vuser.control);
-	printf(" nppas: %"PRIu16"\n", cmd->vuser.nppas);
-	printf(" metadata: %"PRIu64"\n", cmd->vuser.metadata);
-	printf(" addr: %"PRIu64"\n", cmd->vuser.addr);
-	/*
-	printf(" ppa_list {");
-	for (int i = 0; i <= cmd->vuser.nppas; ++i) {
-		printf("  0x%016lx,\n", ((uint64_t*)cmd->vuser.ppa_list)[i]);
-	}*/
-	printf(" metadata_len: %"PRIu32"\n", cmd->vuser.metadata_len);
-	printf(" data_len: %"PRIu32"\n", cmd->vuser.data_len);
-	printf(" status: 0x%016"PRIx64"\n", cmd->vuser.status);
-	printf(" result: 0x%016"PRIx32"\n", cmd->vuser.result);
+	return dev->be->idfy(dev, ret);
 }
 
-void nvm_cmd_pr(struct nvm_cmd *cmd)
+struct nvm_spec_rprt *nvm_cmd_rprt(struct nvm_dev *dev, struct nvm_addr addr,
+				   uint16_t naddrs, int opts,
+				   struct nvm_ret *ret)
 {
-	printf("nvm_cmd:\n");
-	for (int32_t i = 0; i < 16; ++i)
-		printf("  cdw%02"PRIi32": "NVM_I32_FMT"\n", i, NVM_I32_TO_STR(cmd->cdw[i]));
+	return dev->be->rprt(dev, addr, naddrs, opts, ret);
+}
+
+struct nvm_spec_bbt *nvm_cmd_gbbt(struct nvm_dev *dev, struct nvm_addr addr,
+				  struct nvm_ret *ret)
+{
+	return dev->be->gbbt(dev, addr, ret);
+}
+
+int nvm_cmd_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs, int naddrs,
+		 uint16_t flags, struct nvm_ret *ret)
+{
+	return dev->be->sbbt(dev, addrs, naddrs, flags, ret);
 }
 
