@@ -150,65 +150,10 @@ struct nvm_addr nvm_addr_lba2gen(struct nvm_dev *dev, uint64_t off)
 	return nvm_addr_off2gen(dev, off << NVM_UNIVERSAL_SECT_SH);
 }
 
-static inline ssize_t nvm_addr_cmd(struct nvm_dev *dev, struct nvm_addr addrs[],
-				   int naddrs, void *data, void *meta,
-				   uint16_t flags, uint16_t opcode,
-				   struct nvm_ret *ret)
-{
-	struct nvm_cmd cmd = {.cdw={0}};
-	uint64_t dev_addrs[naddrs];
-	int i, err;
-
-	if (naddrs > NVM_NADDR_MAX) {
-		errno = EINVAL;
-		return -1;
-	}
-
-	cmd.vuser.opcode = opcode;
-	cmd.vuser.control = flags | NVM_FLAG_DEFAULT;
-
-	// Setup PPAs: Convert address format from generic to device specific
-	for (i = 0; i < naddrs; ++i)
-		dev_addrs[i] = nvm_addr_gen2dev(dev, addrs[i]);
-
-	// Unnatural numbers: counting from zero
-	cmd.vuser.nppas = naddrs - 1;
-	cmd.vuser.ppa_list = naddrs == 1 ? dev_addrs[0] : (uint64_t)dev_addrs;
-
-	// Setup data
-	cmd.vuser.addr = (uint64_t)data;
-	cmd.vuser.data_len = data ? dev->geo.sector_nbytes * naddrs : 0;
-
-	// Setup metadata
-	cmd.vuser.metadata = (uint64_t)meta;
-	cmd.vuser.metadata_len = meta ? dev->geo.meta_nbytes * naddrs : 0;
-
-	err = dev->be->vuser(dev, &cmd, ret);
-#ifdef NVM_DEBUG_ENABLED
-	if (err || cmd.vuser.result || cmd.vuser.status) {
-		printf("opcode(0x%02x), err(%d), result(%u), status(%lu)\n",
-		       opcode, err, cmd.vuser.result, cmd.vuser.status);
-		nvm_addr_prn(addrs, naddrs);
-	}
-#endif
-	if (!err)
-		return 0;		// No errors, we can return
-
-	switch (cmd.vuser.result) {
-	case 0x700:			// Ignore: Acceptable error
-	case 0x4700:			// Ignore: Acceptable error
-		return 0;
-
-	default:
-		return -1;		// Propagate errno from backend
-	}
-}
-
 ssize_t nvm_addr_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		       uint16_t flags, struct nvm_ret *ret)
 {
-	return nvm_addr_cmd(dev, addrs, naddrs, NULL, NULL, flags,
-			    NVM_S12_OPC_ERASE, ret);
+	return nvm_cmd_erase(dev, addrs, naddrs, flags, ret);
 }
 
 ssize_t nvm_addr_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
@@ -216,17 +161,15 @@ ssize_t nvm_addr_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		       struct nvm_ret *ret)
 {
 	char *cdata = (char *)data;
-        char *cmeta = (char *)meta;
+	char *cmeta = (char *)meta;
 
-	return nvm_addr_cmd(dev, addrs, naddrs, cdata, cmeta, flags,
-			    NVM_S12_OPC_WRITE, ret);
+	return nvm_cmd_write(dev, addrs, naddrs, cdata, cmeta, flags, ret);
 }
 
 ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		      void *data, void *meta, uint16_t flags,
 		      struct nvm_ret *ret)
 {
-	return nvm_addr_cmd(dev, addrs, naddrs, data, meta, flags,
-			    NVM_S12_OPC_READ, ret);
+	return nvm_cmd_read(dev, addrs, naddrs, data, meta, flags, ret);
 }
 
