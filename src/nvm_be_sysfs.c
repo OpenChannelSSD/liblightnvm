@@ -35,11 +35,15 @@ struct nvm_be nvm_be_sysfs = {
 	.open = nvm_be_nosys_open,
 	.close = nvm_be_nosys_close,
 
-	.user = nvm_be_nosys_user,
-	.admin = nvm_be_nosys_admin,
+	.idfy = nvm_be_nosys_idfy,
+	.rprt = nvm_be_nosys_rprt,
+	.sbbt = nvm_be_nosys_sbbt,
+	.gbbt = nvm_be_nosys_gbbt,
 
-	.vuser = nvm_be_nosys_vuser,
-	.vadmin = nvm_be_nosys_vadmin
+	.erase = nvm_be_nosys_erase,
+	.write = nvm_be_nosys_write,
+	.read = nvm_be_nosys_read,
+	.copy = nvm_be_nosys_copy,
 };
 #else
 #define _GNU_SOURCE
@@ -55,6 +59,76 @@ struct nvm_be nvm_be_sysfs = {
 #include <nvm_utils.h>
 #include <nvm_be.h>
 #include <nvm_be_ioctl.h>
+
+/**
+ * Check that the given NVMe device exists in sysfs
+ *
+ * When nsid > 0 /sys/class/nvme/{nvme_name}/{nvme_name}n{nsid}
+ * is checked for existance, /sys/class/nvme/{nvme_name} otherwise.
+ *
+ * @returns 1 when it exists 0 otherwise
+ */
+int sysfs_exists(const char *nvme_name, int nsid)
+{
+	const int path_buf_len = 0x1000;
+	char path_buf[path_buf_len];
+
+	DIR* dir;
+	int ret;
+
+	memset(path_buf, 0, sizeof(char) * path_buf_len);
+	if (nsid) {
+		sprintf(path_buf, "/sys/class/nvme/%s/%sn%d/lightnvm",
+			nvme_name, nvme_name, nsid);
+	} else {
+		sprintf(path_buf, "/sys/class/nvme/%s", nvme_name);
+	}
+
+	dir = opendir(path_buf);
+	ret = dir != NULL;
+
+	if (dir)
+		closedir(dir);
+
+	return ret;
+}
+
+/**
+ * Read sysfs attributes from NVMe devices.
+ *
+ * When nsid > 0 /sys/class/nvme/{nvme_name}/{nvme_name}n{nsid}/lightnvm/{attr}
+ * is read  /sys/class/nvme/{nvme_name}/{attr} otherwise.
+ *
+ * @returns 0 on success, -1 on error and errno set to indicate the error.
+ */
+int sysfs_to_buf(const char *nvme_name, int nsid, const char *attr,
+			char *buf, int buf_len)
+{
+	const int path_buf_len = 0x1000;
+	char path_buf[path_buf_len];
+	FILE *fp;
+	char c;
+
+	memset(path_buf, 0, sizeof(char) * path_buf_len);
+	if (nsid) {
+		sprintf(path_buf, "/sys/class/nvme/%s/%sn%d/lightnvm/%s",
+			nvme_name, nvme_name, nsid, attr);
+	} else {
+		sprintf(path_buf, "/sys/class/nvme/%s/%s", nvme_name, attr);
+	}
+
+	fp = fopen(path_buf, "rb");
+	if (!fp)
+		return -1;	// Propagate errno
+
+	memset(buf, 0, sizeof(char) * buf_len);
+	for (int i = 0; (((c = getc(fp)) != EOF) && i < buf_len); ++i)
+		buf[i] = c;
+
+	fclose(fp);
+
+	return 0;
+}
 
 static int buf_to_fmt(const char *buf, struct nvm_spec_ppaf_nand *fmt,
 		      struct nvm_spec_ppaf_nand_mask *mask)
@@ -108,14 +182,14 @@ static int populate(struct nvm_dev *dev)
 		return -1;
 	}
 
-	if (!nvm_be_sysfs_exists(nvme_name, nsid)) {
-		NVM_DEBUG("FAILED: nvm_be_sysfs_exists");
+	if (!sysfs_exists(nvme_name, nsid)) {
+		NVM_DEBUG("FAILED: sysfs_exists");
 		errno = ENODEV;
 		return -1;
 	}
 
 	// Parse ppa_format from sysfs attribute
-	if (nvm_be_sysfs_to_buf(nvme_name, nsid, "ppa_format", buf, buf_len)) {
+	if (sysfs_to_buf(nvme_name, nsid, "ppa_format", buf, buf_len)) {
 		NVM_DEBUG("FAILED: reading ppa_format");
 		errno = EINVAL;
 		return -1;
@@ -128,7 +202,7 @@ static int populate(struct nvm_dev *dev)
 	}
 
 	// Parse geometry from sysfs attributes
-	if (nvm_be_sysfs_to_buf(nvme_name, nsid, "num_channels", buf,
+	if (sysfs_to_buf(nvme_name, nsid, "num_channels", buf,
 				buf_len)) {
 		NVM_DEBUG("FAILED: reading num_channels");
 		errno = EIO;
@@ -136,42 +210,42 @@ static int populate(struct nvm_dev *dev)
 	}
 	geo->nchannels = buf_to_ll(buf);
 
-	if (nvm_be_sysfs_to_buf(nvme_name, nsid, "num_luns", buf, buf_len)) {
+	if (sysfs_to_buf(nvme_name, nsid, "num_luns", buf, buf_len)) {
 		NVM_DEBUG("FAILED: reading num_luns");
 		errno = EIO;
 		return -1;
 	}
 	geo->nluns = buf_to_ll(buf);
 
-	if (nvm_be_sysfs_to_buf(nvme_name, nsid, "num_planes", buf, buf_len)) {
+	if (sysfs_to_buf(nvme_name, nsid, "num_planes", buf, buf_len)) {
 		NVM_DEBUG("FAILED: reading num_planes");
 		errno = EIO;
 		return -1;
 	}
 	geo->nplanes = buf_to_ll(buf);
 
-	if (nvm_be_sysfs_to_buf(nvme_name, nsid, "num_blocks", buf, buf_len)) {
+	if (sysfs_to_buf(nvme_name, nsid, "num_blocks", buf, buf_len)) {
 		NVM_DEBUG("FAILED: reading num_blocks");
 		errno = EIO;
 		return -1;
 	}
 	geo->nblocks = buf_to_ll(buf);
 
-	if (nvm_be_sysfs_to_buf(nvme_name, nsid, "num_pages", buf, buf_len)) {
+	if (sysfs_to_buf(nvme_name, nsid, "num_pages", buf, buf_len)) {
 		NVM_DEBUG("FAILED: reading num_pages");
 		errno = EIO;
 		return -1;
 	}
 	geo->npages = buf_to_ll(buf);
 
-	if (nvm_be_sysfs_to_buf(nvme_name, nsid, "page_size", buf, buf_len)) {
+	if (sysfs_to_buf(nvme_name, nsid, "page_size", buf, buf_len)) {
 		NVM_DEBUG("FAILED: reading page_size");
 		errno = EIO;
 		return -1;
 	}
 	geo->page_nbytes = buf_to_ll(buf);
 
-	if (nvm_be_sysfs_to_buf(nvme_name, nsid, "hw_sector_size", buf,
+	if (sysfs_to_buf(nvme_name, nsid, "hw_sector_size", buf,
 				buf_len)) {
 		NVM_DEBUG("FAILED: reading hw_sector_size");
 		errno = EIO;
@@ -179,7 +253,7 @@ static int populate(struct nvm_dev *dev)
 	}
 	geo->sector_nbytes = buf_to_ll(buf);
 
-	if (nvm_be_sysfs_to_buf(nvme_name, nsid, "oob_sector_size", buf,
+	if (sysfs_to_buf(nvme_name, nsid, "oob_sector_size", buf,
 				buf_len)) {
 		NVM_DEBUG("FAILED: reading oob_sector_size");
 		errno = EIO;
@@ -188,7 +262,7 @@ static int populate(struct nvm_dev *dev)
 	geo->meta_nbytes = buf_to_ll(buf);
 
 	// Parse version identifier from sysfs attribute
-	if (nvm_be_sysfs_to_buf(nvme_name, nsid, "version", buf, buf_len)) {
+	if (sysfs_to_buf(nvme_name, nsid, "version", buf, buf_len)) {
 		NVM_DEBUG("FAILED: reading version");
 		errno = EIO;
 		return -1;
@@ -196,7 +270,7 @@ static int populate(struct nvm_dev *dev)
 	dev->verid = buf_to_ll(buf);
 
 	// Parse media capabilities from sysfs attribute
-	if (nvm_be_sysfs_to_buf(nvme_name, nsid, "media_capabilities", buf,
+	if (sysfs_to_buf(nvme_name, nsid, "media_capabilities", buf,
 				buf_len)) {
 		NVM_DEBUG("FAILED: reading media_capabilities");
 		errno = EIO;
@@ -231,6 +305,7 @@ void nvm_be_sysfs_close(struct nvm_dev *dev)
 struct nvm_dev *nvm_be_sysfs_open(const char *dev_path, int flags)
 {
 	struct nvm_dev *dev;
+	char nvme_name[NVM_DEV_PATH_LEN];
 	int err;
 	
 	if (strlen(dev_path) > NVM_DEV_PATH_LEN) {
@@ -247,6 +322,10 @@ struct nvm_dev *nvm_be_sysfs_open(const char *dev_path, int flags)
 
 	strncpy(dev->path, dev_path, NVM_DEV_PATH_LEN);
 	strncpy(dev->name, dev_path+5, NVM_DEV_NAME_LEN);
+
+	// HACK: use naming conventions to determine nsid, fallback to hardcode
+	if (nvm_be_split_dpath(dev_path, nvme_name, &dev->nsid))
+		dev->nsid = 1;
 
 	switch (flags) {
 	case NVM_BE_IOCTL_WRITABLE:
@@ -289,11 +368,15 @@ struct nvm_be nvm_be_sysfs = {
 	.open = nvm_be_sysfs_open,
 	.close = nvm_be_sysfs_close,
 
-	.user = nvm_be_ioctl_user,
-	.admin = nvm_be_ioctl_admin,
+	.idfy = nvm_be_ioctl_idfy,
+	.rprt = nvm_be_ioctl_rprt,
+	.sbbt = nvm_be_ioctl_sbbt,
+	.gbbt = nvm_be_ioctl_gbbt,
 
-	.vuser = nvm_be_ioctl_vuser,
-	.vadmin = nvm_be_ioctl_vadmin
+	.erase = nvm_be_ioctl_erase,
+	.write = nvm_be_ioctl_write,
+	.read = nvm_be_ioctl_read,
+	.copy = nvm_be_ioctl_copy,
 };
 #endif
 
