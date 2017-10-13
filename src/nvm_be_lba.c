@@ -36,11 +36,15 @@ struct nvm_be nvm_be_lba = {
 	.open = nvm_be_nosys_open,
 	.close = nvm_be_nosys_close,
 
-	.user = nvm_be_nosys_user,
-	.admin = nvm_be_nosys_admin,
+	.idfy = nvm_be_nosys_idfy,
+	.rprt = nvm_be_nosys_rprt,
+	.sbbt = nvm_be_nosys_sbbt,
+	.gbbt = nvm_be_nosys_gbbt,
 
-	.vuser = nvm_be_nosys_vuser,
-	.vadmin = nvm_be_nosys_vadmin
+	.erase = nvm_be_nosys_erase,
+	.write = nvm_be_nosys_write,
+	.read = nvm_be_nosys_read,
+	.copy = nvm_be_nosys_copy,
 };
 #else
 #include <stdlib.h>
@@ -54,54 +58,44 @@ struct nvm_be nvm_be_lba = {
 #include <nvm_utils.h>
 #include <nvm_debug.h>
 
-int nvm_be_lba_vuser(struct nvm_dev *dev, struct nvm_cmd *cmd,
-		     struct nvm_ret *ret)
+int nvm_be_lba_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+		    void *data, void *meta, uint16_t NVM_UNUSED(flags),
+		    struct nvm_ret *NVM_UNUSED(ret))
 {
 	const size_t count = dev->geo.sector_nbytes;
-	const uint8_t opcode = cmd->vuser.opcode;
 
-	if (cmd->vuser.metadata || cmd->vuser.metadata_len) {
+	if (meta) {
+		errno = ENOSYS;
+		return -1;
+	}
+	
+	for (int i = 0; i < naddrs; ++i) {
+		const uint64_t lba = nvm_addr_dev2off(dev, addrs[i].ppa);
+		char *buf = ((char *)data) + (i * count);
+		ssize_t res = pread(dev->fd, buf, count, lba);
+
+		if (res < 0)
+			return -1;
+	}
+
+	return 0;
+}
+
+int nvm_be_lba_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+		  void *data, void *meta, uint16_t NVM_UNUSED(flags),
+		  struct nvm_ret *NVM_UNUSED(ret))
+{
+	const size_t count = dev->geo.sector_nbytes;
+
+	if (meta) {
 		errno = ENOSYS;
 		return -1;
 	}
 
-	switch(opcode) {
-	case NVM_S12_OPC_READ:
-	case NVM_S12_OPC_WRITE:
-		break;
-
-	default:
-		return nvm_be_ioctl_vuser(dev, cmd, ret);
-	}
-
-	for (uint16_t i = 0; i <= cmd->vuser.nppas; ++i) {
-		uint64_t dev_addr, lba;
-		ssize_t res;
-		char *buf;
-	
-		if (cmd->vuser.nppas) {	// Get the addr on dev-format
-			dev_addr = ((uint64_t *)cmd->vuser.ppa_list)[i];
-		} else {
-			dev_addr = cmd->vuser.ppa_list;
-		}
-					// Convert addr on dev-format to LBA/OFF
-		lba = nvm_addr_dev2off(dev, dev_addr);
-
-					// Get buffer offset
-		buf = ((char *)cmd->vuser.addr) + (i * count);
-
-		switch (opcode) {	// Perform the IO
-		case NVM_S12_OPC_READ:
-			res = pread(dev->fd, buf, count, lba);
-			break;
-		case NVM_S12_OPC_WRITE:
-			res = pwrite(dev->fd, buf, count, lba);
-			break;
-
-		default:
-			errno = ENOSYS;
-			return -1;
-		}
+	for (int i = 0; i < naddrs; ++i) {
+		const uint64_t lba = nvm_addr_dev2off(dev, addrs[i].ppa);
+		char *buf = ((char *)data) + (i * count);
+		ssize_t res = pwrite(dev->fd, buf, count, lba);
 
 		if (res < 0)
 			return -1;
@@ -121,11 +115,15 @@ struct nvm_be nvm_be_lba = {
 	.open = nvm_be_lba_open,
 	.close = nvm_be_ioctl_close,
 
-	.user = nvm_be_ioctl_user,
-	.admin = nvm_be_ioctl_admin,
+	.idfy = nvm_be_ioctl_idfy,
+	.rprt = nvm_be_ioctl_rprt,
+	.sbbt = nvm_be_ioctl_sbbt,
+	.gbbt = nvm_be_ioctl_gbbt,
 
-	.vuser = nvm_be_lba_vuser,
-	.vadmin = nvm_be_ioctl_vadmin
+	.erase = nvm_be_ioctl_erase,
+	.write = nvm_be_lba_write,
+	.read = nvm_be_lba_read,
+	.copy = nvm_be_ioctl_copy,
 };
 #endif
 
