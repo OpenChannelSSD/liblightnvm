@@ -176,17 +176,34 @@ struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags);
 
 void nvm_be_ioctl_close(struct nvm_dev *dev);
 
-int nvm_be_ioctl_user(struct nvm_dev *dev, struct nvm_cmd *cmd,
+struct nvm_spec_idfy *nvm_be_ioctl_idfy(struct nvm_dev *dev,
+					struct nvm_ret *ret);
+
+struct nvm_spec_rprt *nvm_be_ioctl_rprt(struct nvm_dev *dev,
+					struct nvm_addr addr, uint16_t naddrs,
+					int opts, struct nvm_ret *ret);
+
+struct nvm_spec_bbt *nvm_be_ioctl_gbbt(struct nvm_dev *dev,
+				       struct nvm_addr addr,
+				       struct nvm_ret *ret);
+
+int nvm_be_ioctl_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs, int naddrs,
+		      uint16_t flags, struct nvm_ret *ret);
+
+int nvm_be_ioctl_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+		       uint16_t flags, struct nvm_ret *ret);
+
+int nvm_be_ioctl_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+		       void *data, void *meta, uint16_t flags,
+		       struct nvm_ret *ret);
+
+int nvm_be_ioctl_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+		      void *data, void *meta, uint16_t flags,
 		      struct nvm_ret *ret);
 
-int nvm_be_ioctl_admin(struct nvm_dev *dev, struct nvm_cmd *cmd,
-		       struct nvm_ret *ret);
-
-int nvm_be_ioctl_vuser(struct nvm_dev *dev, struct nvm_cmd *cmd,
-		       struct nvm_ret *ret);
-
-int nvm_be_ioctl_vadmin(struct nvm_dev *dev, struct nvm_cmd *cmd,
-			struct nvm_ret *ret);
+int nvm_be_ioctl_copy(struct nvm_dev *dev, struct nvm_addr src[],
+		      struct nvm_addr dst[], int naddrs, uint16_t flags,
+		      struct nvm_ret *ret);
 
 /**
  * Prints a text-representation of the given command
