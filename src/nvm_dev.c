@@ -95,9 +95,27 @@ void nvm_dev_pr(const struct nvm_dev *dev)
 	}
 
 	printf("dev_"); nvm_dev_attr_pr(dev);
-	printf("dev_"); nvm_geo_pr(&dev->geo);
-	printf("dev_"); nvm_spec_ppaf_nand_pr(&dev->ppaf);
-	printf("dev_"); nvm_spec_ppaf_nand_mask_pr(&dev->mask);
+
+	switch(nvm_dev_get_verid(dev)) {
+	case NVM_SPEC_VERID_12:
+	case NVM_SPEC_VERID_13:
+		printf("dev_"); nvm_geo_pr(&dev->geo);
+		printf("dev_"); nvm_spec_ppaf_nand_pr(&dev->ppaf);
+		printf("dev_"); nvm_spec_ppaf_nand_mask_pr(&dev->mask);
+		printf("dev_"); nvm_spec_lbaf_pr(NULL);
+		printf("dev_"); nvm_spec_lbaz_pr(NULL);
+		printf("dev_"); nvm_spec_lbam_pr(NULL);
+		break;
+
+	case NVM_SPEC_VERID_20:
+		printf("dev_"); nvm_geo_pr(&dev->geo);
+		printf("dev_"); nvm_spec_ppaf_nand_pr(NULL);
+		printf("dev_"); nvm_spec_ppaf_nand_mask_pr(NULL);
+		printf("dev_"); nvm_spec_lbaf_pr(&dev->lbaf);
+		printf("dev_"); nvm_spec_lbaz_pr(&dev->lbaz);
+		printf("dev_"); nvm_spec_lbam_pr(&dev->lbam);
+		break;
+	}
 }
 
 const struct nvm_geo * nvm_dev_get_geo(const struct nvm_dev *dev)
@@ -206,6 +224,11 @@ const struct nvm_spec_ppaf_nand *nvm_dev_get_ppaf(const struct nvm_dev *dev)
 const struct nvm_spec_ppaf_nand_mask *nvm_dev_get_ppaf_mask(const struct nvm_dev *dev)
 {
 	return &dev->mask;
+}
+
+const struct nvm_spec_lbaf *nvm_dev_get_lbaf(const struct nvm_dev *dev)
+{
+	return &dev->lbaf;
 }
 
 int nvm_dev_get_nsid(const struct nvm_dev *dev)
