@@ -62,6 +62,7 @@ struct nvm_be nvm_be_ioctl = {
 #include <nvm_utils.h>
 #include <nvm_debug.h>
 
+/*
 static int ioctl_io(struct nvm_dev *dev, struct nvm_cmd *cmd,
 		    struct nvm_ret *ret)
 {
@@ -98,6 +99,7 @@ static int ioctl_am(struct nvm_dev *dev, struct nvm_cmd *cmd,
 
 	return 0;
 }
+*/
 
 static inline int ioctl_vio(struct nvm_dev *dev, struct nvm_cmd *cmd,
 			    struct nvm_ret *ret)
@@ -178,7 +180,7 @@ struct nvm_spec_idfy *nvm_be_ioctl_idfy(struct nvm_dev *dev,
 	}
 	memset(idfy, 0, sizeof(*idfy));
 
-	cmd.vadmin.opcode = NVM_S12_OPC_IDF; // Setup command
+	cmd.vadmin.opcode = NVM_OPC_IDFY;
 	cmd.vadmin.addr = (uint64_t)idfy;
 	cmd.vadmin.data_len = sizeof(*idfy);
 
@@ -193,7 +195,9 @@ struct nvm_spec_idfy *nvm_be_ioctl_idfy(struct nvm_dev *dev,
 }
 
 struct nvm_spec_rprt *nvm_be_ioctl_rprt(struct nvm_dev *dev,
-					int NVM_UNUSED(flags),
+					struct nvm_addr NVM_UNUSED(addr),
+					uint16_t NVM_UNUSED(naddrs),
+					int NVM_UNUSED(opts),
 					struct nvm_ret *ret)
 {
 	struct nvm_cmd cmd = {.cdw={0}};
@@ -389,8 +393,8 @@ int nvm_be_ioctl_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 }
 
 int nvm_be_ioctl_copy(struct nvm_dev *dev, struct nvm_addr src[],
-		      struct nvm_addr dst[], int naddrs, uint16_t flags,
-		      struct nvm_ret *ret)
+		      struct nvm_addr dst[], int naddrs,
+		      uint16_t flags, struct nvm_ret *ret)
 {
 	struct nvm_cmd cmd = {.cdw={0}};
 	uint64_t src_dev[naddrs];
@@ -415,7 +419,8 @@ int nvm_be_ioctl_copy(struct nvm_dev *dev, struct nvm_addr src[],
 	cmd.vuser.nppas = naddrs - 1;
 	cmd.vuser.ppa_list = naddrs == 1 ? src_dev[0] : (uint64_t)src_dev;
 
-	// TODO: Set the dst addrs
+	// TODO: Set the dst addrs correctly
+	cmd.vuser.rsvd3[0] = dst_dev[i];
 
 	err = ioctl_vio(dev, &cmd, ret);
 	if (!err)
@@ -436,6 +441,7 @@ int nvm_be_ioctl_copy(struct nvm_dev *dev, struct nvm_addr src[],
 struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags)
 {
 	struct nvm_dev *dev = NULL;
+	char nvme_name[NVM_DEV_PATH_LEN];
 	int err;
 	
 	if (strlen(dev_path) > NVM_DEV_PATH_LEN) {
@@ -452,6 +458,10 @@ struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags)
 
 	strncpy(dev->path, dev_path, NVM_DEV_PATH_LEN);
 	strncpy(dev->name, dev_path+5, NVM_DEV_NAME_LEN);
+
+	// HACK: use naming conventions to determine nsid, fallback to hardcode
+	if (nvm_be_split_dpath(dev_path, nvme_name, &dev->nsid))
+		dev->nsid = 1;
 
 	switch (flags) {
 	case NVM_BE_IOCTL_WRITABLE:
