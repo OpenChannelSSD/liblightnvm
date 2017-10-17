@@ -345,11 +345,6 @@ struct nvm_dev * nvm_dev_openf(const char *dev_path, int flags) {
 	for (size_t i = 0; i < dev->nbbts; ++i)
 		dev->bbts[i] = NULL;
 
-	// HACK: use naming conventions to determine nsid, fallback to hardcode
-	dev->nsid = atoi(&dev_path[strlen(dev_path)-1]);
-	if ((dev->nsid < 1) || (dev->nsid > 1000))
-		dev->nsid = 1;
-
 	return dev;
 }
 
