@@ -296,7 +296,7 @@ int nvm_be_ioctl_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs, int naddrs,
 	}
 
 	for (int i = 0; i < naddrs; ++i) { // Setup PPAs: Convert format
-		if (nvm_addr_check(addrs[i], &dev->geo)) {
+		if (nvm_addr_check(addrs[i], dev)) {
 			NVM_DEBUG("FAILED: invalid addrs[i]");
 			errno = EINVAL;
 			return -1;
