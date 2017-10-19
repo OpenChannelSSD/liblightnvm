@@ -1,23 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
-#include <unistd.h>
-#include <liblightnvm.h>
-
-#include <CUnit/Basic.h>
+#include "test_intf.c"
 
 #define FLUSH_ALL 1
-
-static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
-
-static int channel = 0;
-static int lun = 0;
-static int VERBOSE = 0;
-
-static struct nvm_dev *dev;
-static const struct nvm_geo *geo;
-static struct nvm_addr lun_addr;
 
 // States used when verifying that bad-block-table can be set
 static enum nvm_bbt_state states[] = {
@@ -26,31 +9,18 @@ static enum nvm_bbt_state states[] = {
 };
 static int nstates = sizeof(states) / sizeof(states[0]);
 
-int setup(void)
+static struct nvm_addr arb_lun_addr(void)
 {
-	dev = nvm_dev_open(nvm_dev_path);
-	if (!dev) {
-		perror("nvm_dev_open");
-		CU_ASSERT_PTR_NOT_NULL(dev);
-		return -1;
-	}
-	geo = nvm_dev_get_geo(dev);
+	struct nvm_addr addr = { .val = 0 };
+	int arb = rand();
 
-	lun_addr.ppa = 0;
-	lun_addr.g.ch = channel;
-	lun_addr.g.lun = lun;
+	addr.g.ch = arb % geo->nchannels;
+	addr.g.lun = arb % geo->nluns;
 
-	return nvm_addr_check(lun_addr, geo);
+	return addr;
 }
 
-int teardown(void)
-{
-	nvm_dev_close(dev);
-
-	return 0;
-}
-
-void _verify_counters(struct nvm_dev *dev, const struct nvm_bbt *bbt)
+static void verify_counters(struct nvm_dev *dev, const struct nvm_bbt *bbt)
 {
 	uint32_t nbad = 0, ngbad = 0, ndmrk = 0, nhmrk = 0;
 
@@ -77,12 +47,14 @@ void _verify_counters(struct nvm_dev *dev, const struct nvm_bbt *bbt)
 		}
 	}
 
+	/* b0rk3d
 	if (nvm_dev_get_verid(dev) == 0x2) {	// Spec 2.0
 		nbad = nbad / geo->nplanes;
 		ngbad = ngbad / geo->nplanes;
 		ndmrk = ndmrk / geo->nplanes;
 		nhmrk = nhmrk / geo->nplanes;
 	}
+	*/
 
 	CU_ASSERT_EQUAL(bbt->nbad, nbad);
 	CU_ASSERT_EQUAL(bbt->ngbad, ngbad);
@@ -93,9 +65,10 @@ void _verify_counters(struct nvm_dev *dev, const struct nvm_bbt *bbt)
 /**
  * Test that we can get a valid bad-block-table from a device
  */
-void _test_BBT_GET(int bbts_cached)
+static void bbt_get(int bbts_cached)
 {
-	struct nvm_ret ret = {0,0};
+	struct nvm_addr lun_addr = arb_lun_addr();
+	struct nvm_ret ret = {0, 0};
 	const struct nvm_bbt *bbt;
 
 	nvm_dev_set_bbts_cached(dev, bbts_cached);
@@ -131,19 +104,29 @@ void _test_BBT_GET(int bbts_cached)
 		}
 	}
 
-	_verify_counters(dev, bbt);
+	verify_counters(dev, bbt);
 
 	return;
 }
 
 void test_BBT_GET(void)
 {
-	_test_BBT_GET(0);
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
+		return;
+	}
+
+	bbt_get(0);
 }
 
 void test_BBT_GET_CACHED(void)
 {
-	_test_BBT_GET(1);
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
+		return;
+	}
+
+	bbt_get(1);
 }
 
 //
@@ -159,8 +142,9 @@ void test_BBT_GET_CACHED(void)
 // likely leave the bad-block-table in a different state than it was in before
 // running this test
 //
-void _test_BBT_MARK_NADDR(unsigned int naddr_pr_call, int bbts_cached)
+static void bbt_mark_naddr(unsigned int naddr_pr_call, int bbts_cached)
 {
+	struct nvm_addr lun_addr = arb_lun_addr();
 	struct nvm_ret ret = {0,0};
 	const int nblks = NVM_NADDR_MAX;
 	
@@ -186,7 +170,7 @@ void _test_BBT_MARK_NADDR(unsigned int naddr_pr_call, int bbts_cached)
 	}
 	
 	for (int i = 0; i < nblks; ++i) {	// Verify constructed addrs
-		if (nvm_addr_check(addrs[i], geo)) {
+		if (nvm_addr_check(addrs[i], dev)) {
 			CU_FAIL("FAILED: Constructing addresses");
 			return;
 		}
@@ -225,48 +209,81 @@ void _test_BBT_MARK_NADDR(unsigned int naddr_pr_call, int bbts_cached)
 			}
 		}
 	}
-	
-	return;
 }
 
 void test_BBT_MARK_NADDR_MAX(void)
 {
-	_test_BBT_MARK_NADDR(NVM_NADDR_MAX, 0);
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
+		return;
+	}
+
+	bbt_mark_naddr(NVM_NADDR_MAX, 0);
 }
 
 void test_BBT_MARK_NADDR_MAX2(void)
 {
-	_test_BBT_MARK_NADDR(NVM_NADDR_MAX / 2, 0);
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
+		return;
+	}
+
+	bbt_mark_naddr(NVM_NADDR_MAX / 2, 0);
 }
 
 void test_BBT_MARK_NADDR_MAX4(void)
 {
-	_test_BBT_MARK_NADDR(NVM_NADDR_MAX / 4, 0);
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
+		return;
+	}
+
+	bbt_mark_naddr(NVM_NADDR_MAX / 4, 0);
 }
 
 void test_BBT_MARK_NADDR_1(void)
 {
-	_test_BBT_MARK_NADDR(1, 0);
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
+	}
+
+	bbt_mark_naddr(1, 0);
 }
 
 void test_BBT_MARK_NADDR_MAX_CACHED(void)
 {
-	_test_BBT_MARK_NADDR(NVM_NADDR_MAX, 1);
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
+		return;
+	}
+	bbt_mark_naddr(NVM_NADDR_MAX, 1);
 }
 
 void test_BBT_MARK_NADDR_MAX2_CACHED(void)
 {
-	_test_BBT_MARK_NADDR(NVM_NADDR_MAX / 2, 1);
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
+		return;
+	}
+	bbt_mark_naddr(NVM_NADDR_MAX / 2, 1);
 }
 
 void test_BBT_MARK_NADDR_MAX4_CACHED(void)
 {
-	_test_BBT_MARK_NADDR(NVM_NADDR_MAX / 4, 1);
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
+		return;
+	}
+	bbt_mark_naddr(NVM_NADDR_MAX / 4, 1);
 }
 
 void test_BBT_MARK_NADDR_1_CACHED(void)
 {
-	_test_BBT_MARK_NADDR(1, 1);
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
+		return;
+	}
+	bbt_mark_naddr(1, 1);
 }
 
 // Test that we can set bbt using `nvm_bbt_set`
@@ -276,9 +293,9 @@ void test_BBT_MARK_NADDR_1_CACHED(void)
 // It will most likely leave the bad-block-table in a different state than
 // it was in before running this test
 //
-
-void _test_BBT_SET(int bbts_cached)
+static void bbt_set(int bbts_cached)
 {
+	struct nvm_addr lun_addr = arb_lun_addr();
 	struct nvm_ret ret = {0,0};
 	struct nvm_bbt *bbt_exp;
 	const struct nvm_bbt *bbt_act;
@@ -311,7 +328,7 @@ void _test_BBT_SET(int bbts_cached)
 			else
 				bbt_exp->blks[idx] = NVM_BBT_HMRK;
 
-			if (VERBOSE)
+			if (CU_BRM_VERBOSE == rmode)
 				printf("FLIPPED: blk(%d), idx(%d), exp(%d)\n",
 					plane_blk, idx, bbt_exp->blks[idx]);
 		}
@@ -342,7 +359,8 @@ void _test_BBT_SET(int bbts_cached)
 			break;
 		}
 	}
-	if (VERBOSE && res) {
+
+	if ((CU_BRM_VERBOSE == rmode) && res) {
 		for (uint64_t blk = 0; blk < bbt_act->nblks; ++blk)
 			if (bbt_exp->blks[blk] != bbt_act->blks[blk])
 				printf("FAILED: blk(%lu): exp(%d) != act(%d)\n",
@@ -356,67 +374,76 @@ void _test_BBT_SET(int bbts_cached)
 
 void test_BBT_SET(void)
 {
-	_test_BBT_SET(0);
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
+		return;
+	}
+
+	bbt_set(0);
 }
 
 void test_BBT_SET_CACHED(void)
 {
-	_test_BBT_SET(1);
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
+		return;
+	}
+
+	bbt_set(1);
 }
 
 int main(int argc, char **argv)
 {
-	switch(argc) {
-	case 5:
-		VERBOSE = atoi(argv[4]);
-	case 4:
-		lun = atoi(argv[3]);
-	case 3:
-		channel = atoi(argv[2]);
-	case 2:
-		if (strlen(argv[1]) > NVM_DEV_PATH_LEN) {
-			printf("ERR: len(dev_path) > %d characters\n",
-			       NVM_DEV_PATH_LEN);
-			return 1;
-                }
-		strncpy(nvm_dev_path, argv[1], NVM_DEV_PATH_LEN);
+	int err = 0;
+
+	CU_pSuite pSuite = suite_create("nvm_bbt_*", argc, argv);
+	if (!pSuite)
+		goto out;
+
+	if (!CU_add_test(pSuite, "nvm_bbt_get", test_BBT_GET))
+		goto out;
+	if (!CU_add_test(pSuite, "nvm_bbt_mark (NADDR=MAX)", test_BBT_MARK_NADDR_MAX))
+		goto out;
+	if (!CU_add_test(pSuite, "nvm_bbt_mark (NADDR=MAX/2)", test_BBT_MARK_NADDR_MAX2))
+		goto out;
+	if (!CU_add_test(pSuite, "nvm_bbt_mark (NADDR=MAX/4)", test_BBT_MARK_NADDR_MAX4))
+		goto out;
+	if (!CU_add_test(pSuite, "nvm_bbt_mark (NADDR=1)", test_BBT_MARK_NADDR_1))
+		goto out;
+	if (!CU_add_test(pSuite, "nvm_bbt_set", test_BBT_SET))
+		goto out;
+
+	if (!CU_add_test(pSuite, "nvm_bbt_get CACHED", test_BBT_GET_CACHED))
+		goto out;
+	if (!CU_add_test(pSuite, "nvm_bbt_mark (NADDR=MAX, CACHED)", test_BBT_MARK_NADDR_MAX_CACHED))
+		goto out;
+	if (!CU_add_test(pSuite, "nvm_bbt_mark (NADDR=MAX/2, CACHED)", test_BBT_MARK_NADDR_MAX2_CACHED))
+		goto out;
+	if (!CU_add_test(pSuite, "nvm_bbt_mark (NADDR=MAX/4, CACHED)", test_BBT_MARK_NADDR_MAX4_CACHED))
+		goto out;
+	if (!CU_add_test(pSuite, "nvm_bbt_mark (NADDR=1, CACHED)", test_BBT_MARK_NADDR_1_CACHED))
+		goto out;
+	if (!CU_add_test(pSuite, "nvm_bbt_set CACHED", test_BBT_SET_CACHED))
+		goto out;
+
+	switch(rmode) {
+	case NVM_TEST_RMODE_AUTO:
+		CU_automated_run_tests();
+		break;
+
+	default:
+		CU_basic_set_mode(rmode);
+		CU_basic_run_tests();
 		break;
 	}
-	CU_pSuite pSuite = NULL;
 
-	if (CUE_SUCCESS != CU_initialize_registry())
-		return CU_get_error();
+out:
+	err = CU_get_error() || \
+	      CU_get_number_of_suites_failed() || \
+	      CU_get_number_of_tests_failed() || \
+	      CU_get_number_of_failures();
 
-	pSuite = CU_add_suite("nvm_bbt_*", setup, teardown);
-	if (NULL == pSuite) {
-		CU_cleanup_registry();
-		return CU_get_error();
-	}
-
-	if (
-	(NULL == CU_add_test(pSuite, "nvm_bbt_get", test_BBT_GET)) ||
-	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (NADDR=MAX)", test_BBT_MARK_NADDR_MAX)) ||
-	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (NADDR=MAX/2)", test_BBT_MARK_NADDR_MAX2)) ||
-	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (NADDR=MAX/4)", test_BBT_MARK_NADDR_MAX4)) ||
-	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (NADDR=1)", test_BBT_MARK_NADDR_1)) ||
-	(NULL == CU_add_test(pSuite, "nvm_bbt_set", test_BBT_SET)) ||
-
-	(NULL == CU_add_test(pSuite, "nvm_bbt_get CACHED", test_BBT_GET_CACHED)) ||
-	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (NADDR=MAX, CACHED)", test_BBT_MARK_NADDR_MAX_CACHED)) ||
-	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (NADDR=MAX/2, CACHED)", test_BBT_MARK_NADDR_MAX2_CACHED)) ||
-	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (NADDR=MAX/4, CACHED)", test_BBT_MARK_NADDR_MAX4_CACHED)) ||
-	(NULL == CU_add_test(pSuite, "nvm_bbt_mark (NADDR=1, CACHED)", test_BBT_MARK_NADDR_1_CACHED)) ||
-	(NULL == CU_add_test(pSuite, "nvm_bbt_set CACHED", test_BBT_SET_CACHED)) ||
-	0)
-	{
-		CU_cleanup_registry();
-		return CU_get_error();
-	}
-
-	/* Run all tests using the CUnit Basic interface */
-	CU_basic_set_mode(CU_BRM_NORMAL);
-	CU_basic_run_tests();
 	CU_cleanup_registry();
 
-	return CU_get_error();
+	return err;
 }
