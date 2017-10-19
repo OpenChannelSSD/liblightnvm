@@ -205,10 +205,6 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 		idfy->s.verid = NVM_SPEC_VERID_13;
 	}
 
-	#ifdef NVM_DEBUG_ENABLED
-	nvm_spec_idfy_pr(idfy);
-	#endif
-
 	switch (idfy->s.verid) {
 	case NVM_SPEC_VERID_12:
 		geo->page_nbytes = idfy->s12.grp[0].fpg_sz;
