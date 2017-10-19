@@ -100,7 +100,7 @@ int nvm_bbt_flush(struct nvm_dev *dev, struct nvm_addr addr,
 	struct nvm_spec_bbt *spec;
 	size_t bbt_idx;
 
-	if ((!dev) || (nvm_addr_check(addr, &dev->geo))) {
+	if ((!dev) || (nvm_addr_check(addr, dev))) {
 		NVM_DEBUG("FAILED: !dev or nvm_addr_check failed");
 		errno = EINVAL;
 		return -1;
@@ -180,7 +180,7 @@ const struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 	struct nvm_spec_bbt *spec;
 	size_t bbt_idx;
 
-	if ((!dev) || (nvm_addr_check(addr, &dev->geo))) {
+	if ((!dev) || (nvm_addr_check(addr, dev))) {
 		NVM_DEBUG("FAILED: invalid input");
 		errno = EINVAL;
 		return NULL;
@@ -247,7 +247,7 @@ int nvm_bbt_set(struct nvm_dev *dev, const struct nvm_bbt *bbt,
 	struct nvm_addr addr = bbt->addr;
 	size_t bbt_idx;
 
-	if ((!dev) || (!bbt) || (nvm_addr_check(bbt->addr, &dev->geo))) {
+	if ((!dev) || (!bbt) || (nvm_addr_check(bbt->addr, dev))) {
 		NVM_DEBUG("FAILED: invalid input");
 		errno = EINVAL;
 		return -1;
