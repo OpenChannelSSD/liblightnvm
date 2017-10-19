@@ -66,7 +66,7 @@ void _test_FMT_CONV(int func)
 		expected.g.lun = ((((sec / geo->nsectors) / geo->npages ) / geo->nblocks) / geo->nplanes) % geo->nluns;
 		expected.g.ch = (((((sec / geo->nsectors) / geo->npages ) / geo->nblocks) / geo->nplanes) / geo->nluns) % geo->nchannels;
 
-		res = nvm_addr_check(expected, geo);
+		res = nvm_addr_check(expected, dev);
 		CU_ASSERT(!res)
 
 		switch (func) {
