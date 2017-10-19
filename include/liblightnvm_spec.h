@@ -285,23 +285,41 @@ struct nvm_spec_bbt {
 };
 
 enum nvm_spec_rptr_opts {
-	NVM_RPRT_LIST_ALL = 0x0,
-	NVM_RPRT_LIST_FREE = 0x1,
-	NVM_RPRT_LIST_FULL = 0x2,
-	NVM_RPRT_LIST_OPEN = 0x3,
-	NVM_RPRT_LIST_BAD = 0x4,
+	NVM_RPRT_ALL = 0x0,
+	NVM_RPRT_FREE = 0x1,
+	NVM_RPRT_FULL = 0x2,
+	NVM_RPRT_OPEN = 0x3,
+	NVM_RPRT_BAD = 0x4,
 
-	NVM_RPRT_LIST_SEQW = 0xA,
-	NVM_RPRT_LIST_ARBW = 0xB,
+	NVM_RPRT_SEQW = 0xA,
+	NVM_RPRT_ARBW = 0xB,
 };
 
+/**
+ * Representation of the chunk descriptor in the report chunk state table
+ */
+struct nvm_spec_rprt_descr {
+	uint8_t chunk_state;
+	uint8_t chunk_type;
+	uint8_t chunk_limits;
+	uint8_t rsvd1[5];
+	uint64_t chunk_addr;
+	uint64_t chunk_naddrs;
+	uint64_t chunk_wptr;
+	uint8_t rsvd2[32];
+};
+
+/**
+ * Representation of the chunk state table returned from the report chunk
+ * command
+ */
 struct nvm_spec_rprt {
-	uint64_t nchunks;	///< #chunks in report
-	uint8_t rsvd[63];
-	uint8_t descr[];	///< Chunk state descriptor table
+	uint64_t nchunks;			///< #chunks in report
+	uint8_t rsvd[56];
+	struct nvm_spec_rprt_descr descr[];	///< Chunk descriptor table
 };
 
-
+void nvm_spec_rprt_pr(const struct nvm_spec_rprt *rprt);
 
 /**
  * Prints a humanly readable representation of the give address format mask
