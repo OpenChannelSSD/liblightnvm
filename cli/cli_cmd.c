@@ -25,17 +25,18 @@ static int cmd_idfy(struct nvm_cli *cli)
 static int cmd_rprt(struct nvm_cli *cli)
 {
 	struct nvm_dev *dev = cli->args.dev;
+
+	struct nvm_addr addr = cli->args.addrs[0];
+	uint16_t naddrs = cli->args.dec_vals[0];
+	uint32_t opts = cli->args.hex_vals[0];
+
 	struct nvm_spec_rprt *rprt = NULL;
-	struct nvm_addr addr_bgn = { 0 };
-	uint16_t naddrs = 100;
 
 	nvm_cli_info_pr("nvm_cmd_rprt");
+	nvm_cli_info_pr("addr: 0x%016X, naddrs: %08u, opts: 0x%04X",
+			addr, naddrs, opts);
 
-	addr_bgn.l.pugrp = 5;
-	addr_bgn.l.punit = 0;
-	addr_bgn.l.chunk = 0;
-
-	rprt = nvm_cmd_rprt(dev, addr_bgn, naddrs, 0x0, NULL);
+	rprt = nvm_cmd_rprt(dev, addr, naddrs, opts, NULL);
 	if (!rprt)
 		return -1;
 
@@ -50,7 +51,7 @@ static int cmd_gbbt(struct nvm_cli *cli)
 {
 	struct nvm_dev *dev = cli->args.dev;
 	struct nvm_spec_bbt *bbt = NULL;
-	struct nvm_addr addr = { 0 };
+	struct nvm_addr addr = cli->args.addrs[0];
 
 	nvm_cli_info_pr("nvm_cmd_gbbt");
 
@@ -67,7 +68,18 @@ static int cmd_gbbt(struct nvm_cli *cli)
 
 static int cmd_sbbt(struct nvm_cli *cli)
 {
+	struct nvm_dev *dev = cli->args.dev;
+	struct nvm_addr *addrs = cli->args.addrs;
+	size_t naddrs = cli->args.naddrs;
+	uint64_t flags = cli->args.hex_vals[0];
+
 	nvm_cli_info_pr("nvm_cmd_sbbt");
+	nvm_cli_info_pr("flags: 0x%04X", flags);
+
+	nvm_addr_prn(addrs, naddrs);
+
+	if (nvm_cmd_sbbt(dev, addrs, naddrs, flags, NULL))
+		nvm_cli_perror("nvm_cmd_sbbt");
 
 	return 0;
 }
@@ -79,15 +91,15 @@ static int cmd_erase(struct nvm_cli *cli)
 	struct nvm_ret ret = {0,0};
 	ssize_t err = 0;
 
-	nvm_cli_info_pr("nvm_addr_erase: {pmode: %s}", nvm_pmode_str(pmode));
+	nvm_cli_info_pr("nvm_cmd_erase: {pmode: %s}", nvm_pmode_str(pmode));
 	for (int i = 0; i < args->naddrs; ++i) {
 		nvm_addr_pr(args->addrs[i]);
 	}
 
-	err = nvm_addr_erase(args->dev, args->addrs, args->naddrs, pmode,
+	err = nvm_cmd_erase(args->dev, args->addrs, args->naddrs, pmode,
 			     &ret);
 	if (err) {
-		nvm_cli_perror("nvm_addr_erase");
+		nvm_cli_perror("nvm_cmd_erase");
 		nvm_ret_pr(&ret);
 	}
 
@@ -194,10 +206,10 @@ static int cmd_read(struct nvm_cli *cli)
 		nvm_buf_pr(meta, meta_tbytes);
 	}
 
-	err = nvm_addr_read(args->dev, args->addrs, args->naddrs, buf, meta,
+	err = nvm_cmd_read(args->dev, args->addrs, args->naddrs, buf, meta,
 			    pmode, &ret);
 	if (err) {
-		nvm_cli_perror("nvm_addr_read");
+		nvm_cli_perror("nvm_cmd_read");
 		nvm_ret_pr(&ret);
 	}
 	
@@ -234,9 +246,9 @@ static int cmd_copy(struct nvm_cli *cli)
 /* Define commands */
 static struct nvm_cli_cmd cmds[] = {
 	{"idfy",	cmd_idfy,	NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_DEFAULT},
-	{"rprt",	cmd_rprt,	NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_DEFAULT},
-	{"gbbt",	cmd_gbbt,	NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_DEFAULT},
-	{"sbbt",	cmd_sbbt,	NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_DEFAULT},
+	{"rprt",	cmd_rprt,	NVM_CLI_ARG_ADDR_CHK_VAL_HEXVAL, NVM_CLI_OPT_DEFAULT},
+	{"gbbt",	cmd_gbbt,	NVM_CLI_ARG_ADDR_LUN, NVM_CLI_OPT_DEFAULT},
+	{"sbbt",	cmd_sbbt,	NVM_CLI_ARG_ADDR_BLK_HEXVAL, NVM_CLI_OPT_DEFAULT},
 	{"erase",	cmd_erase,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
 	{"write",	cmd_write,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_INPUT},
 	{"read",	cmd_read,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
