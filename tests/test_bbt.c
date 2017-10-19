@@ -40,7 +40,7 @@ int setup(void)
 	lun_addr.g.ch = channel;
 	lun_addr.g.lun = lun;
 
-	return nvm_addr_check(lun_addr, geo);
+	return nvm_addr_check(lun_addr, dev);
 }
 
 int teardown(void)
@@ -186,7 +186,7 @@ void _test_BBT_MARK_NADDR(unsigned int naddr_pr_call, int bbts_cached)
 	}
 	
 	for (int i = 0; i < nblks; ++i) {	// Verify constructed addrs
-		if (nvm_addr_check(addrs[i], geo)) {
+		if (nvm_addr_check(addrs[i], dev)) {
 			CU_FAIL("FAILED: Constructing addresses");
 			return;
 		}
