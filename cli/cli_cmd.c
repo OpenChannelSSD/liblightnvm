@@ -26,8 +26,8 @@ static int cmd_rprt(struct nvm_cli *cli)
 {
 	struct nvm_dev *dev = cli->args.dev;
 	struct nvm_spec_rprt *rprt = NULL;
-	struct nvm_addr addr_bgn;
-	uint16_t naddrs = 10;
+	struct nvm_addr addr_bgn = { 0 };
+	uint16_t naddrs = 100;
 
 	nvm_cli_info_pr("nvm_cmd_rprt");
 
@@ -42,6 +42,32 @@ static int cmd_rprt(struct nvm_cli *cli)
 	nvm_spec_rprt_pr(rprt);
 
 	nvm_buf_free(rprt);
+
+	return 0;
+}
+
+static int cmd_gbbt(struct nvm_cli *cli)
+{
+	struct nvm_dev *dev = cli->args.dev;
+	struct nvm_spec_bbt *bbt = NULL;
+	struct nvm_addr addr = { 0 };
+
+	nvm_cli_info_pr("nvm_cmd_gbbt");
+
+	bbt = nvm_cmd_gbbt(dev, addr, NULL);
+	if (!bbt)
+		return -1;
+
+	nvm_spec_bbt_pr(bbt);
+
+	nvm_buf_free(bbt);
+
+	return 0;
+}
+
+static int cmd_sbbt(struct nvm_cli *cli)
+{
+	nvm_cli_info_pr("nvm_cmd_sbbt");
 
 	return 0;
 }
@@ -209,6 +235,8 @@ static int cmd_copy(struct nvm_cli *cli)
 static struct nvm_cli_cmd cmds[] = {
 	{"idfy",	cmd_idfy,	NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_DEFAULT},
 	{"rprt",	cmd_rprt,	NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_DEFAULT},
+	{"gbbt",	cmd_gbbt,	NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_DEFAULT},
+	{"sbbt",	cmd_sbbt,	NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_DEFAULT},
 	{"erase",	cmd_erase,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
 	{"write",	cmd_write,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_INPUT},
 	{"read",	cmd_read,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
