@@ -63,8 +63,10 @@ void nvm_spec_wrt_pr(const struct nvm_spec_wrt *wrt)
 		return;
 	}
 
-	printf(" {ws_min: %u, ws_opt: %u, mw_cunits: %u}\n",
-	       wrt->ws_min, wrt->ws_opt, wrt->mw_cunits);
+	printf("\n");
+	printf("  ws_min: %u\n", wrt->ws_min);
+	printf("  ws_opt: %u\n", wrt->ws_opt);
+	printf("  mw_cunits: %u\n", wrt->mw_cunits);
 }
 
 void nvm_spec_perf_pr(const struct nvm_spec_perf *perf)
@@ -76,10 +78,13 @@ void nvm_spec_perf_pr(const struct nvm_spec_perf *perf)
 		return;
 	}
 
-	printf(" {trdt: %u, trdm: %u, twrt: %u,"
-	       " twrm: %u, tcet: %u, tcem: %u}\n",
-	       perf->trdt, perf->trdm, perf->twrt,
-	       perf->twrm, perf->tcet, perf->tcem);
+	printf("\n");
+	printf("  trdt: %u\n", perf->trdt);
+	printf("  trdm: %u\n", perf->trdm);
+	printf("  twrt: %u\n", perf->twrt);
+	printf("  twrm: %u\n", perf->twrm);
+	printf("  tcet: %u\n", perf->tcet);
+	printf("  tcem: %u\n", perf->tcem);
 }
 
 void nvm_spec_ppaf_nand_pr(const struct nvm_spec_ppaf_nand *ppaf)
@@ -257,9 +262,39 @@ void nvm_spec_bbt_pr(const struct nvm_spec_bbt *bbt)
 	printf("  thresv: %u\n", bbt->thresv);
 	printf("  rsvd2: ~\n");
 
-	printf("  tblks:\n");
-	for (uint32_t i = 0; i < bbt->tblks; ++i) {
-		printf("    - %u\n", bbt->blk[i]);
+	printf("bbt_blks:\n");
+	for (uint32_t i = 0; i < bbt->tblks; ++i)
+		printf("  - 0x%02x\n", bbt->blk[i]);
+}
+
+void nvm_spec_rprt_pr(const struct nvm_spec_rprt *rprt)
+{
+	if (!rprt) {
+		printf("rprt: ~\n");
+		return;
+	}
+
+	printf("rprt:\n");
+	printf("  nchunks: %lu\n", rprt->nchunks);
+
+	printf("rprt_descr:");
+	if (!rprt->nchunks) {
+		printf(" ~\n");
+		return;
+	}
+
+	printf("\n");
+	for (uint64_t i = 0; i < rprt->nchunks; ++i) {
+		const struct nvm_spec_rprt_descr *descr = &rprt->descr[i];
+
+		printf("  - {");
+		printf("addr: 0x%016lX, ", descr->chunk_addr);
+		printf("state: 0x%02X, ", descr->chunk_state);
+		printf("type: 0x%02X, ", descr->chunk_type);
+		printf("limits: 0x%02X, ", descr->chunk_limits);
+		printf("naddrs: %04lu, ", descr->chunk_naddrs);
+		printf("wptr: %016lu ", descr->chunk_wptr);
+		printf("}\n");
 	}
 }
 
