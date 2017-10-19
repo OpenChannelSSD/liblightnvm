@@ -65,9 +65,14 @@ void nvm_addr_prn(struct nvm_addr *addr, unsigned int naddrs)
 	}
 }
 
-int nvm_addr_check(struct nvm_addr addr, const struct nvm_geo *geo)
+int nvm_addr_check(struct nvm_addr addr, const struct nvm_dev *dev)
 {
+	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
 	int exceeded = 0;
+
+	// TODO: Handle logical geometry
+	if (dev->verid == NVM_SPEC_VERID_20)
+		return 0;
 
 	if (addr.g.ch >= geo->nchannels) {
 		exceeded |= NVM_BOUNDS_CHANNEL;
