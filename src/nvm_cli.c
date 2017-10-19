@@ -257,6 +257,92 @@ int _parse_cmd_arg_addr_sec(int argc, char *argv[], struct nvm_cli *cli)
 	return inc;
 }
 
+int _parse_cmd_arg_addr_lun_hexval(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 3;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.addrs[0].ppa = 0;
+	cli->args.addrs[0].g.ch = atoi(argv[0]);
+	cli->args.addrs[0].g.lun = atoi(argv[1]);
+	cli->args.naddrs = 1;
+
+	cli->args.hex_vals[0] = strtoll(argv[2], NULL, 16);
+	cli->args.nhex_vals = 1;
+
+	return inc;
+}
+
+int _parse_cmd_arg_addr_blk_hexval(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 4;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.addrs[0].ppa = 0;
+	cli->args.addrs[0].g.ch = atoi(argv[0]);
+	cli->args.addrs[0].g.lun = atoi(argv[1]);
+	cli->args.addrs[0].g.blk = atoi(argv[2]);
+	cli->args.naddrs = 1;
+
+	cli->args.hex_vals[0] = strtoll(argv[3], NULL, 16);
+	cli->args.nhex_vals = 1;
+
+	return inc;
+}
+
+int _parse_cmd_arg_addr_chk_hexval(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 4;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.addrs[0].ppa = 0;
+	cli->args.addrs[0].l.pugrp = atoi(argv[0]);
+	cli->args.addrs[0].l.punit = atoi(argv[1]);
+	cli->args.addrs[0].l.chunk = atoi(argv[2]);
+	cli->args.naddrs = 1;
+
+	cli->args.hex_vals[0] = strtoll(argv[3], NULL, 16);
+	cli->args.nhex_vals = 1;
+
+	return inc;
+}
+
+int _parse_cmd_arg_addr_chk_val_hexval(int argc, char *argv[], struct nvm_cli *cli)
+{
+	const int inc = 5;
+
+	if (argc < inc) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cli->args.addrs[0].ppa = 0;
+	cli->args.addrs[0].l.pugrp = atoi(argv[0]);
+	cli->args.addrs[0].l.punit = atoi(argv[1]);
+	cli->args.addrs[0].l.chunk = atoi(argv[2]);
+	cli->args.naddrs = 1;
+
+	cli->args.dec_vals[0] = strtoll(argv[3], NULL, 10);
+	cli->args.ndec_vals = 1;
+
+	cli->args.hex_vals[0] = strtoll(argv[4], NULL, 16);
+	cli->args.nhex_vals = 1;
+
+	return inc;
+}
+
 int _parse_cmd_arg_addr_pg(int argc, char *argv[], struct nvm_cli *cli)
 {
 	const int inc = 4;
@@ -533,6 +619,30 @@ int _parse_cmd_args(int argc, char *argv[], struct nvm_cli *cli)
 
 	case NVM_CLI_ARG_ADDR_SEC:
 		ret = _parse_cmd_arg_addr_sec(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_ADDR_LUN_HEXVAL:
+		ret = _parse_cmd_arg_addr_lun_hexval(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_ADDR_BLK_HEXVAL:
+		ret = _parse_cmd_arg_addr_blk_hexval(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_ADDR_CHK_HEXVAL:
+		ret = _parse_cmd_arg_addr_chk_hexval(argc - inc, argv + inc, cli);
+		if (ret < 0)
+			return -1;
+		return inc + ret;
+
+	case NVM_CLI_ARG_ADDR_CHK_VAL_HEXVAL:
+		ret = _parse_cmd_arg_addr_chk_val_hexval(argc - inc, argv + inc, cli);
 		if (ret < 0)
 			return -1;
 		return inc + ret;
@@ -825,7 +935,7 @@ int _evar_and_dev_setup(struct nvm_cli *cli)
 	}
 	
 	for (int i = 0; (i < cli->args.naddrs) && (!cli->evars.noverify); ++i) {
-		int bounds = nvm_addr_check(cli->args.addrs[i], cli->args.geo);
+		int bounds = nvm_addr_check(cli->args.addrs[i], cli->args.dev);
 
 		if (bounds) {
 			nvm_addr_pr(cli->args.addrs[i]);
@@ -974,7 +1084,7 @@ void _nvm_cli_opts_mask_pr(int mask) {
 			printf(" [-o FILE]");
 			break;
 		case NVM_CLI_OPT_VAL_DEC:
-			printf(" [-n val]");
+			printf(" [-n VAL]");
 			break;
 		case NVM_CLI_OPT_VAL_HEX:
 			printf(" [-x 0xVAL]");
@@ -1084,6 +1194,19 @@ void nvm_cli_usage_pr(struct nvm_cli *cli)
 		case NVM_CLI_ARG_ADDR_SEC:
 			printf("dev_path ch lun pl blk pg sec");
 			break;
+		case NVM_CLI_ARG_ADDR_LUN_HEXVAL:
+			printf("dev_path ch lun 0xVAL");
+			break;
+		case NVM_CLI_ARG_ADDR_BLK_HEXVAL:
+			printf("dev_path ch lun blk 0xVAL");
+			break;
+		case NVM_CLI_ARG_ADDR_CHK_HEXVAL:
+			printf("dev_path grp pu chk 0xVAL");
+			break;
+		case NVM_CLI_ARG_ADDR_CHK_VAL_HEXVAL:
+			printf("dev_path grp pu chk NADDRS 0xOPT");
+			break;
+
 		case NVM_CLI_ARG_VCOPY:
 			printf("dev_path ch lun blk ch lun blk");
 			break;
