@@ -93,6 +93,10 @@ int nvm_addr_check(struct nvm_addr addr, const struct nvm_geo *geo)
 
 inline uint64_t nvm_addr_gen2dev(struct nvm_dev *dev, struct nvm_addr addr)
 {
+	// TODO: Adjust to actual LBA format
+	if (dev->verid == NVM_SPEC_VERID_20)
+		return addr.ppa;
+
 	uint64_t d_addr = 0;
 
 	d_addr |= ((uint64_t)addr.g.ch) << dev->ppaf.n.ch_off;
