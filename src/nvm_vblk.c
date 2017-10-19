@@ -63,7 +63,7 @@ struct nvm_vblk* nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addrs[],
 	}
 
 	for (int i = 0; i < naddrs; ++i) {
-		if (nvm_addr_check(addrs[i], geo)) {
+		if (nvm_addr_check(addrs[i], dev)) {
 			errno = EINVAL;
 			free(vblk);
 			return NULL;
