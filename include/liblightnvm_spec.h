@@ -245,7 +245,7 @@ struct nvm_spec_idfy_s20 {
 	uint8_t				verid_minor;
 	uint8_t				rsvd1[6];
 	struct nvm_spec_lbaf		lbaf;
-	uint64_t			mccap;
+	uint32_t			mccap;
 	uint8_t				rsvd2[44];
 	struct nvm_spec_lgeo		lgeo;
 	struct nvm_spec_wrt		wrt;
