@@ -173,8 +173,8 @@ struct nvm_addr {
 			uint64_t sectr	: 13;	///< Logical Sector in Chunk
 			uint64_t chunk	: 11;	///< Chunk in PU
 			uint64_t punit	: 3;	///< Parallel Unit (PU) in PUG
-			uint64_t pugrp	: 4;	///< Parallel Unit Group (PUG)
-			uint64_t rsvd	: 33;	///< Unmapped
+			uint64_t pugrp	: 3;	///< Parallel Unit Group (PUG)
+			uint64_t rsvd	: 34;	///< Unmapped
 		} l;
 
 		struct {
