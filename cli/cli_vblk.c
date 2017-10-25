@@ -34,7 +34,7 @@ static ssize_t _vblk_write(struct nvm_cli *cli, struct nvm_vblk *vblk)
 	nvm_cli_timer_start();		// Allocate write buffer
 	buf = nvm_buf_alloc(geo, nbytes);
 	if (!buf) {
-		nvm_cli_perror("nvm_buf_alloc");
+		nvm_cli_perror("nvm_buf_alloc(write buffer)");
 		return -1;
 	}
 	nvm_cli_timer_stop();
@@ -79,7 +79,7 @@ static ssize_t _vblk_read(struct nvm_cli *cli, struct nvm_vblk *vblk)
 	nvm_cli_timer_start();		// Allocate read buffer
 	buf = nvm_buf_alloc(geo, nbytes);
 	if (!buf) {
-		nvm_cli_perror("nvm_buf_alloc");
+		nvm_cli_perror("nvm_buf_alloc(read buffer)");
 		return -1;
 	}
 	nvm_cli_timer_stop();
