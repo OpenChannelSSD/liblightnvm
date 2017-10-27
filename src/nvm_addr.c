@@ -76,6 +76,28 @@ void nvm_addr_prn(struct nvm_addr *addr, unsigned int naddrs)
 	}
 }
 
+void nvm_addr_print(struct nvm_addr *addr, unsigned int naddrs, const struct nvm_dev *dev)
+{
+	printf("naddrs: %d\n", naddrs);
+	printf("addrs:\n");
+	for (unsigned int i = 0; (i < naddrs) && addr; ++i) {
+		printf("  - ");
+		switch(nvm_dev_get_verid(dev)) {
+			case NVM_SPEC_VERID_12:
+			case NVM_SPEC_VERID_13:
+				nvm_addr_pr(addr[i]);
+				break;
+
+			case NVM_SPEC_VERID_20:
+				nvm_addr_prl(addr[i]);
+				break;
+
+			default:
+				printf("UNSUPPORTED_VERID\n");
+		}
+	}
+}
+
 int nvm_addr_check(struct nvm_addr addr, const struct nvm_dev *dev)
 {
 	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
