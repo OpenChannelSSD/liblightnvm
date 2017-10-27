@@ -177,11 +177,6 @@ struct nvm_addr {
 			uint64_t rsvd	: 34;	///< Unmapped
 		} l;
 
-		struct {
-			uint64_t line		: 63;	///< Address line
-			uint64_t is_cached	: 1;	///< Cache hint?
-		} c;
-
 		uint64_t ppa;				///< Address as ppa
 	};
 };
