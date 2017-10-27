@@ -58,8 +58,9 @@ enum nvm_be_id {
 	NVM_BE_IOCTL = 0x1,	///< Flag for the IOCTL backend
 	NVM_BE_SYSFS = 0x2,	///< Flag for the IOCTL + sysfs backend
 	NVM_BE_LBA = 0x4,	///< Flag for the IOCTL + sysfs + LBA backend
+	NVM_BE_SPDK = 0x8,	///< Flag for the SPDK backend
 };
-#define NVM_BE_ALL (NVM_BE_IOCTL | NVM_BE_SYSFS | NVM_BE_LBA)	///< All be idents
+#define NVM_BE_ALL (NVM_BE_IOCTL | NVM_BE_SYSFS | NVM_BE_LBA | NVM_BE_SPDK)	///< All be idents
 
 /**
  * Plane-mode access for IO
@@ -134,96 +135,6 @@ struct nvm_ret {
 };
 
 /**
- * @struct nvm_cmd_vuser
- * @struct nvm_cmd_vadmin
- * @struct nvm_cmd_user
- * @struct nvm_cmd_admin
- */
-
-/**
- * Encapsulation of lowest-level user and admin commands
- */
-struct nvm_cmd {
-	union {
-		struct {
-			uint8_t opcode;
-			uint8_t flags;
-			uint16_t control;
-			uint16_t nppas;
-			uint16_t rsvd;
-			uint64_t metadata;
-			uint64_t addr;
-			uint64_t ppa_list;
-			uint32_t metadata_len;
-			uint32_t data_len;
-			uint64_t status;
-			uint32_t result;
-			uint32_t rsvd3[3];
-		} vuser;	///< Common fields for vector user commands
-
-		struct {
-			uint8_t opcode;
-			uint8_t flags;
-			uint8_t rsvd[2];
-			uint32_t nsid;
-			uint32_t cdw2;
-			uint32_t cdw3;
-			uint64_t metadata;
-			uint64_t addr;
-			uint32_t metadata_len;
-			uint32_t data_len;
-			uint64_t ppa_list;
-			uint16_t nppas;
-			uint16_t control;
-			uint32_t cdw13;
-			uint32_t cdw14;
-			uint32_t cdw15;
-			uint64_t status;
-			uint32_t result;
-			uint32_t timeout_ms;
-		} vadmin;	///< Common fields for vector admin commands
-
-		struct {
-			uint8_t opcode;
-			uint8_t flags;
-			uint16_t rsvd1;
-			uint32_t nsid;
-			uint32_t cdw2;
-			uint32_t cdw3;
-			uint64_t metadata;
-			uint64_t addr;
-			uint32_t metadata_len;
-			uint32_t data_len;
-			uint32_t cdw10;
-			uint32_t cdw11;
-			uint32_t cdw12;
-			uint32_t cdw13;
-			uint32_t cdw14;
-			uint32_t cdw15;
-			uint32_t timeout_ms;
-			uint32_t result;
-		} admin;	///< Common fields for admin commands
-
-		struct {
-			uint8_t opcode;
-			uint8_t flags;
-			uint16_t control;
-			uint16_t nblocks;
-			uint16_t rsvd;
-			uint64_t metadata;
-			uint64_t addr;
-			uint64_t slba;
-			uint32_t dsmgmt;
-			uint32_t reftag;
-			uint16_t apptag;
-			uint16_t appmask;
-		} user;		///< Common fields for user commands
-
-		uint32_t cdw[20];	///< Command as array of dwords
-	};
-};
-
-/**
  * Obtain string representation of the given plane-mode
  *
  * @param pmode The plane-mode to obtain string representation of
@@ -232,71 +143,6 @@ struct nvm_cmd {
  * "UNKN".
  */
 const char *nvm_pmode_str(int pmode);
-
-/**
- * Execute an user command on the given device
- *
- * @param dev Device handle obtained with `nvm_dev_open`
- * @param cmd The command to execute
- * @param ret Pointer to struct to fill with lower-level result-codes
- *
- * @returns On success, 0 is returned. On error, -1 is returned, `errno` set to
- * indicate the error and ret filled with lower-level result codes
- */
-int nvm_cmd_user(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret);
-
-/**
- * Execute an admin command on the given device
- *
- * @param dev Device handle obtained with `nvm_dev_open`
- * @param cmd The command to execute
- * @param ret Pointer to struct to fill with lower-level result-codes
- *
- * @returns On success, 0 is returned. On error, -1 is returned, `errno` set to
- * indicate the error and ret filled with lower-level result codes
- */
-int nvm_cmd_admin(struct nvm_dev *dev, struct nvm_cmd *cmd,
-		  struct nvm_ret *ret);
-
-/**
- * Execute a vector user command on the given device
- *
- * @param dev Device handle obtained with `nvm_dev_open`
- * @param cmd The command to execute
- * @param ret Pointer to struct to fill with lower-level result-codes
- *
- * @returns On success, 0 is returned. On error, -1 is returned, `errno` set to
- * indicate the error and ret filled with lower-level result codes
- */
-int nvm_cmd_vuser(struct nvm_dev *dev, struct nvm_cmd *cmd,
-		  struct nvm_ret *ret);
-
-/**
- * Execute a vector admin command on the given device
- *
- * @param dev Device handle obtained with `nvm_dev_open`
- * @param cmd The command to execute
- * @param ret Pointer to struct to fill with lower-level result-codes
- *
- * @returns On success, 0 is returned. On error, -1 is returned, `errno` set to
- * indicate the error and ret filled with lower-level result codes
- */
-int nvm_cmd_vadmin(struct nvm_dev *dev, struct nvm_cmd *cmd,
-		   struct nvm_ret *ret);
-
-/**
- * Prints a text-representation of the given command
- *
- * @param cmd The command to print
- */
-void nvm_cmd_pr(struct nvm_cmd *cmd);
-
-/**
- * Prints a textual presentation of the vuser par of the given command
- *
- * @param cmd The command to print
- */
-void nvm_cmd_vuser_pr(struct nvm_cmd *cmd);
 
 /**
  * Encapsulation of generic physical nvm addressing
@@ -322,6 +168,14 @@ struct nvm_addr {
 			uint64_t ch	: 7;	///< Channel address
 			uint64_t rsvd	: 1;	///< Reserved
 		} g;
+
+		struct {
+			uint64_t sectr	: 13;	///< Logical Sector in Chunk
+			uint64_t chunk	: 11;	///< Chunk in PU
+			uint64_t punit	: 3;	///< Parallel Unit (PU) in PUG
+			uint64_t pugrp	: 4;	///< Parallel Unit Group (PUG)
+			uint64_t rsvd	: 33;	///< Unmapped
+		} l;
 
 		struct {
 			uint64_t line		: 63;	///< Address line
@@ -380,6 +234,97 @@ struct nvm_bbt {
 	uint32_t nhmrk;		///< # of of host reserved/marked blocks
 	uint8_t blks[];		///< Array of block status for each block in LUN
 };
+
+/**
+ * Execute an Open-Channel 1.2 identify / Open-Channel 2.0 geometry command
+ *
+ * NOTE: Caller is reponsible for de-allocating the returned structure
+ *
+ * @return On success, pointer identify structure is returned. On error, NULL is
+ * returned and `errno` set to indicate the error and ret filled with
+ * lower-level result codes
+ */
+struct nvm_spec_idfy *nvm_cmd_idfy(struct nvm_dev *dev, struct nvm_ret *ret);
+
+/**
+ * Execute an Open-Channel 2.0 report chunk command
+ *
+ * NOTE: Caller is responsible for de-allocating the returned structure
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @param addr Starting address to obtain a report for
+ * @param naddrs Number of addresses, from the starting address, to obtain
+ * report for
+ * @param opts Reporting options, see `enum nvm_spec_rprt_opts`
+ *
+ * @return On success, pointer report chunk structure is returned. On error,
+ * NULL is returned and `errno` set to indicate the error and ret filled with
+ * lower-level result codes
+ */
+struct nvm_spec_rprt *nvm_cmd_rprt(struct nvm_dev *dev, struct nvm_addr addr,
+				   uint16_t naddrs, int opts,
+				   struct nvm_ret *ret);
+
+/**
+ * Execute an Open-Channel 1.2 get bad-block-table
+ *
+ * NOTE: Caller is responsible for de-allocating the returned structure
+ *
+ * @return On success, pointer to bad block table is returned. On error, NULL is
+ * returned and `errno` set to indicate the error and ret filled with
+ * lower-level result codes
+ */
+struct nvm_spec_bbt *nvm_cmd_gbbt(struct nvm_dev *dev, struct nvm_addr addr,
+				  struct nvm_ret *ret);
+
+/**
+ * Execute an Open-Channel 1.2 get bad block table command
+ *
+ * NOTE: Caller is responsible for de-allocating the returned structure
+ *
+ * @return On success, pointer to bad block table is returned. On error, NULL is
+ * returned and `errno` set to indicate the error and ret filled with
+ * lower-level result codes
+ */
+int nvm_cmd_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs, int naddrs,
+		 uint16_t flags, struct nvm_ret *ret);
+
+/**
+ * Execute an Open-Channel 1.2 erase / Open-Channel 2.0 reset command
+ *
+ * @return On success, 0 is returned. On error, -1 is returned and `errno` set
+ * to indicate the error and ret filled with lower-level result codes
+ */
+int nvm_cmd_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+		  uint16_t flags, struct nvm_ret *ret);
+
+/**
+ * Execute an Open-Channel 1.2 / 2.0 write command
+ *
+ * @return On success, 0 is returned. On error, -1 is returned and `errno` set
+ * to indicate the error and ret filled with lower-level result codes
+ */
+int nvm_cmd_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+		  void *data, void *meta, uint16_t flags, struct nvm_ret *ret);
+
+/**
+ * Execute an Open-Channel 1.2 / 2.0 read command
+ *
+ * @return On success, 0 is returned. On error, -1 is returned and `errno` set
+ * to indicate the error and ret filled with lower-level result codes
+ */
+int nvm_cmd_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+		 void *data, void *meta, uint16_t flags, struct nvm_ret *ret);
+
+/**
+ * Execute an Open-Channel 2.0 copy command
+ *
+ * @return On success, 0 is returned. On error, -1 is returned and `errno` set
+ * to indicate the error and ret filled with lower-level result codes
+ */
+int nvm_cmd_copy(struct nvm_dev *dev, struct nvm_addr src[],
+		 struct nvm_addr dst[], int naddrs, uint16_t flags,
+		 struct nvm_ret *ret);
 
 /**
  * @returns the "major" version of the library
@@ -686,6 +631,14 @@ const struct nvm_spec_ppaf_nand *nvm_dev_get_ppaf(const struct nvm_dev *dev);
 const struct nvm_spec_ppaf_nand_mask *nvm_dev_get_ppaf_mask(const struct nvm_dev *dev);
 
 /**
+ * Returns the LBA format of the given device
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @return On success, LBA format is returned
+ */
+const struct nvm_spec_lbaf *nvm_dev_get_lbaf(const struct nvm_dev *dev);
+
+/**
  * Returns the 'meta-mode' of the given device
  *
  * @param dev Device handle obtained with `nvm_dev_open`
@@ -953,13 +906,14 @@ ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		      struct nvm_ret *ret);
 
 /**
- * Checks whether the given address exceeds bounds of the given geometry
+ * Checks whether the given address exceeds bounds of the geometry of the given
+ * device
  *
  * @param addr The addr to check
- * @param geo The geometric bounds to check the given address against
+ * @param dev The device of which to check geometric bounds against
  * @returns A mask of exceeded boundaries
  */
-int nvm_addr_check(struct nvm_addr addr, const struct nvm_geo *geo);
+int nvm_addr_check(struct nvm_addr addr, const struct nvm_dev *dev);
 
 /**
  * Converts a given physical address generic-format to device-format
