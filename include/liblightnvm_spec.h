@@ -75,7 +75,6 @@ struct nvm_spec_ppaf_nand {
 	};
 };
 
-
 /**
  * Opcodes, enums, and data structures representing definitions in
  *
@@ -168,6 +167,8 @@ struct nvm_spec_lbam {
 };
 
 void nvm_spec_lbaf_pr(const struct nvm_spec_lbaf *lbaf);
+void nvm_spec_lbaz_pr(const struct nvm_spec_lbaz *lbaz);
+void nvm_spec_lbam_pr(const struct nvm_spec_lbam *lbam);
 
 struct nvm_spec_idfy_cgrp {
 	uint8_t mtype;
