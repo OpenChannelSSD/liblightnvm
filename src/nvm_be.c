@@ -198,10 +198,10 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 
 	// Handle IDFY (draft / pre 2.0) reporting 2.0, mark as 1.3
 	if (idfy->s.verid == NVM_SPEC_VERID_20 && !(
-		idfy->s20.lbaf.pugrp_len &&
-		idfy->s20.lbaf.punit_len &&
-		idfy->s20.lbaf.chunk_len &&
-		idfy->s20.lbaf.sectr_len)) {
+		idfy->s20.lbaf.pugrp &&
+		idfy->s20.lbaf.punit &&
+		idfy->s20.lbaf.chunk &&
+		idfy->s20.lbaf.sectr)) {
 		idfy->s.verid = NVM_SPEC_VERID_13;
 	}
 
@@ -260,9 +260,19 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 
 		dev->mccap = idfy->s20.mccap;
 
-		// NOTE: NO PPAF FOR 2.0 spec.
 		dev->lbaf = idfy->s20.lbaf;
 		dev->lgeo = idfy->s20.lgeo;
+
+		// Derive the LBA offset
+		dev->lbaz.sectr = 0;
+		dev->lbaz.chunk = dev->lbaf.sectr;
+		dev->lbaz.punit = dev->lbaz.chunk + dev->lbaf.chunk;
+		dev->lbaz.pugrp = dev->lbaz.punit + dev->lbaf.punit;
+
+		dev->lbam.sectr = (((uint64_t)1 << dev->lbaf.sectr) - 1) << dev->lbaz.sectr;
+		dev->lbam.chunk = (((uint64_t)1 << dev->lbaf.chunk) - 1) << dev->lbaz.chunk;
+		dev->lbam.punit = (((uint64_t)1 << dev->lbaf.punit) - 1) << dev->lbaz.punit;
+		dev->lbam.pugrp = (((uint64_t)1 << dev->lbaf.pugrp) - 1) << dev->lbaz.pugrp;
 
 		break;
 
