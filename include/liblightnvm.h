@@ -1006,6 +1006,12 @@ void nvm_addr_prl(struct nvm_addr addr);
 void nvm_addr_prn(struct nvm_addr *addr, unsigned int naddrs);
 
 /**
+ * Prints a humanly readable representation of the given list of addresses using
+ * representation as per the given device geotry
+ */
+void nvm_addr_print(struct nvm_addr *addr, unsigned int naddrs, const struct nvm_dev *dev);
+
+/**
  * Allocate a virtual block, spanning a given set of physical blocks
  *
  * @param dev Device handle obtained with `nvm_dev_open`
