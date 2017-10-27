@@ -998,6 +998,8 @@ struct nvm_addr nvm_addr_lba2gen(struct nvm_dev *dev, uint64_t off);
  */
 void nvm_addr_pr(struct nvm_addr addr);
 
+void nvm_addr_prl(struct nvm_addr addr);
+
 /**
  * Prints a humanly readable representation of the given list of addresses
  */
