@@ -75,7 +75,6 @@ struct nvm_spec_ppaf_nand {
 	};
 };
 
-
 /**
  * Opcodes, enums, and data structures representing definitions in
  *
