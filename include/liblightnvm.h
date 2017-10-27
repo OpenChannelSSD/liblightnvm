@@ -992,16 +992,16 @@ uint64_t nvm_addr_gen2lba(struct nvm_dev *dev, struct nvm_addr addr);
 struct nvm_addr nvm_addr_lba2gen(struct nvm_dev *dev, uint64_t off);
 
 /**
- * Prints a humanly readable representation of the given address
- *
- * @param addr The address to print
+ * Prints a hexidecimal representation of the given address value
  */
-void nvm_addr_pr(struct nvm_addr addr);
+void nvm_addr_pr(const struct nvm_addr addr);
 
 /**
  * Prints a humanly readable representation of the given list of addresses
+ * according to the geometry of the given device (spec 1.2 or 2.0)
  */
-void nvm_addr_prn(struct nvm_addr *addr, unsigned int naddrs);
+void nvm_addr_prn(const struct nvm_addr *addr, unsigned int naddrs,
+		  const struct nvm_dev *dev);
 
 /**
  * Allocate a virtual block, spanning a given set of physical blocks
