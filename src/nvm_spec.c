@@ -145,6 +145,36 @@ void nvm_spec_lbaf_pr(const struct nvm_spec_lbaf *lbaf)
 	printf("  sectr: %u\n", lbaf->sectr);
 }
 
+void nvm_spec_lbaz_pr(const struct nvm_spec_lbaz *lbaz)
+{
+	printf("lbaz:");
+
+	if (!lbaz) {
+		printf(" ~\n");
+		return;
+	}
+
+	printf("\n");
+	printf("  pugrp: %lu\n", lbaz->pugrp);
+	printf("  punit: %lu\n", lbaz->punit);
+	printf("  chunk: %lu\n", lbaz->chunk);
+	printf("  sectr: %lu\n", lbaz->sectr);
+}
+
+void nvm_spec_lbam_pr(const struct nvm_spec_lbam *lbam)
+{
+	printf("lbam:");
+
+	if (!lbam) {
+		printf(" ~\n");
+		return;
+	}
+
+	printf("\n");
+	printf("  pugrp:  '"NVM_I64_FMT"'\n", NVM_I64_TO_STR(lbam->pugrp));
+	printf("  punit:  '"NVM_I64_FMT"'\n", NVM_I64_TO_STR(lbam->punit));
+	printf("  chunk:  '"NVM_I64_FMT"'\n", NVM_I64_TO_STR(lbam->chunk));
+	printf("  sectr:  '"NVM_I64_FMT"'\n", NVM_I64_TO_STR(lbam->sectr));
 }
 
 static void nvm_spec_idfy_s12_pr(const struct nvm_spec_idfy *identify)
