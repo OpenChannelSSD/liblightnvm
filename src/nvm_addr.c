@@ -140,20 +140,28 @@ int nvm_addr_check(struct nvm_addr addr, const struct nvm_dev *dev)
 
 inline uint64_t nvm_addr_gen2dev(struct nvm_dev *dev, struct nvm_addr addr)
 {
-	// TODO: Adjust to actual LBA format
-	if (dev->verid == NVM_SPEC_VERID_20)
-		return addr.ppa;
+	if (dev->verid == NVM_SPEC_VERID_20) {
+		uint64_t d_addr = 0;
 
-	uint64_t d_addr = 0;
+		d_addr |= ((uint64_t)addr.l.pugrp) << dev->lbaz.pugrp;
+		d_addr |= ((uint64_t)addr.l.punit) << dev->lbaz.punit;
+		d_addr |= ((uint64_t)addr.l.chunk) << dev->lbaz.chunk;
+		d_addr |= ((uint64_t)addr.l.sectr) << dev->lbaz.sectr;
 
-	d_addr |= ((uint64_t)addr.g.ch) << dev->ppaf.n.ch_off;
-	d_addr |= ((uint64_t)addr.g.lun) << dev->ppaf.n.lun_off;
-	d_addr |= ((uint64_t)addr.g.pl) << dev->ppaf.n.pl_off;
-	d_addr |= ((uint64_t)addr.g.blk) << dev->ppaf.n.blk_off;
-	d_addr |= ((uint64_t)addr.g.pg) << dev->ppaf.n.pg_off;
-	d_addr |= ((uint64_t)addr.g.sec) << dev->ppaf.n.sec_off;
+		return d_addr;
+	} else {
 
-	return d_addr;
+		uint64_t d_addr = 0;
+
+		d_addr |= ((uint64_t)addr.g.ch) << dev->ppaf.n.ch_off;
+		d_addr |= ((uint64_t)addr.g.lun) << dev->ppaf.n.lun_off;
+		d_addr |= ((uint64_t)addr.g.pl) << dev->ppaf.n.pl_off;
+		d_addr |= ((uint64_t)addr.g.blk) << dev->ppaf.n.blk_off;
+		d_addr |= ((uint64_t)addr.g.pg) << dev->ppaf.n.pg_off;
+		d_addr |= ((uint64_t)addr.g.sec) << dev->ppaf.n.sec_off;
+
+		return d_addr;
+	}
 }
 
 uint64_t nvm_addr_gen2off(struct nvm_dev *dev, struct nvm_addr addr)
