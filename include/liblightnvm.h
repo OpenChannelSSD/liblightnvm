@@ -160,21 +160,19 @@ struct nvm_addr {
 		 * Address packing and geometric accessors
 		 */
 		struct {
-			uint64_t blk	: 16;	///< Block address
-			uint64_t pg	: 16;	///< Page address
 			uint64_t sec	: 8;	///< Sector address
+			uint64_t pg	: 16;	///< Page address
 			uint64_t pl	: 8;	///< Plane address
+			uint64_t blk	: 16;	///< Block address
 			uint64_t lun	: 8;	///< LUN address
-			uint64_t ch	: 7;	///< Channel address
-			uint64_t rsvd	: 1;	///< Reserved
+			uint64_t ch	: 8;	///< Channel address
 		} g;
 
 		struct {
-			uint64_t sectr	: 13;	///< Logical Sector in Chunk
-			uint64_t chunk	: 11;	///< Chunk in PU
-			uint64_t punit	: 3;	///< Parallel Unit (PU) in PUG
-			uint64_t pugrp	: 3;	///< Parallel Unit Group (PUG)
-			uint64_t rsvd	: 34;	///< Unmapped
+			uint64_t sectr	: 32;	///< Logical Sector in Chunk
+			uint64_t chunk	: 16;	///< Chunk in PU
+			uint64_t punit	: 8;	///< Parallel Unit (PU) in PUG
+			uint64_t pugrp	: 8;	///< Parallel Unit Group (PUG)
 		} l;
 
 		uint64_t ppa;				///< Address as ppa
