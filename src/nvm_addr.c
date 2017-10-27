@@ -48,8 +48,8 @@ void nvm_addr_pr(struct nvm_addr addr)
 	printf("ppa: 0x%016"PRIx64", ", addr.ppa);
 	printf("ch: %02d, ", addr.g.ch);
 	printf("lun: %02d, ", addr.g.lun);
-	printf("pl: %d, ", addr.g.pl);
 	printf("blk: %04d, ", addr.g.blk);
+	printf("pl: %d, ", addr.g.pl);
 	printf("pg: %03d, ", addr.g.pg);
 	printf("sec: %d", addr.g.sec);
 	printf("}\n");
