@@ -160,6 +160,15 @@ struct nvm_vblk *nvm_vblk_alloc_line(struct nvm_dev *dev, int ch_bgn,
 		return NULL;
 	}
 
+	for (int i = 0; i < vblk->nblks; ++i) {
+		if (nvm_addr_check(vblk->blks[i], dev)) {
+			NVM_DEBUG("FAILED: nvm_addr_check");
+			free(vblk);
+			errno = EINVAL;
+			return NULL;
+		}
+	}
+
 	return vblk;
 }
 
