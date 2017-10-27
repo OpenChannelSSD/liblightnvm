@@ -45,7 +45,6 @@ struct nvm_vblk* nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addrs[],
 {
 	struct nvm_vblk *vblk;
 	const struct nvm_geo *geo;
-	const struct nvm_spec_lgeo *lgeo;
 	int verid;
 	
 	if (naddrs > 128) {
@@ -55,12 +54,6 @@ struct nvm_vblk* nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addrs[],
 
 	geo = nvm_dev_get_geo(dev);
 	if (!geo) {
-		errno = EINVAL;
-		return NULL;
-	}
-
-	lgeo = nvm_dev_get_lgeo(dev);
-	if (!lgeo) {
 		errno = EINVAL;
 		return NULL;
 	}
@@ -96,7 +89,7 @@ struct nvm_vblk* nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addrs[],
 		break;
 	
 	case NVM_SPEC_VERID_20:
-		vblk->nbytes = vblk->nblks * lgeo->nsectr * lgeo->nbytes;
+		vblk->nbytes = vblk->nblks * geo->nsectr * geo->nbytes;
 		break;
 
 	default:
@@ -115,7 +108,6 @@ struct nvm_vblk *nvm_vblk_alloc_line(struct nvm_dev *dev, int ch_bgn,
 {
 	const int verid = nvm_dev_get_verid(dev);
 	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
-	const struct nvm_spec_lgeo *lgeo = nvm_dev_get_lgeo(dev);
 	struct nvm_vblk *vblk;
 
 	vblk = nvm_vblk_alloc(dev, NULL, 0);
@@ -150,7 +142,7 @@ struct nvm_vblk *nvm_vblk_alloc_line(struct nvm_dev *dev, int ch_bgn,
 			}
 		}
 
-		vblk->nbytes = vblk->nblks * lgeo->nsectr * lgeo->nbytes;
+		vblk->nbytes = vblk->nblks * geo->nsectr * geo->nbytes;
 		break;
 
 	default:
@@ -229,8 +221,6 @@ static inline ssize_t vblk_erase_s12(struct nvm_vblk *vblk)
 
 static inline ssize_t vblk_erase_s20(struct nvm_vblk *vblk)
 {
-	/*
-	const struct nvm_spec_lgeo *lgeo = nvm_dev_get_lgeo(vblk->dev);
 	size_t nerr = 0;
 
 	const int CMD_NBLKS = cmd_nblks(vblk->nblks, vblk->dev->erase_naddrs_max);
@@ -238,7 +228,6 @@ static inline ssize_t vblk_erase_s20(struct nvm_vblk *vblk)
 	for (int off = 0; off < vblk->nblks; off += CMD_NBLKS) {
 		const int naddrs = NVM_MIN(CMD_NBLKS, vblk->nblks - off);
 		struct nvm_ret ret = {0,0};
-		ssize_t err;
 
 		struct nvm_addr addrs[naddrs];
 
@@ -258,9 +247,6 @@ static inline ssize_t vblk_erase_s20(struct nvm_vblk *vblk)
 	vblk->pos_read = 0;
 
 	return vblk->nbytes;
-	*/
-
-	return -1;
 }
 
 ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
@@ -402,63 +388,115 @@ static inline ssize_t vblk_pwrite_s12(struct nvm_vblk *vblk, const void *buf,
 	return count;
 }
 
-#define WS_MIN 12
-
 static inline ssize_t vblk_pwrite_s20(struct nvm_vblk *vblk, const void *buf,
 				      size_t count, size_t offset)
 {
-	/*
 	size_t nerr = 0;
-	const struct nvm_spec_geo *lgeo = nvm_dev_get_lgeo(vblk->dev);
-	
-	size_t wun_nsectr = WS_MIN;
-	size_t wun_nbytes = wun_nsectr * lgeo->nbytes;
 
-	const size_t wun_bgn = offset / wun_nbytes;
-	const size_t wun_end = wun_bgn + (count / wun_nbytes);
+	const uint32_t WS_MIN = nvm_dev_get_ws_min(vblk->dev);
 
-	const size_t cmd_nwun = vblk->dev->write_naddrs_max / wun_nsectr;
+	const struct nvm_geo *geo = nvm_dev_get_geo(vblk->dev);
+	const size_t nchunks = vblk->nblks;
 
-	if (offset + count > vblk->nbytes) {
+	const size_t sectr_nbytes = geo->nbytes;
+	const size_t nsectr = offset / sectr_nbytes;
+
+	const size_t sectr_bgn = offset / sectr_nbytes;
+	const size_t sectr_end = sectr_bgn + (count / sectr_nbytes) - 1;
+
+	const size_t cmd_nsectr_max = (NVM_NADDR_MAX / WS_MIN) * WS_MIN;
+
+	const size_t meta_tbytes = cmd_nsectr_max * geo->nbytes_oob;
+	char *meta_buf = NULL;
+
+	const size_t pad_nbytes = cmd_nsectr_max * nsectr * geo->nbytes;
+	char *pad_buf = NULL;
+
+	if (nsectr % WS_MIN) {
+		NVM_DEBUG("FAILED: unaligned nsectr: %zu", nsectr);
 		errno = EINVAL;
 		return -1;
 	}
-	if ((count % wun_nbytes) || (offset % wun_nbytes)) {
+	if (sectr_bgn % WS_MIN) {
+		NVM_DEBUG("FAILED: unaligned sectr_bgn: %zu", sectr_bgn);
 		errno = EINVAL;
 		return -1;
 	}
 
-	// iterate over work units, increment with command
-	for (size_t wun_off = wun_bgn; wun_off < wun_end; wun_off += cmd_nwun) {
-		struct nvm_ret ret = {0, 0};
-
-		const int nwun = NVM_MIN(cmd_nwun, (int)(wun_end - wun_off));
-		const int naddrs = nwun * wun_nsectr;
-		struct nvm_addr addrs[naddrs];
-
-		for (size_t wun = wun_off; wun < wun_off + nwun; ++wun) {
-		
-
+	if (!buf) {	// Allocate and use a padding buffer
+		pad_buf = nvm_buf_alloc(geo, pad_nbytes);
+		if (!pad_buf) {
+			NVM_DEBUG("FAILED: nvm_buf_alloc(pad)");
+			errno = ENOMEM;
+			return -1;
 		}
 
-		const char *buf_off;
-		buf_off = (const char*)buf + (off - bgn) * lgeo->nbytes;
+		nvm_buf_fill(pad_buf, pad_nbytes);
+	}
 
-		const ssize_t err = nvm_addr_write(vblk->dev, addrs, naddrs,
-						   buf_off, NULL, 0x0, &ret);
+	if (vblk->dev->meta_mode != NVM_META_MODE_NONE) {	// Meta
+		meta_buf = nvm_buf_alloc(geo, meta_tbytes);	// Alloc buf
+		if (!meta_buf) {
+			nvm_buf_free(pad_buf);
+			NVM_DEBUG("FAILED: nvm_buf_alloc(meta)");
+			errno = ENOMEM;
+			return -1;
+		}
+
+		switch(vblk->dev->meta_mode) {			// Fill it
+			case NVM_META_MODE_ALPHA:
+				nvm_buf_fill(meta_buf, meta_tbytes);
+				break;
+			case NVM_META_MODE_CONST:
+				for (size_t i = 0; i < meta_tbytes; ++i)
+					meta_buf[i] = 65 + (meta_tbytes % 20);
+				break;
+			case NVM_META_MODE_NONE:
+				break;
+		}
+	}
+
+	for (size_t sectr_ofz = sectr_bgn; sectr_ofz <= sectr_end; sectr_ofz += cmd_nsectr_max) {
+		struct nvm_ret ret = {0,0};
+
+		const size_t cmd_nsectr = NVM_MIN(sectr_end - sectr_ofz + 1, cmd_nsectr_max);
+
+		struct nvm_addr addrs[cmd_nsectr];
+		char *buf_off;
+		
+		if (pad_buf)
+			buf_off = pad_buf;
+		else
+			buf_off = (char*)buf + (sectr_ofz - sectr_bgn) * sectr_nbytes;
+
+		for (size_t idx = 0; idx < cmd_nsectr; ++idx) {
+			const size_t sectr = sectr_ofz + idx;
+			const size_t wunit = sectr / WS_MIN;
+			const size_t rnd = wunit / nchunks;
+
+			const size_t chunk = wunit % nchunks;
+			const size_t chunk_sectr = sectr % WS_MIN + rnd * WS_MIN;
+
+			addrs[idx].ppa = vblk->blks[chunk].ppa;
+			addrs[idx].l.sectr = chunk_sectr;
+		}
+
+		const ssize_t err = nvm_cmd_write(vblk->dev, addrs, cmd_nsectr,
+						   buf_off, meta_buf, 0x0, &ret);
 		if (err)
 			++nerr;
 	}
 
+	nvm_buf_free(pad_buf);
+	nvm_buf_free(meta_buf);
+
 	if (nerr) {
+		NVM_DEBUG("FAILED: nvm_cmd_write, nerr(%zu)", nerr);
 		errno = EIO;
 		return -1;
 	}
 
 	return count;
-	*/
-
-	return -1;
 }
 
 ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf, size_t count,
@@ -568,8 +606,63 @@ static inline ssize_t vblk_pread_s12(struct nvm_vblk *vblk, void *buf,
 static inline ssize_t vblk_pread_s20(struct nvm_vblk *vblk, void *buf,
 				     size_t count, size_t offset)
 {
-	errno = EIO;
-	return -1;
+	size_t nerr = 0;
+
+	const uint32_t WS_MIN = nvm_dev_get_ws_min(vblk->dev);
+
+	const struct nvm_geo *geo = nvm_dev_get_geo(vblk->dev);
+	const size_t nchunks = vblk->nblks;
+
+	const size_t sectr_nbytes = geo->nbytes;
+	const size_t nsectr = offset / sectr_nbytes;
+
+	const size_t sectr_bgn = offset / sectr_nbytes;
+	const size_t sectr_end = sectr_bgn + (count / sectr_nbytes) - 1;
+
+	const size_t cmd_nsectr_max = (NVM_NADDR_MAX / WS_MIN) * WS_MIN;
+
+	if (nsectr % WS_MIN) {
+		NVM_DEBUG("FAILED: unaligned nsectr: %zu", nsectr);
+		errno = EINVAL;
+		return -1;
+	}
+	if (sectr_bgn % WS_MIN) {
+		NVM_DEBUG("FAILED: unaligned sectr_bgn: %zu", sectr_bgn);
+		errno = EINVAL;
+		return -1;
+	}
+
+	for (size_t sectr_ofz = sectr_bgn; sectr_ofz <= sectr_end; sectr_ofz += cmd_nsectr_max) {
+		const size_t cmd_nsectr = NVM_MIN(sectr_end - sectr_ofz + 1, cmd_nsectr_max);
+
+		struct nvm_addr addrs[cmd_nsectr];
+		char *buf_off = (char*)buf + (sectr_ofz - sectr_bgn) * sectr_nbytes;
+
+		for (size_t idx = 0; idx < cmd_nsectr; ++idx) {
+			const size_t sectr = sectr_ofz + idx;
+			const size_t wunit = sectr / WS_MIN;
+			const size_t rnd = wunit / nchunks;
+
+			const size_t chunk = wunit % nchunks;
+			const size_t chunk_sectr = sectr % WS_MIN + rnd * WS_MIN;
+
+			addrs[idx].ppa = vblk->blks[chunk].ppa;
+			addrs[idx].l.sectr = chunk_sectr;
+		}
+
+		const ssize_t err = nvm_cmd_read(vblk->dev, addrs, cmd_nsectr,
+						   buf_off, NULL, 0x0, NULL);
+		if (err)
+			++nerr;
+	}
+
+	if (nerr) {
+		NVM_DEBUG("FAILED: nvm_cmd_read, nerr(%zu)", nerr);
+		errno = EIO;
+		return -1;
+	}
+
+	return count;
 }
 
 ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
