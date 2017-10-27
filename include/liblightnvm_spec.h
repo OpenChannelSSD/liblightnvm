@@ -153,6 +153,20 @@ struct nvm_spec_lbaf {
 	uint8_t rsvd[4];
 };
 
+struct nvm_spec_lbaz {
+	uint64_t pugrp;
+	uint64_t punit;
+	uint64_t chunk;
+	uint64_t sectr;
+};
+
+struct nvm_spec_lbam {
+	uint64_t pugrp;
+	uint64_t punit;
+	uint64_t chunk;
+	uint64_t sectr;
+};
+
 void nvm_spec_lbaf_pr(const struct nvm_spec_lbaf *lbaf);
 
 struct nvm_spec_idfy_cgrp {
