@@ -101,32 +101,41 @@ void nvm_addr_print(struct nvm_addr *addr, unsigned int naddrs, const struct nvm
 int nvm_addr_check(struct nvm_addr addr, const struct nvm_dev *dev)
 {
 	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
+	const struct nvm_spec_lgeo *lgeo = nvm_dev_get_lgeo(dev);
 	int exceeded = 0;
 
-	// TODO: Handle logical geometry
-	if (dev->verid == NVM_SPEC_VERID_20)
-		return 0;
+	switch(dev->verid) {
+	case NVM_SPEC_VERID_12:
+	case NVM_SPEC_VERID_13:
+		if (addr.g.ch >= geo->nchannels)
+			exceeded |= NVM_BOUNDS_CHANNEL;
+		if (addr.g.lun >= geo->nluns)
+			exceeded |= NVM_BOUNDS_LUN;
+		if (addr.g.pl >= geo->nplanes)
+			exceeded |= NVM_BOUNDS_PLANE;
+		if (addr.g.blk >= geo->nblocks)
+			exceeded |= NVM_BOUNDS_BLOCK;
+		if (addr.g.pg >= geo->npages)
+			exceeded |= NVM_BOUNDS_PAGE;
+		if (addr.g.sec >= geo->nsectors)
+			exceeded |= NVM_BOUNDS_SECTOR;
+		return exceeded;
 
-	if (addr.g.ch >= geo->nchannels) {
-		exceeded |= NVM_BOUNDS_CHANNEL;
-	}
-	if (addr.g.lun >= geo->nluns) {
-		exceeded |= NVM_BOUNDS_LUN;
-	}
-	if (addr.g.pl >= geo->nplanes) {
-		exceeded |= NVM_BOUNDS_PLANE;
-	}
-	if (addr.g.blk >= geo->nblocks) {
-		exceeded |= NVM_BOUNDS_BLOCK;
-	}
-	if (addr.g.pg >= geo->npages) {
-		exceeded |= NVM_BOUNDS_PAGE;
-	}
-	if (addr.g.sec >= geo->nsectors) {
-		exceeded |= NVM_BOUNDS_SECTOR;
+	case NVM_SPEC_VERID_20:
+		if (addr.l.pugrp >= lgeo->npugrp)
+			exceeded |= NVM_BOUNDS_CHANNEL;
+		if (addr.l.punit >= lgeo->npunit)
+			exceeded |= NVM_BOUNDS_LUN;
+		if (addr.l.chunk >= lgeo->nchunk)
+			exceeded |= NVM_BOUNDS_PLANE;
+		if (addr.l.sectr >= lgeo->nsectr)
+			exceeded |= NVM_BOUNDS_BLOCK;
+		return exceeded;
 	}
 
-	return exceeded;
+	NVM_DEBUG("FAILED: unsupported verid: %d", dev->verid);
+	errno = EINVAL;
+	return -1;
 }
 
 inline uint64_t nvm_addr_gen2dev(struct nvm_dev *dev, struct nvm_addr addr)
