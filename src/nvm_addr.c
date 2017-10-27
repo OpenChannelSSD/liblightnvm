@@ -101,7 +101,6 @@ void nvm_addr_print(struct nvm_addr *addr, unsigned int naddrs, const struct nvm
 int nvm_addr_check(struct nvm_addr addr, const struct nvm_dev *dev)
 {
 	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
-	const struct nvm_spec_lgeo *lgeo = nvm_dev_get_lgeo(dev);
 	int exceeded = 0;
 
 	switch(dev->verid) {
@@ -122,13 +121,13 @@ int nvm_addr_check(struct nvm_addr addr, const struct nvm_dev *dev)
 		return exceeded;
 
 	case NVM_SPEC_VERID_20:
-		if (addr.l.pugrp >= lgeo->npugrp)
+		if (addr.l.pugrp >= geo->npugrp)
 			exceeded |= NVM_BOUNDS_CHANNEL;
-		if (addr.l.punit >= lgeo->npunit)
+		if (addr.l.punit >= geo->npunit)
 			exceeded |= NVM_BOUNDS_LUN;
-		if (addr.l.chunk >= lgeo->nchunk)
+		if (addr.l.chunk >= geo->nchunk)
 			exceeded |= NVM_BOUNDS_PLANE;
-		if (addr.l.sectr >= lgeo->nsectr)
+		if (addr.l.sectr >= geo->nsectr)
 			exceeded |= NVM_BOUNDS_BLOCK;
 		return exceeded;
 	}
