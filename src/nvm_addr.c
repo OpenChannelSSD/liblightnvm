@@ -55,6 +55,17 @@ void nvm_addr_pr(struct nvm_addr addr)
 	printf("}\n");
 }
 
+void nvm_addr_prl(struct nvm_addr addr)
+{
+	printf("addr: {");
+	printf("val: 0x%016"PRIx64", ", addr.ppa);
+	printf("pugrp: %02d, ", addr.l.pugrp);
+	printf("punit: %02d, ", addr.l.punit);
+	printf("chunk: %04d, ", addr.l.chunk);
+	printf("sectr: %04d, ", addr.l.sectr);
+	printf("}\n");
+}
+
 void nvm_addr_prn(struct nvm_addr *addr, unsigned int naddrs)
 {
 	printf("naddrs: %d\n", naddrs);
