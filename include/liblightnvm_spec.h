@@ -146,10 +146,10 @@ struct nvm_spec_ppaf_nand_mask {
 };
 
 struct nvm_spec_lbaf {
-	uint8_t pugrp_len;
-	uint8_t punit_len;
-	uint8_t chunk_len;
-	uint8_t sectr_len;
+	uint8_t pugrp;
+	uint8_t punit;
+	uint8_t chunk;
+	uint8_t sectr;
 	uint8_t rsvd[4];
 };
 
