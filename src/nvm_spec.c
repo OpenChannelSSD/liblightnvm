@@ -139,10 +139,12 @@ void nvm_spec_lbaf_pr(const struct nvm_spec_lbaf *lbaf)
 	}
 
 	printf("\n");
-	printf("  pugrp_len: %u\n", lbaf->pugrp_len);
-	printf("  punit_len: %u\n", lbaf->punit_len);
-	printf("  chunk_len: %u\n", lbaf->chunk_len);
-	printf("  sectr_len: %u\n", lbaf->sectr_len);
+	printf("  pugrp: %u\n", lbaf->pugrp);
+	printf("  punit: %u\n", lbaf->punit);
+	printf("  chunk: %u\n", lbaf->chunk);
+	printf("  sectr: %u\n", lbaf->sectr);
+}
+
 }
 
 static void nvm_spec_idfy_s12_pr(const struct nvm_spec_idfy *identify)
