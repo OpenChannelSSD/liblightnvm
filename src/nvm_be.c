@@ -205,8 +205,12 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 		idfy->s.verid = NVM_SPEC_VERID_13;
 	}
 
+	dev->verid = idfy->s.verid;
+	geo->verid = idfy->s.verid;
+
 	switch (idfy->s.verid) {
 	case NVM_SPEC_VERID_12:
+		// Geometry
 		geo->page_nbytes = idfy->s12.grp[0].fpg_sz;
 		geo->sector_nbytes = idfy->s12.grp[0].csecs;
 		geo->meta_nbytes = idfy->s12.grp[0].sos;
@@ -217,14 +221,17 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 		geo->nblocks = idfy->s12.grp[0].num_blk;
 		geo->npages = idfy->s12.grp[0].num_pg;
 
+		// Capabilities
 		dev->mccap = idfy->s12.grp[0].mccap;
 
+		// Addressing format / offset / mask
 		dev->ppaf = idfy->s12.ppaf;
 		construct_ppaf_mask(&dev->ppaf, &dev->mask);
 
 		break;
 
 	case NVM_SPEC_VERID_13:
+		// Geometry
 		geo->sector_nbytes = idfy->s13.lgeo.nbytes;
 		geo->meta_nbytes = idfy->s13.lgeo.nbytes_oob;
 		geo->page_nbytes = idfy->s13.wrt.ws_min * geo->sector_nbytes;
@@ -234,36 +241,30 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 		geo->nplanes = idfy->s13.wrt.ws_opt / idfy->s13.wrt.ws_min;
 		geo->nblocks = idfy->s13.lgeo.nchunk;
 		geo->npages = ((idfy->s13.lgeo.nsectr * idfy->s13.lgeo.nbytes) / geo->page_nbytes) / geo->nplanes;
-		geo->nsectors = geo->page_nbytes / geo->sector_nbytes;
 
+		// Capabilities
 		dev->mccap = idfy->s13.mccap;
 
+		// Addressing format / offset / mask
 		dev->ppaf = idfy->s13.ppaf;
 		construct_ppaf_mask(&dev->ppaf, &dev->mask);
-
-		dev->lbaf = idfy->s20.lbaf;
-		dev->lgeo = idfy->s20.lgeo;
-
 		break;
 
 	case NVM_SPEC_VERID_20:
-		geo->sector_nbytes = idfy->s20.lgeo.nbytes;
-		geo->meta_nbytes = idfy->s20.lgeo.nbytes_oob;
-		geo->page_nbytes = idfy->s20.wrt.ws_min * geo->sector_nbytes;
+		// Geometry
+		geo->npugrp = idfy->s20.lgeo.npugrp;
+		geo->npunit = idfy->s20.lgeo.npunit;
+		geo->nchunk = idfy->s20.lgeo.nchunk;
+		geo->nsectr = idfy->s20.lgeo.nsectr;
+		geo->nbytes = idfy->s20.lgeo.nbytes;
+		geo->nbytes_oob = idfy->s20.lgeo.nbytes_oob;
 
-		geo->nchannels = idfy->s20.lgeo.npugrp;
-		geo->nluns = idfy->s20.lgeo.npunit;
-		geo->nplanes = idfy->s20.wrt.ws_opt / idfy->s20.wrt.ws_min;
-		geo->nblocks = idfy->s20.lgeo.nchunk;
-		geo->npages = ((idfy->s20.lgeo.nsectr * idfy->s20.lgeo.nbytes) / geo->page_nbytes) / geo->nplanes;
-		geo->nsectors = geo->page_nbytes / geo->sector_nbytes;
-
+		// Capabilities
 		dev->mccap = idfy->s20.mccap;
 
+		// Addressing format / offset / mask
 		dev->lbaf = idfy->s20.lbaf;
-		dev->lgeo = idfy->s20.lgeo;
 
-		// Derive the LBA offset
 		dev->lbaz.sectr = 0;
 		dev->lbaz.chunk = dev->lbaf.sectr;
 		dev->lbaz.punit = dev->lbaz.chunk + dev->lbaf.chunk;
@@ -273,7 +274,6 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 		dev->lbam.chunk = (((uint64_t)1 << dev->lbaf.chunk) - 1) << dev->lbaz.chunk;
 		dev->lbam.punit = (((uint64_t)1 << dev->lbaf.punit) - 1) << dev->lbaz.punit;
 		dev->lbam.pugrp = (((uint64_t)1 << dev->lbaf.pugrp) - 1) << dev->lbaz.pugrp;
-
 		break;
 
 	default:
@@ -282,8 +282,6 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 		nvm_buf_free(idfy);
 		return -1;
 	}
-
-	dev->verid = idfy->s.verid;
 
 	nvm_buf_free(idfy);
 
