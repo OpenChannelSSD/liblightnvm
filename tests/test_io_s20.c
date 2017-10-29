@@ -47,7 +47,6 @@ void TEST_NADDR_META_OFF(void)
 {
 	struct nvm_dev *dev = NULL;
 	const struct nvm_geo *geo = NULL;
-	const struct nvm_spec_lgeo *lgeo = NULL;
 
 	size_t buf_nbytes = 0;
 	char *buf_w = NULL;
@@ -73,17 +72,11 @@ void TEST_NADDR_META_OFF(void)
 			CU_FAIL("nvm_dev_get_geo");
 			goto out;
 		}
-
-		lgeo = nvm_dev_get_lgeo(dev);
-		if (!lgeo) {
-			CU_FAIL("nvm_dev_get_lgeo");
-			goto out;
-		}
 	}
 
 	// Setup buffers
 	{
-		buf_nbytes = lgeo->nbytes * lgeo->nsectr;
+		buf_nbytes = geo->nbytes * geo->nsectr;
 
 		buf_w = nvm_buf_alloc(geo, buf_nbytes);
 		if (!buf_w) {
@@ -112,7 +105,7 @@ void TEST_NADDR_META_OFF(void)
 	}
 
 	// WRITE
-	for (unsigned int sectr = 0; sectr < lgeo->nsectr; sectr += WS_MIN)
+	for (unsigned int sectr = 0; sectr < geo->nsectr; sectr += WS_MIN)
 	{
 		for (unsigned int i = 0; i < WS_MIN; ++i) {
 			addrs[i].l.pugrp = pugrp;
@@ -128,7 +121,7 @@ void TEST_NADDR_META_OFF(void)
 	}
 
 	// READ
-	for (unsigned int sectr = 0; sectr < lgeo->nsectr; sectr += WS_MIN)
+	for (unsigned int sectr = 0; sectr < geo->nsectr; sectr += WS_MIN)
 	{
 		for (unsigned int i = 0; i < WS_MIN; ++i) {
 			addrs[i].l.pugrp = pugrp;
