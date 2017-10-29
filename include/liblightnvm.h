@@ -54,13 +54,13 @@ extern "C" {
  * Enumeration of cmd back-ends used by liblightnvm
  */
 enum nvm_be_id {
-	NVM_BE_ANY = 0x0,	///< Flag for ANY backend
-	NVM_BE_IOCTL = 0x1,	///< Flag for the IOCTL backend
-	NVM_BE_SYSFS = 0x2,	///< Flag for the IOCTL + sysfs backend
-	NVM_BE_LBA = 0x4,	///< Flag for the IOCTL + sysfs + LBA backend
-	NVM_BE_SPDK = 0x8,	///< Flag for the SPDK backend
+	NVM_BE_ANY	= 0x0,	///< Flag for ANY backend
+	NVM_BE_IOCTL	= 0x1,	///< Flag for the IOCTL backend
+	NVM_BE_SYSFS	= 0x2,	///< Flag for the IOCTL + sysfs backend
+	NVM_BE_LBA	= 0x4,	///< Flag for the IOCTL + sysfs + LBA backend
+	NVM_BE_SPDK	= 0x8,	///< Flag for the SPDK backend
 };
-#define NVM_BE_ALL (NVM_BE_IOCTL | NVM_BE_SYSFS | NVM_BE_LBA | NVM_BE_SPDK)	///< All be idents
+#define NVM_BE_ALL (NVM_BE_IOCTL | NVM_BE_SYSFS | NVM_BE_LBA | NVM_BE_SPDK)
 
 /**
  * Plane-mode access for IO
