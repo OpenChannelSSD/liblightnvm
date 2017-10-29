@@ -52,5 +52,14 @@ void nvm_bounds_pr(int mask)
 		printf("- page\n");
 	if (mask & NVM_BOUNDS_SECTOR)
 		printf("- sector\n");
+
+	if (mask & NVM_BOUNDS_PUGRP)
+		printf("- pugrp\n");
+	if (mask & NVM_BOUNDS_PUNIT)
+		printf("- punit\n");
+	if (mask & NVM_BOUNDS_CHUNK)
+		printf("- chunk\n");
+	if (mask & NVM_BOUNDS_SECTR)
+		printf("- sectr\n");
 }
 
