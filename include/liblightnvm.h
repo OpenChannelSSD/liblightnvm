@@ -188,23 +188,46 @@ struct nvm_addr {
 };
 
 /**
- * Representation of device and virtual block geometry
+ * Representation of device geometry
  *
- * @see nvm_dev_get_geo, nvm_vblk_get_geo
+ * @see nvm_dev_get_geo
  */
 struct nvm_geo {
-	size_t nchannels;	///< Number of channels on device
-	size_t nluns;		///< Number of LUNs per channel
-	size_t nplanes;		///< Number of planes per LUN
-	size_t nblocks;		///< Number of blocks per plane
-	size_t npages;		///< Number of pages per block
-	size_t nsectors;	///< Number of sectors per page
+	union {
 
-	size_t page_nbytes;	///< Number of bytes per page
-	size_t sector_nbytes;	///< Number of bytes per sector
-	size_t meta_nbytes;	///< Number of bytes for out-of-bound / metadata
+		/**
+		 * Spec 2.0
+		 */
+		struct {
+			size_t npugrp;		///< # Parallel Unit Groups
+			size_t npunit;		///< # Parallel Units in PUG
+			size_t nchunk;		///< # Chunks in PU
 
-	size_t tbytes;		///< Total number of bytes in geometry
+			size_t nsectr;		///< # Sectors per CNK
+			size_t nbytes;		///< # Bytes per SECTOR
+			size_t nbytes_oob;	///< # Bytes per SECTOR in OOB
+		};
+
+		/**
+		 * Spec 1.2
+		 */
+		struct {
+			size_t nchannels;	///< # of channels on device
+			size_t nluns;		///< # of LUNs per channel
+			size_t nblocks;		///< # of blocks per plane
+			
+			size_t nsectors;	///< # of sectors per page
+			size_t sector_nbytes;	///< # of bytes per sector
+			size_t meta_nbytes;	///< # of bytes for OOB
+
+			size_t nplanes;		///< # of planes per LUN
+			size_t npages;		///< # of pages per block
+			size_t page_nbytes;	///< # of bytes per page
+		};
+	};
+	
+	size_t tbytes;				///< Total # bytes in geometry
+	int verid;				///< Associated dev verid
 };
 
 /**
