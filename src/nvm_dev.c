@@ -123,6 +123,11 @@ const struct nvm_geo * nvm_dev_get_geo(const struct nvm_dev *dev)
 	return &dev->geo;
 }
 
+uint32_t nvm_dev_get_ws_min(const struct nvm_dev *dev)
+{
+	return dev->idfy.s20.wrt.ws_min;
+}
+
 int nvm_dev_get_verid(const struct nvm_dev *dev)
 {
 	return dev->verid;
