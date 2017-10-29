@@ -236,6 +236,45 @@ static int cmd_read(struct nvm_cli *cli)
 
 static int cmd_copy(struct nvm_cli *cli)
 {
+	struct nvm_dev *dev = cli->args.dev;
+	const uint32_t WS_MIN = nvm_dev_get_ws_min(dev);
+	const size_t nsectr = cli->args.geo->nsectr;
+
+	struct nvm_addr chunk_src = cli->args.addrs[0];
+	struct nvm_addr chunk_dst = cli->args.addrs[1];
+
+	nvm_cli_info_pr("nvm_cmd_copy");
+	nvm_cli_info_pr("src");
+	nvm_addr_print(&chunk_src, 1, dev);
+
+	nvm_cli_info_pr("dst");
+	nvm_addr_print(&chunk_dst, 1, dev);
+
+	for (size_t sectr = 0; sectr < nsectr; sectr += WS_MIN) {
+		struct nvm_addr src[WS_MIN];
+		struct nvm_addr dst[WS_MIN];
+		int err;
+
+		for (size_t idx = 0; idx < WS_MIN; ++idx) {
+			src[idx].ppa = chunk_src.ppa;
+			src[idx].l.sectr = sectr + idx;
+
+			dst[idx].ppa = chunk_dst.ppa;
+			dst[idx].l.sectr = sectr + idx;
+		}
+
+		if (nvm_cmd_copy(dev, src, dst, WS_MIN, 0x0, NULL)) {
+			nvm_cli_info_pr("nvm_cmd_copy");
+			nvm_cli_info_pr("src");
+			nvm_addr_print(src, WS_MIN, dev);
+			nvm_cli_info_pr("dst");
+			nvm_addr_print(src, WS_MIN, dev);
+
+			nvm_cli_perror("nvm_cmd_copy");
+			break;
+		}
+	}
+
 	return 0;
 }
 
@@ -252,7 +291,7 @@ static struct nvm_cli_cmd cmds[] = {
 	{"erase",	cmd_erase,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
 	{"write",	cmd_write,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_INPUT},
 	{"read",	cmd_read,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
-	{"copy",	cmd_copy,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
+	{"copy",	cmd_copy,	NVM_CLI_ARG_VCOPY_S20, NVM_CLI_OPT_DEFAULT},
 };
 
 /* Define the CLI */
