@@ -208,11 +208,11 @@ struct nvm_geo {
  * Representation of valid values of bad-block-table states
  */
 enum nvm_bbt_state {
-	NVM_BBT_FREE = 0x0,	///< Block is free AKA good
-	NVM_BBT_BAD = 0x1,	///< Block is bad
-	NVM_BBT_GBAD = 0x2,	///< Block has grown bad
-	NVM_BBT_DMRK = 0x4,	///< Block has been marked by device side
-	NVM_BBT_HMRK = 0x8	///< Block has been marked by host side
+	NVM_BBT_FREE	= 0x0,		///< Block is free AKA good
+	NVM_BBT_BAD	= 0x1,		///< Block is bad
+	NVM_BBT_GBAD	= 0x1 << 1,	///< Block marked as grown bad
+	NVM_BBT_DMRK	= 0x1 << 2,	///< Block marked by device side
+	NVM_BBT_HMRK	= 0x1 << 3	///< Block marked by host side
 };
 
 /**
