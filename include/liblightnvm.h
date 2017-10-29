@@ -66,9 +66,9 @@ enum nvm_be_id {
  * Plane-mode access for IO
  */
 enum nvm_pmode {
-	NVM_FLAG_PMODE_SNGL = 0x0,	///< Single-plane
-	NVM_FLAG_PMODE_DUAL = 0x1,	///< Dual-plane (NVM_IO_DUAL_ACCESS)
-	NVM_FLAG_PMODE_QUAD = 0x2	///< Quad-plane (NVM_IO_QUAD_ACCESS)
+	NVM_FLAG_PMODE_SNGL	= 0x0,		///< Single-plane
+	NVM_FLAG_PMODE_DUAL	= 0x1,		///< Dual-plane
+	NVM_FLAG_PMODE_QUAD	= 0x1 << 1	///< Quad-plane
 };
 #define NVM_FLAG_DEFAULT (NVM_FLAG_PMODE_SNGL | NVM_FLAG_SCRBL);
 
