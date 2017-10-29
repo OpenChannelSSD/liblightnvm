@@ -37,6 +37,7 @@ struct nvm_dev {
 	char path[NVM_DEV_PATH_LEN];	///< Device path e.g. "/dev/nvme0n1"
 	int nsid;			///< NVME namespace identifier
 	uint8_t verid;			///< Open-Channel SSD version identifier
+	struct nvm_spec_idfy idfy;	///< Content from IDFY commands
 	struct nvm_spec_lbaf lbaf;	///< Logical device address format
 	struct nvm_spec_lbaz lbaz;	///< Logical address format offsets
 	struct nvm_spec_lbam lbam;	///< Logical address format mask
