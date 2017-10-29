@@ -31,16 +31,40 @@
 
 void nvm_geo_pr(const struct nvm_geo *geo)
 {
-	printf("geo:\n");
-	printf("  nchannels: %zu\n", geo->nchannels);
-	printf("  nluns: %zu\n", geo->nluns);
-	printf("  nplanes: %zu\n", geo->nplanes);
-	printf("  nblocks: %zu\n", geo->nblocks);
-	printf("  npages: %zu\n", geo->npages);
-	printf("  nsectors: %zu\n", geo->nsectors);
-	printf("  page_nbytes: %zu\n", geo->page_nbytes);
-	printf("  sector_nbytes: %zu\n", geo->sector_nbytes);
-	printf("  meta_nbytes: %zu\n", geo->meta_nbytes);	
+	printf("geo:");
+
+	if (!geo) {
+		printf(" ~\n");
+		return;
+	}
+
+	printf("\n");
+	printf("  verid: 0x%02X\n", geo->verid);
+	switch (geo->verid) {
+	case NVM_SPEC_VERID_12:
+	case NVM_SPEC_VERID_13:
+		printf("  nchannels: %zu\n", geo->nchannels);
+		printf("  nluns: %zu\n", geo->nluns);
+		printf("  nplanes: %zu\n", geo->nplanes);
+		printf("  nblocks: %zu\n", geo->nblocks);
+		printf("  npages: %zu\n", geo->npages);
+		printf("  nsectors: %zu\n", geo->nsectors);
+		printf("  page_nbytes: %zu\n", geo->page_nbytes);
+		printf("  sector_nbytes: %zu\n", geo->sector_nbytes);
+		printf("  meta_nbytes: %zu\n", geo->meta_nbytes);	
+		break;
+
+	case NVM_SPEC_VERID_20:
+		printf("  npugrp: %zu\n", geo->npugrp);
+		printf("  npunit: %zu\n", geo->npunit);
+		printf("  nchunk: %zu\n", geo->nchunk);
+		printf("  nsectr: %zu\n", geo->nsectr);
+		printf("  nbytes: %zu\n", geo->nbytes);
+		printf("  nbytes_oob: %zu\n", geo->nbytes_oob);
+		break;
+	}
+
 	printf("  tbytes: %zu\n", geo->tbytes);
 	printf("  tmbytes: %zu\n", geo->tbytes >> 20);
+
 }
