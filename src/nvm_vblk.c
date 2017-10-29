@@ -194,9 +194,7 @@ static inline ssize_t vblk_erase_s12(struct nvm_vblk *vblk)
 	const int BLK_NADDRS = geo->nplanes;
 	const int CMD_NBLKS = cmd_nblks(vblk->nblks,
 				vblk->dev->erase_naddrs_max / BLK_NADDRS);
-	const int NTHREADS = 1;
 
-	#pragma omp parallel for num_threads(NTHREADS) schedule(static,1) reduction(+:nerr) ordered if (NTHREADS>1)
 	for (int off = 0; off < vblk->nblks; off += CMD_NBLKS) {
 		ssize_t err;
 		struct nvm_ret ret = {0,0};
@@ -216,9 +214,6 @@ static inline ssize_t vblk_erase_s12(struct nvm_vblk *vblk)
 		err = nvm_addr_erase(vblk->dev, addrs, naddrs, 0, &ret);
 		if (err)
 			++nerr;
-
-		#pragma omp ordered
-		{}
 	}
 
 	if (nerr) {
