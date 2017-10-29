@@ -758,6 +758,15 @@ int nvm_dev_set_write_naddrs_max(struct nvm_dev *dev, int naddrs);
 const struct nvm_geo *nvm_dev_get_geo(const struct nvm_dev *dev);
 
 /**
+ * Returns the minimum write size, in number of sectors, for the given device.
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ *
+ * @returns The spec. 2.0 defined minimum write size
+ */
+uint32_t nvm_dev_get_ws_min(const struct nvm_dev *dev);
+
+/**
  * Allocate a buffer aligned to match the given geometry
  *
  * @note
