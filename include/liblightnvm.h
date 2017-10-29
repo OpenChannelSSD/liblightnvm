@@ -118,12 +118,17 @@ enum nvm_meta_mode {
  * Enumeration of device bounds
  */
 enum nvm_bounds {
-	NVM_BOUNDS_CHANNEL = 1,
-	NVM_BOUNDS_LUN = 2,
-	NVM_BOUNDS_PLANE = 4,
-	NVM_BOUNDS_BLOCK = 8,
-	NVM_BOUNDS_PAGE = 16,
-	NVM_BOUNDS_SECTOR = 32
+	NVM_BOUNDS_CHANNEL	= 0x1,
+	NVM_BOUNDS_LUN		= 0x1 << 1,
+	NVM_BOUNDS_PLANE	= 0x1 << 2,
+	NVM_BOUNDS_BLOCK	= 0x1 << 3,
+	NVM_BOUNDS_PAGE		= 0x1 << 4,
+	NVM_BOUNDS_SECTOR	= 0x1 << 5,
+
+	NVM_BOUNDS_PUGRP	= 0x1 << 6,
+	NVM_BOUNDS_PUNIT	= 0x1 << 7,
+	NVM_BOUNDS_CHUNK	= 0x1 << 8,
+	NVM_BOUNDS_SECTR	= 0x1 << 9
 };
 
 /**
