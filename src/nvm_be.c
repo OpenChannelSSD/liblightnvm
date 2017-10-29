@@ -324,34 +324,44 @@ int nvm_be_populate_derived(struct nvm_dev *dev)
 {
 	struct nvm_geo *geo = &dev->geo;
 
-	geo->nsectors = geo->page_nbytes / geo->sector_nbytes;
+	switch(dev->verid) {
+	case NVM_SPEC_VERID_12:
+	case NVM_SPEC_VERID_13:
+		geo->nsectors = geo->page_nbytes / geo->sector_nbytes;
 
-	/* Derive total number of bytes on device */
-	geo->tbytes = geo->nchannels * geo->nluns * \
-			geo->nplanes * geo->nblocks * \
-			geo->npages * geo->nsectors * \
-			geo->sector_nbytes;
+		/* Derive total number of bytes on device */
+		geo->tbytes = geo->nchannels * geo->nluns * \
+				geo->nplanes * geo->nblocks * \
+				geo->npages * geo->nsectors * \
+				geo->sector_nbytes;
 
-	/* Derive the sector-shift-width for LBA mapping */
-	dev->ssw = _ilog2(geo->sector_nbytes);
+		/* Derive the sector-shift-width for LBA mapping */
+		dev->ssw = _ilog2(geo->sector_nbytes);
 
-	/* Derive a default plane mode */
-	switch(geo->nplanes) {
-	case 4:
-		dev->pmode = NVM_FLAG_PMODE_QUAD;
+		/* Derive a default plane mode */
+		switch(geo->nplanes) {
+		case 4:
+			dev->pmode = NVM_FLAG_PMODE_QUAD;
+			break;
+		case 2:
+			dev->pmode = NVM_FLAG_PMODE_DUAL;
+			break;
+		case 1:
+			dev->pmode = NVM_FLAG_PMODE_SNGL;
+			break;
+
+		default:
+			NVM_DEBUG("FAILED: invalid geo->nplanes: %lu",
+				  geo->nplanes);
+			errno = EINVAL;
+			return -1;
+		}
 		break;
-	case 2:
-		dev->pmode = NVM_FLAG_PMODE_DUAL;
-		break;
-	case 1:
-		dev->pmode = NVM_FLAG_PMODE_SNGL;
-		break;
 
-	default:
-		NVM_DEBUG("FAILED: invalid geo->>nplanes: %lu",
-			  geo->nplanes);
-		errno = EINVAL;
-		return -1;
+	case NVM_SPEC_VERID_20:
+		geo->tbytes = geo->npugrp * geo->npunit * geo->nchunk * \
+			      geo->nsectr * geo->nbytes;
+		break;
 	}
 
 	dev->erase_naddrs_max = NVM_NADDR_MAX;
