@@ -205,6 +205,7 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 		idfy->s.verid = NVM_SPEC_VERID_13;
 	}
 
+	dev->idfy = *idfy;
 	dev->verid = idfy->s.verid;
 	geo->verid = idfy->s.verid;
 
