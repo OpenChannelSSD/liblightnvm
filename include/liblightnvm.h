@@ -175,7 +175,7 @@ struct nvm_addr {
 			uint64_t pugrp	: 8;	///< Parallel Unit Group (PUG)
 		} l;
 
-		uint64_t ppa;				///< Address as ppa
+		uint64_t ppa;			///< Address as raw value
 	};
 };
 
