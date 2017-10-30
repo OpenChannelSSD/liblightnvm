@@ -83,7 +83,6 @@ struct nvm_vblk* nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addrs[],
 	verid = nvm_dev_get_verid(dev);
 	switch (verid) {
 	case NVM_SPEC_VERID_12:
-	case NVM_SPEC_VERID_13:
 		vblk->nbytes = vblk->nblks * geo->nplanes * geo->npages *
 			       geo->nsectors * geo->sector_nbytes;
 		break;
@@ -116,7 +115,6 @@ struct nvm_vblk *nvm_vblk_alloc_line(struct nvm_dev *dev, int ch_bgn,
 
 	switch (verid) {
 	case NVM_SPEC_VERID_12:
-	case NVM_SPEC_VERID_13:
 		for (int lun = lun_bgn; lun <= lun_end; ++lun) {
 			for (int ch = ch_bgn; ch <= ch_end; ++ch) {
 				vblk->blks[vblk->nblks].ppa = 0;
@@ -255,7 +253,6 @@ ssize_t nvm_vblk_erase(struct nvm_vblk *vblk)
 
 	switch (verid) {
 	case NVM_SPEC_VERID_12:
-	case NVM_SPEC_VERID_13:
 		return vblk_erase_s12(vblk);
 
 	case NVM_SPEC_VERID_20:
@@ -506,7 +503,6 @@ ssize_t nvm_vblk_pwrite(struct nvm_vblk *vblk, const void *buf, size_t count,
 
 	switch (verid) {
 	case NVM_SPEC_VERID_12:
-	case NVM_SPEC_VERID_13:
 		return vblk_pwrite_s12(vblk, buf, count, offset);
 
 	case NVM_SPEC_VERID_20:
@@ -672,7 +668,6 @@ ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 
 	switch (verid) {
 	case NVM_SPEC_VERID_12:
-	case NVM_SPEC_VERID_13:
 		return vblk_pread_s12(vblk, buf, count, offset);
 
 	case NVM_SPEC_VERID_20:
