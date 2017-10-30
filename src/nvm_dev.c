@@ -99,7 +99,6 @@ void nvm_dev_pr(const struct nvm_dev *dev)
 
 	switch(nvm_dev_get_verid(dev)) {
 	case NVM_SPEC_VERID_12:
-	case NVM_SPEC_VERID_13:
 		printf("dev_"); nvm_geo_pr(&dev->geo);
 		printf("dev_"); nvm_spec_ppaf_nand_pr(&dev->ppaf);
 		printf("dev_"); nvm_spec_ppaf_nand_mask_pr(&dev->mask);
