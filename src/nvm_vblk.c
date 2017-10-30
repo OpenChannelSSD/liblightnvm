@@ -167,11 +167,11 @@ void nvm_vblk_free(struct nvm_vblk *vblk)
 
 static inline int cmd_nblks(int nblks, int cmd_nblks_max)
 {
-	int cmd_nblks = cmd_nblks_max;
+	int count = cmd_nblks_max;
 
-	while (nblks % cmd_nblks && cmd_nblks > 1) --cmd_nblks;
+	while (nblks % count && count > 1) --count;
 
-	return cmd_nblks;
+	return count;
 }
 
 static inline ssize_t vblk_erase_s12(struct nvm_vblk *vblk)
