@@ -113,7 +113,6 @@ enum nvm_spec_opcodes {
  */
 enum nvm_spec_verid {
 	NVM_SPEC_VERID_12 = 0x1,
-	NVM_SPEC_VERID_13 = 0x2 + (0x1 << 7),
 	NVM_SPEC_VERID_20 = 0x2,
 };
 
