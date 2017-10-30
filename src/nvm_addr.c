@@ -84,7 +84,6 @@ void nvm_addr_print(struct nvm_addr *addr, unsigned int naddrs, const struct nvm
 		printf("  - ");
 		switch(nvm_dev_get_verid(dev)) {
 			case NVM_SPEC_VERID_12:
-			case NVM_SPEC_VERID_13:
 				nvm_addr_pr(addr[i]);
 				break;
 
@@ -105,7 +104,6 @@ int nvm_addr_check(struct nvm_addr addr, const struct nvm_dev *dev)
 
 	switch(dev->verid) {
 	case NVM_SPEC_VERID_12:
-	case NVM_SPEC_VERID_13:
 		if (addr.g.ch >= geo->nchannels)
 			exceeded |= NVM_BOUNDS_CHANNEL;
 		if (addr.g.lun >= geo->nluns)
