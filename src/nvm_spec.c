@@ -248,29 +248,29 @@ static void nvm_spec_idfy_s20_pr(const struct nvm_spec_idfy *identify)
 	nvm_spec_perf_pr(&idfy.perf);
 }
 
-void nvm_spec_idfy_pr(const struct nvm_spec_idfy *idfy)
+void nvm_spec_idfy_pr(const struct nvm_spec_idfy *idfy, int quirks)
 {
 	if (!idfy) {
 		printf("nvm_spec_idfy: ~\n");
 		return;
 	}
 
-	switch(idfy->s.verid) {
-	case NVM_SPEC_VERID_12:
-		nvm_spec_idfy_s12_pr(idfy);
-		break;
-
-	case NVM_SPEC_VERID_13:
+	if (quirks & NVM_QUIRK_IDFY_PRE2) {
 		nvm_spec_idfy_s13_pr(idfy);
-		break;
+	} else {
+		switch(idfy->s.verid) {
+		case NVM_SPEC_VERID_12:
+			nvm_spec_idfy_s12_pr(idfy);
+			break;
 
-	case NVM_SPEC_VERID_20:
-		nvm_spec_idfy_s20_pr(idfy);
-		break;
+		case NVM_SPEC_VERID_20:
+			nvm_spec_idfy_s20_pr(idfy);
+			break;
 
-	default:
-		printf("nvm_spec_idfy:\n");
-		printf("  verid("NVM_I8_FMT"),\n", NVM_I8_TO_STR(idfy->s.verid));
+		default:
+			printf("nvm_spec_idfy:\n");
+			printf("  verid("NVM_I8_FMT"),\n", NVM_I8_TO_STR(idfy->s.verid));
+		}
 	}
 }
 
