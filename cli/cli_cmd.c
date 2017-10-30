@@ -253,7 +253,6 @@ static int cmd_copy(struct nvm_cli *cli)
 	for (size_t sectr = 0; sectr < nsectr; sectr += WS_MIN) {
 		struct nvm_addr src[WS_MIN];
 		struct nvm_addr dst[WS_MIN];
-		int err;
 
 		for (size_t idx = 0; idx < WS_MIN; ++idx) {
 			src[idx].ppa = chunk_src.ppa;
