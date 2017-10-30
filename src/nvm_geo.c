@@ -42,7 +42,6 @@ void nvm_geo_pr(const struct nvm_geo *geo)
 	printf("  verid: 0x%02X\n", geo->verid);
 	switch (geo->verid) {
 	case NVM_SPEC_VERID_12:
-	case NVM_SPEC_VERID_13:
 		printf("  nchannels: %zu\n", geo->nchannels);
 		printf("  nluns: %zu\n", geo->nluns);
 		printf("  nplanes: %zu\n", geo->nplanes);
