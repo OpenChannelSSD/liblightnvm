@@ -45,7 +45,6 @@ struct nvm_vblk* nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addrs[],
 {
 	struct nvm_vblk *vblk;
 	const struct nvm_geo *geo;
-	int verid;
 	
 	if (naddrs > 128) {
 		errno = EINVAL;
@@ -80,8 +79,7 @@ struct nvm_vblk* nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addrs[],
 	vblk->pos_write = 0;
 	vblk->pos_read = 0;
 
-	verid = nvm_dev_get_verid(dev);
-	switch (verid) {
+	switch (nvm_dev_get_verid(dev)) {
 	case NVM_SPEC_VERID_12:
 		vblk->nbytes = vblk->nblks * geo->nplanes * geo->npages *
 			       geo->nsectors * geo->sector_nbytes;
@@ -92,7 +90,7 @@ struct nvm_vblk* nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addrs[],
 		break;
 
 	default:
-		NVM_DEBUG("FAILED: unsupported verid: %d", verid);
+		NVM_DEBUG("FAILED: unsupported verid");
 		errno = ENOSYS;
 		free(vblk);
 		return NULL;
@@ -169,11 +167,11 @@ void nvm_vblk_free(struct nvm_vblk *vblk)
 
 static inline int cmd_nblks(int nblks, int cmd_nblks_max)
 {
-	int cmd_nblks = cmd_nblks_max;
+	int count = cmd_nblks_max;
 
-	while (nblks % cmd_nblks && cmd_nblks > 1) --cmd_nblks;
+	while (nblks % count && count > 1) --count;
 
-	return cmd_nblks;
+	return count;
 }
 
 static inline ssize_t vblk_erase_s12(struct nvm_vblk *vblk)
