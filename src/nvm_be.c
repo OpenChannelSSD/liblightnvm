@@ -204,7 +204,7 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 		idfy->s20.lbaf.chunk &&
 		idfy->s20.lbaf.sectr)) {
 		idfy->s.verid = NVM_SPEC_VERID_12;
-		dev->quirks |= NVM_QUIRK_IDFY_PRE2;
+		dev->quirks |= NVM_QUIRK_SEMI20;
 	}
 
 	dev->idfy = *idfy;
@@ -212,7 +212,7 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 
 	switch (idfy->s.verid) {
 	case NVM_SPEC_VERID_12:
-		if (dev->quirks & NVM_QUIRK_IDFY_PRE2) {
+		if (dev->quirks & NVM_QUIRK_SEMI20) {
 			// Geometry
 			geo->sector_nbytes = idfy->s13.lgeo.nbytes;
 			geo->meta_nbytes = idfy->s13.lgeo.nbytes_oob;
@@ -296,14 +296,18 @@ int nvm_be_populate_quirks(struct nvm_dev *dev, const char serial[])
 	if (!strncmp("CX8800ES", serial, 8 < serial_len ? 8 : serial_len)) {
 		dev->quirks |= NVM_QUIRK_PMODE_ERASE_RUNROLL;
 
-		switch(dev->verid) {
-		case NVM_SPEC_VERID_12:
-			dev->quirks |= NVM_QUIRK_OOB_2LRG;
-			break;
-
-		case NVM_SPEC_VERID_20:
+		if (dev->quirks & NVM_QUIRK_SEMI20) {
 			dev->quirks |= NVM_QUIRK_OOB_READ_1ST4BYTES_NULL;
-			break;
+		} else {
+			switch(dev->verid) {
+			case NVM_SPEC_VERID_12:
+				dev->quirks |= NVM_QUIRK_OOB_2LRG;
+				break;
+
+			case NVM_SPEC_VERID_20:
+				dev->quirks |= NVM_QUIRK_OOB_READ_1ST4BYTES_NULL;
+				break;
+			}
 		}
 
 	} else {
