@@ -282,7 +282,7 @@ struct nvm_spec_idfy {
 	};
 };
 
-void nvm_spec_idfy_pr(const struct nvm_spec_idfy *idfy);
+void nvm_spec_idfy_pr(const struct nvm_spec_idfy *idfy, int quirks);
 
 struct nvm_spec_bbt {
 	uint8_t		tblid[4];
