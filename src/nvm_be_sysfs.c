@@ -307,6 +307,9 @@ struct nvm_dev *nvm_be_sysfs_open(const char *dev_path, int flags)
 	struct nvm_dev *dev;
 	char nvme_name[NVM_DEV_PATH_LEN];
 	int err;
+
+	errno = ENOSYS;
+	return NULL;
 	
 	if (strlen(dev_path) > NVM_DEV_PATH_LEN) {
 		NVM_DEBUG("FAILED: Device path too long\n");
