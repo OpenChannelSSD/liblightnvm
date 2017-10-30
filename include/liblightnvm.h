@@ -80,7 +80,7 @@ enum nvm_quirks {
 	NVM_QUIRK_NSID_BY_NAMECONV		= 0x1 << 1,
 	NVM_QUIRK_OOB_READ_1ST4BYTES_NULL	= 0x1 << 2,
 	NVM_QUIRK_OOB_2LRG			= 0x1 << 3,
-	NVM_QUIRK_IDFY_PRE2			= 0x1 << 4
+	NVM_QUIRK_SEMI20			= 0x1 << 4
 };
 
 /**
