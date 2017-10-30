@@ -255,7 +255,7 @@ void nvm_spec_idfy_pr(const struct nvm_spec_idfy *idfy, int quirks)
 		return;
 	}
 
-	if (quirks & NVM_QUIRK_IDFY_PRE2) {
+	if (quirks & NVM_QUIRK_SEMI20) {
 		nvm_spec_idfy_s13_pr(idfy);
 	} else {
 		switch(idfy->s.verid) {
