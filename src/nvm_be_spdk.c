@@ -312,7 +312,6 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 	cmd.nsid = state->nsid;
 	switch (dev->verid) {
 	case NVM_SPEC_VERID_12:
-	case NVM_SPEC_VERID_13:
 		cmd.s12.naddrs = naddrs - 1;
 		cmd.s12.control = flags;
 		break;
