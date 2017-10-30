@@ -15,7 +15,7 @@ static int cmd_idfy(struct nvm_cli *cli)
 	if (!idfy)
 		return -1;
 
-	nvm_spec_idfy_pr(idfy);
+	nvm_spec_idfy_pr(idfy, nvm_dev_get_quirks(dev));
 
 	nvm_buf_free(idfy);
 
