@@ -269,7 +269,10 @@ void nvm_spec_idfy_pr(const struct nvm_spec_idfy *idfy, int quirks)
 
 		default:
 			printf("nvm_spec_idfy:\n");
-			printf("  verid("NVM_I8_FMT"),\n", NVM_I8_TO_STR(idfy->s.verid));
+			printf("  verid: "NVM_I8_FMT",\n",
+			       NVM_I8_TO_STR(idfy->s.verid));
+			printf("  verid_minor: "NVM_I8_FMT",\n",
+			       NVM_I8_TO_STR(idfy->s.verid_minor));
 		}
 	}
 }
