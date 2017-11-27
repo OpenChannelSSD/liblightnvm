@@ -277,7 +277,8 @@ struct nvm_spec_idfy {
 
 		struct {
 			uint8_t verid;
-			uint8_t rsvd[4095];
+			uint8_t verid_minor;
+			uint8_t rsvd[4094];
 		} s;	///< Shared between the revisions
 	};
 };
