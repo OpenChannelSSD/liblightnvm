@@ -196,6 +196,10 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 		return -1; // NOTE: Propagate errno
 	}
 
+	// Handle IDFY reporting 3, mark as 2.0
+	if (idfy->s.verid == 0x3)
+		idfy->s.verid = NVM_SPEC_VERID_20;
+
 	// Handle IDFY (draft / pre 2.0) reporting 2.0, mark as 1.2 and update
 	// quirk-mask
 	if (idfy->s.verid == NVM_SPEC_VERID_20 && !(
@@ -206,6 +210,10 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 		idfy->s.verid = NVM_SPEC_VERID_12;
 		dev->quirks |= NVM_QUIRK_SEMI20;
 	}
+
+#ifdef NVM_DEBUG_ENABLED
+	nvm_spec_idfy_pr(idfy, 0x0);
+#endif
 
 	dev->idfy = *idfy;
 	dev->verid = geo->verid = idfy->s.verid;
