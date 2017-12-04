@@ -82,9 +82,8 @@ struct nvm_spec_idfy *nvm_be_nosys_idfy(struct nvm_dev *NVM_UNUSED(dev),
 
 		
 struct nvm_spec_rprt *nvm_be_nosys_rprt(struct nvm_dev *NVM_UNUSED(dev),
-					struct nvm_addr NVM_UNUSED(addr),
-					uint16_t NVM_UNUSED(naddrs),
-					int NVM_UNUSED(flags),
+					struct nvm_addr *NVM_UNUSED(addr),
+					int NVM_UNUSED(opt),
 				        struct nvm_ret *NVM_UNUSED(ret))
 {
 	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
