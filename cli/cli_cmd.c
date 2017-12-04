@@ -25,18 +25,15 @@ static int cmd_idfy(struct nvm_cli *cli)
 static int cmd_rprt(struct nvm_cli *cli)
 {
 	struct nvm_dev *dev = cli->args.dev;
-
-	struct nvm_addr addr = cli->args.addrs[0];
-	uint16_t naddrs = cli->args.dec_vals[0];
-	uint32_t opts = cli->args.hex_vals[0];
+	struct nvm_addr *addr = cli->args.naddrs ? &cli->args.addrs[0]: NULL;
 
 	struct nvm_spec_rprt *rprt = NULL;
 
-	nvm_cli_info_pr("nvm_cmd_rprt");
-	nvm_cli_info_pr("addr: 0x%016X, naddrs: %08u, opts: 0x%04X",
-			addr, naddrs, opts);
+	nvm_cli_info_pr("nvm_cmd_rprt: %p", addr);
+	if (addr)
+		nvm_addr_pr(*addr);
 
-	rprt = nvm_cmd_rprt(dev, addr, naddrs, opts, NULL);
+	rprt = nvm_cmd_rprt(dev, addr, 0x0, NULL);
 	if (!rprt)
 		return -1;
 
@@ -284,7 +281,8 @@ static int cmd_copy(struct nvm_cli *cli)
 /* Define commands */
 static struct nvm_cli_cmd cmds[] = {
 	{"idfy",	cmd_idfy,	NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_DEFAULT},
-	{"rprt",	cmd_rprt,	NVM_CLI_ARG_ADDR_CHK_VAL_HEXVAL, NVM_CLI_OPT_DEFAULT},
+	{"rprt_all",	cmd_rprt,	NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_DEFAULT},
+	{"rprt_lun",	cmd_rprt,	NVM_CLI_ARG_ADDR_LUN, NVM_CLI_OPT_DEFAULT},
 	{"gbbt",	cmd_gbbt,	NVM_CLI_ARG_ADDR_LUN, NVM_CLI_OPT_DEFAULT},
 	{"sbbt",	cmd_sbbt,	NVM_CLI_ARG_ADDR_BLK_HEXVAL, NVM_CLI_OPT_DEFAULT},
 	{"erase",	cmd_erase,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
