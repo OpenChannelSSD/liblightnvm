@@ -57,8 +57,8 @@ struct nvm_be {
 	/**
 	 * Execute report chunk command
 	 */
-	struct nvm_spec_rprt *(*rprt)(struct nvm_dev *, struct nvm_addr,
-				      uint16_t, int, struct nvm_ret *);
+	struct nvm_spec_rprt *(*rprt)(struct nvm_dev *, struct nvm_addr *, int,
+				      struct nvm_ret *);
 
 	/**
 	 * Execute get bad-block-table command
@@ -109,8 +109,8 @@ struct nvm_spec_idfy *nvm_be_nosys_idfy(struct nvm_dev *dev,
 					struct nvm_ret *ret);
 
 struct nvm_spec_rprt *nvm_be_nosys_rprt(struct nvm_dev *dev,
-					struct nvm_addr addr, uint16_t naddrs,
-					int flags, struct nvm_ret *ret);
+					struct nvm_addr *addr, int opt,
+					struct nvm_ret *ret);
 
 struct nvm_spec_bbt *nvm_be_nosys_gbbt(struct nvm_dev *dev,
 				       struct nvm_addr addr,
