@@ -359,57 +359,72 @@ void nvm_spec_bbt_pr(const struct nvm_spec_bbt *bbt);
 
 struct nvm_nvme_cmd {
 	/* cdw 00 */
-	uint16_t opcode	:  8;			/* opcode */
-	uint16_t fuse	:  2;			/* fused operation */
+	uint16_t opcode	:  8;			///< opcode
+	uint16_t fuse	:  2;			///< fused operation
 	uint16_t rsvd	:  4;
 	uint16_t psdt	:  2;
-	uint16_t cid;				/* command identifier */
+	uint16_t cid;				///< command identifier
 
 	/* cdw 01 */
-	uint32_t nsid;				/* namespace identifier */
+	uint32_t nsid;				///< namespace identifier
 
 	uint32_t cdw02;
 	uint32_t cdw03;
 
 	/* cdw 04-05 */
-	uint64_t mptr;				/* MPTR -- metadata pointer */
+	uint64_t mptr;				///< MPTR -- metadata pointer
 
-	/* cdw 06-09: */			/* DPTR -- data pointer */
+	/* cdw 06-09: */			///< DPTR -- data pointer
 	union {
 		struct {
-			uint64_t prp1;		/* PRP entry 1 */
-			uint64_t prp2;		/* PRP entry 2 */
+			uint64_t prp1;		///< PRP entry 1
+			uint64_t prp2;		///< PRP entry 2
 		} prp;
 	} dptr;
 
 	/* cdw 10-11 */
-	uint64_t addrs;				/* PPA / LBA list */
+	union {
+		uint64_t addrs;			///< PPA / LBA list
+
+		struct {
+			uint32_t lid	: 8;	///< Log Page Identifier
+			uint32_t lsp	: 4;	///< Log Specific Field
+			uint32_t rsvd10	: 3;
+			uint32_t rae	: 1;	///< Retain Async. Event
+			uint32_t numdl	: 16;
+
+			uint32_t numdu	: 16;
+			uint32_t rsvd11	: 16;
+		} rprt;				///< RPRT accessor
+	};
 
 	/* cdw 12 */
 	union {
 		struct {
-			uint32_t naddrs	: 16;	/* # addrs. in PPA list */
-			uint32_t control: 16;	/* PMODE, Scrabler, etc. */
+			uint32_t naddrs	: 16;	///< # addrs. in PPA list
+			uint32_t control: 16;	///< PMODE, Scrabler, etc.
 		} s12;
 
 		struct {
-			uint32_t naddrs	: 6;	/* # addrs. in LBA list */
+			uint32_t naddrs	: 6;	///< # addrs. in LBA list
 			uint32_t rsvd	: 24;
-			uint32_t fua	: 1;	/* Force unit access */
-			uint32_t lr	: 1;	/* Limited retry */
+			uint32_t fua	: 1;	///< Force unit access
+			uint32_t lr	: 1;	///< Limited retry
 		} ewrc;
 
-		struct {
-			uint32_t naddrs	: 16;	/* # chunks to report */
-			uint32_t ro	: 4;	/* Reporting options */
-			uint32_t rsvd	: 12;	/* Reporting options */
-		} rprt;
+		uint32_t lpol;			///< Log Page Offset Lower
+
+		uint32_t cdw12;			///< Accessor for arbitrary use
 	};
 
-	uint32_t cdw13;
+	union {
+		uint32_t lpou;			///< Log Page Offset Upper
+
+		uint32_t cdw13;			///< Accessor for arbitrary use
+	};
 
 	/* cdw 14-15 */
-	uint64_t addrs_dst;			/* destination addresses */
+	uint64_t addrs_dst;			///< destination addresses
 };
 static_assert(sizeof(struct nvm_nvme_cmd) == 64, "Incorrect size");
 
