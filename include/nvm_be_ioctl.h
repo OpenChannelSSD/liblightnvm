@@ -180,8 +180,8 @@ struct nvm_spec_idfy *nvm_be_ioctl_idfy(struct nvm_dev *dev,
 					struct nvm_ret *ret);
 
 struct nvm_spec_rprt *nvm_be_ioctl_rprt(struct nvm_dev *dev,
-					struct nvm_addr addr, uint16_t naddrs,
-					int opts, struct nvm_ret *ret);
+					struct nvm_addr *addr, int opt,
+					struct nvm_ret *ret);
 
 struct nvm_spec_bbt *nvm_be_ioctl_gbbt(struct nvm_dev *dev,
 				       struct nvm_addr addr,
