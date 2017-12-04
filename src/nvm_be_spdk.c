@@ -266,7 +266,7 @@ static struct nvm_spec_bbt *nvm_be_spdk_gbbt(struct nvm_dev *dev,
 	}
 	memset(bbt, 0, sizeof(*bbt));
 
-	cmd.opcode = NVM_OPC_STATE;
+	cmd.opcode = NVM_S12_OPC_GET_BBT;
 	cmd.nsid = state->nsid;
 	cmd.addrs = nvm_addr_gen2dev(dev, addr);
 
