@@ -162,17 +162,67 @@ static struct nvm_spec_idfy *nvm_be_spdk_idfy(struct nvm_dev *dev,
 	return idfy;
 }
 
+static int nvme_get_log_page(struct nvm_dev *dev, void *buf, uint32_t ndw,
+			     uint64_t lpo, int opt, struct nvm_ret *ret)
+{
+	struct nvm_nvme_cmd cmd = { 0 };
+
+	if (lpo & 0x3) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	cmd.opcode = NVM_OPC_RPRT;
+	cmd.nsid = nvm_dev_get_nsid(dev);
+	cmd.rprt.lid = 0xCA;
+	cmd.rprt.lsp = opt;
+	cmd.rprt.numdu = ndw >> 16;
+	cmd.rprt.numdl = ndw & 0xffff;
+	cmd.lpou = lpo >> 32;
+	cmd.lpol = lpo & 0xfffffff;
+
+	if (vam_execute(dev, &cmd, buf, ndw * 4, ret)) {
+		NVM_DEBUG("FAILED: vam_execute");
+		return -1;
+	}
+
+	return 0;
+}
+
+/**
+ * @returns the log page offset (lpo) for the given addr
+ */
+static uint64_t nvm_addr_to_lpo(struct nvm_dev *dev, struct nvm_addr addr)
+{
+	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
+
+	uint64_t idx = 0;
+	
+	idx += addr.l.pugrp * geo->npunit * geo->nchunk;
+	idx += addr.l.punit * geo->nchunk;
+	idx += addr.l.chunk;
+
+	return idx * sizeof(struct nvm_spec_rprt_descr);
+}
+
 static struct nvm_spec_rprt *nvm_be_spdk_rprt(struct nvm_dev *dev,
-					      struct nvm_addr addr,
-					      uint16_t naddrs,
-					      int opts,
+					      struct nvm_addr *addr,
+					      int NVM_UNUSED(opt),
 					      struct nvm_ret *ret)
 {
-	struct state *state = dev->be_state;
+	const size_t DESCR_NBYTES = sizeof(struct nvm_spec_rprt_descr);
+	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
+	size_t lpo_off = addr ? nvm_addr_to_lpo(dev, *addr) : 0;
 	struct nvm_spec_rprt *rprt = NULL;
-	const size_t rprt_len = sizeof(*rprt) + sizeof(struct nvm_spec_rprt_descr) * naddrs;
+	size_t rprt_len, ndescr;
 
-	struct nvm_nvme_cmd cmd = { 0 };
+	if (NVM_SPEC_VERID_20 != dev->verid) {
+		errno = EINVAL;
+		return NULL;
+	}
+
+	ndescr = addr ? geo->nchunk : geo->nchunk * geo->npunit * geo->npugrp;
+	rprt_len = ndescr * DESCR_NBYTES + sizeof(rprt->nchunks);
 
 	rprt = nvm_buf_alloca(NVM_BE_SPDK_ALIGN, rprt_len);
 	if (!rprt) {
@@ -180,17 +230,17 @@ static struct nvm_spec_rprt *nvm_be_spdk_rprt(struct nvm_dev *dev,
 		return NULL;
 	}
 	memset(rprt, 0, rprt_len);
+	rprt->nchunks = ndescr;
 
-	cmd.opcode = NVM_OPC_STATE;
-	cmd.nsid = state->nsid;
-	cmd.addrs = nvm_addr_gen2dev(dev, addr);
-	cmd.rprt.naddrs = naddrs - 1;
-	cmd.rprt.ro = opts;
+	for (size_t i = 0; i < ndescr; i += 0x1000) {
+		const size_t count = NVM_MIN(0x1000, ndescr - i);
 
-	if (vam_execute(dev, &cmd, rprt, rprt_len, ret)) {
-		NVM_DEBUG("FAILED: vam_execute");
-		nvm_buf_free(rprt);
-		return NULL;
+		if (nvme_get_log_page(dev, &rprt->descr[i],
+				      (count * DESCR_NBYTES) / 4 - 1,
+				      lpo_off + i * DESCR_NBYTES, 0x0, ret)) {
+			free(rprt);
+			return NULL;
+		}
 	}
 
 	return rprt;
