@@ -310,7 +310,7 @@ void nvm_spec_rprt_pr(const struct nvm_spec_rprt *rprt)
 	}
 
 	printf("rprt:\n");
-	printf("  nchunks: %lu\n", rprt->nchunks);
+	printf("  nchunks: %u\n", rprt->nchunks);
 
 	printf("rprt_descr:");
 	if (!rprt->nchunks) {
@@ -322,14 +322,14 @@ void nvm_spec_rprt_pr(const struct nvm_spec_rprt *rprt)
 	for (uint64_t i = 0; i < rprt->nchunks; ++i) {
 		const struct nvm_spec_rprt_descr *descr = &rprt->descr[i];
 
-		printf("  - {");
-		printf("addr: 0x%016lX, ", descr->chunk_addr);
-		printf("state: 0x%02X, ", descr->chunk_state);
-		printf("type: 0x%02X, ", descr->chunk_type);
-		printf("limits: 0x%02X, ", descr->chunk_limits);
-		printf("naddrs: %04lu, ", descr->chunk_naddrs);
-		printf("wptr: %016lu ", descr->chunk_wptr);
-		printf("}\n");
+		printf("  - { ");
+		printf("slba: 0x%016lX, ", descr->chunk_addr);
+		printf("cnlb: %04lu, ", descr->chunk_naddrs);
+		printf("wp: %016lu, ", descr->chunk_wptr);
+		printf("cs: 0x%02X, ", descr->chunk_state);
+		printf("ct: 0x%02X, ", descr->chunk_type);
+		printf("wli: %03u", descr->chunk_wli);
+		printf(" }\n");
 	}
 }
 
