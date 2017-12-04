@@ -319,12 +319,11 @@ enum nvm_spec_rprt_opts {
 struct nvm_spec_rprt_descr {
 	uint8_t chunk_state;
 	uint8_t chunk_type;
-	uint8_t chunk_limits;
+	uint8_t chunk_wli;
 	uint8_t rsvd1[5];
 	uint64_t chunk_addr;
 	uint64_t chunk_naddrs;
 	uint64_t chunk_wptr;
-	uint8_t rsvd2[32];
 };
 
 /**
