@@ -20,6 +20,10 @@ do
 		echo "## Running nvm_dev info $NVM_DEV"
 		sudo nvm_dev info $NVM_DEV
 		;;
+	rprt)
+		echo "## Running nvm_cmd rprt $NVM_DEV"
+		sudo nvm_cmd rprt $NVM_DEV
+		;;
 	bbt_get)
 		echo "## Running nvm_bbt get $NVM_DEV"
 		sudo valgrind nvm_bbt get $NVM_DEV 0 0
