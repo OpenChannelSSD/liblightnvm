@@ -108,6 +108,7 @@ enum nvm_spec_opcodes {
 
 	NVM_OPC_SFEAT = 0x09,
 	NVM_OPC_GFEAT = 0x0A,
+
 	NVM_OPC_ERASE = 0x90,
 	NVM_OPC_WRITE = 0x91,
 	NVM_OPC_READ = 0x92,

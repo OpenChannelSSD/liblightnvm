@@ -181,7 +181,7 @@ static int nvme_get_log_page(struct nvm_dev *dev, void *buf, uint32_t ndw,
 	cmd.lpou = lpo >> 32;
 	cmd.lpol = lpo & 0xfffffff;
 
-	if (vam_execute(dev, &cmd, buf, ndw * 4, ret)) {
+	if (vam_execute(dev, &cmd, buf, (ndw + 1) * 4, ret)) {
 		NVM_DEBUG("FAILED: vam_execute");
 		return -1;
 	}
