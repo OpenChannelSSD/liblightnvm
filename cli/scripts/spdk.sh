@@ -4,7 +4,7 @@ NVM_DEV="traddr:0000:01:00.0"
 #NVM_DEV="traddr:0000:02:00.0"
 #NVM_DEV="/dev/nvme0n1"
 
-select TASK in unbind build idf bbt_get bbt_set blk01_read blk01_ewr blk02_ewr blk04_ewr blk08_ewr blk128_ewr;
+select TASK in unbind build idf rprt bbt_get bbt_set blk01_read blk01_ewr blk02_ewr blk04_ewr blk08_ewr blk128_ewr;
 do
 	case $TASK in
 	unbind)
