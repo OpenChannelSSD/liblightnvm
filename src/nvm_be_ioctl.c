@@ -194,39 +194,6 @@ struct nvm_spec_idfy *nvm_be_ioctl_idfy(struct nvm_dev *dev,
 	return idfy;
 }
 
-struct nvm_spec_rprt *nvm_be_ioctl_rprt(struct nvm_dev *dev,
-					struct nvm_addr NVM_UNUSED(addr),
-					uint16_t NVM_UNUSED(naddrs),
-					int NVM_UNUSED(opts),
-					struct nvm_ret *ret)
-{
-	struct nvm_cmd cmd = {.cdw={0}};
-	struct nvm_spec_rprt *rprt = NULL;
-	const int rprt_len = 1474 * 8 + 8;
-	int err;
-
-	rprt = nvm_buf_alloca(0x1000, rprt_len);
-	if (!rprt) {
-		errno = ENOMEM;
-		return NULL;
-	}
-	memset(rprt, 0, sizeof(char) * rprt_len);
-
-	cmd.vadmin.opcode = NVM_S20_OPC_RPT; // Setup command
-	cmd.vadmin.addr = (uint64_t)rprt;
-	cmd.vadmin.data_len = rprt_len;
-	cmd.vadmin.nppas = 0;
-
-	err = ioctl_vam(dev, &cmd, ret);
-	if (err) {
-		NVM_DEBUG("FAILED: ioctl_vam");
-		nvm_buf_free(rprt);
-		return NULL; // NOTE: Propagate errno
-	}
-
-	return rprt;
-}
-
 struct nvm_spec_bbt *nvm_be_ioctl_gbbt(struct nvm_dev *dev,
 				       struct nvm_addr addr,
 				       struct nvm_ret *ret)
@@ -510,7 +477,7 @@ struct nvm_be nvm_be_ioctl = {
 	.close = nvm_be_ioctl_close,
 
 	.idfy = nvm_be_ioctl_idfy,
-	.rprt = nvm_be_ioctl_rprt,
+	.rprt = nvm_be_nosys_rprt,
 	.sbbt = nvm_be_ioctl_sbbt,
 	.gbbt = nvm_be_ioctl_gbbt,
 
