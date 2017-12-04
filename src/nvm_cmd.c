@@ -68,11 +68,10 @@ struct nvm_spec_idfy *nvm_cmd_idfy(struct nvm_dev *dev, struct nvm_ret *ret)
 	return dev->be->idfy(dev, ret);
 }
 
-struct nvm_spec_rprt *nvm_cmd_rprt(struct nvm_dev *dev, struct nvm_addr addr,
-				   uint16_t naddrs, int opts,
-				   struct nvm_ret *ret)
+struct nvm_spec_rprt *nvm_cmd_rprt(struct nvm_dev *dev, struct nvm_addr *addr,
+				   int opt, struct nvm_ret *ret)
 {
-	return dev->be->rprt(dev, addr, naddrs, opts, ret);
+	return dev->be->rprt(dev, addr, opt, ret);
 }
 
 struct nvm_spec_bbt *nvm_cmd_gbbt(struct nvm_dev *dev, struct nvm_addr addr,
