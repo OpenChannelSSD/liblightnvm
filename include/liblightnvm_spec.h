@@ -92,7 +92,9 @@ enum nvm_spec_12_opcodes {
 
 enum nvm_spec_20_opcodes {
 	NVM_S20_OPC_IDF = 0xE2,
-	NVM_S20_OPC_RPT = 0xF2,
+	NVM_S20_OPC_RPRT = 0x02,
+	NVM_S20_OPC_SFEAT = 0x09,
+	NVM_S20_OPC_GFEAT = 0x0A,
 	NVM_S20_OPC_ERASE = 0x90,
 	NVM_S20_OPC_WRITE = 0x91,
 	NVM_S20_OPC_READ = 0x92,
@@ -101,7 +103,11 @@ enum nvm_spec_20_opcodes {
 
 enum nvm_spec_opcodes {
 	NVM_OPC_IDFY = 0xE2,
-	NVM_OPC_STATE = 0xF2,
+
+	NVM_OPC_RPRT = 0x02,
+
+	NVM_OPC_SFEAT = 0x09,
+	NVM_OPC_GFEAT = 0x0A,
 	NVM_OPC_ERASE = 0x90,
 	NVM_OPC_WRITE = 0x91,
 	NVM_OPC_READ = 0x92,
@@ -299,15 +305,12 @@ struct nvm_spec_bbt {
 	uint8_t		blk[];
 };
 
-enum nvm_spec_rptr_opts {
-	NVM_RPRT_ALL = 0x0,
-	NVM_RPRT_FREE = 0x1,
-	NVM_RPRT_FULL = 0x2,
-	NVM_RPRT_OPEN = 0x3,
-	NVM_RPRT_BAD = 0x4,
-
-	NVM_RPRT_SEQW = 0xA,
-	NVM_RPRT_ARBW = 0xB,
+enum nvm_spec_rprt_opts {
+	NVM_RPRT_ALL		= 0x0,
+	NVM_RPRT_OFFLINE	= 0x1,
+	NVM_RPRT_CLOSED		= 0x1 << 1,
+	NVM_RPRT_OPEN		= 0x1 << 2,
+	NVM_RPRT_FREE		= 0x1 << 3,
 };
 
 /**
