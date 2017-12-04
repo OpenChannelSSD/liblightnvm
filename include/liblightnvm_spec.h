@@ -327,12 +327,10 @@ struct nvm_spec_rprt_descr {
 };
 
 /**
- * Representation of the chunk state table returned from the report chunk
- * command
+ * Representation of spec. 2.0 Get Log Page for chunk information
  */
 struct nvm_spec_rprt {
-	uint64_t nchunks;			///< #chunks in report
-	uint8_t rsvd[56];
+	uint32_t nchunks;			///< # Chunks in report
 	struct nvm_spec_rprt_descr descr[];	///< Chunk descriptor table
 };
 
