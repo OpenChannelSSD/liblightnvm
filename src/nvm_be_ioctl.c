@@ -62,6 +62,10 @@ struct nvm_be nvm_be_ioctl = {
 #include <nvm_utils.h>
 #include <nvm_debug.h>
 
+static inline int NVM_MIN(int x, int y) {
+	return x < y ? x : y;
+}
+
 /*
 static int ioctl_io(struct nvm_dev *dev, struct nvm_cmd *cmd,
 		    struct nvm_ret *ret)
@@ -195,33 +199,67 @@ struct nvm_spec_idfy *nvm_be_ioctl_idfy(struct nvm_dev *dev,
 }
 
 struct nvm_spec_rprt *nvm_be_ioctl_rprt(struct nvm_dev *dev,
-					struct nvm_addr NVM_UNUSED(addr),
-					uint16_t NVM_UNUSED(naddrs),
-					int NVM_UNUSED(opts),
-					struct nvm_ret *ret)
+					struct nvm_addr *addr, int NVM_UNUSED(opt),
+					struct nvm_ret *NVM_UNUSED(ret))
 {
-	struct nvm_cmd cmd = {.cdw={0}};
-	struct nvm_spec_rprt *rprt = NULL;
-	const int rprt_len = 1474 * 8 + 8;
-	int err;
+	if (NVM_SPEC_VERID_20 != dev->verid) {
+		errno = EINVAL;
+		return NULL;
+	}
+
+	struct nvm_spec_rprt *rprt;
+
+	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
+	const size_t lpo_off = addr ? nvm_addr_gen2lpo(dev, *addr) : 0;
+
+	size_t ndescr;
+	if (addr) {
+		ndescr = geo->l.nchunk;
+	} else {
+		ndescr = geo->l.nchunk * geo->l.npunit * geo->l.npugrp;
+	}
+
+	const size_t descr_len = sizeof(struct nvm_spec_rprt_descr);
+	const size_t rprt_len = ndescr * descr_len + sizeof(rprt->ndescr);
 
 	rprt = nvm_buf_alloca(0x1000, rprt_len);
 	if (!rprt) {
 		errno = ENOMEM;
 		return NULL;
 	}
-	memset(rprt, 0, sizeof(char) * rprt_len);
+	memset(rprt, 0, sizeof(*rprt));
 
-	cmd.vadmin.opcode = NVM_S20_OPC_RPT; // Setup command
-	cmd.vadmin.addr = (uint64_t)rprt;
-	cmd.vadmin.data_len = rprt_len;
-	cmd.vadmin.nppas = 0;
+	rprt->ndescr = ndescr;
 
-	err = ioctl_vam(dev, &cmd, ret);
-	if (err) {
-		NVM_DEBUG("FAILED: ioctl_vam");
-		nvm_buf_free(rprt);
-		return NULL; // NOTE: Propagate errno
+	const unsigned int max_descr_pr_call = 0x1000 * 4 / descr_len;
+	size_t data_len;
+
+	for (unsigned int i = 0; i < ndescr; i += max_descr_pr_call) {
+		data_len = NVM_MIN(max_descr_pr_call, ndescr - i) * descr_len;
+
+		struct nvme_passthru_cmd cmd = { 0 };
+
+		cmd.opcode = NVM_OPC_RPRT;
+		cmd.nsid = dev->nsid;
+		cmd.addr = (uint64_t) (uintptr_t) &rprt->descr[i];
+		cmd.data_len = data_len;
+
+		uint32_t numd = (data_len >> 2) - 1;
+		uint16_t numdu = numd >> 16;
+		uint16_t numdl = numd & 0xffff;
+
+		uint64_t lpo = lpo_off + i * descr_len;
+
+		cmd.cdw10 = 0xCA | (numdl << 16);
+		cmd.cdw11 = numdu;
+		cmd.cdw12 = lpo;
+		cmd.cdw13 = (lpo >> 32);
+
+		if(ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, &cmd)) {
+			NVM_DEBUG("ioctl failed");
+			free(rprt);
+			return NULL;
+		}
 	}
 
 	return rprt;
