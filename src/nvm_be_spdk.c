@@ -65,6 +65,10 @@ struct nvm_be nvm_be_spdk = {
 
 #define NVM_BE_SPDK_QDEPTH_MAX 128
 
+static inline int NVM_MIN(int x, int y) {
+	return x < y ? x : y;
+}
+
 struct state {
 	struct spdk_nvme_transport_id trid;
 	struct spdk_env_opts opts;
