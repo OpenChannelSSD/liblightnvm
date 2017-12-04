@@ -274,8 +274,6 @@ struct nvm_spec_idfy *nvm_cmd_idfy(struct nvm_dev *dev, struct nvm_ret *ret);
  * NOTE: Caller is responsible for de-allocating the returned structure
  *
  * @param dev Device handle obtained with `nvm_dev_open`
- * @param addr Starting address to obtain a report for
- * @param naddrs Number of addresses, from the starting address, to obtain
  * report for
  * @param opts Reporting options, see `enum nvm_spec_rprt_opts`
  *
@@ -283,9 +281,8 @@ struct nvm_spec_idfy *nvm_cmd_idfy(struct nvm_dev *dev, struct nvm_ret *ret);
  * NULL is returned and `errno` set to indicate the error and ret filled with
  * lower-level result codes
  */
-struct nvm_spec_rprt *nvm_cmd_rprt(struct nvm_dev *dev, struct nvm_addr addr,
-				   uint16_t naddrs, int opts,
-				   struct nvm_ret *ret);
+struct nvm_spec_rprt *nvm_cmd_rprt(struct nvm_dev *dev, struct nvm_addr *addr,
+				   int opt, struct nvm_ret *ret);
 
 /**
  * Execute an Open-Channel 1.2 get bad-block-table
