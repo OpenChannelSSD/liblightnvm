@@ -92,7 +92,9 @@ enum nvm_spec_12_opcodes {
 
 enum nvm_spec_20_opcodes {
 	NVM_S20_OPC_IDF = 0xE2,
-	NVM_S20_OPC_RPT = 0xF2,
+	NVM_S20_OPC_RPRT = 0x02,
+	NVM_S20_OPC_SFEAT = 0x09,
+	NVM_S20_OPC_GFEAT = 0x0A,
 	NVM_S20_OPC_ERASE = 0x90,
 	NVM_S20_OPC_WRITE = 0x91,
 	NVM_S20_OPC_READ = 0x92,
@@ -101,7 +103,12 @@ enum nvm_spec_20_opcodes {
 
 enum nvm_spec_opcodes {
 	NVM_OPC_IDFY = 0xE2,
-	NVM_OPC_STATE = 0xF2,
+
+	NVM_OPC_RPRT = 0x02,
+
+	NVM_OPC_SFEAT = 0x09,
+	NVM_OPC_GFEAT = 0x0A,
+
 	NVM_OPC_ERASE = 0x90,
 	NVM_OPC_WRITE = 0x91,
 	NVM_OPC_READ = 0x92,
@@ -299,39 +306,54 @@ struct nvm_spec_bbt {
 	uint8_t		blk[];
 };
 
-enum nvm_spec_rptr_opts {
-	NVM_RPRT_ALL = 0x0,
-	NVM_RPRT_FREE = 0x1,
-	NVM_RPRT_FULL = 0x2,
-	NVM_RPRT_OPEN = 0x3,
-	NVM_RPRT_BAD = 0x4,
+/**
+ * Representation of Spec. 2.0 chunk state (see figure 16)
+ */
+enum nvm_spec_chunk_state {
+	NVM_CHUNK_STATE_FREE	= 0x1 << 0,
+	NVM_CHUNK_STATE_CLOSED	= 0x1 << 1,
+	NVM_CHUNK_STATE_OPEN	= 0x1 << 2,
+	NVM_CHUNK_STATE_OFFLINE	= 0x1 << 3,
+	NVM_CHUNK_STATE_RSVD4	= 0x1 << 4,
+	NVM_CHUNK_STATE_RSVD5	= 0x1 << 5,
+	NVM_CHUNK_STATE_RSVD6	= 0x1 << 6,
+	NVM_CHUNK_STATE_RSVD7	= 0x1 << 7,
+;
 
-	NVM_RPRT_SEQW = 0xA,
-	NVM_RPRT_ARBW = 0xB,
+/**
+ * Representation of Spec. 2.0 chunk type (see figure 16)
+ */
+enum nvm_spec_chunk_type {
+	NVM_CHUNK_TYPE_SEQR	= 0x1 << 0,
+	NVM_CHUNK_TYPE_ARWR	= 0x1 << 1,
+	NVM_CHUNK_TYPE_RSVD2	= 0x1 << 2,
+	NVM_CHUNK_TYPE_RSVD3	= 0x1 << 3,
+	NVM_CHUNK_TYPE_WAVVY	= 0x1 << 4,
+	NVM_CHUNK_TYPE_RSVD5	= 0x1 << 5,
+	NVM_CHUNK_TYPE_RSVD6	= 0x1 << 6,
+	NVM_CHUNK_TYPE_RSVD7	= 0x1 << 7,
 };
 
 /**
  * Representation of the chunk descriptor in the report chunk state table
  */
 struct nvm_spec_rprt_descr {
-	uint8_t chunk_state;
-	uint8_t chunk_type;
-	uint8_t chunk_limits;
+	uint8_t cs;		///< Chunk State (CS)
+	uint8_t ct;		///< Chunk Type (CT)
+	uint8_t wli;		///< Wear-level Index (WLI) 0-255
 	uint8_t rsvd1[5];
-	uint64_t chunk_addr;
-	uint64_t chunk_naddrs;
-	uint64_t chunk_wptr;
-	uint8_t rsvd2[32];
+	uint64_t addr;		///< AKA Starting LBA (SLBA)
+	uint64_t naddrs;	///< AKA Number of blocks in chunk (CNLB)
+	uint64_t wp;		///< Write Pointer (WP)
 };
+static_assert(sizeof(struct nvm_spec_rprt_descr) == 32, "Incorrect size");
 
 /**
- * Representation of the chunk state table returned from the report chunk
- * command
+ * Representation of spec. 2.0 Get Log Page for chunk information
  */
 struct nvm_spec_rprt {
-	uint64_t nchunks;			///< #chunks in report
-	uint8_t rsvd[56];
-	struct nvm_spec_rprt_descr descr[];	///< Chunk descriptor table
+	uint32_t ndescr;			///< # Chunk descriptors in rprt
+	struct nvm_spec_rprt_descr descr[];	///< Chunk descriptors
 };
 
 void nvm_spec_rprt_pr(const struct nvm_spec_rprt *rprt);
