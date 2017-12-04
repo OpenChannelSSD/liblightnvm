@@ -372,7 +372,7 @@ struct nvm_be nvm_be_sysfs = {
 	.close = nvm_be_sysfs_close,
 
 	.idfy = nvm_be_ioctl_idfy,
-	.rprt = nvm_be_ioctl_rprt,
+	.rprt = nvm_be_nosys_rprt,
 	.sbbt = nvm_be_ioctl_sbbt,
 	.gbbt = nvm_be_ioctl_gbbt,
 
