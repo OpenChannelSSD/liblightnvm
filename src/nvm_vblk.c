@@ -394,7 +394,7 @@ static inline ssize_t vblk_pwrite_s20(struct nvm_vblk *vblk, const void *buf,
 	const size_t nchunks = vblk->nblks;
 
 	const size_t sectr_nbytes = geo->nbytes;
-	const size_t nsectr = offset / sectr_nbytes;
+	const size_t nsectr = count / sectr_nbytes;
 
 	const size_t sectr_bgn = offset / sectr_nbytes;
 	const size_t sectr_end = sectr_bgn + (count / sectr_nbytes) - 1;
@@ -477,7 +477,7 @@ static inline ssize_t vblk_pwrite_s20(struct nvm_vblk *vblk, const void *buf,
 		}
 
 		const ssize_t err = nvm_cmd_write(vblk->dev, addrs, cmd_nsectr,
-						   buf_off, meta_buf, 0x0, &ret);
+						  buf_off, meta_buf, 0x0, &ret);
 		if (err)
 			++nerr;
 	}
@@ -608,7 +608,7 @@ static inline ssize_t vblk_pread_s20(struct nvm_vblk *vblk, void *buf,
 	const size_t nchunks = vblk->nblks;
 
 	const size_t sectr_nbytes = geo->nbytes;
-	const size_t nsectr = offset / sectr_nbytes;
+	const size_t nsectr = count / sectr_nbytes;
 
 	const size_t sectr_bgn = offset / sectr_nbytes;
 	const size_t sectr_end = sectr_bgn + (count / sectr_nbytes) - 1;
