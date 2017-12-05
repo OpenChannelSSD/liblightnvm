@@ -176,6 +176,8 @@ struct nvm_addr {
 		} l;
 
 		uint64_t ppa;			///< Address as raw value
+
+		uint64_t val;			///< Address as raw value
 	};
 };
 
