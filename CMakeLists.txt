@@ -157,19 +157,17 @@ foreach(LTYPE ${NVM_LIBRARY_TYPES})
 		target_link_libraries(${LNAME} spdk_nvme)
 		target_link_libraries(${LNAME} spdk_util)
 		target_link_libraries(${LNAME} spdk_log)
-		target_link_libraries(${LNAME}
-			/opt/spdk/build/lib/libspdk_env_dpdk.a)
-		target_link_libraries(${LNAME}
-			/opt/spdk/dpdk/build/lib/librte_eal.a)
-		target_link_libraries(${LNAME}
-			/opt/spdk/dpdk/build/lib/librte_mempool.a)
-		target_link_libraries(${LNAME}
-			/opt/spdk/dpdk/build/lib/librte_ring.a)
-		target_link_libraries(${LNAME}
-			/opt/spdk/dpdk/build/lib/librte_mempool_ring.a)
+		target_link_libraries(${LNAME} /opt/spdk/build/lib/libspdk_env_dpdk.a)
+		target_link_libraries(${LNAME} /opt/spdk/dpdk/build/lib/librte_bus_pci.a)
+		target_link_libraries(${LNAME} /opt/spdk/dpdk/build/lib/librte_eal.a)
+		target_link_libraries(${LNAME} /opt/spdk/dpdk/build/lib/librte_mempool.a)
+		target_link_libraries(${LNAME} /opt/spdk/dpdk/build/lib/librte_mempool_ring.a)
+		target_link_libraries(${LNAME} /opt/spdk/dpdk/build/lib/librte_pci.a)
+		target_link_libraries(${LNAME} /opt/spdk/dpdk/build/lib/librte_ring.a)
 		target_link_libraries(${LNAME} rt)
 		target_link_libraries(${LNAME} dl)
 		target_link_libraries(${LNAME} numa)
+		target_link_libraries(${LNAME} uuid)
 	endif()
 
 	install(TARGETS ${LNAME} DESTINATION lib COMPONENT lib)
