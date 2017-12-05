@@ -196,6 +196,19 @@ inline struct nvm_addr nvm_addr_dev2gen(struct nvm_dev *dev, uint64_t addr)
 	return gen;
 }
 
+uint64_t nvm_addr_to_lpo(struct nvm_dev *dev, struct nvm_addr addr)
+{
+	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
+
+	uint64_t idx = 0;
+	
+	idx += addr.l.pugrp * geo->npunit * geo->nchunk;
+	idx += addr.l.punit * geo->nchunk;
+	idx += addr.l.chunk;
+
+	return idx * sizeof(struct nvm_spec_rprt_descr);
+}
+
 struct nvm_addr nvm_addr_off2gen(struct nvm_dev *dev, size_t off)
 {
 	return nvm_addr_dev2gen(dev, off >> dev->ssw);
