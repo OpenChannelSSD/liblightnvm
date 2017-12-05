@@ -189,22 +189,6 @@ static int nvme_get_log_page(struct nvm_dev *dev, void *buf, uint32_t ndw,
 	return 0;
 }
 
-/**
- * @returns the log page offset (lpo) for the given addr
- */
-static uint64_t nvm_addr_to_lpo(struct nvm_dev *dev, struct nvm_addr addr)
-{
-	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
-
-	uint64_t idx = 0;
-	
-	idx += addr.l.pugrp * geo->npunit * geo->nchunk;
-	idx += addr.l.punit * geo->nchunk;
-	idx += addr.l.chunk;
-
-	return idx * sizeof(struct nvm_spec_rprt_descr);
-}
-
 static struct nvm_spec_rprt *nvm_be_spdk_rprt(struct nvm_dev *dev,
 					      struct nvm_addr *addr,
 					      int NVM_UNUSED(opt),
