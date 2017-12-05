@@ -944,6 +944,13 @@ ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 int nvm_addr_check(struct nvm_addr addr, const struct nvm_dev *dev);
 
 /**
+ * Compute log page offset (lpo) for the get-log-page command for chunk information
+ *
+ * @returns the log page offset (lpo) for the given addr
+ */
+uint64_t nvm_addr_to_lpo(struct nvm_dev *dev, struct nvm_addr addr);
+
+/**
  * Converts a given physical address generic-format to device-format
  *
  * @param dev Device handle obtained with `nvm_dev_open`
