@@ -308,10 +308,10 @@ struct nvm_spec_bbt {
 
 enum nvm_spec_rprt_opts {
 	NVM_RPRT_ALL		= 0x0,
-	NVM_RPRT_OFFLINE	= 0x1,
+	NVM_RPRT_FREE		= 0x1,
 	NVM_RPRT_CLOSED		= 0x1 << 1,
 	NVM_RPRT_OPEN		= 0x1 << 2,
-	NVM_RPRT_FREE		= 0x1 << 3,
+	NVM_RPRT_OFFLINE	= 0x1 << 3,
 };
 
 /**
