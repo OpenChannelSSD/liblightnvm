@@ -5,25 +5,55 @@
 =============
 
 Assuming that you have met the :ref:`sec-prereqs`, and running Ubuntu Linux
-(16.04/xenial), then build and install liblightnvm for source:
+(16.04/xenial), then retrieve the source code, configure, build, and install
+it:
 
 .. code-block:: bash
 
+  # Retrieve liblightnvm
   git clone https://github.com/OpenChannelSSD/liblightnvm.git
   cd liblightnvm
-  make dev
 
-Or, install from deb-packages:
+  # Default configuration, build and install
+  make configure
+  make
+  sudo make install
+
+The above will configure liblightnvm, with default options, and install it by
+copying headers, libraries and binaries into system paths.
+
+BUILD: Changing configuration options
+=====================================
+
+The configuration options are named ``option_{on,off}``, consult the Makefile
+to see available options. Apply an option by typing it before the ``configure``
+target. For example:
 
 .. code-block:: bash
 
-  echo "deb https://dl.bintray.com/openchannelssd/debs xenial main" | sudo tee -a /etc/apt/sources.list
-  sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
-  sudo apt-get update
-  sudo apt-get install liblightnvm-dev liblightnvm-lib liblightnvm-cli
+  # Change configuration, build and install
+  make spdk_on debug_on deb_on configure
+  make
+  sudo make install
 
-With the library installed, try the following examples of the :ref:`sec-c-api`
-and :ref:`sec-cli`.
+This will enable the SPDK backend, debugging, and build Debian packages. NOTE:
+``spdk_on`` expects SPDK to be available in ``/opt/spdk``.
+
+In case you enable build of Debian packages via ``deb_on``, then you can modify
+the ``make install`` step to install/uninstall using the Debian package:
+
+.. code-block:: bash
+
+  # Change configuration, build and install via package
+  make spdk_on debug_on deb_on configure
+  make
+  sudo make install-deb
+
+  # Conveniently remove liblightnvm by uninstalling the Debian package
+  sudo make uninstall-deb
+
+With liblightnvm built and installed as you see fit, try the following examples
+of the :ref:`sec-c-api` and :ref:`sec-cli`.
 
 API: Hello Open-Channel SSD
 ===========================
@@ -40,9 +70,8 @@ Compile it
 .. literalinclude:: hello_00.cmd
    :language: bash
 
-.. tip:: liblightnvm is also available as a **static** library. So you can add
-  `/usr/lib/liblightnvm.a` to your compiler target instead of linking
-  dynamically.
+.. tip:: If you compiled liblightnvm with SPDK, then add SPDK to the command
+  above as well.
 
 Run it
 ~~~~~~

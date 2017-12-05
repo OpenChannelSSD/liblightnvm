@@ -1,46 +1,44 @@
 
-dev:
+dev_attr:
   verid: 0x02
-  be_id: 0x02
+  be_id: 0x01
   name: 'nvme0n1'
   path: '/dev/nvme0n1'
   fd: 3
   ssw: 12
-  pmode: 'DUAL'
+  mccap: 00000000000000000000000000000001
+  pmode: 'SNGL'
   erase_naddrs_max: 64
   read_naddrs_max: 64
   write_naddrs_max: 64
   meta_mode: 0
   bbts_cached: 0
+  bbts_cached: 00000000
+  quirks: 00000000
 dev_geo:
-  nchannels: 16
-  nluns: 8
-  nplanes: 2
-  nblocks: 1020
-  npages: 512
-  nsectors: 4
-  page_nbytes: 16384
-  sector_nbytes: 4096
-  meta_nbytes: 16
-  tbytes: 2190433320960
-  tmbytes: 2088960
-dev_ppaf:
-  ch_off: 25
-  ch_len: 04
-  lun_off: 22
-  lun_len: 03
-  pl_off: 02
-  pl_len: 01
-  blk_off: 12
-  blk_len: 10
-  pg_off: 03
-  pg_len: 09
-  sec_off: 00
-  sec_len: 02
-dev_ppaf_mask:
-  ch:  '0000000000000000000000000000000000011110000000000000000000000000'
-  lun: '0000000000000000000000000000000000000001110000000000000000000000'
-  pl:  '0000000000000000000000000000000000000000000000000000000000000100'
-  blk: '0000000000000000000000000000000000000000001111111111000000000000'
-  pg:  '0000000000000000000000000000000000000000000000000000111111111000'
-  sec: '0000000000000000000000000000000000000000000000000000000000000011'
+  verid: 0x02
+  npugrp: 8
+  npunit: 4
+  nchunk: 1474
+  nsectr: 6144
+  nbytes: 4096
+  nbytes_oob: 16
+  tbytes: 1187021586432
+  tmbytes: 1132032
+dev_ppaf: ~
+dev_ppaf_mask: ~
+dev_lbaf:
+  pugrp: 3
+  punit: 2
+  chunk: 11
+  sectr: 13
+dev_lbaz:
+  pugrp: 26
+  punit: 24
+  chunk: 13
+  sectr: 0
+dev_lbam:
+  pugrp:  '0000000000000000000000000000000000011100000000000000000000000000'
+  punit:  '0000000000000000000000000000000000000011000000000000000000000000'
+  chunk:  '0000000000000000000000000000000000000000111111111110000000000000'
+  sectr:  '0000000000000000000000000000000000000000000000000001111111111111'

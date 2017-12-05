@@ -1,0 +1,11 @@
+# nvm_cmd_read: {pmode: SNGL}
+naddrs: 8
+addrs:
+  - {val: 0x0402008e00000000, pugrp: 04, punit: 02, chunk: 0142, sectr: 0000}
+  - {val: 0x0402008e00000001, pugrp: 04, punit: 02, chunk: 0142, sectr: 0001}
+  - {val: 0x0402008e00000002, pugrp: 04, punit: 02, chunk: 0142, sectr: 0002}
+  - {val: 0x0402008e00000003, pugrp: 04, punit: 02, chunk: 0142, sectr: 0003}
+  - {val: 0x0402008e00000004, pugrp: 04, punit: 02, chunk: 0142, sectr: 0004}
+  - {val: 0x0402008e00000005, pugrp: 04, punit: 02, chunk: 0142, sectr: 0005}
+  - {val: 0x0402008e00000006, pugrp: 04, punit: 02, chunk: 0142, sectr: 0006}
+  - {val: 0x0402008e00000007, pugrp: 04, punit: 02, chunk: 0142, sectr: 0007}

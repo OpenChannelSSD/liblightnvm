@@ -1,10 +1,12 @@
 vblk:
-  dev: {pmode: 'DUAL'}
-  nbytes: 16777216
-  nmbytes: 16
+  dev: {pmode: 'SNGL'}
+  nblks: 1
+  nmbytes: 24
+  pos_write: 0
+  pos_read: 0
 naddrs: 1
 addrs:
-  - 0x020500000000002a: {ch: 02, lun: 05, pl: 0, blk: 0042, pg: 000, sec: 0}
-nvm_buf_alloc: {elapsed: 0.000012}
-nvm_buf_fill: {elapsed: 0.021147}
-nvm_vblk_write: {elapsed: 0.923969}
+  - {val: 0x0402008e00000000, pugrp: 04, punit: 02, chunk: 0142, sectr: 0000}
+nvm_buf_alloc: {elapsed: 0.000016}
+nvm_buf_fill: {elapsed: 0.022081}
+nvm_vblk_write: {elapsed: 0.8528, mb: 24.00, mbsec: 28.14}

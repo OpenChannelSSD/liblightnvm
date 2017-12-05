@@ -1,13 +1,15 @@
 vblk:
-  dev: {pmode: 'DUAL'}
-  nbytes: 67108864
-  nmbytes: 64
+  dev: {pmode: 'SNGL'}
+  nblks: 4
+  nmbytes: 96
+  pos_write: 0
+  pos_read: 0
 naddrs: 4
 addrs:
-  - 0x0000000000000002: {ch: 00, lun: 00, pl: 0, blk: 0002, pg: 000, sec: 0}
-  - 0x0a0700000000014d: {ch: 10, lun: 07, pl: 0, blk: 0333, pg: 000, sec: 0}
-  - 0x0301000000000014: {ch: 03, lun: 01, pl: 0, blk: 0020, pg: 000, sec: 0}
-  - 0x0500000000000190: {ch: 05, lun: 00, pl: 0, blk: 0400, pg: 000, sec: 0}
-nvm_buf_alloc: {elapsed: 0.000013}
-nvm_buf_fill: {elapsed: 0.058105}
-nvm_vblk_write: {elapsed: 0.956329}
+  - {val: 0x0000008e00000000, pugrp: 00, punit: 00, chunk: 0142, sectr: 0000}
+  - {val: 0x0100008e00000000, pugrp: 01, punit: 00, chunk: 0142, sectr: 0000}
+  - {val: 0x0200008e00000000, pugrp: 02, punit: 00, chunk: 0142, sectr: 0000}
+  - {val: 0x0300008e00000000, pugrp: 03, punit: 00, chunk: 0142, sectr: 0000}
+nvm_buf_alloc: {elapsed: 0.000025}
+nvm_buf_fill: {elapsed: 0.071218}
+nvm_vblk_write: {elapsed: 1.8297, mb: 96.00, mbsec: 52.47}

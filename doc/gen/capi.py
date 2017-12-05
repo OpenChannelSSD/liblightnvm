@@ -30,10 +30,10 @@ def gen_capi(args):
         "nvm_geo": "Geometry",
         "nvm_buf": "Buffer Allocation",
         "nvm_dev": "Device Management",
-        "nvm_bbt": "Bad-Block-Table",
-        "nvm_cmd": "Raw Commands",
         "nvm_addr": "Addressing",
+        "nvm_cmd": "Raw Commands",
         "nvm_vblk": "Virtual Block",
+        "nvm_bbt": "Bad-Block-Table",
         "nvm_lba": "LBA Interface",
     }
     docs = {}

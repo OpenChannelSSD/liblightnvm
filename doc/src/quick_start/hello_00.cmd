@@ -1,1 +1,1 @@
-gcc hello.c -llightnvm -o hello
+gcc hello.c -fopenmp -llightnvm -o hello

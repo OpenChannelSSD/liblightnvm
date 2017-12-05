@@ -1,13 +1,13 @@
-NVM Device (nvm_dev_*) -- Ver { major(0), minor(0), patch(1) }
+NVM Device (nvm_dev_*) -- Ver { major(18), minor(6), patch(0) }
 
 Retrieve device information
 
 Usage:
- nvm_dev          geo dev_path [-h] [-v]
- nvm_dev         info dev_path [-h] [-v]
+ nvm_dev         enum  [-h]
+ nvm_dev         info dev_path [-h] [-b]
 
 Options:
  -h       Print usage
- -v       Dump CLI state to stdout
+ -b       Brief, minimal output
 
 See: http://lightnvm.io/liblightnvm/cli/ for usage examples

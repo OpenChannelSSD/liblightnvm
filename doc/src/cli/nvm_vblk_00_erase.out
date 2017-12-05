@@ -1,8 +1,10 @@
 vblk:
-  dev: {pmode: 'DUAL'}
-  nbytes: 16777216
-  nmbytes: 16
+  dev: {pmode: 'SNGL'}
+  nblks: 1
+  nmbytes: 24
+  pos_write: 0
+  pos_read: 0
 naddrs: 1
 addrs:
-  - 0x020500000000002a: {ch: 02, lun: 05, pl: 0, blk: 0042, pg: 000, sec: 0}
-nvm_vblk_erase: {elapsed: 0.005541}
+  - {val: 0x0402008e00000000, pugrp: 04, punit: 02, chunk: 0142, sectr: 0000}
+nvm_vblk_erase: {elapsed: 0.0049, mb: 24.00, mbsec: 4878.03}

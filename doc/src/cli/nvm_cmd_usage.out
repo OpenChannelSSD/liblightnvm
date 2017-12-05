@@ -1,0 +1,22 @@
+NVM command (nvm_cmd_*) -- Ver { major(18), minor(6), patch(0) }
+
+Construct and execute NVM commands
+
+Usage:
+ nvm_cmd         idfy dev_path [-h] [-v]
+ nvm_cmd     rprt_all dev_path [-h] [-v]
+ nvm_cmd     rprt_lun dev_path ch lun [-h] [-v]
+ nvm_cmd         gbbt dev_path ch lun [-h] [-v]
+ nvm_cmd         sbbt dev_path ch lun blk 0xVAL [-h] [-v]
+ nvm_cmd        erase dev_path 0xADDR [0xADDR...] [-h] [-v]
+ nvm_cmd        write dev_path 0xADDR [0xADDR...] [-h] [-v] [-i FILE]
+ nvm_cmd         read dev_path 0xADDR [0xADDR...] [-h] [-v] [-o FILE]
+ nvm_cmd         copy dev_path pugrp punit chunk pugrp punit chunk [-h] [-v]
+
+Options:
+ -h       Print usage
+ -v       Dump CLI state to stdout
+ -i  FILE Path to input file
+ -o  FILE Path to output file
+
+See: http://lightnvm.io/liblightnvm/cli/ for usage examples

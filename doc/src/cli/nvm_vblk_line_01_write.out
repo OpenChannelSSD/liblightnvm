@@ -1,13 +1,26 @@
 vblk:
-  dev: {pmode: 'DUAL'}
-  nbytes: 67108864
-  nmbytes: 64
-naddrs: 4
+  dev: {pmode: 'SNGL'}
+  nblks: 15
+  nmbytes: 360
+  pos_write: 0
+  pos_read: 0
+naddrs: 15
 addrs:
-  - 0x000000000000000a: {ch: 00, lun: 00, pl: 0, blk: 0010, pg: 000, sec: 0}
-  - 0x000100000000000a: {ch: 00, lun: 01, pl: 0, blk: 0010, pg: 000, sec: 0}
-  - 0x000200000000000a: {ch: 00, lun: 02, pl: 0, blk: 0010, pg: 000, sec: 0}
-  - 0x000300000000000a: {ch: 00, lun: 03, pl: 0, blk: 0010, pg: 000, sec: 0}
-nvm_buf_alloc: {elapsed: 0.000014}
-nvm_buf_fill: {elapsed: 0.063046}
-nvm_vblk_write: {elapsed: 1.097443}
+  - {val: 0x0000008e00000000, pugrp: 00, punit: 00, chunk: 0142, sectr: 0000}
+  - {val: 0x0100008e00000000, pugrp: 01, punit: 00, chunk: 0142, sectr: 0000}
+  - {val: 0x0200008e00000000, pugrp: 02, punit: 00, chunk: 0142, sectr: 0000}
+  - {val: 0x0300008e00000000, pugrp: 03, punit: 00, chunk: 0142, sectr: 0000}
+  - {val: 0x0400008e00000000, pugrp: 04, punit: 00, chunk: 0142, sectr: 0000}
+  - {val: 0x0001008e00000000, pugrp: 00, punit: 01, chunk: 0142, sectr: 0000}
+  - {val: 0x0101008e00000000, pugrp: 01, punit: 01, chunk: 0142, sectr: 0000}
+  - {val: 0x0201008e00000000, pugrp: 02, punit: 01, chunk: 0142, sectr: 0000}
+  - {val: 0x0301008e00000000, pugrp: 03, punit: 01, chunk: 0142, sectr: 0000}
+  - {val: 0x0401008e00000000, pugrp: 04, punit: 01, chunk: 0142, sectr: 0000}
+  - {val: 0x0002008e00000000, pugrp: 00, punit: 02, chunk: 0142, sectr: 0000}
+  - {val: 0x0102008e00000000, pugrp: 01, punit: 02, chunk: 0142, sectr: 0000}
+  - {val: 0x0202008e00000000, pugrp: 02, punit: 02, chunk: 0142, sectr: 0000}
+  - {val: 0x0302008e00000000, pugrp: 03, punit: 02, chunk: 0142, sectr: 0000}
+  - {val: 0x0402008e00000000, pugrp: 04, punit: 02, chunk: 0142, sectr: 0000}
+nvm_buf_alloc: {elapsed: 0.000021}
+nvm_buf_fill: {elapsed: 0.285399}
+nvm_vblk_write: {elapsed: 6.8921, mb: 360.00, mbsec: 52.23}

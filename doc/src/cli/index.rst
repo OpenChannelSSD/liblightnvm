@@ -28,6 +28,7 @@ behavior of the CLI commands.
 
    nvm_env
    nvm_dev
-   nvm_bbt
    nvm_addr
+   nvm_cmd
    nvm_vblk
+   nvm_bbt

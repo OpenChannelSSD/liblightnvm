@@ -44,6 +44,9 @@ def produce_cmd_output(args):
     for cmd_path in sorted(glob.glob(os.sep.join([args.path, "*.cmd"]))):
         output = []
 
+        if args.spec and args.spec == "s20" and "bbt" in cmd_path:
+            continue
+
         # Grab commands
         cmds = [line.strip() for line in open(cmd_path).readlines()]
 
@@ -73,6 +76,13 @@ if __name__ == "__main__":
         "path",
         type=str,
         help="Path to DIR containing *_usage and *.cmd files for CLI"
+    )
+
+    PRSR.add_argument(
+        "--spec",
+        type=str,
+        default=None,
+        help="Spec version"
     )
 
     ARGS = PRSR.parse_args()

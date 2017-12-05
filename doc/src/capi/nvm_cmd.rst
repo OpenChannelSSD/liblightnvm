@@ -3,39 +3,53 @@
 nvm_cmd - Raw Commands
 ======================
 
-nvm_cmd
--------
-
-.. doxygenstruct:: nvm_cmd
-   :members:
-
-nvm_cmd_vadmin
---------------
-
-.. doxygenfunction:: nvm_cmd_vadmin
-
-nvm_cmd_vuser
--------------
-
-.. doxygenfunction:: nvm_cmd_vuser
-
-nvm_cmd_admin
--------------
-
-.. doxygenfunction:: nvm_cmd_admin
-
-nvm_cmd_user
+nvm_cmd_idfy
 ------------
 
-.. doxygenfunction:: nvm_cmd_user
+.. doxygenfunction:: nvm_cmd_idfy
 
-nvm_cmd_pr
-----------
+nvm_cmd_erase
+-------------
 
-.. doxygenfunction:: nvm_cmd_pr
+.. doxygenfunction:: nvm_cmd_erase
 
-nvm_cmd_vuser_pr
-----------------
+nvm_cmd_gbbt_arbs
+-----------------
 
-.. doxygenfunction:: nvm_cmd_vuser_pr
+.. doxygenfunction:: nvm_cmd_gbbt_arbs
+
+nvm_cmd_sbbt
+------------
+
+.. doxygenfunction:: nvm_cmd_sbbt
+
+nvm_cmd_rprt
+------------
+
+.. doxygenfunction:: nvm_cmd_rprt
+
+nvm_cmd_rprt_arbs
+-----------------
+
+.. doxygenfunction:: nvm_cmd_rprt_arbs
+
+nvm_cmd_gbbt
+------------
+
+.. doxygenfunction:: nvm_cmd_gbbt
+
+nvm_cmd_copy
+------------
+
+.. doxygenfunction:: nvm_cmd_copy
+
+nvm_cmd_write
+-------------
+
+.. doxygenfunction:: nvm_cmd_write
+
+nvm_cmd_read
+------------
+
+.. doxygenfunction:: nvm_cmd_read
 

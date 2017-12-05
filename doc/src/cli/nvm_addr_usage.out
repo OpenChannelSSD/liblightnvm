@@ -1,26 +1,21 @@
-NVM address (nvm_addr_*) -- Ver { major(0), minor(0), patch(1) }
+NVM address (nvm_addr_*) -- Ver { major(18), minor(6), patch(0) }
 
-Construct / convert addresses and perform vector IO
+Construct and convert addresses
 
 Usage:
- nvm_addr        erase dev_path 0xADDR [0xADDR...] [-h] [-v]
- nvm_addr        write dev_path 0xADDR [0xADDR...] [-h] [-v] [-i FILE]
- nvm_addr     write_wm dev_path 0xADDR [0xADDR...] [-h] [-v] [-i FILE]
- nvm_addr         read dev_path 0xADDR [0xADDR...] [-h] [-v] [-o FILE]
- nvm_addr      read_wm dev_path 0xADDR [0xADDR...] [-h] [-v] [-o FILE]
- nvm_addr     from_geo dev_path ch lun pl blk pg sec [-h] [-v]
- nvm_addr     from_hex dev_path 0xADDR [0xADDR...] [-h] [-v]
+ nvm_addr   s12_to_gen dev_path ch lun blk pl pg sec [-h] [-v]
+ nvm_addr   s20_to_gen dev_path pugrp punit chunk sectr [-h] [-v]
  nvm_addr      gen2dev dev_path 0xADDR [0xADDR...] [-h] [-v]
  nvm_addr      gen2lba dev_path 0xADDR [0xADDR...] [-h] [-v]
  nvm_addr      gen2off dev_path 0xADDR [0xADDR...] [-h] [-v]
+ nvm_addr      gen2lpo dev_path 0xADDR [0xADDR...] [-h] [-v]
  nvm_addr      dev2gen dev_path 0xVAL [0xVAL...] [-h] [-v]
  nvm_addr      lba2gen dev_path val [val...] [-h] [-v]
  nvm_addr      off2gen dev_path val [val...] [-h] [-v]
+ nvm_addr      lpo2gen dev_path val [val...] [-h] [-v]
 
 Options:
  -h       Print usage
  -v       Dump CLI state to stdout
- -i  FILE Path to input file
- -o  FILE Path to output file
 
 See: http://lightnvm.io/liblightnvm/cli/ for usage examples

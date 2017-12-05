@@ -47,9 +47,9 @@ Contents:
    quick_start/index.rst
    prereqs/index.rst
    background/index.rst
-   tutorial/index.rst
-   capi/index.rst
    cli/index.rst
+   capi/index.rst
+   tutorial/index.rst
    refs/index.rst
 
 Indices and tables
