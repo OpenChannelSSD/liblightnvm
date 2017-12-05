@@ -31,22 +31,36 @@
 #include <stdio.h>
 #include <errno.h>
 #include <liblightnvm.h>
+#include <nvm_debug.h>
 
 void *nvm_buf_alloc(const struct nvm_geo *geo, size_t nbytes)
 {
 	char *buf;
+	size_t alignment = 0;
+
+	switch(geo->verid) {
+	case NVM_SPEC_VERID_12:
+		alignment = geo->sector_nbytes;
+		break;
+	case NVM_SPEC_VERID_20:
+		alignment = geo->nbytes;
+		break;
+	}
 
 	if (!nbytes) {
+		NVM_DEBUG("!nbytes: %zu", nbytes);
 		errno = EINVAL;
 		return NULL;
 	}
 #ifdef WIN32
-	buf = _aligned_malloc(nbytes, geo->sector_nbytes);
+	buf = _aligned_malloc(nbytes, alignment);
 #else
-	buf = aligned_alloc(geo->sector_nbytes, nbytes);
+	buf = aligned_alloc(alignment, nbytes);
 #endif
-	if (!buf)
+	if (!buf) {
+		NVM_DEBUG("call to alloc failed");
 		return NULL;	// Propagate errno
+	}
 
 	return buf;
 }
