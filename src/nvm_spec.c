@@ -310,16 +310,16 @@ void nvm_spec_rprt_pr(const struct nvm_spec_rprt *rprt)
 	}
 
 	printf("rprt:\n");
-	printf("  nchunks: %u\n", rprt->nchunks);
+	printf("  ndescr: %u\n", rprt->ndescr);
 
 	printf("rprt_descr:");
-	if (!rprt->nchunks) {
+	if (!rprt->ndescr) {
 		printf(" ~\n");
 		return;
 	}
 
 	printf("\n");
-	for (uint64_t i = 0; i < rprt->nchunks; ++i) {
+	for (uint64_t i = 0; i < rprt->ndescr; ++i) {
 		const struct nvm_spec_rprt_descr *descr = &rprt->descr[i];
 
 		printf("  - { ");
