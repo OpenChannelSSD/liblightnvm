@@ -7,10 +7,7 @@
 
 #include <CUnit/Basic.h>
 
-#define FLUSH_ALL 1
-
 static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
-
 static struct nvm_dev *dev;
 static const struct nvm_geo *geo;
 
@@ -34,9 +31,16 @@ int teardown(void)
 	return 0;
 }
 
-void test_CMD_RPRT_PUNIT(void)
+static size_t descr_idx(struct nvm_addr *punit_addr, struct nvm_addr chunk_addr)
 {
-	struct nvm_addr punit_addr = { .val=0 };
+	if (punit_addr)
+		return chunk_addr.l.chunk;
+
+	return nvm_addr_to_lpo(dev, chunk_addr) / sizeof(struct nvm_spec_rprt_descr);
+}
+
+void _CMD_RPRT(struct nvm_addr *punit_addr)
+{
 	struct nvm_addr chunk_addr = { .val=0 };
 	struct nvm_spec_rprt *rprt[10] = { NULL }; ///> Report pointers
 	int rprt_cur = 0;
@@ -46,27 +50,32 @@ void test_CMD_RPRT_PUNIT(void)
 	struct nvm_ret ret = { 0 };
 	ssize_t res = 0;
 
-	// Construct an arbitrary punit address
-	punit_addr.l.pugrp = geo->npugrp / 2;
-	punit_addr.l.punit = geo->npunit / 2;
+	size_t tchunks = punit_addr ? geo->nchunk : geo->npugrp * geo->npunit * geo->nchunk;
 
 	// Test that we can retrieve chunk information for the given punit
-	rprt[rprt_cur] = nvm_cmd_rprt(dev, &punit_addr, 0x0, &ret);
+	rprt[rprt_cur] = nvm_cmd_rprt(dev, punit_addr, 0x0, &ret);
 	CU_ASSERT_PTR_NOT_NULL(rprt[rprt_cur]);
 	if (!rprt[rprt_cur])
 		goto out;
 
 	// Test that it reports the correct amount of chunks
-	assert(rprt[rprt_cur]->ndescr == geo->nchunk);
+	assert(rprt[rprt_cur]->ndescr == tchunks);
 
-	// Get an arbitrary free chunk in the punit
-	chunk_addr.val = punit_addr.val;
+	// Get an arbitrary free chunk
+	if (punit_addr) {
+		chunk_addr.val = punit_addr->val;
+	} else {
+		chunk_addr.l.pugrp = geo->npugrp / 2;
+		chunk_addr.l.punit = geo->npugrp / 2;
+	}
 	for (size_t idx = geo->nchunk / 2; idx < geo->nchunk; ++idx) {
-		if (rprt[rprt_cur]->descr[idx].chunk_state != NVM_RPRT_FREE)
-			continue;
-
 		chunk_addr.l.chunk = idx;
-		break;
+
+		//printf("descr_idx: %zu", descr_idx(punit_addr, chunk_addr));
+		//printf("state:: 0x%02x\n", rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_state);
+
+		if (rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_state == NVM_RPRT_FREE)
+			break;
 	}
 
 	// Test that the address found is valid
@@ -91,13 +100,13 @@ void test_CMD_RPRT_PUNIT(void)
 		if (res < 0)
 			goto out;
 		
-		rprt[++rprt_cur] = nvm_cmd_rprt(dev, &punit_addr, 0x0, &ret);
+		rprt[++rprt_cur] = nvm_cmd_rprt(dev, punit_addr, 0x0, &ret);
 		CU_ASSERT_PTR_NOT_NULL(rprt[rprt_cur]);
 		if (!rprt[rprt_cur])
 			goto out;
 
-		CU_ASSERT(rprt[rprt_cur]->descr[chunk_addr.l.chunk].chunk_state == NVM_RPRT_OPEN);
-		CU_ASSERT(rprt[rprt_cur]->descr[chunk_addr.l.chunk].chunk_wptr == (buf_len / geo->nbytes));
+		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_state == NVM_RPRT_OPEN);
+		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_wptr == (buf_len / geo->nbytes));
 	}
 
 	// Write it fully and check that it changed state to CLOSED and wp
@@ -107,13 +116,13 @@ void test_CMD_RPRT_PUNIT(void)
 		if (res < 0)
 			goto out;
 		
-		rprt[++rprt_cur] = nvm_cmd_rprt(dev, &punit_addr, 0x0, &ret);
+		rprt[++rprt_cur] = nvm_cmd_rprt(dev, punit_addr, 0x0, &ret);
 		CU_ASSERT_PTR_NOT_NULL(rprt[rprt_cur]);
 		if (!rprt[rprt_cur])
 			goto out;
 
-		CU_ASSERT(rprt[rprt_cur]->descr[chunk_addr.l.chunk].chunk_state == NVM_RPRT_CLOSED);
-		CU_ASSERT(rprt[rprt_cur]->descr[chunk_addr.l.chunk].chunk_wptr == geo->nsectr);
+		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_state == NVM_RPRT_CLOSED);
+		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_wptr == geo->nsectr);
 	}
 
 	// Erase it and check that it is in state FREE
@@ -123,13 +132,13 @@ void test_CMD_RPRT_PUNIT(void)
 		if (res < 0)
 			goto out;
 
-		rprt[++rprt_cur] = nvm_cmd_rprt(dev, &punit_addr, 0x0, &ret);
+		rprt[++rprt_cur] = nvm_cmd_rprt(dev, punit_addr, 0x0, &ret);
 		CU_ASSERT_PTR_NOT_NULL(rprt[rprt_cur]);
 		if (!rprt[rprt_cur])
 			goto out;
 
-		CU_ASSERT(rprt[rprt_cur]->descr[chunk_addr.l.chunk].chunk_state == NVM_RPRT_FREE);
-		CU_ASSERT(rprt[rprt_cur]->descr[chunk_addr.l.chunk].chunk_wptr == 0);
+		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_state == NVM_RPRT_FREE);
+		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_wptr == 0);
 	}
 
 out:
@@ -137,6 +146,22 @@ out:
 	for (int idx = 0; idx <= rprt_cur; ++idx)
 		nvm_buf_free(rprt[idx]);
 	nvm_buf_free(buf);
+}
+
+void test_CMD_RPRT_PUNIT(void)
+{
+	struct nvm_addr punit_addr = { .val=0 };
+
+	// Construct an arbitrary punit address
+	punit_addr.l.pugrp = geo->npugrp / 2;
+	punit_addr.l.punit = geo->npunit / 2;
+
+	_CMD_RPRT(&punit_addr);
+}
+
+void test_CMD_RPRT_ALL(void)
+{
+	_CMD_RPRT(NULL);
 }
 
 int main(int argc, char **argv)
@@ -163,6 +188,7 @@ int main(int argc, char **argv)
 	}
 
 	if (
+	(NULL == CU_add_test(pSuite, "nvm_cmd_rprt_all", test_CMD_RPRT_ALL)) ||
 	(NULL == CU_add_test(pSuite, "nvm_cmd_rprt_punit", test_CMD_RPRT_PUNIT)) ||
 	0)
 	{
