@@ -71,9 +71,6 @@ void _CMD_RPRT(struct nvm_addr *punit_addr)
 	for (size_t idx = geo->nchunk / 2; idx < geo->nchunk; ++idx) {
 		chunk_addr.l.chunk = idx;
 
-		//printf("descr_idx: %zu", descr_idx(punit_addr, chunk_addr));
-		//printf("state:: 0x%02x\n", rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_state);
-
 		if (rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_state == NVM_RPRT_FREE)
 			break;
 	}
