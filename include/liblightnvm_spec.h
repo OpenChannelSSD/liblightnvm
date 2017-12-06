@@ -331,8 +331,8 @@ struct nvm_spec_rprt_descr {
  * Representation of spec. 2.0 Get Log Page for chunk information
  */
 struct nvm_spec_rprt {
-	uint32_t nchunks;			///< # Chunks in report
-	struct nvm_spec_rprt_descr descr[];	///< Chunk descriptor table
+	uint32_t ndescr;			///< # Chunk descriptors in rprt
+	struct nvm_spec_rprt_descr descr[];	///< Chunk descriptors
 };
 
 void nvm_spec_rprt_pr(const struct nvm_spec_rprt *rprt);
