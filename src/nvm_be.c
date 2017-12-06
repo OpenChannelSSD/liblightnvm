@@ -210,10 +210,6 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 		dev->quirks |= NVM_QUIRK_SEMI20;
 	}
 
-#ifdef NVM_DEBUG_ENABLED
-	nvm_spec_idfy_pr(idfy, 0x0);
-#endif
-
 	dev->idfy = *idfy;
 	dev->verid = geo->verid = idfy->s.verid;
 
