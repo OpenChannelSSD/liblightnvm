@@ -206,7 +206,7 @@ static struct nvm_spec_rprt *nvm_be_spdk_rprt(struct nvm_dev *dev,
 	}
 
 	ndescr = addr ? geo->nchunk : geo->nchunk * geo->npunit * geo->npugrp;
-	rprt_len = ndescr * DESCR_NBYTES + sizeof(rprt->nchunks);
+	rprt_len = ndescr * DESCR_NBYTES + sizeof(rprt->ndescr);
 
 	rprt = nvm_buf_alloca(NVM_BE_SPDK_ALIGN, rprt_len);
 	if (!rprt) {
@@ -214,7 +214,7 @@ static struct nvm_spec_rprt *nvm_be_spdk_rprt(struct nvm_dev *dev,
 		return NULL;
 	}
 	memset(rprt, 0, rprt_len);
-	rprt->nchunks = ndescr;
+	rprt->ndescr = ndescr;
 
 	for (size_t i = 0; i < ndescr; i += 0x1000) {
 		const size_t count = NVM_MIN(0x1000, ndescr - i);
