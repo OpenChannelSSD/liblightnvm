@@ -3,9 +3,8 @@
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
-#include <liblightnvm.h>
-
 #include <CUnit/Basic.h>
+#include <liblightnvm.h>
 
 static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
 static struct nvm_dev *dev;
