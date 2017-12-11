@@ -119,13 +119,13 @@ int nvm_addr_check(struct nvm_addr addr, const struct nvm_dev *dev)
 		return exceeded;
 
 	case NVM_SPEC_VERID_20:
-		if (addr.l.pugrp >= geo->npugrp)
+		if (addr.l.pugrp >= geo->l.npugrp)
 			exceeded |= NVM_BOUNDS_CHANNEL;
-		if (addr.l.punit >= geo->npunit)
+		if (addr.l.punit >= geo->l.npunit)
 			exceeded |= NVM_BOUNDS_LUN;
-		if (addr.l.chunk >= geo->nchunk)
+		if (addr.l.chunk >= geo->l.nchunk)
 			exceeded |= NVM_BOUNDS_PLANE;
-		if (addr.l.sectr >= geo->nsectr)
+		if (addr.l.sectr >= geo->l.nsectr)
 			exceeded |= NVM_BOUNDS_BLOCK;
 		return exceeded;
 	}
@@ -183,17 +183,27 @@ uint64_t nvm_addr_dev2lba(struct nvm_dev *dev, uint64_t addr)
 
 inline struct nvm_addr nvm_addr_dev2gen(struct nvm_dev *dev, uint64_t addr)
 {
-	struct nvm_addr gen;
+	if (dev->verid == NVM_SPEC_VERID_20) {// TODO: Fix this for spec. 2.0
+		struct nvm_addr gen = { .val = 0 };
 
-	gen.ppa = 0;
-	gen.g.ch = (addr & dev->mask.n.ch) >> dev->ppaf.n.ch_off;
-	gen.g.lun |= (addr & dev->mask.n.lun) >> dev->ppaf.n.lun_off;
-	gen.g.pl|= (addr & dev->mask.n.pl) >> dev->ppaf.n.pl_off;
-	gen.g.blk |= (addr & dev->mask.n.blk) >> dev->ppaf.n.blk_off;
-	gen.g.pg |= (addr & dev->mask.n.pg) >> dev->ppaf.n.pg_off;
-	gen.g.sec |= (addr & dev->mask.n.sec) >> dev->ppaf.n.sec_off;
+		gen.l.pugrp = (addr & dev->lbam.pugrp) >> dev->lbaz.pugrp;
+		gen.l.punit = (addr & dev->lbam.punit) >> dev->lbaz.punit;
+		gen.l.chunk = (addr & dev->lbam.chunk) >> dev->lbaz.chunk;
+		gen.l.sectr = (addr & dev->lbam.sectr) >> dev->lbaz.sectr;
+		
+		return gen;
+	} else {
+		struct nvm_addr gen = { .val = 0 };
 
-	return gen;
+		gen.g.ch = (addr & dev->mask.n.ch) >> dev->ppaf.n.ch_off;
+		gen.g.lun = (addr & dev->mask.n.lun) >> dev->ppaf.n.lun_off;
+		gen.g.pl= (addr & dev->mask.n.pl) >> dev->ppaf.n.pl_off;
+		gen.g.blk = (addr & dev->mask.n.blk) >> dev->ppaf.n.blk_off;
+		gen.g.pg = (addr & dev->mask.n.pg) >> dev->ppaf.n.pg_off;
+		gen.g.sec = (addr & dev->mask.n.sec) >> dev->ppaf.n.sec_off;
+
+		return gen;
+	}
 }
 
 uint64_t nvm_addr_to_lpo(struct nvm_dev *dev, struct nvm_addr addr)
@@ -202,8 +212,8 @@ uint64_t nvm_addr_to_lpo(struct nvm_dev *dev, struct nvm_addr addr)
 
 	uint64_t idx = 0;
 	
-	idx += addr.l.pugrp * geo->npunit * geo->nchunk;
-	idx += addr.l.punit * geo->nchunk;
+	idx += addr.l.pugrp * geo->l.npunit * geo->l.nchunk;
+	idx += addr.l.punit * geo->l.nchunk;
 	idx += addr.l.chunk;
 
 	return idx * sizeof(struct nvm_spec_rprt_descr);
