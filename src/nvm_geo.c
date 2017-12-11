@@ -54,12 +54,12 @@ void nvm_geo_pr(const struct nvm_geo *geo)
 		break;
 
 	case NVM_SPEC_VERID_20:
-		printf("  npugrp: %zu\n", geo->npugrp);
-		printf("  npunit: %zu\n", geo->npunit);
-		printf("  nchunk: %zu\n", geo->nchunk);
-		printf("  nsectr: %zu\n", geo->nsectr);
-		printf("  nbytes: %zu\n", geo->nbytes);
-		printf("  nbytes_oob: %zu\n", geo->nbytes_oob);
+		printf("  npugrp: %zu\n", geo->l.npugrp);
+		printf("  npunit: %zu\n", geo->l.npunit);
+		printf("  nchunk: %zu\n", geo->l.nchunk);
+		printf("  nsectr: %zu\n", geo->l.nsectr);
+		printf("  nbytes: %zu\n", geo->l.nbytes);
+		printf("  nbytes_oob: %zu\n", geo->l.nbytes_oob);
 		break;
 	}
 
