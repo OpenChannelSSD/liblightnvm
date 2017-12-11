@@ -256,12 +256,12 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 
 	case NVM_SPEC_VERID_20:
 		// Geometry
-		geo->npugrp = idfy->s20.lgeo.npugrp;
-		geo->npunit = idfy->s20.lgeo.npunit;
-		geo->nchunk = idfy->s20.lgeo.nchunk;
-		geo->nsectr = idfy->s20.lgeo.nsectr;
-		geo->nbytes = idfy->s20.lgeo.nbytes;
-		geo->nbytes_oob = idfy->s20.lgeo.nbytes_oob;
+		geo->l.npugrp = idfy->s20.lgeo.npugrp;
+		geo->l.npunit = idfy->s20.lgeo.npunit;
+		geo->l.nchunk = idfy->s20.lgeo.nchunk;
+		geo->l.nsectr = idfy->s20.lgeo.nsectr;
+		geo->l.nbytes = idfy->s20.lgeo.nbytes;
+		geo->l.nbytes_oob = idfy->s20.lgeo.nbytes_oob;
 
 		// Capabilities
 		dev->mccap = idfy->s20.mccap;
@@ -320,8 +320,8 @@ int nvm_be_populate_quirks(struct nvm_dev *dev, const char serial[])
 
 	// HOTFIX: for reports of unrealisticly large OOB area
 	if ((dev->quirks & NVM_QUIRK_OOB_2LRG) &&
-	    (dev->geo.meta_nbytes > (dev->geo.sector_nbytes * 0.1))) {
-		dev->geo.meta_nbytes = 16; // Naively hope this is right
+	    (dev->geo.g.meta_nbytes > (dev->geo.g.sector_nbytes * 0.1))) {
+		dev->geo.g.meta_nbytes = 16; // Naively hope this is right
 	}
 	
 	return 0;
@@ -365,8 +365,8 @@ int nvm_be_populate_derived(struct nvm_dev *dev)
 		break;
 
 	case NVM_SPEC_VERID_20:
-		geo->tbytes = geo->npugrp * geo->npunit * geo->nchunk * \
-			      geo->nsectr * geo->nbytes;
+		geo->tbytes = geo->l.npugrp * geo->l.npunit * geo->l.nchunk * \
+			      geo->l.nsectr * geo->l.nbytes;
 		break;
 	}
 
