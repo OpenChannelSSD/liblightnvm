@@ -86,7 +86,7 @@ struct nvm_vblk* nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addrs[],
 		break;
 	
 	case NVM_SPEC_VERID_20:
-		vblk->nbytes = vblk->nblks * geo->nsectr * geo->nbytes;
+		vblk->nbytes = vblk->nblks * geo->l.nsectr * geo->l.nbytes;
 		break;
 
 	default:
@@ -138,7 +138,7 @@ struct nvm_vblk *nvm_vblk_alloc_line(struct nvm_dev *dev, int ch_bgn,
 			}
 		}
 
-		vblk->nbytes = vblk->nblks * geo->nsectr * geo->nbytes;
+		vblk->nbytes = vblk->nblks * geo->l.nsectr * geo->l.nbytes;
 		break;
 
 	default:
@@ -393,7 +393,7 @@ static inline ssize_t vblk_pwrite_s20(struct nvm_vblk *vblk, const void *buf,
 	const struct nvm_geo *geo = nvm_dev_get_geo(vblk->dev);
 	const size_t nchunks = vblk->nblks;
 
-	const size_t sectr_nbytes = geo->nbytes;
+	const size_t sectr_nbytes = geo->l.nbytes;
 	const size_t nsectr = count / sectr_nbytes;
 
 	const size_t sectr_bgn = offset / sectr_nbytes;
@@ -401,10 +401,10 @@ static inline ssize_t vblk_pwrite_s20(struct nvm_vblk *vblk, const void *buf,
 
 	const size_t cmd_nsectr_max = (NVM_NADDR_MAX / WS_MIN) * WS_MIN;
 
-	const size_t meta_tbytes = cmd_nsectr_max * geo->nbytes_oob;
+	const size_t meta_tbytes = cmd_nsectr_max * geo->l.nbytes_oob;
 	char *meta_buf = NULL;
 
-	const size_t pad_nbytes = cmd_nsectr_max * nsectr * geo->nbytes;
+	const size_t pad_nbytes = cmd_nsectr_max * nsectr * geo->l.nbytes;
 	char *pad_buf = NULL;
 
 	if (nsectr % WS_MIN) {
@@ -607,7 +607,7 @@ static inline ssize_t vblk_pread_s20(struct nvm_vblk *vblk, void *buf,
 	const struct nvm_geo *geo = nvm_dev_get_geo(vblk->dev);
 	const size_t nchunks = vblk->nblks;
 
-	const size_t sectr_nbytes = geo->nbytes;
+	const size_t sectr_nbytes = geo->l.nbytes;
 	const size_t nsectr = count / sectr_nbytes;
 
 	const size_t sectr_bgn = offset / sectr_nbytes;
