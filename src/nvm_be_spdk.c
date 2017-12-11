@@ -205,7 +205,7 @@ static struct nvm_spec_rprt *nvm_be_spdk_rprt(struct nvm_dev *dev,
 		return NULL;
 	}
 
-	ndescr = addr ? geo->nchunk : geo->nchunk * geo->npunit * geo->npugrp;
+	ndescr = addr ? geo->l.nchunk : geo->l.nchunk * geo->l.npunit * geo->l.npugrp;
 	rprt_len = ndescr * DESCR_NBYTES + sizeof(rprt->ndescr);
 
 	rprt = nvm_buf_alloca(NVM_BE_SPDK_ALIGN, rprt_len);
@@ -237,7 +237,7 @@ static struct nvm_spec_bbt *nvm_be_spdk_gbbt(struct nvm_dev *dev,
 	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
 	struct state *state = dev->be_state;
 
-	const uint32_t nblks = dev->geo.nblocks * dev->geo.nplanes;
+	const uint32_t nblks = dev->geo.g.nblocks * dev->geo.g.nplanes;
 	struct nvm_spec_bbt *bbt = NULL;
 	const size_t bbt_len = sizeof(*bbt) + sizeof(*(bbt->blk)) * nblks;
 
@@ -348,18 +348,24 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 
 	cmd.opcode = opcode;
 	cmd.nsid = state->nsid;
+
 	switch (dev->verid) {
 	case NVM_SPEC_VERID_12:
 		cmd.s12.naddrs = naddrs - 1;
 		cmd.s12.control = flags;
+
+		data_len = data ? geo->g.sector_nbytes * naddrs : 0;
+		meta_len = geo->g.meta_nbytes * naddrs;
 		break;
 
 	case NVM_SPEC_VERID_20:
 		cmd.ewrc.naddrs = naddrs - 1;
+		data_len = data ? geo->l.nbytes * naddrs : 0;
+		meta_len = meta ? geo->l.nbytes_oob * naddrs : 0;
 		break;
 	}
 
-	if (naddrs > 1) {	// Addresses for ERASE/WRITE/READ and COPY(SRC)
+	if (naddrs > 1) {	// Addrs. for ERASE/WRITE/READ and COPY(SRC)
 		addrs_dma = spdk_dma_malloc(addrs_len, NVM_BE_SPDK_ALIGN,
 					    &addrs_phys);
 		if (!addrs_dma) {
@@ -376,7 +382,7 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 		cmd.addrs = nvm_addr_gen2dev(dev, addrs[0]);
 	}
 
-	if (dst) {		// Addresses for COPY(DST)
+	if (dst) {		// Addrs. for COPY(DST)
 		if (naddrs > 1) {
 			dst_dma = spdk_dma_malloc(addrs_len, NVM_BE_SPDK_ALIGN,
 						  &dst_phys);
@@ -395,7 +401,6 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 	}
 
 	if (data) {		// Allocate and populate data
-		data_len = geo->sector_nbytes * naddrs;
 		data_dma = spdk_dma_malloc(data_len, NVM_BE_SPDK_ALIGN, NULL);
 		if (!data_dma) {
 			NVM_DEBUG("FAILED: spdk_dma_zmalloc(data_dma)");
@@ -408,13 +413,14 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 	}
 
 	if (meta) {		// Allocate and populate meta
-		meta_len = geo->meta_nbytes * naddrs;
 		meta_dma = spdk_dma_malloc(meta_len, NVM_BE_SPDK_ALIGN, NULL);
 		if (!meta_dma) {
-			NVM_DEBUG("FAILED: spdk_dma_zmalloc(meta_dma)");
+			NVM_DEBUG("FAILED: spdk_dma_malloc(meta_dma)");
 			res = -1;
 			goto out;
 		}
+
+		nvme_cmd->mptr = (uint64_t)meta_dma;
 
 		if (opcode == NVM_OPC_WRITE)
 			memcpy(meta_dma, meta, meta_len);
@@ -423,9 +429,9 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 	// Submit command
 	omp_set_lock(qpair_lock);
 	if (spdk_nvme_ctrlr_cmd_io_raw_with_md(ctrlr, qpair, nvme_cmd,
-					       data_dma, data_len,
-					       meta_dma, vio_cb,
-					       &completed)) {
+					       data_dma,
+					       meta ? data_len + meta_len : data_len,
+					       meta_dma, vio_cb, &completed)) {
 		NVM_DEBUG("FAILED: spdk_nvme_ctrlr_cmd_io_raw_with_md");
 		
 		omp_unset_lock(qpair_lock);
@@ -447,10 +453,10 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 	}
 
 	if ((opcode == NVM_OPC_READ) && data)
-			memcpy(data, data_dma, data_len);
+		memcpy(data, data_dma, data_len);
 
 	if ((opcode == NVM_OPC_READ) && meta)
-			memcpy(meta, meta_dma, meta_len);
+		memcpy(meta, meta_dma, meta_len);
 
 out:
 	spdk_dma_free(addrs_dma);
