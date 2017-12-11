@@ -49,7 +49,7 @@ void _CMD_RPRT(struct nvm_addr *punit_addr)
 	struct nvm_ret ret = { 0 };
 	ssize_t res = 0;
 
-	size_t tchunks = punit_addr ? geo->nchunk : geo->npugrp * geo->npunit * geo->nchunk;
+	size_t tchunks = punit_addr ? geo->l.nchunk : geo->l.npugrp * geo->l.npunit * geo->l.nchunk;
 
 	// Test that we can retrieve chunk information for the given punit
 	rprt[rprt_cur] = nvm_cmd_rprt(dev, punit_addr, 0x0, &ret);
@@ -64,10 +64,10 @@ void _CMD_RPRT(struct nvm_addr *punit_addr)
 	if (punit_addr) {
 		chunk_addr.val = punit_addr->val;
 	} else {
-		chunk_addr.l.pugrp = geo->npugrp / 2;
-		chunk_addr.l.punit = geo->npugrp / 2;
+		chunk_addr.l.pugrp = geo->l.npugrp / 2;
+		chunk_addr.l.punit = geo->l.npugrp / 2;
 	}
-	for (size_t idx = geo->nchunk / 2; idx < geo->nchunk; ++idx) {
+	for (size_t idx = geo->l.nchunk / 2; idx < geo->l.nchunk; ++idx) {
 		chunk_addr.l.chunk = idx;
 
 		if (rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_state == NVM_RPRT_FREE)
@@ -102,7 +102,7 @@ void _CMD_RPRT(struct nvm_addr *punit_addr)
 			goto out;
 
 		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_state == NVM_RPRT_OPEN);
-		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_wptr == (buf_len / geo->nbytes));
+		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_wptr == (buf_len / geo->l.nbytes));
 	}
 
 	// Write it fully and check that it changed state to CLOSED and wp
@@ -118,7 +118,7 @@ void _CMD_RPRT(struct nvm_addr *punit_addr)
 			goto out;
 
 		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_state == NVM_RPRT_CLOSED);
-		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_wptr == geo->nsectr);
+		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_wptr == geo->l.nsectr);
 	}
 
 	// Erase it and check that it is in state FREE
@@ -149,8 +149,8 @@ void test_CMD_RPRT_PUNIT(void)
 	struct nvm_addr punit_addr = { .val=0 };
 
 	// Construct an arbitrary punit address
-	punit_addr.l.pugrp = geo->npugrp / 2;
-	punit_addr.l.punit = geo->npunit / 2;
+	punit_addr.l.pugrp = geo->l.npugrp / 2;
+	punit_addr.l.punit = geo->l.npunit / 2;
 
 	_CMD_RPRT(&punit_addr);
 }

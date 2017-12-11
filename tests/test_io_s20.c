@@ -76,7 +76,7 @@ void TEST_NADDR_META_OFF(void)
 
 	// Setup buffers
 	{
-		buf_nbytes = geo->nbytes * geo->nsectr;
+		buf_nbytes = geo->l.nbytes * geo->l.nsectr;
 
 		buf_w = nvm_buf_alloc(geo, buf_nbytes);
 		if (!buf_w) {
@@ -105,7 +105,7 @@ void TEST_NADDR_META_OFF(void)
 	}
 
 	// WRITE
-	for (unsigned int sectr = 0; sectr < geo->nsectr; sectr += WS_MIN)
+	for (unsigned int sectr = 0; sectr < geo->l.nsectr; sectr += WS_MIN)
 	{
 		for (unsigned int i = 0; i < WS_MIN; ++i) {
 			addrs[i].l.pugrp = pugrp;
@@ -121,7 +121,7 @@ void TEST_NADDR_META_OFF(void)
 	}
 
 	// READ
-	for (unsigned int sectr = 0; sectr < geo->nsectr; sectr += WS_MIN)
+	for (unsigned int sectr = 0; sectr < geo->l.nsectr; sectr += WS_MIN)
 	{
 		for (unsigned int i = 0; i < WS_MIN; ++i) {
 			addrs[i].l.pugrp = pugrp;
