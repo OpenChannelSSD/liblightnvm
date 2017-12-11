@@ -877,6 +877,24 @@ int nvm_buf_to_file(char *buf, size_t nbytes, const char *path);
  */
 int nvm_buf_from_file(char *buf, size_t nbytes, const char *path);
 
+struct nvm_buf_set {
+	char *write;
+	char *write_meta;
+
+	char *read;
+	char *read_meta;
+
+	size_t nbytes;
+	size_t nbytes_meta;
+};
+
+struct nvm_buf_set *nvm_buf_set_alloc(struct nvm_dev *dev, size_t nbytes,
+				      size_t nbytes_meta);
+
+void nvm_buf_set_fill(struct nvm_buf_set *bufs);
+
+void nvm_buf_set_free(struct nvm_buf_set *bufs);
+
 /**
  * Erase nvm at given addresses
  *
