@@ -235,7 +235,7 @@ static int cmd_copy(struct nvm_cli *cli)
 {
 	struct nvm_dev *dev = cli->args.dev;
 	const uint32_t WS_MIN = nvm_dev_get_ws_min(dev);
-	const size_t nsectr = cli->args.geo->nsectr;
+	const size_t nsectr = cli->args.geo->l.nsectr;
 
 	struct nvm_addr chunk_src = cli->args.addrs[0];
 	struct nvm_addr chunk_dst = cli->args.addrs[1];
