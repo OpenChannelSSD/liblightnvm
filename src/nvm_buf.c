@@ -43,7 +43,7 @@ void *nvm_buf_alloc(const struct nvm_geo *geo, size_t nbytes)
 		alignment = geo->sector_nbytes;
 		break;
 	case NVM_SPEC_VERID_20:
-		alignment = geo->nbytes;
+		alignment = geo->l.nbytes;
 		break;
 	}
 
