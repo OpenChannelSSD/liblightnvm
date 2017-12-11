@@ -148,3 +148,61 @@ int nvm_buf_to_file(char *buf, size_t nbytes, const char *path)
 
 	return 0;
 }
+
+void nvm_buf_set_free(struct nvm_buf_set *bufs)
+{
+	if (!bufs)
+		return;
+
+	free(bufs->write);
+	free(bufs->write_meta);
+	free(bufs->read);
+	free(bufs->read_meta);
+	free(bufs);
+}
+
+void nvm_buf_set_fill(struct nvm_buf_set *bufs)
+{
+	nvm_buf_fill(bufs->write, bufs->nbytes);
+	memset(bufs->read, 0, bufs->nbytes);
+
+	if (bufs->nbytes_meta) {
+		nvm_buf_fill(bufs->write_meta, bufs->nbytes_meta);
+		memset(bufs->read_meta, 0, bufs->nbytes_meta);
+	}
+}
+
+struct nvm_buf_set *nvm_buf_set_alloc(struct nvm_dev *dev, size_t nbytes,
+				      size_t nbytes_meta)
+{
+	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
+	struct nvm_buf_set *bufs = nvm_buf_alloc(geo, sizeof(*bufs));
+
+	if (!bufs)
+		return NULL;
+
+	memset(bufs, 0, sizeof(*bufs));
+
+	if (nbytes) {
+		bufs->nbytes = nbytes;
+		bufs->write = malloc(bufs->nbytes);
+		bufs->read = malloc(bufs->nbytes);
+		if (!(bufs->write && bufs->read)) {
+			free(bufs);
+			return NULL;
+		}
+	}
+
+	if (nbytes_meta) {
+		bufs->nbytes_meta = nbytes_meta;
+		bufs->write_meta = malloc(bufs->nbytes_meta);
+		bufs->read_meta = malloc(bufs->nbytes_meta);
+		if (!(bufs->write_meta && bufs->read_meta)) {
+			free(bufs);
+			return NULL;
+		}
+	}
+
+	return bufs;
+}
+
