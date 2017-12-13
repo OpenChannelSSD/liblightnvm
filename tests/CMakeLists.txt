@@ -19,10 +19,8 @@ include_directories("${CMAKE_SOURCE_DIR}/include/linux/uapi")
 
 set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/test_dev.c
-	${CMAKE_CURRENT_SOURCE_DIR}/test_io_s20.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_addr_rio.c
-	${CMAKE_CURRENT_SOURCE_DIR}/test_addr_conv_s12.c
-	${CMAKE_CURRENT_SOURCE_DIR}/test_addr_conv_s20.c
+	${CMAKE_CURRENT_SOURCE_DIR}/test_addr_conv.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_vblk.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_bbt.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_rprt.c

@@ -30,6 +30,7 @@ int setup(void)
 
 int teardown(void)
 {
+	geo = NULL;
 	nvm_dev_close(dev);
 
 	return 0;
