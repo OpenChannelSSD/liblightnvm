@@ -106,7 +106,7 @@ static inline int vam_execute(struct nvm_dev *dev, struct nvm_nvme_cmd *cmd,
 	if (buf && buf_len) {
 		size_t alloc_len = NVM_BE_SPDK_ALIGN * ((buf_len + NVM_BE_SPDK_ALIGN - 1) / NVM_BE_SPDK_ALIGN);
 
-		buf_dma = spdk_dma_zmalloc(alloc_len, NVM_BE_SPDK_ALIGN, &buf_phys);
+		buf_dma = spdk_dma_malloc(alloc_len, NVM_BE_SPDK_ALIGN, &buf_phys);
 		if (!buf_dma) {
 			NVM_DEBUG("FAILED: spdk_dma_malloc");
 			return -1;
@@ -280,7 +280,7 @@ static int nvm_be_spdk_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs,
 		addrs_dma = spdk_dma_malloc(addrs_len, NVM_BE_SPDK_ALIGN,
 					    &addrs_phys);
 		if (!addrs_dma) {
-			NVM_DEBUG("FAILED: spdk_dma_zmalloc(addrs)");
+			NVM_DEBUG("FAILED: spdk_dma_malloc(addrs)");
 			return -1;
 		}
 		
@@ -332,10 +332,7 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 	int completed = 0;
 
 	const size_t addrs_len = naddrs * sizeof(uint64_t);
-	uint64_t addrs_phys = 0;
 	uint64_t *addrs_dma = NULL;
-
-	uint64_t dst_phys = 0;
 	uint64_t *dst_dma = NULL;
 
 	size_t data_len = 0;;
@@ -366,10 +363,12 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 	}
 
 	if (naddrs > 1) {	// Addrs. for ERASE/WRITE/READ and COPY(SRC)
+		uint64_t addrs_phys = 0;
+
 		addrs_dma = spdk_dma_malloc(addrs_len, NVM_BE_SPDK_ALIGN,
 					    &addrs_phys);
 		if (!addrs_dma) {
-			NVM_DEBUG("FAILED: spdk_dma_zmalloc(addrs)");
+			NVM_DEBUG("FAILED: spdk_dma_malloc(addrs)");
 			res = -1;
 			goto out;
 		}
@@ -384,10 +383,12 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 
 	if (dst) {		// Addrs. for COPY(DST)
 		if (naddrs > 1) {
+			uint64_t dst_phys = 0;
+
 			dst_dma = spdk_dma_malloc(addrs_len, NVM_BE_SPDK_ALIGN,
 						  &dst_phys);
 			if (!dst_dma) {
-				NVM_DEBUG("FAILED: spdk_dma_zmalloc(dst)");
+				NVM_DEBUG("FAILED: spdk_dma_malloc(dst)");
 				res = -1;
 				goto out;
 			}
@@ -403,7 +404,7 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 	if (data) {		// Allocate and populate data
 		data_dma = spdk_dma_malloc(data_len, NVM_BE_SPDK_ALIGN, NULL);
 		if (!data_dma) {
-			NVM_DEBUG("FAILED: spdk_dma_zmalloc(data_dma)");
+			NVM_DEBUG("FAILED: spdk_dma_malloc(data_dma)");
 			res = -1;
 			goto out;
 		}
@@ -413,17 +414,20 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 	}
 
 	if (meta) {		// Allocate and populate meta
-		meta_dma = spdk_dma_malloc(meta_len, NVM_BE_SPDK_ALIGN, NULL);
+		uint64_t meta_phys = 0;
+
+		meta_dma = spdk_dma_malloc(meta_len, NVM_BE_SPDK_ALIGN,
+					   &meta_phys);
 		if (!meta_dma) {
 			NVM_DEBUG("FAILED: spdk_dma_malloc(meta_dma)");
 			res = -1;
 			goto out;
 		}
 
-		nvme_cmd->mptr = (uint64_t)meta_dma;
-
 		if (opcode == NVM_OPC_WRITE)
 			memcpy(meta_dma, meta, meta_len);
+
+		nvme_cmd->mptr = meta_phys;
 	}
 
 	// Submit command
