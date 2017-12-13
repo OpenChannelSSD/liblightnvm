@@ -333,16 +333,16 @@ int nvm_be_populate_derived(struct nvm_dev *dev)
 
 	switch(dev->verid) {
 	case NVM_SPEC_VERID_12:
-		geo->nsectors = geo->page_nbytes / geo->sector_nbytes;
+		geo->g.nsectors = geo->g.page_nbytes / geo->g.sector_nbytes;
 
 		/* Derive total number of bytes on device */
-		geo->tbytes = geo->nchannels * geo->nluns * \
-				geo->nplanes * geo->nblocks * \
-				geo->npages * geo->nsectors * \
-				geo->sector_nbytes;
+		geo->tbytes = geo->g.nchannels * geo->g.nluns * \
+				geo->g.nplanes * geo->g.nblocks * \
+				geo->g.npages * geo->g.nsectors * \
+				geo->g.sector_nbytes;
 
 		/* Derive the sector-shift-width for LBA mapping */
-		dev->ssw = _ilog2(geo->sector_nbytes);
+		dev->ssw = _ilog2(geo->g.sector_nbytes);
 
 		/* Derive a default plane mode */
 		switch(geo->nplanes) {
@@ -365,8 +365,13 @@ int nvm_be_populate_derived(struct nvm_dev *dev)
 		break;
 
 	case NVM_SPEC_VERID_20:
+		/* Derive total number of bytes on device */
 		geo->tbytes = geo->l.npugrp * geo->l.npunit * geo->l.nchunk * \
 			      geo->l.nsectr * geo->l.nbytes;
+
+		/* Derive the sector-shift-width for LBA mapping */
+		dev->ssw = _ilog2(geo->l.nbytes);
+
 		break;
 	}
 
