@@ -26,8 +26,7 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/test_vblk.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_bbt.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_rprt.c
-	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_ewr_s12.c
-	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_ewr_s20.c)
+	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_ewr.c)
 
 #
 # static linking, against lightnvm_a, to avoid runtime dependency on liblightnvm
