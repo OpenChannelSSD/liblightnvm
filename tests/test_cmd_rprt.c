@@ -38,7 +38,7 @@ static size_t descr_idx(struct nvm_addr *punit_addr, struct nvm_addr chunk_addr)
 	return nvm_addr_to_lpo(dev, chunk_addr) / sizeof(struct nvm_spec_rprt_descr);
 }
 
-void _CMD_RPRT(struct nvm_addr *punit_addr)
+void cmd_rprt(struct nvm_addr *punit_addr)
 {
 	struct nvm_addr chunk_addr = { .val=0 };
 	struct nvm_spec_rprt *rprt[10] = { NULL }; ///> Report pointers
@@ -152,12 +152,12 @@ void test_CMD_RPRT_PUNIT(void)
 	punit_addr.l.pugrp = geo->l.npugrp / 2;
 	punit_addr.l.punit = geo->l.npunit / 2;
 
-	_CMD_RPRT(&punit_addr);
+	cmd_rprt(&punit_addr);
 }
 
 void test_CMD_RPRT_ALL(void)
 {
-	_CMD_RPRT(NULL);
+	cmd_rprt(NULL);
 }
 
 int main(int argc, char **argv)

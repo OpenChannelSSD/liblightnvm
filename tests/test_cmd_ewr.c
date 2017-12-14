@@ -36,75 +36,6 @@ int teardown(void)
 	return 0;
 }
 
-static size_t compare_buffers(char *expected, char *actual, size_t nbytes)
-{
-	size_t diff = 0;
-
-	for (size_t i = 0; i < nbytes; ++i)
-		if (expected[i] != actual[i])
-			++diff;
-
-	return diff;
-}
-
-static void pr_diff(char *expected, char *actual, size_t nbytes)
-{
-	size_t diff = 0;
-
-	printf("diffs:\n");
-	for (size_t i = 0; i < nbytes; ++i) {
-		if (expected[i] != actual[i]) {
-			++diff;
-			printf("i(%06lu), expected(%c) != actual(%02d|0x%02x|%c)\n",
-				i, expected[i], (int)actual[i], (int)actual[i],
-				(actual[i] > 31 && actual[i] < 127) ? actual[i] : '?');
-		}
-	}
-	printf("nbytes: %zu, nbytes_diff: %zu\n", nbytes, diff);
-}
-
-/**
- * Find an arbitrary blk in the given state on the given device
- *
- * @returns 0 on success, -1 on error and errno set to indicate the error.
- */
-static int nvm_cmd_gbbt_arbc(struct nvm_dev *dev, int bs, struct nvm_addr *addr)
-{
-	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
-	const size_t range = geo->g.nchannels * geo->g.nluns * geo->g.nblocks;
-
-	int arb = rand();
-
-	for (size_t i = 0; i < range; ++i) {
-		struct nvm_addr lun_addr = { .val = 0 };
-		size_t cur = (i + arb) % range;
-		struct nvm_spec_bbt *bbt = NULL;
-		int state = 0;
-
-		lun_addr.g.blk = cur % geo->g.nblocks;
-		lun_addr.g.lun = (cur / geo->g.nblocks) % geo->g.nluns;
-		lun_addr.g.ch = ((cur / geo->g.nblocks) / geo->g.nluns) % geo->g.nchannels;
-
-		bbt = nvm_cmd_gbbt(dev, lun_addr, NULL);
-		if (!bbt)
-			return -1;
-
-		// Check the state
-		for (uint32_t idx = lun_addr.g.blk * geo->g.nplanes;
-		     idx < lun_addr.g.blk * geo->g.nplanes + geo->g.nplanes;
-			++idx) {
-			state |= bbt->blk[idx];
-		}
-
-		if (bs == state) {
-			addr->val = lun_addr.val;
-			return 0;
-		}
-	}
-
-	return -1;
-}
-
 void ewr_s12_1addr(int use_meta)
 {
 	char *buf_w = NULL, *buf_r = NULL, *meta_w = NULL, *meta_r = NULL;
@@ -208,9 +139,11 @@ void ewr_s12_1addr(int use_meta)
 				size_t buf_diff = 0, meta_diff = 0;
 
 				int bw_offset = sec * geo->sector_nbytes + \
-					       pl * geo->nsectors * geo->sector_nbytes;
+						pl * geo->nsectors * \
+						geo->sector_nbytes;
 				int mw_offset = sec * geo->meta_nbytes + \
-						pl * geo->nsectors * geo->meta_nbytes;
+						pl * geo->nsectors * \
+						geo->meta_nbytes;
 
 				addr.ppa = blk_addr.ppa;
 				addr.g.pg = pg;
@@ -228,17 +161,22 @@ void ewr_s12_1addr(int use_meta)
 					goto out;
 				}
 
-				buf_diff = compare_buffers(buf_r, buf_w + bw_offset, buf_r_nbytes);
+				buf_diff = nvm_buf_diff(buf_r,
+							buf_w + bw_offset,
+							buf_r_nbytes);
 				if (use_meta)
-					meta_diff = compare_buffers(meta_r, meta_w + mw_offset, meta_r_nbytes);
+					meta_diff = nvm_buf_diff(meta_r,
+								 meta_w + mw_offset,
+								 meta_r_nbytes);
 				
 				if (buf_diff)
 					CU_FAIL("Read failure: buffer mismatch");
 				if (use_meta && meta_diff) {
 					CU_FAIL("Read failure: meta mismatch");
 					if (CU_BRM_VERBOSE == rmode) {
-						pr_diff(meta_w + mw_offset,
-							meta_r, meta_r_nbytes);
+						nvm_buf_diff_pr(meta_w + mw_offset,
+								meta_r,
+								meta_r_nbytes);
 					}
 				}
 				if (buf_diff || meta_diff)
@@ -253,7 +191,7 @@ void ewr_s12_1addr(int use_meta)
 out:
 	if ((CU_BRM_VERBOSE == rmode) && failed) {
 		printf("\n# Failed using\n");
-		nvm_addr_print(&blk_addr, 1, dev);
+		nvm_addr_prn(&blk_addr, 1, dev);
 	}
 
 	nvm_buf_free(meta_r);
@@ -311,7 +249,7 @@ void ewr_s12_naddr(int use_meta, int pmode)
 
 	if (CU_BRM_VERBOSE == rmode) {
 		printf("# using addr\n");
-		nvm_addr_print(&blk_addr, 1, dev);
+		nvm_addr_prn(&blk_addr, 1, dev);
 	}
 
 	bufs = nvm_buf_set_alloc(dev, naddrs * geo->g.sector_nbytes,
@@ -377,19 +315,20 @@ void ewr_s12_naddr(int use_meta, int pmode)
 			goto out;
 		}
 
-		buf_diff = compare_buffers(bufs->write, bufs->read, bufs->nbytes);
+		buf_diff = nvm_buf_diff(bufs->write, bufs->read, bufs->nbytes);
 		if (use_meta)
-			meta_diff = compare_buffers(bufs->write_meta,
-						    bufs->read_meta,
-						    bufs->nbytes_meta);
+			meta_diff = nvm_buf_diff(bufs->write_meta,
+						 bufs->read_meta,
+						 bufs->nbytes_meta);
 		
 		if (buf_diff)
 			CU_FAIL("Read failure: buffer mismatch");
 		if (use_meta && meta_diff) {
 			CU_FAIL("Read failure: meta mismatch");
 			if (CU_BRM_VERBOSE == rmode) {
-				pr_diff(bufs->write_meta, bufs->read_meta,
-					bufs->nbytes_meta);
+				nvm_buf_diff_pr(bufs->write_meta,
+						bufs->read_meta,
+						bufs->nbytes_meta);
 			}
 		}
 		if (buf_diff || meta_diff)
@@ -402,7 +341,7 @@ void ewr_s12_naddr(int use_meta, int pmode)
 out:
 	if ((CU_BRM_VERBOSE == rmode) && failed) {
 		printf("\n# Failed using\n");
-		nvm_addr_print(&blk_addr, 1, dev);
+		nvm_addr_prn(&blk_addr, 1, dev);
 	}
 
 	nvm_buf_set_free(bufs);
@@ -522,31 +461,6 @@ void test_EWR_S12_NADDR_META1_QUAD(void)
 	}
 }
 
-/**
- * Find an arbitrary chunk in the given state on the given device
- *
- * @returns 0 on success, -1 on error and errno set to indicate the error.
- */
-static int nvm_cmd_rprt_arbc(struct nvm_dev *dev, int cs, struct nvm_addr *addr)
-{
-	struct nvm_spec_rprt *rprt = nvm_cmd_rprt(dev, NULL, 0x0, 0x0);
-
-	if (!rprt)
-		return -1;
-
-	for (size_t idx = rprt->ndescr / 2; idx < rprt->ndescr; ++idx) {
-		if (rprt->descr[idx].chunk_state != cs)
-			continue;
-	
-		*addr = nvm_addr_dev2gen(dev, rprt->descr[idx].chunk_addr);
-		free(rprt);
-		return 0;
-	}
-
-	free(rprt);
-	return -1;
-}
-
 static void ewr_s20(int use_meta)
 {
 	const int naddrs = nvm_dev_get_ws_min(dev);
@@ -610,19 +524,21 @@ static void ewr_s20(int use_meta)
 			goto out;
 		}
 
-		buf_diff = compare_buffers(bufs->read, bufs->write, bufs->nbytes);
+		buf_diff = nvm_buf_diff(bufs->read, bufs->write, bufs->nbytes);
 		if (buf_diff) {
 			CU_FAIL("Read failure: buffer mismatch");
 		}
 
 		if (use_meta) {
-			meta_diff = compare_buffers(bufs->read_meta, bufs->write_meta, bufs->nbytes_meta);
+			meta_diff = nvm_buf_diff(bufs->read_meta,
+						 bufs->write_meta,
+						 bufs->nbytes_meta);
 			if (meta_diff) {
 				CU_FAIL("Read failure: meta mismatch");
 				if (CU_BRM_VERBOSE == rmode) {
-					pr_diff(bufs->write_meta,
-						bufs->read_meta,
-						bufs->nbytes_meta);
+					nvm_buf_diff_pr(bufs->write_meta,
+							bufs->read_meta,
+							bufs->nbytes_meta);
 				}
 			}
 		}

@@ -187,7 +187,7 @@ void _test_NADDR(int naddrs, int pmode)
 		CU_ASSERT(res==0)
 		if (res) {
 			if (VERBOSE) {
-				nvm_addr_prn(addrs, naddrs);
+				nvm_addr_prn(addrs, naddrs, dev);
 				nvm_ret_pr(&ret);
 			}
 			CU_FAIL("FAILED: nvm_addr_read");

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 #include <liblightnvm.h>
 #include <CUnit/Basic.h>
@@ -114,8 +115,8 @@ static void conv(int func)
 
 		CU_ASSERT_EQUAL(act.val, exp.val);
 		if ((CU_BRM_VERBOSE == rmode) && (act.val != exp.val)) {
-			printf("Expected: "); nvm_addr_print(&exp, 1, dev);
-			printf("Got:      "); nvm_addr_print(&act, 1, dev);
+			printf("Expected: "); nvm_addr_prn(&exp, 1, dev);
+			printf("Got:      "); nvm_addr_prn(&act, 1, dev);
 		}
 	}
 }
