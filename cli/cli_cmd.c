@@ -73,7 +73,7 @@ static int cmd_sbbt(struct nvm_cli *cli)
 	nvm_cli_info_pr("nvm_cmd_sbbt");
 	nvm_cli_info_pr("flags: 0x%04X", flags);
 
-	nvm_addr_prn(addrs, naddrs);
+	nvm_addr_prn(addrs, naddrs, dev);
 
 	if (nvm_cmd_sbbt(dev, addrs, naddrs, flags, NULL))
 		nvm_cli_perror("nvm_cmd_sbbt");
@@ -242,10 +242,10 @@ static int cmd_copy(struct nvm_cli *cli)
 
 	nvm_cli_info_pr("nvm_cmd_copy");
 	nvm_cli_info_pr("src");
-	nvm_addr_print(&chunk_src, 1, dev);
+	nvm_addr_prn(&chunk_src, 1, dev);
 
 	nvm_cli_info_pr("dst");
-	nvm_addr_print(&chunk_dst, 1, dev);
+	nvm_addr_prn(&chunk_dst, 1, dev);
 
 	for (size_t sectr = 0; sectr < nsectr; sectr += WS_MIN) {
 		struct nvm_addr src[WS_MIN];
@@ -262,9 +262,9 @@ static int cmd_copy(struct nvm_cli *cli)
 		if (nvm_cmd_copy(dev, src, dst, WS_MIN, 0x0, NULL)) {
 			nvm_cli_info_pr("nvm_cmd_copy");
 			nvm_cli_info_pr("src");
-			nvm_addr_print(src, WS_MIN, dev);
+			nvm_addr_prn(src, WS_MIN, dev);
 			nvm_cli_info_pr("dst");
-			nvm_addr_print(src, WS_MIN, dev);
+			nvm_addr_prn(src, WS_MIN, dev);
 
 			nvm_cli_perror("nvm_cmd_copy");
 			break;
