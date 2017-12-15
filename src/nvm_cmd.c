@@ -74,10 +74,68 @@ struct nvm_spec_rprt *nvm_cmd_rprt(struct nvm_dev *dev, struct nvm_addr *addr,
 	return dev->be->rprt(dev, addr, opt, ret);
 }
 
+int nvm_cmd_rprt_arbc(struct nvm_dev *dev, int cs, struct nvm_addr *addr)
+{
+	struct nvm_spec_rprt *rprt = nvm_cmd_rprt(dev, NULL, 0x0, 0x0);
+
+	if (!rprt)
+		return -1;
+
+	for (size_t idx = rprt->ndescr / 2; idx < rprt->ndescr; ++idx) {
+		if (rprt->descr[idx].chunk_state != cs)
+			continue;
+	
+		*addr = nvm_addr_dev2gen(dev, rprt->descr[idx].chunk_addr);
+		free(rprt);
+		return 0;
+	}
+
+	free(rprt);
+	return -1;
+}
+
 struct nvm_spec_bbt *nvm_cmd_gbbt(struct nvm_dev *dev, struct nvm_addr addr,
 				  struct nvm_ret *ret)
 {
 	return dev->be->gbbt(dev, addr, ret);
+}
+
+int nvm_cmd_gbbt_arbc(struct nvm_dev *dev, int bs, struct nvm_addr *addr)
+{
+	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
+	const size_t range = geo->g.nchannels * geo->g.nluns * geo->g.nblocks;
+
+	int arb = rand();
+
+	for (size_t i = 0; i < range; ++i) {
+		struct nvm_addr lun_addr = { .val = 0 };
+		size_t cur = (i + arb) % range;
+		struct nvm_spec_bbt *bbt = NULL;
+		int state = 0;
+
+		lun_addr.g.blk = cur % geo->g.nblocks;
+		lun_addr.g.lun = (cur / geo->g.nblocks) % geo->g.nluns;
+		lun_addr.g.ch = ((cur / geo->g.nblocks) / geo->g.nluns) \
+				 % geo->g.nchannels;
+
+		bbt = nvm_cmd_gbbt(dev, lun_addr, NULL);
+		if (!bbt)
+			return -1;
+
+		// Check the state
+		for (uint32_t idx = lun_addr.g.blk * geo->g.nplanes;
+		     idx < lun_addr.g.blk * geo->g.nplanes + geo->g.nplanes;
+			++idx) {
+			state |= bbt->blk[idx];
+		}
+
+		if (bs == state) {
+			addr->val = lun_addr.val;
+			return 0;
+		}
+	}
+
+	return -1;
 }
 
 int nvm_cmd_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs, int naddrs,
