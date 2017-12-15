@@ -44,8 +44,13 @@ void nvm_ret_pr(const struct nvm_ret *ret)
 
 void nvm_addr_pr(struct nvm_addr addr)
 {
+	printf("0x%016"PRIx64", ", addr.val);
+}
+
+static void nvm_addr_pr_s12(struct nvm_addr addr)
+{
 	printf("addr: {");
-	printf("ppa: 0x%016"PRIx64", ", addr.ppa);
+	printf("val: 0x%016"PRIx64", ", addr.ppa);
 	printf("ch: %02d, ", addr.g.ch);
 	printf("lun: %02d, ", addr.g.lun);
 	printf("blk: %04d, ", addr.g.blk);
@@ -55,7 +60,7 @@ void nvm_addr_pr(struct nvm_addr addr)
 	printf("}\n");
 }
 
-void nvm_addr_prl(struct nvm_addr addr)
+static void nvm_addr_pr_s20(struct nvm_addr addr)
 {
 	printf("addr: {");
 	printf("val: 0x%016"PRIx64", ", addr.ppa);
@@ -66,17 +71,8 @@ void nvm_addr_prl(struct nvm_addr addr)
 	printf("}\n");
 }
 
-void nvm_addr_prn(struct nvm_addr *addr, unsigned int naddrs)
-{
-	printf("naddrs: %d\n", naddrs);
-	printf("addrs:\n");
-	for (unsigned int i = 0; (i < naddrs) && addr; ++i) {
-		printf("  - ");
-		nvm_addr_pr(addr[i]);
-	}
-}
-
-void nvm_addr_print(struct nvm_addr *addr, unsigned int naddrs, const struct nvm_dev *dev)
+void nvm_addr_prn(struct nvm_addr *addr, unsigned int naddrs,
+		  const struct nvm_dev *dev)
 {
 	printf("naddrs: %d\n", naddrs);
 	printf("addrs:\n");
@@ -84,11 +80,11 @@ void nvm_addr_print(struct nvm_addr *addr, unsigned int naddrs, const struct nvm
 		printf("  - ");
 		switch(nvm_dev_get_verid(dev)) {
 			case NVM_SPEC_VERID_12:
-				nvm_addr_pr(addr[i]);
+				nvm_addr_pr_s12(addr[i]);
 				break;
 
 			case NVM_SPEC_VERID_20:
-				nvm_addr_prl(addr[i]);
+				nvm_addr_pr_s20(addr[i]);
 				break;
 
 			default:
