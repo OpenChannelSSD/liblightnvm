@@ -84,7 +84,6 @@ void *nvm_buf_alloca(size_t alignment, size_t nbytes)
 	return buf;
 }
 
-
 void nvm_buf_fill(char *buf, size_t nbytes)
 {
 	#pragma omp parallel for schedule(static, 1)
