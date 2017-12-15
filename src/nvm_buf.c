@@ -115,6 +115,34 @@ void nvm_buf_pr(char *buf, size_t nbytes)
 	printf("# NVM_BUF_PR - END\n");
 }
 
+
+size_t nvm_buf_diff(char *expected, char *actual, size_t nbytes)
+{
+	size_t diff = 0;
+
+	for (size_t i = 0; i < nbytes; ++i)
+		if (expected[i] != actual[i])
+			++diff;
+
+	return diff;
+}
+
+void nvm_buf_diff_pr(char *expected, char *actual, size_t nbytes)
+{
+	size_t diff = 0;
+
+	printf("diffs:\n");
+	for (size_t i = 0; i < nbytes; ++i) {
+		if (expected[i] != actual[i]) {
+			++diff;
+			printf("i(%06lu), expected(%c) != actual(%02d|0x%02x|%c)\n",
+				i, expected[i], (int)actual[i], (int)actual[i],
+				(actual[i] > 31 && actual[i] < 127) ? actual[i] : '?');
+		}
+	}
+	printf("nbytes: %zu, nbytes_diff: %zu\n", nbytes, diff);
+}
+
 int nvm_buf_from_file(char *buf, size_t nbytes, const char *path)
 {
 	FILE *fhandle = NULL;
