@@ -1314,7 +1314,7 @@ void nvm_cli_cmd_args_pr(struct nvm_cli_cmd_args *args) {
 	printf("},\n");
 
 	printf("cli-args-");
-	nvm_addr_prn(args->addrs, args->naddrs);
+	nvm_addr_prn(args->addrs, args->naddrs, args->dev);
 
 	printf("cli-");
 	nvm_dev_pr(args->dev);
