@@ -301,6 +301,13 @@ struct nvm_spec_rprt *nvm_cmd_rprt(struct nvm_dev *dev, struct nvm_addr *addr,
 				   int opt, struct nvm_ret *ret);
 
 /**
+ * Find an arbitrary chunk in the given state on the given device
+ *
+ * @returns 0 on success, -1 on error and errno set to indicate the error.
+ */
+int nvm_cmd_rprt_arbc(struct nvm_dev *dev, int cs, struct nvm_addr *addr);
+
+/**
  * Execute an Open-Channel 1.2 get bad-block-table
  *
  * NOTE: Caller is responsible for de-allocating the returned structure
@@ -311,6 +318,13 @@ struct nvm_spec_rprt *nvm_cmd_rprt(struct nvm_dev *dev, struct nvm_addr *addr,
  */
 struct nvm_spec_bbt *nvm_cmd_gbbt(struct nvm_dev *dev, struct nvm_addr addr,
 				  struct nvm_ret *ret);
+
+/**
+ * Find an arbitrary blk in the given state on the given device
+ *
+ * @returns 0 on success, -1 on error and errno set to indicate the error.
+ */
+int nvm_cmd_gbbt_arbc(struct nvm_dev *dev, int bs, struct nvm_addr *addr);
 
 /**
  * Execute an Open-Channel 1.2 get bad block table command
@@ -854,6 +868,16 @@ void nvm_buf_free(void *buf);
  * @param nbytes Amount of bytes of buf to print
  */
 void nvm_buf_pr(char *buf, size_t nbytes);
+
+/**
+ * Returns the number of bytes where expected is different from actual
+ */
+size_t nvm_buf_diff(char *expected, char *actual, size_t nbytes);
+
+/**
+ * Prints the number and value of bytes where expected is different from actual
+ */
+void nvm_buf_diff_pr(char *expected, char *actual, size_t nbytes);
 
 /**
  * Write content of buffer into file
