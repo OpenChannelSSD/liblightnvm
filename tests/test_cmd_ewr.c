@@ -14,6 +14,8 @@ static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
 static struct nvm_dev *dev;
 static const struct nvm_geo *geo;
 
+#define NBYTES_QRK 4
+
 int setup(void)
 {
 	dev = nvm_dev_open(nvm_dev_path);
@@ -34,6 +36,23 @@ int teardown(void)
 	nvm_dev_close(dev);
 
 	return 0;
+}
+
+size_t nvm_buf_diff_qrk(char *expected, char *actual, size_t nbytes,
+			size_t nbytes_oob,
+			size_t nbytes_qrk)
+{
+	size_t diff = 0;
+
+	for (size_t i = 0; i < nbytes; ++i) {
+		if ((i % nbytes_oob) < nbytes_qrk)
+			continue;
+
+		if (expected[i] != actual[i])
+			++diff;
+	}
+
+	return diff;
 }
 
 void ewr_s12_1addr(int use_meta)
@@ -161,13 +180,17 @@ void ewr_s12_1addr(int use_meta)
 					goto out;
 				}
 
-				buf_diff = nvm_buf_diff(buf_r,
-							buf_w + bw_offset,
-							buf_r_nbytes);
+				buf_diff = nvm_buf_diff_qrk(buf_r,
+							    buf_w + bw_offset,
+							    buf_r_nbytes,
+							    geo->g.meta_nbytes,
+							    NBYTES_QRK);
 				if (use_meta)
-					meta_diff = nvm_buf_diff(meta_r,
-								 meta_w + mw_offset,
-								 meta_r_nbytes);
+					meta_diff = nvm_buf_diff_qrk(meta_r,
+							meta_w + mw_offset,
+							meta_r_nbytes,
+							geo->g.meta_nbytes,
+							NBYTES_QRK);
 				
 				if (buf_diff)
 					CU_FAIL("Read failure: buffer mismatch");
@@ -315,11 +338,16 @@ void ewr_s12_naddr(int use_meta, int pmode)
 			goto out;
 		}
 
-		buf_diff = nvm_buf_diff(bufs->write, bufs->read, bufs->nbytes);
+		buf_diff = nvm_buf_diff_qrk(bufs->write, bufs->read,
+					    bufs->nbytes,
+					    geo->g.meta_nbytes,
+					    NBYTES_QRK);
 		if (use_meta)
-			meta_diff = nvm_buf_diff(bufs->write_meta,
-						 bufs->read_meta,
-						 bufs->nbytes_meta);
+			meta_diff = nvm_buf_diff_qrk(bufs->write_meta,
+						bufs->read_meta,
+						bufs->nbytes_meta,
+						geo->g.meta_nbytes,
+						NBYTES_QRK);
 		
 		if (buf_diff)
 			CU_FAIL("Read failure: buffer mismatch");
@@ -524,15 +552,19 @@ static void ewr_s20(int use_meta)
 			goto out;
 		}
 
-		buf_diff = nvm_buf_diff(bufs->read, bufs->write, bufs->nbytes);
+		buf_diff = nvm_buf_diff_qrk(bufs->read, bufs->write, bufs->nbytes,
+					    geo->l.nbytes_oob,
+					    NBYTES_QRK);
 		if (buf_diff) {
 			CU_FAIL("Read failure: buffer mismatch");
 		}
 
 		if (use_meta) {
-			meta_diff = nvm_buf_diff(bufs->read_meta,
+			meta_diff = nvm_buf_diff_qrk(bufs->read_meta,
 						 bufs->write_meta,
-						 bufs->nbytes_meta);
+						 bufs->nbytes_meta,
+					    geo->l.nbytes_oob,
+					    NBYTES_QRK);
 			if (meta_diff) {
 				CU_FAIL("Read failure: meta mismatch");
 				if (CU_BRM_VERBOSE == rmode) {
