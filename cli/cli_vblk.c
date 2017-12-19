@@ -232,7 +232,7 @@ static int cmd_vblk_pad(struct nvm_cli *cli)
 		return -1;
 	}
 
-	res = _vblk_read(cli, vblk);
+	res = _vblk_pad(cli, vblk);
 
 	nvm_vblk_free(vblk);
 
