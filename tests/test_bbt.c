@@ -95,7 +95,7 @@ void _verify_counters(struct nvm_dev *dev, const struct nvm_bbt *bbt)
  */
 void _test_BBT_GET(int bbts_cached)
 {
-	struct nvm_ret ret = {0,0};
+	struct nvm_ret ret = {0, 0};
 	const struct nvm_bbt *bbt;
 
 	nvm_dev_set_bbts_cached(dev, bbts_cached);

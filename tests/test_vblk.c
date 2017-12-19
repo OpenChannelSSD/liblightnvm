@@ -1,94 +1,32 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+#include <time.h>
 #include <unistd.h>
-#include <liblightnvm.h>
-
+#include <CUnit/Automated.h>
 #include <CUnit/Basic.h>
+#include <liblightnvm.h>
+#include <liblightnvm_spec.h>
 
-// Parsed from CLI
+#define NVM_TEST_RMODE_AUTO 0xA
+
+static int rmode = CU_BRM_NORMAL;
+static int seed = 0;
 static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
-
-static int ch_bgn = 0;
-static int ch_end = 0;
-static int lun_bgn = 0;
-static int lun_end = 0;
-static int blk = 0;
-
-// Managed by setup/teardown and used by tests
 static struct nvm_dev *dev;
 static const struct nvm_geo *geo;
-size_t nbytes;
-struct nvm_vblk *vblk;
-char *buf_w, *buf_r;
-
-static int SEED = 1337;
-
-static int VERBOSE = 0;
-
-size_t compare_buffers(char *expected, char *actual, size_t nbytes)
-{
-	size_t diff = 0;
-
-	for (size_t i = 0; i < nbytes; ++i) {
-		if (expected[i] != actual[i]) {
-			++diff;
-		}
-	}
-
-	return diff;
-}
-
-void print_mismatch(char *expected, char *actual, size_t nbytes)
-{
-	printf("MISMATCHES:\n");
-	for (size_t i = 0; i < nbytes; ++i) {
-		if (expected[i] != actual[i]) {
-			printf("i(%06lu), expected(%c) != actual(%02d|0x%02x|%c)\n",
-				i, expected[i], (int)actual[i], (int)actual[i], actual[i]);
-		}
-	}
-}
 
 int setup(void)
 {
-	srand(SEED);
-
 	dev = nvm_dev_open(nvm_dev_path);
 	if (!dev) {
 		perror("nvm_dev_open");
-		return -1;
+		CU_ASSERT_PTR_NOT_NULL(dev);
 	}
 	geo = nvm_dev_get_geo(dev);
-
-	vblk = nvm_vblk_alloc_line(dev, ch_bgn, ch_end, lun_bgn, lun_end, blk);
-	if (!vblk) {
-		perror("nvm_vblk_alloc_line");
-		return -1;
-	}
-	nbytes = nvm_vblk_get_nbytes(vblk);
-
-	buf_w = nvm_buf_alloc(geo, nbytes);
-	if (!buf_w) {
-		perror("nvm_buf_alloc");
-		return -1;
-	}
-	nvm_buf_fill(buf_w, nbytes);
-
-	// Drop the byte offset into the buffer
-	for (size_t offset = 0; offset < nbytes; offset += geo->sector_nbytes) {
-		char misc[geo->sector_nbytes];
-
-		sprintf(misc, "-={[%lu]}=-", offset);
-		memcpy(buf_w + offset, misc, strlen(misc));
-	}
-
-	buf_r = nvm_buf_alloc(geo, nbytes);
-	if (!buf_r) {
-		perror("nvm_buf_alloc");
-		return -1;
-	}
+	
+	srand(seed);
 
 	return 0;
 }
@@ -96,141 +34,103 @@ int setup(void)
 int teardown(void)
 {
 	geo = NULL;
-	nvm_vblk_free(vblk);
 	nvm_dev_close(dev);
-	nvm_buf_free(buf_r);
-	nvm_buf_free(buf_w);
 
 	return 0;
 }
 
-void _test_VBLK(int test_expected_read_fail)
+int vblk_ewr(struct nvm_addr *addrs, int naddrs)
 {
-	ssize_t res = 0;
+	struct nvm_buf_set *bufs = NULL;
+	struct nvm_vblk *vblk = NULL;
+	size_t nbytes = 0;
 
-	res = nvm_vblk_erase(vblk);				// EXPECT: OK
-	CU_ASSERT(res >= 0);
-	if (res < 0) {
-		CU_FAIL("FAILED: Erasing vblk");
+	if (CU_BRM_VERBOSE == rmode)
+		nvm_addr_prn(addrs, naddrs, dev);
+
+	vblk = nvm_vblk_alloc(dev, addrs, naddrs);
+	if (!vblk) {
+		CU_FAIL("FAILED: Allocating vblk");
+		goto out;
+	}
+	nbytes = nvm_vblk_get_nbytes(vblk);
+
+	bufs = nvm_buf_set_alloc(dev, nbytes, 0);
+	if (!bufs) {
+		goto out;
+	}
+	nvm_buf_set_fill(bufs);
+
+	if (nvm_vblk_erase(vblk) < 0) {
+		CU_FAIL("FAILED: nvm_vblk_erase");
+		goto out;
 	}
 
-	if (test_expected_read_fail) {
-		res = nvm_vblk_read(vblk, buf_r, nbytes);	// EXPECT: Fail
-		CU_ASSERT(res < 0);
-		if (res >=  0) {
-			CU_FAIL("FAILED: nvm_vblk_read OK of NON-written vblk -> should fail");
-			return;
-		}
-	}
-	
-	res = nvm_vblk_write(vblk, buf_w, nbytes);		// EXPECT: OK
-	CU_ASSERT(res >= 0);
-	if (res < 0) {
+	if (nvm_vblk_write(vblk, bufs->write, nbytes) < 0) {
 		CU_FAIL("FAILED: nvm_vblk_write");
-		return;
+		goto out;
 	}
 
-	res = nvm_vblk_read(vblk, buf_r, nbytes);		// EXPECT: OK
-	CU_ASSERT(res >= 0);
-	if (res < 0) {
+	if (nvm_vblk_read(vblk, bufs->read, nbytes) < 0) {
 		CU_FAIL("FAILED: nvm_vblk_read");
-		return;
+		goto out;
 	}
 
-	CU_ASSERT_NSTRING_EQUAL(buf_w, buf_r, nbytes);
-}
-
-void test_VBLK_PE_PW_PR(void)
-{
-	_test_VBLK(0);
-}
-
-void test_VBLK_PE_PR_PW_PR(void)
-{
-	_test_VBLK(1);
-}
-
-size_t rand_offset(size_t nbytes, size_t count, size_t align)
-{
-	const double var = (double)rand() / (double)RAND_MAX;
-
-	return ((size_t)(var * (nbytes - count)) / align) * align;
-}
-
-void test_VBLK_RAND(void)
-{
-	const size_t read_alignment = geo->nplanes * geo->nsectors * geo->sector_nbytes;
-	ssize_t res = 0;
-
-	res = nvm_vblk_erase(vblk);			// EXPECT: OK
-	CU_ASSERT(res >= 0);
-	if (res < 0) {
-		CU_FAIL("FAILED: Erasing vblk");
+	if (nvm_buf_diff(bufs->write, bufs->read, nbytes)) {
+		CU_FAIL("FAILED: nvm_buf_diff");
+		goto out;
 	}
 
-	res = nvm_vblk_write(vblk, buf_w, nbytes);	// EXPECT: OK
-	CU_ASSERT(res >= 0);
-	if (res < 0) {
-		CU_FAIL("FAILED: nvm_vblk_write");
-		return;
+out:
+	nvm_vblk_free(vblk);
+	nvm_buf_set_free(bufs);
+
+	return 0;
+}
+
+void test_VBLK_EWR(void)
+{
+	struct nvm_addr addrs[0x1000] = { 0 };
+	size_t naddrs = 0;
+
+	switch(nvm_dev_get_verid(dev)) {
+	case NVM_SPEC_VERID_12:
+		naddrs = geo->g.nchannels * geo->g.nluns;
+		if (nvm_cmd_gbbt_arbs(dev, NVM_BBT_FREE, naddrs, addrs))
+			CU_FAIL("FAILED: nvm_cmd_gbbt_arbs");
+		break;
+
+	case NVM_SPEC_VERID_20:
+		naddrs = geo->l.npugrp * geo->l.npunit;
+		if (nvm_cmd_rprt_arbs(dev, NVM_RPRT_FREE, naddrs, addrs))
+			CU_FAIL("FAILED: nvm_cmd_rprt_arbs");
+		break;
 	}
 
-	int naddrs = nvm_vblk_get_naddrs(vblk);
-
-	for (int i = 1; i <= naddrs; ++i) {
-		size_t count = read_alignment * i;
-		size_t nbytes_read = 0;
-
-		char *buf = nvm_buf_alloc(geo, count);
-		if (!buf) {
-			CU_FAIL("FAILED: nvm_buf_alloc");
-			return;
-		}
-
-		while (nbytes_read < nbytes) {			// EXPECT: OK
-			size_t offset = rand_offset(nbytes, count, read_alignment);
-
-			res = nvm_vblk_pread(vblk, buf, count, offset);
-			CU_ASSERT(res >= 0);
-			if (res < 0) {
-				if (VERBOSE)
-					perror("nvm_vblk_pread");
-				CU_FAIL("FAILED: nvm_vblk_pread");
-				nvm_buf_free(buf);
-				return;
-			}
-			CU_ASSERT(res == (ssize_t)count);
-
-			if (compare_buffers(buf_w + offset, buf, count)) {
-				if (VERBOSE)
-					print_mismatch(buf_w + offset, buf, count);
-				CU_FAIL("FAILED: buffer mismatch");
-				nvm_buf_free(buf);
-				return;
-			}
-
-			nbytes_read += res;
-		}
-
-		nvm_buf_free(buf);
-	}
+	CU_ASSERT(!vblk_ewr(addrs, naddrs));
 }
 
 int main(int argc, char **argv)
 {
 	switch(argc) {
-	case 8:
-		VERBOSE = atoi(argv[7]);
-	case 7:
-		blk = atoi(argv[6]);
-	case 6:
-		lun_end = atoi(argv[5]);
-	case 5:
-		lun_bgn = atoi(argv[4]);
 	case 4:
-		ch_end = atoi(argv[3]);
+		switch(atoi(argv[3])) {
+		case NVM_TEST_RMODE_AUTO:
+			rmode = NVM_TEST_RMODE_AUTO;
+			break;
+		case 2:
+			rmode = CU_BRM_VERBOSE;
+			break;
+		case 1:
+			rmode = CU_BRM_SILENT;
+			break;
+		case 0:
+		default:
+			rmode = CU_BRM_NORMAL;
+			break;
+		}
 	case 3:
-		ch_bgn = atoi(argv[2]);
+		seed = atoi(argv[2]);
 	case 2:
 		if (strlen(argv[1]) > NVM_DEV_PATH_LEN) {
 			printf("ERR: len(dev_path) > %d characters\n",
@@ -240,30 +140,43 @@ int main(int argc, char **argv)
 		strncpy(nvm_dev_path, argv[1], NVM_DEV_PATH_LEN);
 		break;
 	}
+
+	if (!seed) {	// Default arbitrary seed
+		seed = time(NULL);
+	}
+
+	printf("# TEST_INPUT: {dev: '%s', seed: %u, rmode: 0x%x}\n",
+	       nvm_dev_path, seed, rmode);
+
 	CU_pSuite pSuite = NULL;
 
 	if (CUE_SUCCESS != CU_initialize_registry())
 		return CU_get_error();
 
-	pSuite = CU_add_suite("nvm_vblk_*", setup, teardown);
+	pSuite = CU_add_suite("nvm_vblk_{erase,write,read}*", setup, teardown);
 	if (NULL == pSuite) {
 		CU_cleanup_registry();
 		return CU_get_error();
 	}
 
 	if (
-	(NULL == CU_add_test(pSuite, "nvm_vblk_RAND", test_VBLK_RAND)) ||
-	(NULL == CU_add_test(pSuite, "nvm_vblk_PE_PW_PR", test_VBLK_PE_PW_PR)) ||
-	(NULL == CU_add_test(pSuite, "nvm_vblk_PE_PR_PW_PR", test_VBLK_PE_PR_PW_PR)) ||
+	(NULL == CU_add_test(pSuite, "VBLK EWR S20", test_VBLK_EWR)) ||
 	0)
 	{
 		CU_cleanup_registry();
 		return CU_get_error();
 	}
 
-	/* Run all tests using the CUnit Basic interface */
-	CU_basic_set_mode(CU_BRM_NORMAL);
-	CU_basic_run_tests();
+	switch(rmode) {
+	case NVM_TEST_RMODE_AUTO:
+		CU_automated_run_tests();
+		break;
+	default:
+		/* Run all tests using the CUnit Basic interface */
+		CU_basic_set_mode(rmode);
+		CU_basic_run_tests();
+		break;
+	}
 	CU_cleanup_registry();
 
 	return CU_get_error();

@@ -4,48 +4,13 @@
 #include <string.h>
 #include <unistd.h>
 #include <liblightnvm.h>
-
 #include <CUnit/Basic.h>
 
-#define SEED 1337
-
+static int rmode = CU_BRM_VERBOSE;
+static int seed = 0;
 static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
-
-static int ch_bgn = 0;
-static int ch_end = 0;
-static int lun_bgn = 0;
-static int lun_end = 0;
-static int block = 10;
-
 static struct nvm_dev *dev;
 static const struct nvm_geo *geo;
-static struct nvm_vblk *blk;
-
-static int VERBOSE = 0;
-
-size_t compare_buffers(char *expected, char *actual, size_t nbytes)
-{
-	size_t diff = 0;
-
-	for (size_t i = 0; i < nbytes; ++i) {
-		if (expected[i] != actual[i]) {
-			++diff;
-		}
-	}
-
-	return diff;
-}
-
-void print_mismatch(char *expected, char *actual, size_t nbytes)
-{
-	printf("MISMATCHES:\n");
-	for (size_t i = 0; i < nbytes; ++i) {
-		if (expected[i] != actual[i]) {
-			printf("i(%06lu), expected(%c) != actual(%02d|0x%02x|%c)\n",
-				i, expected[i], (int)actual[i], (int)actual[i], actual[i]);
-		}
-	}
-}
 
 struct nvm_addr vblk_off2addr(struct nvm_vblk *vblk, size_t offset)
 {
@@ -69,12 +34,6 @@ struct nvm_addr vblk_off2addr(struct nvm_vblk *vblk, size_t offset)
 
 int setup(void)
 {
-	size_t buf_nbytes;
-	ssize_t res;
-	char *buf = NULL;
-
-	srand(SEED);
-
 	dev = nvm_dev_open(nvm_dev_path);
 	if (!dev) {
 		perror("nvm_dev_open");
@@ -82,64 +41,12 @@ int setup(void)
 	}
 	geo = nvm_dev_get_geo(dev);
 
-	blk = nvm_vblk_alloc_line(dev, ch_bgn, ch_end, lun_bgn, lun_end, block);
-	if (!blk) {
-		errno = ENOMEM;
-		return -1;
-	}
-
-	if (VERBOSE)
-		nvm_vblk_pr(blk);
-
-	buf_nbytes = nvm_vblk_get_nbytes(blk);
-
-	buf = nvm_buf_alloc(geo, buf_nbytes);
-	if (!buf) {
-		nvm_vblk_free(blk);
-
-		errno = ENOMEM;
-		return -1;
-	}
-
-	// Fill buf
-	for (size_t ofz = 0; ofz < buf_nbytes; ofz += geo->sector_nbytes) {
-		char sec_buf[geo->sector_nbytes];
-		size_t sec_len;
-
-		sprintf(sec_buf, "--={(0x%016lx)}=--",
-			vblk_off2addr(blk, ofz).ppa);
-		sec_len = strlen(sec_buf);
-
-		nvm_buf_fill(buf + ofz, geo->sector_nbytes);
-		memcpy(buf + ofz, sec_buf, sec_len);
-	}
-
-	res = nvm_vblk_erase(blk);
-	if (res < 0) {
-		nvm_vblk_free(blk);
-		nvm_buf_free(buf);
-
-		errno = EIO;
-		return -1;
-	}
-
-	res = nvm_vblk_write(blk, buf, buf_nbytes);
-	if (res < 0) {
-		nvm_vblk_free(blk);
-		nvm_buf_free(buf);
-
-		errno = EIO;
-		return -1;
-	}
-
-	nvm_buf_free(buf);
-	return 0;
+	srand(seed);
 }
 
 int teardown(void)
 {
 	nvm_dev_close(dev);
-	nvm_vblk_free(blk);
 
 	return 0;
 }
@@ -204,15 +111,15 @@ void _test_NADDR(int naddrs, int pmode)
 			sprintf(tmp, "--={(0x%016lx)}=--", addr.ppa);
 			memcpy(sec_buf, tmp, strlen(tmp));
 
-			if (compare_buffers(sec_buf,
+			if (nvm_buf_diff(sec_buf,
 					    cmd_buf + i * geo->sector_nbytes,
 					    geo->sector_nbytes)) {
 				CU_FAIL("FAILED: Read verification");
 				if (VERBOSE) {
 					nvm_addr_pr(addr);
-					print_mismatch(sec_buf,
-						       cmd_buf + i * geo->sector_nbytes,
-						       geo->sector_nbytes);
+					nvm_buf_diff_pr(sec_buf,
+							cmd_buf + i * geo->sector_nbytes,
+							geo->sector_nbytes);
 				}
 			}
 		}
@@ -236,19 +143,23 @@ void test_NADDR_MAX_SNGL(void)
 
 int main(int argc, char **argv)
 {
+	seed = time(NULL);		// Default arbitrary seed
 	switch(argc) {
-	case 8:
-		VERBOSE = atoi(argv[7]);
-	case 7:
-		block = atoi(argv[6]);
-	case 6:
-		lun_end = atoi(argv[5]);
-	case 5:
-		lun_bgn = atoi(argv[4]);
 	case 4:
-		ch_end = atoi(argv[3]);
+		switch(atoi(argv[3])) {
+		case 2:
+			rmode = CU_BRM_VERBOSE;
+			break;
+		case 1:
+			rmode = CU_BRM_SILENT;
+			break;
+		case 0:
+		default:
+			rmode = CU_BRM_NORMAL;
+			break;
+		}
 	case 3:
-		ch_bgn = atoi(argv[2]);
+		seed = atoi(argv[2]);	// Overwrite default arbitrary seed
 	case 2:
 		if (strlen(argv[1]) > NVM_DEV_PATH_LEN) {
 			printf("ERR: len(dev_path) > %d characters\n",
@@ -258,6 +169,9 @@ int main(int argc, char **argv)
 		strncpy(nvm_dev_path, argv[1], NVM_DEV_PATH_LEN);
 		break;
 	}
+
+	printf("# TEST_INPUT: {dev: '%s', seed: %u, rmode: 0x%x}\n",
+	       nvm_dev_path, seed, rmode);
 
 	CU_pSuite pSuite = NULL;
 

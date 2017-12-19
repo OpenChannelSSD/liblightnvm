@@ -67,8 +67,8 @@ void ewr_s12_1addr(int use_meta)
 	int pmode = NVM_FLAG_PMODE_SNGL;
 	int failed = 1;
 
-	if (nvm_cmd_gbbt_arbc(dev, NVM_BBT_FREE, &blk_addr)) {
-		CU_FAIL("nvm_cmd_gbbt_arbc");
+	if (nvm_cmd_gbbt_arbs(dev, NVM_BBT_FREE, 1, &blk_addr)) {
+		CU_FAIL("nvm_cmd_gbbt_arbs");
 		goto out;
 	}
 
@@ -265,8 +265,8 @@ void ewr_s12_naddr(int use_meta, int pmode)
 	ssize_t res;
 	int failed = 1;
 
-	if (nvm_cmd_gbbt_arbc(dev, NVM_BBT_FREE, &blk_addr)) {
-		CU_FAIL("nvm_cmd_gbbt_arbc");
+	if (nvm_cmd_gbbt_arbs(dev, NVM_BBT_FREE, 1, &blk_addr)) {
+		CU_FAIL("nvm_cmd_gbbt_arbs");
 		goto out;
 	}
 
@@ -493,13 +493,13 @@ static void ewr_s20(int use_meta)
 {
 	const int naddrs = nvm_dev_get_ws_min(dev);
 	struct nvm_addr addrs[naddrs];
-	struct nvm_buf_set *bufs = { 0 };
+	struct nvm_buf_set *bufs;
 	struct nvm_ret ret;
 	struct nvm_addr chunk_addr = { .val = 0 };
 	ssize_t res;
 
-	if (nvm_cmd_rprt_arbc(dev, NVM_RPRT_FREE, &chunk_addr)) {
-		CU_FAIL("nvm_cmd_rprt_arbc");
+	if (nvm_cmd_rprt_arbs(dev, NVM_RPRT_FREE, 1, &chunk_addr)) {
+		CU_FAIL("nvm_cmd_rprt_arbs");
 		goto out;
 	}
 
