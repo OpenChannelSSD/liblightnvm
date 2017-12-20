@@ -10,7 +10,7 @@ SPDK from sources::
 
 	# Get SPDK
 	sudo git clone https://github.com/spdk/spdk /opt/spdk
-	sudo chown -R safl:safl /opt/spdk
+	sudo chown -R $USER:$USER /opt/spdk
 	cd /opt/spdk
 	git submodule update --init
 
