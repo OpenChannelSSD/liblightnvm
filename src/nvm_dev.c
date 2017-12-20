@@ -123,9 +123,28 @@ const struct nvm_geo * nvm_dev_get_geo(const struct nvm_dev *dev)
 	return &dev->geo;
 }
 
-uint32_t nvm_dev_get_ws_min(const struct nvm_dev *dev)
+int nvm_dev_get_ws_min(const struct nvm_dev *dev)
 {
-	return dev->idfy.s20.wrt.ws_min;
+	switch(dev->verid) {
+	case NVM_SPEC_VERID_12:
+		return dev->geo.g.nsectors;
+	case NVM_SPEC_VERID_20:
+		return dev->idfy.s20.wrt.ws_min;
+	}
+
+	return -1;
+}
+
+int nvm_dev_get_ws_opt(const struct nvm_dev *dev)
+{
+	switch(dev->verid) {
+	case NVM_SPEC_VERID_12:
+		return dev->geo.g.nplanes * dev->geo.g.nsectors;
+	case NVM_SPEC_VERID_20:
+		return dev->idfy.s20.wrt.ws_opt;
+	}
+
+	return -1;
 }
 
 int nvm_dev_get_verid(const struct nvm_dev *dev)
