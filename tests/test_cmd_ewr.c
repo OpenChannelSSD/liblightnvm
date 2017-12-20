@@ -260,7 +260,7 @@ void ewr_s12_naddr(int use_meta, int pmode)
 	const int naddrs = geo->nplanes * geo->nsectors;
 	struct nvm_addr blk_addr = { .val = 0 };
 	struct nvm_addr addrs[naddrs];
-	struct nvm_buf_set *bufs = { 0 };
+	struct nvm_buf_set *bufs = NULL;
 	struct nvm_ret ret;
 	ssize_t res;
 	int failed = 1;
@@ -493,7 +493,7 @@ static void ewr_s20(int use_meta)
 {
 	const int naddrs = nvm_dev_get_ws_min(dev);
 	struct nvm_addr addrs[naddrs];
-	struct nvm_buf_set *bufs;
+	struct nvm_buf_set *bufs = NULL;
 	struct nvm_ret ret;
 	struct nvm_addr chunk_addr = { .val = 0 };
 	ssize_t res;

@@ -1,13 +1,17 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
 #include <time.h>
 #include <unistd.h>
-#include <liblightnvm.h>
+#include <CUnit/Automated.h>
 #include <CUnit/Basic.h>
+#include <liblightnvm.h>
+#include <liblightnvm_spec.h>
 
-static int rmode = CU_BRM_VERBOSE;
+#define NVM_TEST_RMODE_AUTO 0xA
+
+static int rmode = CU_BRM_NORMAL;
 static int seed = 0;
 static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
 static struct nvm_dev *dev;
@@ -15,14 +19,15 @@ static const struct nvm_geo *geo;
 
 int setup(void)
 {
+	srand(seed);
+
 	dev = nvm_dev_open(nvm_dev_path);
 	if (!dev) {
 		perror("nvm_dev_open");
-		CU_ASSERT_PTR_NOT_NULL(dev);
+		return -1;
 	}
-	geo = nvm_dev_get_geo(dev);
 
-	srand(seed);
+	geo = nvm_dev_get_geo(dev);
 
 	return 0;
 }
@@ -163,9 +168,14 @@ void test_FMT_GEN_DEV_OFF(void)
 
 int main(int argc, char **argv)
 {
+	seed = time(NULL);			// Default arbitrary seed
+
 	switch(argc) {
 	case 4:
 		switch(atoi(argv[3])) {
+		case NVM_TEST_RMODE_AUTO:
+			rmode = NVM_TEST_RMODE_AUTO;
+			break;
 		case 2:
 			rmode = CU_BRM_VERBOSE;
 			break;
@@ -178,7 +188,7 @@ int main(int argc, char **argv)
 			break;
 		}
 	case 3:
-		seed = atoi(argv[2]);
+		seed = atoi(argv[2]);		// Overwrite default seed
 	case 2:
 		if (strlen(argv[1]) > NVM_DEV_PATH_LEN) {
 			printf("ERR: len(dev_path) > %d characters\n",
@@ -187,10 +197,6 @@ int main(int argc, char **argv)
                 }
 		strncpy(nvm_dev_path, argv[1], NVM_DEV_PATH_LEN);
 		break;
-	}
-
-	if (!seed) {	// Default arbitrary seed
-		seed = time(NULL);
 	}
 
 	printf("# TEST_INPUT: {dev: '%s', seed: %u, rmode: 0x%x}\n",

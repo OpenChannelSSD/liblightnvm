@@ -17,26 +17,69 @@ static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
 static struct nvm_dev *dev;
 static const struct nvm_geo *geo;
 
-int setup(void)
+int suite_setup(void)
 {
+	srand(seed);
+
 	dev = nvm_dev_open(nvm_dev_path);
 	if (!dev) {
 		perror("nvm_dev_open");
-		CU_ASSERT_PTR_NOT_NULL(dev);
+		return -1;
 	}
+
 	geo = nvm_dev_get_geo(dev);
-	
-	srand(seed);
 
 	return 0;
 }
 
-int teardown(void)
+int suite_teardown(void)
 {
 	geo = NULL;
 	nvm_dev_close(dev);
 
 	return 0;
+}
+
+CU_pSuite suite_create(const char *title, int argc, char *argv[])
+{
+	seed = time(NULL);			// Default arbitrary seed
+
+	switch(argc) {
+	case 4:
+		switch(atoi(argv[3])) {
+		case NVM_TEST_RMODE_AUTO:
+			rmode = NVM_TEST_RMODE_AUTO;
+			break;
+		case 2:
+			rmode = CU_BRM_VERBOSE;
+			break;
+		case 1:
+			rmode = CU_BRM_SILENT;
+			break;
+		case 0:
+		default:
+			rmode = CU_BRM_NORMAL;
+			break;
+		}
+	case 3:
+		seed = atoi(argv[2]);		// Overwrite default seed
+	case 2:
+		if (strlen(argv[1]) > NVM_DEV_PATH_LEN) {
+			printf("ERR: len(dev_path) > %d characters\n",
+			       NVM_DEV_PATH_LEN);
+			return NULL;
+                }
+		strncpy(nvm_dev_path, argv[1], NVM_DEV_PATH_LEN);
+		break;
+	}
+
+	printf("# TEST_INPUT: {dev: '%s', seed: %u, rmode: 0x%x}\n",
+	       nvm_dev_path, seed, rmode);
+
+	if (CUE_SUCCESS != CU_initialize_registry())
+		return NULL;
+
+	return CU_add_suite(title, suite_setup, suite_teardown);
 }
 
 int vblk_ewr(struct nvm_addr *addrs, int naddrs)
@@ -112,71 +155,26 @@ void test_VBLK_EWR(void)
 
 int main(int argc, char **argv)
 {
-	switch(argc) {
-	case 4:
-		switch(atoi(argv[3])) {
-		case NVM_TEST_RMODE_AUTO:
-			rmode = NVM_TEST_RMODE_AUTO;
-			break;
-		case 2:
-			rmode = CU_BRM_VERBOSE;
-			break;
-		case 1:
-			rmode = CU_BRM_SILENT;
-			break;
-		case 0:
-		default:
-			rmode = CU_BRM_NORMAL;
-			break;
-		}
-	case 3:
-		seed = atoi(argv[2]);
-	case 2:
-		if (strlen(argv[1]) > NVM_DEV_PATH_LEN) {
-			printf("ERR: len(dev_path) > %d characters\n",
-			       NVM_DEV_PATH_LEN);
-			return 1;
-                }
-		strncpy(nvm_dev_path, argv[1], NVM_DEV_PATH_LEN);
-		break;
-	}
+	CU_pSuite pSuite = suite_create("nvm_vblk_{erase,write,read}",
+					argc, argv);
+	if (!pSuite)
+		goto out;
 
-	if (!seed) {	// Default arbitrary seed
-		seed = time(NULL);
-	}
-
-	printf("# TEST_INPUT: {dev: '%s', seed: %u, rmode: 0x%x}\n",
-	       nvm_dev_path, seed, rmode);
-
-	CU_pSuite pSuite = NULL;
-
-	if (CUE_SUCCESS != CU_initialize_registry())
-		return CU_get_error();
-
-	pSuite = CU_add_suite("nvm_vblk_{erase,write,read}*", setup, teardown);
-	if (NULL == pSuite) {
-		CU_cleanup_registry();
-		return CU_get_error();
-	}
-
-	if (
-	(NULL == CU_add_test(pSuite, "VBLK EWR S20", test_VBLK_EWR)) ||
-	0)
-	{
-		CU_cleanup_registry();
-		return CU_get_error();
-	}
+	if (!CU_add_test(pSuite, "VBLK EWR S20", test_VBLK_EWR))
+		goto out;
 
 	switch(rmode) {
 	case NVM_TEST_RMODE_AUTO:
 		CU_automated_run_tests();
 		break;
+
 	default:
-		/* Run all tests using the CUnit Basic interface */
 		CU_basic_set_mode(rmode);
 		CU_basic_run_tests();
 		break;
 	}
+
+out:
 	CU_cleanup_registry();
 
 	return CU_get_error();
