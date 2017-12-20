@@ -301,16 +301,16 @@ struct nvm_spec_rprt *nvm_cmd_rprt(struct nvm_dev *dev, struct nvm_addr *addr,
 				   int opt, struct nvm_ret *ret);
 
 /**
- * Find an arbitrary chunk in the given state on the given device
+ * Find an arbitrary set of 'naddrs' chunk-addresses on the given 'dev', in the
+ * given chunk state 'cs' and store them in the provided 'addrs' array
  *
  * @returns 0 on success, -1 on error and errno set to indicate the error.
  */
-int nvm_cmd_rprt_arbc(struct nvm_dev *dev, int cs, struct nvm_addr *addr);
+int nvm_cmd_rprt_arbs(struct nvm_dev *dev, int cs, int naddrs,
+		      struct nvm_addr addrs[]);
 
 /**
  * Execute an Open-Channel 1.2 get bad-block-table
- *
- * NOTE: Caller is responsible for de-allocating the returned structure
  *
  * @return On success, pointer to bad block table is returned. On error, NULL is
  * returned and `errno` set to indicate the error and ret filled with
@@ -320,11 +320,13 @@ struct nvm_spec_bbt *nvm_cmd_gbbt(struct nvm_dev *dev, struct nvm_addr addr,
 				  struct nvm_ret *ret);
 
 /**
- * Find an arbitrary blk in the given state on the given device
+ * Find an arbitrary set of 'naddrs' block-addresses on the given 'dev', in the
+ * given block state 'bs' and store them in the provided 'addrs' array
  *
  * @returns 0 on success, -1 on error and errno set to indicate the error.
  */
-int nvm_cmd_gbbt_arbc(struct nvm_dev *dev, int bs, struct nvm_addr *addr);
+int nvm_cmd_gbbt_arbs(struct nvm_dev *dev, int bs, int naddrs,
+		      struct nvm_addr addrs[]);
 
 /**
  * Execute an Open-Channel 1.2 get bad block table command
