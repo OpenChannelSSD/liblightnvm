@@ -223,6 +223,7 @@ const struct nvm_bbt *nvm_bbt_get(struct nvm_dev *dev, struct nvm_addr addr,
 
 	if (dev->bbts[bbt_idx]->nblks != spec->tblks) {
 		free(dev->bbts[bbt_idx]);
+		free(spec);
 		dev->bbts[bbt_idx] = NULL;
 
 		return NULL;
