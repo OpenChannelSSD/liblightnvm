@@ -51,16 +51,17 @@ class MetaTest(unittest.TestCase):
         bname = "nvm_%s" % mname
 
         # Run the actual test-script and pipe stdout+stderr to log
-        log = '/tmp/%s.log' % (bname)
-        log_fd = open(log, 'a')
+        log = "/tmp/%s.log" % (bname)
 
-        cmd = [bname]
-        process = Popen(cmd, stdout=log_fd, stderr=STDOUT)
-        returncode = process.wait()
+        with open(log, "w+") as log_fd:
 
-        assert process.returncode == 0, 'Test(%s/%s) exit(%d) consult(%s).' % (
-            cname, mname, returncode, log
-        )
+            cmd = [bname]
+            process = Popen(cmd, stdout=log_fd, stderr=STDOUT)
+            returncode = process.wait()
+
+            assert process.returncode == 0, 'Test(%s/%s) exit(%d) consult(%s).' % (
+                cname, mname, returncode, log
+            )
 
 def cls_factory(cname):
     """
