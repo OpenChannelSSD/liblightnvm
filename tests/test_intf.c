@@ -23,10 +23,8 @@ static int suite_setup(void)
 	srand(seed);
 
 	dev = nvm_dev_open(nvm_dev_path);
-	if (!dev) {
-		perror("nvm_dev_open");
+	if (!dev)
 		return -1;
-	}
 
 	geo = nvm_dev_get_geo(dev);
 
