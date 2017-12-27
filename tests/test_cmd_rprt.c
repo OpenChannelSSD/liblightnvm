@@ -1,34 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
-#include <unistd.h>
-#include <CUnit/Basic.h>
-#include <liblightnvm.h>
-
-static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
-static struct nvm_dev *dev;
-static const struct nvm_geo *geo;
-
-int setup(void)
-{
-	dev = nvm_dev_open(nvm_dev_path);
-	if (!dev) {
-		perror("nvm_dev_open");
-		CU_ASSERT_PTR_NOT_NULL(dev);
-		return -1;
-	}
-	geo = nvm_dev_get_geo(dev);
-
-	return 0;
-}
-
-int teardown(void)
-{
-	nvm_dev_close(dev);
-
-	return 0;
-}
+#include "test_intf.c"
 
 static size_t descr_idx(struct nvm_addr *punit_addr, struct nvm_addr chunk_addr)
 {
@@ -162,39 +132,28 @@ void test_CMD_RPRT_ALL(void)
 
 int main(int argc, char **argv)
 {
-	switch(argc) {
-	case 2:
-		if (strlen(argv[1]) > NVM_DEV_PATH_LEN) {
-			printf("ERR: len(dev_path) > %d characters\n",
-			       NVM_DEV_PATH_LEN);
-			return 1;
-                }
-		strncpy(nvm_dev_path, argv[1], NVM_DEV_PATH_LEN);
+	CU_pSuite pSuite = suite_create("nvm_cmd_rprt_*",
+					argc, argv);
+	if (!pSuite)
+		goto out;
+
+	if (!CU_add_test(pSuite, "nvm_cmd_rprt_all", test_CMD_RPRT_ALL))
+		goto out;
+	if (!CU_add_test(pSuite, "nvm_cmd_rprt_punit", test_CMD_RPRT_PUNIT))
+		goto out;
+
+	switch(rmode) {
+	case NVM_TEST_RMODE_AUTO:
+		CU_automated_run_tests();
+		break;
+
+	default:
+		CU_basic_set_mode(rmode);
+		CU_basic_run_tests();
 		break;
 	}
-	CU_pSuite pSuite = NULL;
 
-	if (CUE_SUCCESS != CU_initialize_registry())
-		return CU_get_error();
-
-	pSuite = CU_add_suite("nvm_cmd_rprt*", setup, teardown);
-	if (NULL == pSuite) {
-		CU_cleanup_registry();
-		return CU_get_error();
-	}
-
-	if (
-	(NULL == CU_add_test(pSuite, "nvm_cmd_rprt_all", test_CMD_RPRT_ALL)) ||
-	(NULL == CU_add_test(pSuite, "nvm_cmd_rprt_punit", test_CMD_RPRT_PUNIT)) ||
-	0)
-	{
-		CU_cleanup_registry();
-		return CU_get_error();
-	}
-
-	/* Run all tests using the CUnit Basic interface */
-	CU_basic_set_mode(CU_BRM_NORMAL);
-	CU_basic_run_tests();
+out:
 	CU_cleanup_registry();
 
 	return CU_get_error();
