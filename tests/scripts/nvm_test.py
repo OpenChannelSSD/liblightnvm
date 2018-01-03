@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
- nvm_test - Turns nvm_test_* binaries `unittest` tests
+ nvm_test - Turns nvm_test_* binaries into `unittest.TestCase` classes.
 
  The manual invocation of the libcunit based tests are fine, however, by
  wrapping these in this runner-script allows for simpler reporting and
@@ -8,24 +8,28 @@
 
  Usage:
 
- # This will run nvm_test_* binaries, produce xml-output, basic console reporting
- py.test runner.py -k "foo"  --junitxml /tmp/test_results.xml -r f --tb=line
+ # This will run nvm_test_vblk binaries, produce xml-output, basic console reporting
+ py.test runner.py -k "vblk"  --junitxml /tmp/test_results.xml -r f --tb=line
 
  # Run it with the framework build into Python (not useful for CI integration)
  ./runner.py
 
-A bunch of other `unittest` compatible frameworks can be used, py.test, however,
-seems to provide both decent xml and console output.
+    NVM_TEST_DEV
+    NVM_TEST_LOG
+    NVM_TEST_SEED
+    NVM_TEST_BIN_PREFIX
 
 TODO: log output should be configurable/parameterizable
 
 """
 from subprocess import Popen, STDOUT
 import unittest
-import glob
 import os
 
-BIN_PREFIX="nvm_test_"
+NVM_TEST_DEV = os.getenv("NVM_TEST_DEV", "/dev/nvme0n1")
+NVM_TEST_LOG = os.getenv("NVM_TEST_LOG", os.sep + "tmp")
+NVM_TEST_SEED = os.getenv("NVM_TEST_SEED", "0")
+NVM_TEST_BIN_PREFIX = os.getenv("NVM_TEST_BIN_PREFIX", "nvm_test_")
 
 # We inherit the large amount of public methods from unittest.TestCase,
 # nothing we can do about that so we disable pylint checking.
@@ -51,15 +55,15 @@ class MetaTest(unittest.TestCase):
         bname = "nvm_%s" % mname
 
         # Run the actual test-script and pipe stdout+stderr to log
-        log = "/tmp/%s.log" % (bname)
+        log = os.sep.join([NVM_TEST_LOG, "%s.log" % (bname)])
 
         with open(log, "w+") as log_fd:
 
-            cmd = [bname]
+            cmd = [bname, NVM_TEST_DEV, NVM_TEST_SEED]
             process = Popen(cmd, stdout=log_fd, stderr=STDOUT)
             returncode = process.wait()
 
-            assert process.returncode == 0, 'Test(%s/%s) exit(%d) consult(%s).' % (
+            assert process.returncode == 0, 'Test(%s/%s) exit(%d) log(%s).' % (
                 cname, mname, returncode, log
             )
 
@@ -77,7 +81,7 @@ def cls_factory(cname):
 
     return Foo
 
-def produce_classes(search_paths = None):
+def produce_classes(search_paths=None):
     """
     Search all paths in $PATH for binaries prefixed with "nvm_test" and
     construct test classes for them.
@@ -94,19 +98,19 @@ def produce_classes(search_paths = None):
             continue
 
         tests += [
-            lst[len(BIN_PREFIX):]
+            lst[len(NVM_TEST_BIN_PREFIX):]
             for lst in os.listdir(path)
-            if lst.startswith(BIN_PREFIX)
+            if lst.startswith(NVM_TEST_BIN_PREFIX)
         ]
     tests = list(set(tests))
 
+    cname = "TestNvm"
+    classes[cname] = cls_factory(cname)
+
     for test in tests:
-        cname = "Test%s" % "".join([t.capitalize() for t in test.split("_")])
         mname = "test_%s" % test
 
-        cls = cls_factory(cname)
-        setattr(cls, mname, cls.bin_test)
-        classes[cname] = cls
+        setattr(classes[cname], mname, classes[cname].bin_test)
 
     return classes
 
@@ -115,8 +119,7 @@ def produce_classes(search_paths = None):
 # them and run their test methods.
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-CLASSES = produce_classes() # Create test classes
-
+CLASSES = produce_classes()     # Create test classes
 for CNAME in CLASSES:           # Expose them in local scope
     CLS = CLASSES[CNAME]
     locals()[CNAME] = CLS
