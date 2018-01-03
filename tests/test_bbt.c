@@ -337,6 +337,8 @@ void test_BBT_SET_CACHED(void)
 
 int main(int argc, char **argv)
 {
+	int err = 0;
+
 	CU_pSuite pSuite = suite_create("nvm_bbt_*", argc, argv);
 	if (!pSuite)
 		goto out;
@@ -379,7 +381,12 @@ int main(int argc, char **argv)
 	}
 
 out:
+	err = CU_get_error() || \
+	      CU_get_number_of_suites_failed() || \
+	      CU_get_number_of_tests_failed() || \
+	      CU_get_number_of_failures();
+
 	CU_cleanup_registry();
 
-	return CU_get_error();
+	return err;
 }

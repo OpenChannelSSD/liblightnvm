@@ -55,6 +55,8 @@ void test_DEV_OPENF_IOCTL_CLOSE(void)
 
 int main(int argc, char **argv)
 {
+	int err = 0;
+
 	CU_pSuite pSuite = suite_create("nvm_dev_*",
 					argc, argv);
 	if (!pSuite)
@@ -81,7 +83,12 @@ int main(int argc, char **argv)
 	}
 
 out:
+	err = CU_get_error() || \
+	      CU_get_number_of_suites_failed() || \
+	      CU_get_number_of_tests_failed() || \
+	      CU_get_number_of_failures();
+
 	CU_cleanup_registry();
 
-	return CU_get_error();
+	return err;
 }

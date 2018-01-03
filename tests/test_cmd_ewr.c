@@ -585,6 +585,8 @@ void test_EWR_S20_META1(void)
 
 int main(int argc, char **argv)
 {
+	int err = 0;
+
 	CU_pSuite pSuite = suite_create("nvm_cmd_{erase,write,read}",
 					argc, argv);
 	if (!pSuite)
@@ -625,7 +627,12 @@ int main(int argc, char **argv)
 	}
 
 out:
+	err = CU_get_error() || \
+	      CU_get_number_of_suites_failed() || \
+	      CU_get_number_of_tests_failed() || \
+	      CU_get_number_of_failures();
+
 	CU_cleanup_registry();
 
-	return CU_get_error();
+	return err;
 }

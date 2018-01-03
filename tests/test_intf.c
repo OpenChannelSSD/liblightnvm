@@ -75,6 +75,8 @@ static CU_pSuite suite_create(const char *title, int argc, char *argv[])
 	printf("# TEST_INPUT: {dev: '%s', seed: %u, rmode: 0x%x}\n",
 	       nvm_dev_path, seed, rmode);
 
+	CU_set_error_action(CUEA_ABORT);
+
 	if (CUE_SUCCESS != CU_initialize_registry())
 		return NULL;
 

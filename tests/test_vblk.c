@@ -18,6 +18,7 @@ int vblk_ewr(struct nvm_addr *addrs, int naddrs)
 
 	bufs = nvm_buf_set_alloc(dev, nbytes, 0);
 	if (!bufs) {
+		CU_FAIL("FAILED: Allocating nvm_buf_set");
 		goto out;
 	}
 	nvm_buf_set_fill(bufs);
@@ -73,6 +74,8 @@ void test_VBLK_EWR(void)
 
 int main(int argc, char **argv)
 {
+	int err = 0;
+
 	CU_pSuite pSuite = suite_create("nvm_vblk_{erase,write,read}",
 					argc, argv);
 	if (!pSuite)
@@ -93,7 +96,12 @@ int main(int argc, char **argv)
 	}
 
 out:
+	err = CU_get_error() || \
+	      CU_get_number_of_suites_failed() || \
+	      CU_get_number_of_tests_failed() || \
+	      CU_get_number_of_failures();
+
 	CU_cleanup_registry();
 
-	return CU_get_error();
+	return err;
 }
