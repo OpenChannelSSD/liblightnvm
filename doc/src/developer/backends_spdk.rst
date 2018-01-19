@@ -33,3 +33,10 @@ Output from the last command should at the end yield::
 With SPDK in place, compile liblightnvm with::
 
 	make spdk
+
+Unbinding devices
+-----------------
+
+Run the following:
+
+	sudo /opt/spdk/scripts/setup.sh
