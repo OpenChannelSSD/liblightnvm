@@ -30,13 +30,33 @@ Output from the last command should at the end yield::
 	All unit tests passed
 	=====================
 
+Compiling Liblightnvm
+---------------------
+
 With SPDK in place, compile liblightnvm with::
 
 	make spdk
 
-Unbinding devices
------------------
+Usage
+-----
 
-Run the following:
+Unbinding devices
+~~~~~~~~~~~~~~~~~
+
+Run the following::
 
 	sudo /opt/spdk/scripts/setup.sh
+
+Device Identifiers
+~~~~~~~~~~~~~~~~~~
+
+Since devices are no longer available in `/dev`, then the PCI ids are used
+using SPDK notation, such as `traddr:0000:01:00.0`, e.g. using the CLI::
+
+  sudo nvm_dev info traddr:0000:01:00.0
+
+And using the API it would be similar to::
+
+  ...
+  struct nvm_dev *dev = nvm_dev_open("traddr:0000:01:00.0");
+  ...
