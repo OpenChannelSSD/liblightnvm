@@ -220,8 +220,8 @@ struct nvm_spec_lgeo {
 	uint16_t	npunit;		///< # parallel units (PUN) per GRP
 	uint32_t	nchunk;		///< # chunks (CHK) per PUN
 	uint32_t	nsectr;		///< # sectors in chunk
-	uint32_t	nbytes;		///< # bytes in sector
-	uint32_t	nbytes_oob;	///< # bytes in sector out-of-band area
+	uint32_t	_fna_nbytes;	///< # bytes in sector
+	uint32_t	_fna_nbytes_oob;///< # bytes in sector out-of-band area
 	uint8_t		resv[44];
 };
 
@@ -231,7 +231,9 @@ struct nvm_spec_wrt {
 	uint32_t	ws_min;
 	uint32_t	ws_opt;
 	uint32_t	mw_cunits;
-	uint8_t		resv[52];
+	uint32_t	maxoc;
+	uint32_t	maxocpu;
+	uint8_t		resv[44];
 };
 
 void nvm_spec_wrt_pr(const struct nvm_spec_wrt *lbaf);
@@ -241,8 +243,8 @@ struct nvm_spec_perf {
 	uint32_t	trdm;
 	uint32_t	twrt;
 	uint32_t	twrm;
-	uint32_t	tcet;
-	uint32_t	tcem;
+	uint32_t	tcet;	/* AKA tcrst */
+	uint32_t	tcem;	/* AKA tcrsm */
 	uint8_t		resv[40];
 };
 
@@ -257,7 +259,7 @@ struct nvm_spec_idfy_s13 {
 	uint8_t				rsvd3[28];
 	struct nvm_spec_lgeo		lgeo;
 	struct nvm_spec_wrt		wrt;
-	struct nvm_spec_perf	perf;
+	struct nvm_spec_perf		perf;
 	uint8_t				rsvd4;
 };
 
@@ -267,11 +269,16 @@ struct nvm_spec_idfy_s20 {
 	uint8_t				rsvd1[6];
 	struct nvm_spec_lbaf		lbaf;
 	uint32_t			mccap;
-	uint8_t				rsvd2[44];
+	uint8_t				rsvd2[12];
+	uint8_t				wit;
+	uint8_t				rsvd3[31];
 	struct nvm_spec_lgeo		lgeo;
 	struct nvm_spec_wrt		wrt;
-	struct nvm_spec_perf	perf;
+	struct nvm_spec_perf		perf;
+	uint8_t				rsvd4[2816];
+	uint8_t				vndr[1024];
 };
+static_assert(sizeof(struct nvm_spec_idfy_s20) == 4096, "Incorrect size");
 
 /**
  * Identify command data structure
@@ -289,6 +296,7 @@ struct nvm_spec_idfy {
 		} s;	///< Shared between the revisions
 	};
 };
+static_assert(sizeof(struct nvm_spec_idfy) == 4096, "Incorrect size");
 
 void nvm_spec_idfy_pr(const struct nvm_spec_idfy *idfy, int quirks);
 
