@@ -1,7 +1,6 @@
 BUILD_TYPE?=Release
 BUILD_DIR?=build
 INSTALL_PREFIX?=/usr/local
-NVM_LIBRARY_SHARED?=ON
 NVM_TESTS?=OFF
 NVM_CLI?=ON
 
@@ -22,7 +21,6 @@ cmake_check:
 configure: cmake_check
 	mkdir -p $(BUILD_DIR)
 	cd $(BUILD_DIR) && cmake \
-	-DNVM_LIBRARY_SHARED=$(NVM_LIBRARY_SHARED) \
 	-DTESTS=$(NVM_TESTS) \
 	-DCLI=$(NVM_CLI) \
 	-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
@@ -60,9 +58,8 @@ all: clean default install
 
 .PHONY: dev_opts
 dev_opts:
-	$(eval NVM_TESTS := ON)
 	$(eval NVM_CLI := ON)
-	$(eval NVM_LIBRARY_SHARED := ON)
+	$(eval NVM_TESTS := ON)
 
 # Uinstall packages, clean build, builds lib, cli, tests, pkg and installs
 .PHONY: dev
@@ -70,9 +67,8 @@ dev: uninstall-pkg clean dev_opts make-pkg install-pkg
 
 .PHONY: spdk_otps
 spdk_opts:
-	$(eval NVM_TESTS := ON)
 	$(eval NVM_CLI := ON)
-	$(eval NVM_LIBRARY_SHARED := OFF)
+	$(eval NVM_TESTS := ON)
 	$(eval CMAKE_AUX := -DNVM_BE_SPDK_ENABLED=ON)
 
 .PHONY: spdk

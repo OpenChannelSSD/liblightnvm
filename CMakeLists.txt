@@ -11,21 +11,6 @@ include(use_c11)
 include(CheckLibraryExists)
 include(CheckFunctionExists)
 
-set(NVM_LIBRARY_SHARED TRUE CACHE BOOL "Produce a SHARED library")
-set(NVM_LIBRARY_STATIC TRUE CACHE BOOL "Produce a STATIC library")
-
-if (NOT (${NVM_LIBRARY_SHARED} OR ${NVM_LIBRARY_STATIC}))
-	message( FATAL_ERROR "You have chosen to build neither static nor shared" )
-endif()
-
-set(NVM_LIBRARY_TYPES "")
-if (${NVM_LIBRARY_SHARED})
-	list(APPEND NVM_LIBRARY_TYPES "SHARED")
-endif()
-if (${NVM_LIBRARY_STATIC})
-	list(APPEND NVM_LIBRARY_TYPES "STATIC")
-endif()
-
 #
 # BACKENDS -- begin
 #
@@ -123,56 +108,31 @@ set(SOURCE_FILES
 include_directories("${PROJECT_SOURCE_DIR}/include")
 include_directories("${PROJECT_SOURCE_DIR}/include/linux/uapi")
 
-#
-# NOTE: We build lightnvm as both a SHARED and a STATIC library
-#
-# We compile it twice since the nice cmake feature of "objlib" is not supported
-# until cmake 2.8.8 and we would like to compile out of the box with cmake 2.8.7
-# which ships with Ubuntu 12.04 and other old distributions
-#
-# The good part is that the static lib with not use the -fPIC flag, which it
-# would otherwise do with re-using the object-files for both a shared and a
-# static library
-#
+set(LNAME "lightnvm")
 
-foreach(LTYPE ${NVM_LIBRARY_TYPES})
-	set(LNAME "lightnvm")
-	if ("${LTYPE}" STREQUAL "STATIC")
-		set(LNAME "lightnvm_a")
-	endif()
-	
-	add_library(${LNAME} ${LTYPE} ${HEADER_FILES} ${SOURCE_FILES})
-	set_target_properties(${LNAME} PROPERTIES OUTPUT_NAME lightnvm)
+add_library(${LNAME} STATIC ${HEADER_FILES} ${SOURCE_FILES})
+set_target_properties(${LNAME} PROPERTIES OUTPUT_NAME ${LNAME})
 
-	if("${LTYPE}" STREQUAL "SHARED")
-		set_target_properties(${LNAME} PROPERTIES
-			VERSION ${NVM_VERSION}
-			SOVERSION ${NVM_VERSION_MAJOR}
-		)
-	endif()
+if(${NVM_BE_SPDK_ENABLED})
+	link_directories(/opt/spdk/build/lib/)
 
-	if(${NVM_BE_SPDK_ENABLED})
-		link_directories(/opt/spdk/build/lib/)
+	target_link_libraries(${LNAME} spdk_nvme)
+	target_link_libraries(${LNAME} spdk_util)
+	target_link_libraries(${LNAME} spdk_log)
+	target_link_libraries(${LNAME} /opt/spdk/build/lib/libspdk_env_dpdk.a)
+	target_link_libraries(${LNAME} /opt/spdk/dpdk/build/lib/librte_bus_pci.a)
+	target_link_libraries(${LNAME} /opt/spdk/dpdk/build/lib/librte_eal.a)
+	target_link_libraries(${LNAME} /opt/spdk/dpdk/build/lib/librte_mempool.a)
+	target_link_libraries(${LNAME} /opt/spdk/dpdk/build/lib/librte_mempool_ring.a)
+	target_link_libraries(${LNAME} /opt/spdk/dpdk/build/lib/librte_pci.a)
+	target_link_libraries(${LNAME} /opt/spdk/dpdk/build/lib/librte_ring.a)
+	target_link_libraries(${LNAME} rt)
+	target_link_libraries(${LNAME} dl)
+	target_link_libraries(${LNAME} numa)
+	target_link_libraries(${LNAME} uuid)
+endif()
 
-		target_link_libraries(${LNAME} spdk_nvme)
-		target_link_libraries(${LNAME} spdk_util)
-		target_link_libraries(${LNAME} spdk_log)
-		target_link_libraries(${LNAME} /opt/spdk/build/lib/libspdk_env_dpdk.a)
-		target_link_libraries(${LNAME} /opt/spdk/dpdk/build/lib/librte_bus_pci.a)
-		target_link_libraries(${LNAME} /opt/spdk/dpdk/build/lib/librte_eal.a)
-		target_link_libraries(${LNAME} /opt/spdk/dpdk/build/lib/librte_mempool.a)
-		target_link_libraries(${LNAME} /opt/spdk/dpdk/build/lib/librte_mempool_ring.a)
-		target_link_libraries(${LNAME} /opt/spdk/dpdk/build/lib/librte_pci.a)
-		target_link_libraries(${LNAME} /opt/spdk/dpdk/build/lib/librte_ring.a)
-		target_link_libraries(${LNAME} rt)
-		target_link_libraries(${LNAME} dl)
-		target_link_libraries(${LNAME} numa)
-		target_link_libraries(${LNAME} uuid)
-	endif()
-
-	install(TARGETS ${LNAME} DESTINATION lib COMPONENT lib)
-endforeach()
-
+install(TARGETS ${LNAME} DESTINATION lib COMPONENT lib)
 
 install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm_spec.h"
 	DESTINATION include COMPONENT dev)
@@ -189,36 +149,18 @@ set(HEADER_FILES
 )
 
 set(CLI_LIB "lightnvm_cli")
-set(CLI_LIB_STATIC "${CLI_LIB}_a")
 
 set(SOURCE_FILES
 	src/nvm_cli.c
 )
 
-if(${NVM_LIBRARY_SHARED})
-	add_library(${CLI_LIB} SHARED ${HEADER_FILES} ${SOURCE_FILES})
-	target_link_libraries(${CLI_LIB} lightnvm)
-	if ((NOT ${LIBC_HAS_CLOCK_GETTIME}) AND (${LIBRT_HAS_CLOCK_GETTIME}))
-		target_link_libraries(${CLI_LIB} rt)
-	endif()
-	set_target_properties(${CLI_LIB} PROPERTIES
-		VERSION ${NVM_VERSION}
-		SOVERSION ${NVM_VERSION_MAJOR}
-		)
-	install(TARGETS ${CLI_LIB} DESTINATION lib COMPONENT cli)
-	install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm_cli.h"
-		DESTINATION include COMPONENT cli)
+add_library(${CLI_LIB} STATIC ${HEADER_FILES} ${SOURCE_FILES})
+target_link_libraries(${CLI_LIB} ${LNAME})
+if ((NOT ${LIBC_HAS_CLOCK_GETTIME}) AND (${LIBRT_HAS_CLOCK_GETTIME}))
+	target_link_libraries(${CLI_LIB} rt)
 endif()
-
-if(${NVM_LIBRARY_STATIC})
-	add_library(${CLI_LIB_STATIC} STATIC ${HEADER_FILES} ${SOURCE_FILES})
-	target_link_libraries(${CLI_LIB_STATIC} lightnvm_a)
-	if ((NOT ${LIBC_HAS_CLOCK_GETTIME}) AND (${LIBRT_HAS_CLOCK_GETTIME}))
-		target_link_libraries(${CLI_LIB_STATIC} rt)
-	endif()
-	set_target_properties(${CLI_LIB_STATIC} PROPERTIES OUTPUT_NAME ${CLI_LIB})
-	install(TARGETS ${CLI_LIB_STATIC} DESTINATION lib COMPONENT cli)
-endif()
+set_target_properties(${CLI_LIB} PROPERTIES OUTPUT_NAME ${CLI_LIB})
+install(TARGETS ${CLI_LIB} DESTINATION lib COMPONENT cli)
 
 # CLI
 add_subdirectory(cli)
