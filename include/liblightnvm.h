@@ -291,7 +291,7 @@ struct nvm_spec_idfy *nvm_cmd_idfy(struct nvm_dev *dev, struct nvm_ret *ret);
  *
  * @param dev Device handle obtained with `nvm_dev_open`
  * report for
- * @param opts Reporting options, see `enum nvm_spec_rprt_opts`
+ * @param opts Reporting options, see `enum nvm_spec_chunk_state`
  *
  * @return On success, pointer report chunk structure is returned. On error,
  * NULL is returned and `errno` set to indicate the error and ret filled with
