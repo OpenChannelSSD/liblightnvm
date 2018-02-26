@@ -77,7 +77,7 @@ int nvm_cmd_rprt_arbs(struct nvm_dev *dev, int cs, int naddrs,
 		for (des_idx = 0; des_idx < rprt->ndescr; ++des_idx) {
 			int des_cur = (des_idx + arb) % rprt->ndescr;
 			
-			if (rprt->descr[des_cur].chunk_state != cs)
+			if (rprt->descr[des_cur].cs != cs)
 				continue;
 
 			addrs[idx].val = addr.val;
