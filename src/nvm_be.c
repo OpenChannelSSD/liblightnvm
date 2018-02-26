@@ -217,15 +217,15 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 	case NVM_SPEC_VERID_12:
 		if (dev->quirks & NVM_QUIRK_SEMI20) {
 			// Geometry
-			geo->sector_nbytes = idfy->s13.lgeo.nbytes;
-			geo->meta_nbytes = idfy->s13.lgeo.nbytes_oob;
+			geo->sector_nbytes = idfy->s13.lgeo._fna_nbytes;
+			geo->meta_nbytes = idfy->s13.lgeo._fna_nbytes_oob;
 			geo->page_nbytes = idfy->s13.wrt.ws_min * geo->sector_nbytes;
 
 			geo->nchannels = idfy->s13.lgeo.npugrp;
 			geo->nluns = idfy->s13.lgeo.npunit;
 			geo->nplanes = idfy->s13.wrt.ws_opt / idfy->s13.wrt.ws_min;
 			geo->nblocks = idfy->s13.lgeo.nchunk;
-			geo->npages = ((idfy->s13.lgeo.nsectr * idfy->s13.lgeo.nbytes) / geo->page_nbytes) / geo->nplanes;
+			geo->npages = ((idfy->s13.lgeo.nsectr * idfy->s13.lgeo._fna_nbytes) / geo->page_nbytes) / geo->nplanes;
 
 			// Capabilities
 			dev->mccap = idfy->s13.mccap;
@@ -260,8 +260,8 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 		geo->l.npunit = idfy->s20.lgeo.npunit;
 		geo->l.nchunk = idfy->s20.lgeo.nchunk;
 		geo->l.nsectr = idfy->s20.lgeo.nsectr;
-		geo->l.nbytes = idfy->s20.lgeo.nbytes;
-		geo->l.nbytes_oob = idfy->s20.lgeo.nbytes_oob;
+		geo->l.nbytes = idfy->s20.lgeo._fna_nbytes;
+		geo->l.nbytes_oob = idfy->s20.lgeo._fna_nbytes_oob;
 
 		// Capabilities
 		dev->mccap = idfy->s20.mccap;
