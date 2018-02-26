@@ -40,10 +40,6 @@ Compile it
 .. literalinclude:: hello_00.cmd
    :language: bash
 
-.. tip:: liblightnvm is also available as a **static** library. So you can add
-  `/usr/lib/liblightnvm.a` to your compiler target instead of linking
-  dynamically.
-
 Run it
 ~~~~~~
 
