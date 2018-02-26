@@ -326,7 +326,7 @@ enum nvm_spec_chunk_state {
 	NVM_CHUNK_STATE_RSVD5	= 0x1 << 5,
 	NVM_CHUNK_STATE_RSVD6	= 0x1 << 6,
 	NVM_CHUNK_STATE_RSVD7	= 0x1 << 7,
-;
+};
 
 /**
  * Representation of Spec. 2.0 chunk type (see figure 16)
