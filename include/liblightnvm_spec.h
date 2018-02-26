@@ -314,25 +314,45 @@ struct nvm_spec_bbt {
 	uint8_t		blk[];
 };
 
-enum nvm_spec_rprt_opts {
-	NVM_RPRT_ALL		= 0x0,
-	NVM_RPRT_FREE		= 0x1,
-	NVM_RPRT_CLOSED		= 0x1 << 1,
-	NVM_RPRT_OPEN		= 0x1 << 2,
-	NVM_RPRT_OFFLINE	= 0x1 << 3,
+/**
+ * Representation of Spec. 2.0 chunk state (see figure 16)
+ */
+enum nvm_spec_chunk_state {
+	NVM_CHUNK_STATE_FREE	= 0x1 << 0,
+	NVM_CHUNK_STATE_CLOSED	= 0x1 << 1,
+	NVM_CHUNK_STATE_OPEN	= 0x1 << 2,
+	NVM_CHUNK_STATE_OFFLINE	= 0x1 << 3,
+	NVM_CHUNK_STATE_RSVD4	= 0x1 << 4,
+	NVM_CHUNK_STATE_RSVD5	= 0x1 << 5,
+	NVM_CHUNK_STATE_RSVD6	= 0x1 << 6,
+	NVM_CHUNK_STATE_RSVD7	= 0x1 << 7,
+;
+
+/**
+ * Representation of Spec. 2.0 chunk type (see figure 16)
+ */
+enum nvm_spec_chunk_type {
+	NVM_CHUNK_TYPE_SEQR	= 0x1 << 0,
+	NVM_CHUNK_TYPE_ARWR	= 0x1 << 1,
+	NVM_CHUNK_TYPE_RSVD2	= 0x1 << 2,
+	NVM_CHUNK_TYPE_RSVD3	= 0x1 << 3,
+	NVM_CHUNK_TYPE_WAVVY	= 0x1 << 4,
+	NVM_CHUNK_TYPE_RSVD5	= 0x1 << 5,
+	NVM_CHUNK_TYPE_RSVD6	= 0x1 << 6,
+	NVM_CHUNK_TYPE_RSVD7	= 0x1 << 7,
 };
 
 /**
  * Representation of the chunk descriptor in the report chunk state table
  */
 struct nvm_spec_rprt_descr {
-	uint8_t chunk_state;
-	uint8_t chunk_type;
-	uint8_t chunk_wli;
+	uint8_t cs;		///< Chunk State (CS)
+	uint8_t ct;		///< Chunk Type (CT)
+	uint8_t wli;		///< Wear-level Index (WLI) 0-255
 	uint8_t rsvd1[5];
-	uint64_t chunk_addr;
-	uint64_t chunk_naddrs;
-	uint64_t chunk_wptr;
+	uint64_t addr;		///< AKA Starting LBA (SLBA)
+	uint64_t naddrs;	///< AKA Number of blocks in chunk (CNLB)
+	uint64_t wp;		///< Write Pointer (WP)
 };
 
 /**
