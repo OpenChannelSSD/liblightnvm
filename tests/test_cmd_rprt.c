@@ -40,7 +40,7 @@ void cmd_rprt(struct nvm_addr *punit_addr)
 	for (size_t idx = geo->l.nchunk / 2; idx < geo->l.nchunk; ++idx) {
 		chunk_addr.l.chunk = idx;
 
-		if (rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_state == NVM_RPRT_FREE)
+		if (rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].cs == NVM_CHUNK_STATE_FREE)
 			break;
 	}
 
@@ -71,8 +71,8 @@ void cmd_rprt(struct nvm_addr *punit_addr)
 		if (!rprt[rprt_cur])
 			goto out;
 
-		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_state == NVM_RPRT_OPEN);
-		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_wptr == (buf_len / geo->l.nbytes));
+		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].cs == NVM_CHUNK_STATE_OPEN);
+		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].wp == (buf_len / geo->l.nbytes));
 	}
 
 	// Write it fully and check that it changed state to CLOSED and wp
@@ -87,8 +87,8 @@ void cmd_rprt(struct nvm_addr *punit_addr)
 		if (!rprt[rprt_cur])
 			goto out;
 
-		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_state == NVM_RPRT_CLOSED);
-		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_wptr == geo->l.nsectr);
+		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].cs == NVM_CHUNK_STATE_CLOSED);
+		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].wp == geo->l.nsectr);
 	}
 
 	// Erase it and check that it is in state FREE
@@ -103,8 +103,8 @@ void cmd_rprt(struct nvm_addr *punit_addr)
 		if (!rprt[rprt_cur])
 			goto out;
 
-		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_state == NVM_RPRT_FREE);
-		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].chunk_wptr == 0);
+		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].cs == NVM_CHUNK_STATE_FREE);
+		CU_ASSERT(rprt[rprt_cur]->descr[descr_idx(punit_addr, chunk_addr)].wp == 0);
 	}
 
 out:

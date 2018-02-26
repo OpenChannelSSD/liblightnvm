@@ -462,7 +462,7 @@ static void ewr_s20(int use_meta)
 	struct nvm_addr chunk_addr = { .val = 0 };
 	ssize_t res;
 
-	if (nvm_cmd_rprt_arbs(dev, NVM_RPRT_FREE, 1, &chunk_addr)) {
+	if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, 1, &chunk_addr)) {
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		goto out;
 	}

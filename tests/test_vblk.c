@@ -64,7 +64,7 @@ void test_VBLK_EWR(void)
 
 	case NVM_SPEC_VERID_20:
 		naddrs = geo->l.npugrp * geo->l.npunit;
-		if (nvm_cmd_rprt_arbs(dev, NVM_RPRT_FREE, naddrs, addrs))
+		if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, naddrs, addrs))
 			CU_FAIL("FAILED: nvm_cmd_rprt_arbs");
 		break;
 	}
