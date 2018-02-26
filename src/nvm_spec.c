@@ -323,12 +323,12 @@ void nvm_spec_rprt_pr(const struct nvm_spec_rprt *rprt)
 		const struct nvm_spec_rprt_descr *descr = &rprt->descr[i];
 
 		printf("  - { ");
-		printf("slba: 0x%016lX, ", descr->chunk_addr);
-		printf("cnlb: %04lu, ", descr->chunk_naddrs);
-		printf("wp: %016lu, ", descr->chunk_wptr);
-		printf("cs: 0x%02X, ", descr->chunk_state);
-		printf("ct: 0x%02X, ", descr->chunk_type);
-		printf("wli: %03u", descr->chunk_wli);
+		printf("slba: 0x%016lX, ", descr->addr);
+		printf("cnlb: %04lu, ", descr->naddrs);
+		printf("wp: %016lu, ", descr->wp);
+		printf("cs: 0x%02X, ", descr->cs);
+		printf("ct: 0x%02X, ", descr->ct);
+		printf("wli: %03u", descr->wli);
 		printf(" }\n");
 	}
 }
