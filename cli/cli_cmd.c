@@ -4,6 +4,56 @@
 #include <errno.h>
 #include <liblightnvm_cli.h>
 
+/*
+
+//
+// MOVED FROM "nvm_addr" CLI
+//
+
+static int cmd_addr_erase(struct nvm_cli *cli)
+{
+	struct nvm_cli_cmd_args *args = &cli->args;
+	const int pmode = cli->evars.pmode;
+	struct nvm_ret ret = {0,0};
+	ssize_t err = 0;
+
+	nvm_cli_info_pr("nvm_addr_erase: {pmode: %s}", nvm_pmode_str(pmode));
+	for (int i = 0; i < args->naddrs; ++i) {
+		nvm_addr_pr(args->addrs[i]);
+	}
+
+	err = nvm_addr_erase(args->dev, args->addrs, args->naddrs, pmode,
+			     &ret);
+	if (err) {
+		nvm_cli_perror("nvm_addr_erase");
+		nvm_ret_pr(&ret);
+	}
+
+	return err ? 1 : 0;
+}
+
+static int cmd_addr_write(struct nvm_cli *cli)
+{
+	return _write(cli, 0) ? 1 : 0;
+}
+
+static int cmd_addr_write_wm(struct nvm_cli *cli)
+{
+	return _write(cli, 1) ? 1 : 0;
+}
+
+static int cmd_addr_read(struct nvm_cli *cli)
+{
+	return _read(cli, 0) ? 1 : 0;
+}
+
+static int cmd_addr_read_wm(struct nvm_cli *cli)
+{
+	return _read(cli, 1) ? 1 : 0;
+}
+*/
+
+
 static int cmd_idfy(struct nvm_cli *cli)
 {
 	struct nvm_dev *dev = cli->args.dev;
@@ -289,7 +339,17 @@ static struct nvm_cli_cmd cmds[] = {
 	{"write",	cmd_write,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_INPUT},
 	{"read",	cmd_read,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
 	{"copy",	cmd_copy,	NVM_CLI_ARG_VCOPY_S20, NVM_CLI_OPT_DEFAULT},
+/*
+ 
+{"erase",	cmd_addr_erase,		NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
+{"write",	cmd_addr_write,		NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_INPUT},
+{"write_wm",	cmd_addr_write_wm,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_INPUT},
+{"read",	cmd_addr_read,		NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
+{"read_wm",	cmd_addr_read_wm,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
+*/
+
 };
+
 
 /* Define the CLI */
 static struct nvm_cli cli = {
