@@ -28,7 +28,10 @@ void cmd_rprt(struct nvm_addr *punit_addr)
 		goto out;
 
 	// Test that it reports the correct amount of chunks
-	assert(rprt[rprt_cur]->ndescr == tchunks);
+	if (rprt[rprt_cur]->ndescr != tchunks) {
+		CU_ASSERT(rprt[rprt_cur]->ndescr == tchunks);
+		goto out;
+	}
 
 	// Get an arbitrary free chunk
 	if (punit_addr) {
@@ -138,9 +141,9 @@ int main(int argc, char **argv)
 	if (!pSuite)
 		goto out;
 
-	if (!CU_add_test(pSuite, "nvm_cmd_rprt_all", test_CMD_RPRT_ALL))
-		goto out;
 	if (!CU_add_test(pSuite, "nvm_cmd_rprt_punit", test_CMD_RPRT_PUNIT))
+		goto out;
+	if (!CU_add_test(pSuite, "nvm_cmd_rprt_all", test_CMD_RPRT_ALL))
 		goto out;
 
 	switch(rmode) {
