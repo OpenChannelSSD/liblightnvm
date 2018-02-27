@@ -354,6 +354,7 @@ struct nvm_spec_rprt_descr {
 	uint64_t naddrs;	///< AKA Number of blocks in chunk (CNLB)
 	uint64_t wp;		///< Write Pointer (WP)
 };
+static_assert(sizeof(struct nvm_spec_rprt_descr) == 32, "Incorrect size");
 
 /**
  * Representation of spec. 2.0 Get Log Page for chunk information
