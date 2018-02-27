@@ -128,52 +128,11 @@ static inline ssize_t _read(struct nvm_cli *cli, int with_meta)
 	return err;
 }
 
-static int cmd_addr_erase(struct nvm_cli *cli)
-{
-	struct nvm_cli_cmd_args *args = &cli->args;
-	const int pmode = cli->evars.pmode;
-	struct nvm_ret ret = {0,0};
-	ssize_t err = 0;
-
-	nvm_cli_info_pr("nvm_addr_erase: {pmode: %s}", nvm_pmode_str(pmode));
-	for (int i = 0; i < args->naddrs; ++i) {
-		nvm_addr_pr(args->addrs[i]);
-	}
-
-	err = nvm_addr_erase(args->dev, args->addrs, args->naddrs, pmode,
-			     &ret);
-	if (err) {
-		nvm_cli_perror("nvm_addr_erase");
-		nvm_ret_pr(&ret);
-	}
-
-	return err ? 1 : 0;
-}
-
-static int cmd_addr_write(struct nvm_cli *cli)
-{
-	return _write(cli, 0) ? 1 : 0;
-}
-
-static int cmd_addr_write_wm(struct nvm_cli *cli)
-{
-	return _write(cli, 1) ? 1 : 0;
-}
-
-static int cmd_addr_read(struct nvm_cli *cli)
-{
-	return _read(cli, 0) ? 1 : 0;
-}
-
-static int cmd_addr_read_wm(struct nvm_cli *cli)
-{
-	return _read(cli, 1) ? 1 : 0;
-}
-
 static int cmd_fmt(struct nvm_cli *cli)
 {
-	for (int i = 0; i < cli->args.naddrs; ++i)
-		nvm_addr_pr(cli->args.addrs[i]);
+	struct nvm_cli_cmd_args *args = &cli->args;
+
+	nvm_addr_prn(args->addrs, args->naddrs, args->dev);
 
 	return 0;
 }
@@ -214,6 +173,11 @@ static int cmd_gen2off(struct nvm_cli *cli)
 	return 0;
 }
 
+static int cmd_gen2lpo(struct nvm_cli *cli)
+{
+	return 0;
+}
+
 static int cmd_dev2gen(struct nvm_cli *cli)
 {
 	struct nvm_cli_cmd_args *args = &cli->args;
@@ -250,31 +214,40 @@ static int cmd_off2gen(struct nvm_cli *cli)
 	return 0;
 }
 
+static int cmd_lpo2gen(struct nvm_cli *cli)
+{
+	return 0;
+}
+
 /**
  * Command-line interface (CLI) boiler-plate
  */
 
+// MOVE: erase, write, write_wm, read, read_wm to nvm_cmd *
+
 /* Define commands */
 static struct nvm_cli_cmd cmds[] = {
-	{"erase",	cmd_addr_erase,		NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
-	{"write",	cmd_addr_write,		NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_INPUT},
-	{"write_wm",	cmd_addr_write_wm,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_INPUT},
-	{"read",	cmd_addr_read,		NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
-	{"read_wm",	cmd_addr_read_wm,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
-	{"from_geo",	cmd_fmt,	NVM_CLI_ARG_ADDR_SEC, NVM_CLI_OPT_DEFAULT},
-	{"from_hex",	cmd_fmt,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
+
+	{"s12_to_gen",	cmd_fmt,	NVM_CLI_ARG_ADDR_S12, NVM_CLI_OPT_DEFAULT},
+	{"s20_to_gen",	cmd_fmt,	NVM_CLI_ARG_ADDR_S20, NVM_CLI_OPT_DEFAULT},
+
+	//{"from_hex",		cmd_fmt,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
+	
 	{"gen2dev",	cmd_gen2dev,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
 	{"gen2lba",	cmd_gen2lba,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
 	{"gen2off",	cmd_gen2off,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
+	{"gen2lpo",	cmd_gen2lpo,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
+
 	{"dev2gen",	cmd_dev2gen,	NVM_CLI_ARG_HEXVAL_LIST, NVM_CLI_OPT_DEFAULT},
 	{"lba2gen",	cmd_lba2gen,	NVM_CLI_ARG_DECVAL_LIST, NVM_CLI_OPT_DEFAULT},
 	{"off2gen",	cmd_off2gen,	NVM_CLI_ARG_DECVAL_LIST, NVM_CLI_OPT_DEFAULT},
+	{"lpo2gen",	cmd_lpo2gen,	NVM_CLI_ARG_DECVAL_LIST, NVM_CLI_OPT_DEFAULT},
 };
 
 /* Define the CLI */
 static struct nvm_cli cli = {
 	.title = "NVM address (nvm_addr_*)",
-	.descr_short = "Construct / convert addresses and perform vector IO",
+	.descr_short = "Construct and convert addresses",
 	.cmds = cmds,
 	.ncmds = sizeof(cmds) / sizeof(cmds[0]),
 };
