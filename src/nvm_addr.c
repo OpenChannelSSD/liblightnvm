@@ -49,7 +49,7 @@ void nvm_addr_pr(struct nvm_addr addr)
 
 static void nvm_addr_pr_s12(struct nvm_addr addr)
 {
-	printf("addr: {");
+	printf("{");
 	printf("val: 0x%016"PRIx64", ", addr.ppa);
 	printf("ch: %02d, ", addr.g.ch);
 	printf("lun: %02d, ", addr.g.lun);
@@ -62,7 +62,7 @@ static void nvm_addr_pr_s12(struct nvm_addr addr)
 
 static void nvm_addr_pr_s20(struct nvm_addr addr)
 {
-	printf("addr: {");
+	printf("{");
 	printf("val: 0x%016"PRIx64", ", addr.ppa);
 	printf("pugrp: %02d, ", addr.l.pugrp);
 	printf("punit: %02d, ", addr.l.punit);
