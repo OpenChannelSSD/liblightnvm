@@ -23,6 +23,7 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/test_vblk.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_bbt.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_rprt.c
+	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_rprt_ordr.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_ewr.c)
 
 #
