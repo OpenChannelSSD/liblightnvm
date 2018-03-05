@@ -42,7 +42,7 @@ void nvm_ret_pr(const struct nvm_ret *ret)
 	printf("}\n");
 }
 
-void nvm_addr_pr(struct nvm_addr addr)
+void nvm_addr_pr(const struct nvm_addr addr)
 {
 	printf("0x%016"PRIx64", ", addr.val);
 }
@@ -71,7 +71,7 @@ static void nvm_addr_pr_s20(struct nvm_addr addr)
 	printf("}\n");
 }
 
-void nvm_addr_prn(struct nvm_addr *addr, unsigned int naddrs,
+void nvm_addr_prn(const struct nvm_addr *addr, unsigned int naddrs,
 		  const struct nvm_dev *dev)
 {
 	printf("naddrs: %d\n", naddrs);
