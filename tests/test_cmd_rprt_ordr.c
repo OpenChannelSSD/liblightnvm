@@ -7,6 +7,7 @@
  *
  *  - Number of entries in the log-page complies with spec. 2.0
  *  - Ordering of the entries in the log-page complies with spec. 2.0
+ *  - That chunk states are valid values as defined by spec. 2.0
  */
 
 void test_CMD_RPRT_ORDR(void)
@@ -32,7 +33,22 @@ void test_CMD_RPRT_ORDR(void)
 		.l.pugrp = ((i / geo->l.nchunk) / geo->l.npunit) % geo->l.npugrp
 		};
 
-		nvm_addr_prn(&addr, 1, dev);
+		const uint32_t addr_dev = nvm-addr_gen2dev(dev, addr);
+
+		struct nvm_spec_rprt_descr *descr = &rprt[i];
+
+		switch (descr->cs) {	// Verify the chunk_state value
+		case NVM_CHUNK_STATE_FREE:
+		case NVM_CHUNK_STATE_CLOSED:
+		case NVM_CHUNK_STATE_OPEN_:
+		case NVM_CHUNK_STATE_OFFLINE:
+			break;
+		default:
+			CU_FAIL("rprt.chunk_descr.cs has non-compliant value");
+			break;
+		}
+
+		CU_ASSERT(descr->addr == addr_dev);
 	}
 
 out:
