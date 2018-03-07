@@ -47,12 +47,14 @@ static void verify_counters(struct nvm_dev *dev, const struct nvm_bbt *bbt)
 		}
 	}
 
+	/* b0rk3d
 	if (nvm_dev_get_verid(dev) == 0x2) {	// Spec 2.0
 		nbad = nbad / geo->nplanes;
 		ngbad = ngbad / geo->nplanes;
 		ndmrk = ndmrk / geo->nplanes;
 		nhmrk = nhmrk / geo->nplanes;
 	}
+	*/
 
 	CU_ASSERT_EQUAL(bbt->nbad, nbad);
 	CU_ASSERT_EQUAL(bbt->ngbad, ngbad);
@@ -68,8 +70,6 @@ static void bbt_get(int bbts_cached)
 	struct nvm_addr lun_addr = arb_lun_addr();
 	struct nvm_ret ret = {0, 0};
 	const struct nvm_bbt *bbt;
-
-	CU_ASSERT_FATAL(NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev));
 
 	nvm_dev_set_bbts_cached(dev, bbts_cached);
 	if (FLUSH_ALL && nvm_bbt_flush_all(dev, &ret)) {
