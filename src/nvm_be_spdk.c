@@ -196,7 +196,7 @@ static struct nvm_spec_rprt *nvm_be_spdk_rprt(struct nvm_dev *dev,
 {
 	const size_t DESCR_NBYTES = sizeof(struct nvm_spec_rprt_descr);
 	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
-	size_t lpo_off = addr ? nvm_addr_to_lpo(dev, *addr) : 0;
+	size_t lpo_off = addr ? nvm_addr_gen2lpo(dev, *addr) : 0;
 	struct nvm_spec_rprt *rprt = NULL;
 	size_t rprt_len, ndescr;
 
