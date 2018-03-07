@@ -349,11 +349,13 @@ static void bbt_set(int bbts_cached)
 
 void test_BBT_SET(void)
 {
+	CU_ASSERT_FATAL(NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev));
 	bbt_set(0);
 }
 
 void test_BBT_SET_CACHED(void)
 {
+	CU_ASSERT_FATAL(NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev));
 	bbt_set(1);
 }
 
