@@ -112,7 +112,7 @@ static void bbt_get(int bbts_cached)
 void test_BBT_GET(void)
 {
 	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
-		CU_FAIL("FAILED: device is spec. 1.2");
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
 
@@ -122,7 +122,7 @@ void test_BBT_GET(void)
 void test_BBT_GET_CACHED(void)
 {
 	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
-		CU_FAIL("FAILED: device is spec. 1.2");
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
 
@@ -214,7 +214,7 @@ static void bbt_mark_naddr(unsigned int naddr_pr_call, int bbts_cached)
 void test_BBT_MARK_NADDR_MAX(void)
 {
 	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
-		CU_FAIL("FAILED: device is spec. 1.2");
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
 
@@ -224,7 +224,7 @@ void test_BBT_MARK_NADDR_MAX(void)
 void test_BBT_MARK_NADDR_MAX2(void)
 {
 	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
-		CU_FAIL("FAILED: device is spec. 1.2");
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
 
@@ -234,7 +234,7 @@ void test_BBT_MARK_NADDR_MAX2(void)
 void test_BBT_MARK_NADDR_MAX4(void)
 {
 	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
-		CU_FAIL("FAILED: device is spec. 1.2");
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
 
@@ -244,7 +244,7 @@ void test_BBT_MARK_NADDR_MAX4(void)
 void test_BBT_MARK_NADDR_1(void)
 {
 	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
-		CU_FAIL("FAILED: device is spec. 1.2");
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
 	}
 
 	bbt_mark_naddr(1, 0);
@@ -253,7 +253,7 @@ void test_BBT_MARK_NADDR_1(void)
 void test_BBT_MARK_NADDR_MAX_CACHED(void)
 {
 	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
-		CU_FAIL("FAILED: device is spec. 1.2");
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
 	bbt_mark_naddr(NVM_NADDR_MAX, 1);
@@ -262,7 +262,7 @@ void test_BBT_MARK_NADDR_MAX_CACHED(void)
 void test_BBT_MARK_NADDR_MAX2_CACHED(void)
 {
 	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
-		CU_FAIL("FAILED: device is spec. 1.2");
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
 	bbt_mark_naddr(NVM_NADDR_MAX / 2, 1);
@@ -271,7 +271,7 @@ void test_BBT_MARK_NADDR_MAX2_CACHED(void)
 void test_BBT_MARK_NADDR_MAX4_CACHED(void)
 {
 	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
-		CU_FAIL("FAILED: device is spec. 1.2");
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
 	bbt_mark_naddr(NVM_NADDR_MAX / 4, 1);
@@ -280,7 +280,7 @@ void test_BBT_MARK_NADDR_MAX4_CACHED(void)
 void test_BBT_MARK_NADDR_1_CACHED(void)
 {
 	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
-		CU_FAIL("FAILED: device is spec. 1.2");
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
 	bbt_mark_naddr(1, 1);
@@ -375,7 +375,7 @@ static void bbt_set(int bbts_cached)
 void test_BBT_SET(void)
 {
 	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
-		CU_FAIL("FAILED: device is spec. 1.2");
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
 
@@ -385,7 +385,7 @@ void test_BBT_SET(void)
 void test_BBT_SET_CACHED(void)
 {
 	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
-		CU_FAIL("FAILED: device is spec. 1.2");
+		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
 
