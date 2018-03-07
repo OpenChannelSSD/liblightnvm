@@ -1028,7 +1028,7 @@ uint64_t nvm_addr_gen2lpo(struct nvm_dev *dev, struct nvm_addr addr);
  *
  * @returns the page offset (lpo) for the given addr
  */
-struct nvm_addr nvm_addr_lpo2gen(struct nvm_dev *dev, struct nvm_addr addr);
+struct nvm_addr nvm_addr_lpo2gen(struct nvm_dev *dev, uint64_t lpo);
 
 /**
  * Converts a given physical address generic-format to device-format

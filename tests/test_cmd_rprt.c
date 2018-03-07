@@ -5,7 +5,7 @@ static size_t descr_idx(struct nvm_addr *punit_addr, struct nvm_addr chunk_addr)
 	if (punit_addr)
 		return chunk_addr.l.chunk;
 
-	return nvm_addr_to_lpo(dev, chunk_addr) / sizeof(struct nvm_spec_rprt_descr);
+	return nvm_addr_gen2lpo(dev, chunk_addr) / sizeof(struct nvm_spec_rprt_descr);
 }
 
 void cmd_rprt(struct nvm_addr *punit_addr)
