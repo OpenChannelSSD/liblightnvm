@@ -33,7 +33,7 @@ void test_CMD_RPRT_ORDR(void)
 		.l.pugrp = ((i / geo->l.nchunk) / geo->l.npunit) % geo->l.npugrp
 		};
 
-		const uint32_t addr_dev = nvm-addr_gen2dev(dev, addr);
+		const uint32_t addr_dev = nvm_addr_gen2dev(dev, addr);
 
 		struct nvm_spec_rprt_descr *descr = &rprt[i];
 
