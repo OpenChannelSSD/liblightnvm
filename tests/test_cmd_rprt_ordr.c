@@ -35,12 +35,12 @@ void test_CMD_RPRT_ORDR(void)
 
 		const uint32_t addr_dev = nvm_addr_gen2dev(dev, addr);
 
-		struct nvm_spec_rprt_descr *descr = &rprt[i];
+		struct nvm_spec_rprt_descr *descr = &rprt->descr[i];
 
 		switch (descr->cs) {	// Verify the chunk_state value
 		case NVM_CHUNK_STATE_FREE:
 		case NVM_CHUNK_STATE_CLOSED:
-		case NVM_CHUNK_STATE_OPEN_:
+		case NVM_CHUNK_STATE_OPEN:
 		case NVM_CHUNK_STATE_OFFLINE:
 			break;
 		default:
