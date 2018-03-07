@@ -69,6 +69,8 @@ static void bbt_get(int bbts_cached)
 	struct nvm_ret ret = {0, 0};
 	const struct nvm_bbt *bbt;
 
+	CU_ASSERT_FATAL(NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev));
+
 	nvm_dev_set_bbts_cached(dev, bbts_cached);
 	if (FLUSH_ALL && nvm_bbt_flush_all(dev, &ret)) {
 		CU_FAIL("FAILED: nvm_bbt_flush_all");
@@ -109,11 +111,15 @@ static void bbt_get(int bbts_cached)
 
 void test_BBT_GET(void)
 {
+	CU_ASSERT_FATAL(NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev));
+
 	bbt_get(0);
 }
 
 void test_BBT_GET_CACHED(void)
 {
+	CU_ASSERT_FATAL(NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev));
+
 	bbt_get(1);
 }
 
@@ -201,41 +207,57 @@ static void bbt_mark_naddr(unsigned int naddr_pr_call, int bbts_cached)
 
 void test_BBT_MARK_NADDR_MAX(void)
 {
+	CU_ASSERT_FATAL(NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev));
+
 	bbt_mark_naddr(NVM_NADDR_MAX, 0);
 }
 
 void test_BBT_MARK_NADDR_MAX2(void)
 {
+	CU_ASSERT_FATAL(NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev));
+
 	bbt_mark_naddr(NVM_NADDR_MAX / 2, 0);
 }
 
 void test_BBT_MARK_NADDR_MAX4(void)
 {
+	CU_ASSERT_FATAL(NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev));
+
 	bbt_mark_naddr(NVM_NADDR_MAX / 4, 0);
 }
 
 void test_BBT_MARK_NADDR_1(void)
 {
+	CU_ASSERT_FATAL(NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev));
+
 	bbt_mark_naddr(1, 0);
 }
 
 void test_BBT_MARK_NADDR_MAX_CACHED(void)
 {
+	CU_ASSERT_FATAL(NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev));
+
 	bbt_mark_naddr(NVM_NADDR_MAX, 1);
 }
 
 void test_BBT_MARK_NADDR_MAX2_CACHED(void)
 {
+	CU_ASSERT_FATAL(NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev));
+
 	bbt_mark_naddr(NVM_NADDR_MAX / 2, 1);
 }
 
 void test_BBT_MARK_NADDR_MAX4_CACHED(void)
 {
+	CU_ASSERT_FATAL(NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev));
+
 	bbt_mark_naddr(NVM_NADDR_MAX / 4, 1);
 }
 
 void test_BBT_MARK_NADDR_1_CACHED(void)
 {
+	CU_ASSERT_FATAL(NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev));
+
 	bbt_mark_naddr(1, 1);
 }
 
