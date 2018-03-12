@@ -32,10 +32,6 @@ endif()
 # SPDK is disabled by default
 set(NVM_BE_SPDK_ENABLED FALSE CACHE BOOL "be_spdk: SPDK backend")
 if(NVM_BE_SPDK_ENABLED)
-	if(NVM_LIBRARY_SHARED)
-		message( FATAL_ERROR "SHARED library is not compatible with SPDK backend; Set either NVM_BE_SPDK_ENABLE=OFF or NVM_LIBRARY_SHARED=OFF ")
-	endif()
-
 	# TODO: Fix this hardcoded path SPDK headers
 	include_directories(AFTER "/opt/spdk/include")
 	add_definitions(-DNVM_BE_SPDK_ENABLED)

@@ -65,10 +65,8 @@ dev_opts:
 .PHONY: dev
 dev: uninstall-pkg clean dev_opts make-pkg install-pkg
 
-.PHONY: spdk_otps
-spdk_opts:
-	$(eval NVM_CLI := ON)
-	$(eval NVM_TESTS := ON)
+.PHONY: spdk_opts
+spdk_opts: dev_opts
 	$(eval CMAKE_AUX := -DNVM_BE_SPDK_ENABLED=ON)
 
 .PHONY: spdk
