@@ -248,6 +248,7 @@ struct nvm_spec_perf {
 	uint8_t		resv[40];
 };
 
+/*
 struct nvm_spec_idfy_s13 {
 	uint8_t				verid;
 	uint8_t				verid_minor;
@@ -261,7 +262,7 @@ struct nvm_spec_idfy_s13 {
 	struct nvm_spec_wrt		wrt;
 	struct nvm_spec_perf		perf;
 	uint8_t				rsvd4;
-};
+}; arav */
 
 struct nvm_spec_idfy_s20 {
 	uint8_t				verid;
@@ -286,7 +287,7 @@ static_assert(sizeof(struct nvm_spec_idfy_s20) == 4096, "Incorrect size");
 struct nvm_spec_idfy {
 	union {
 		struct nvm_spec_idfy_s12 s12;
-		struct nvm_spec_idfy_s13 s13;
+		//struct nvm_spec_idfy_s13 s13; arav
 		struct nvm_spec_idfy_s20 s20;
 
 		struct {
@@ -298,7 +299,7 @@ struct nvm_spec_idfy {
 };
 static_assert(sizeof(struct nvm_spec_idfy) == 4096, "Incorrect size");
 
-void nvm_spec_idfy_pr(const struct nvm_spec_idfy *idfy, int quirks);
+void nvm_spec_idfy_pr(const struct nvm_spec_idfy *idfy);
 
 struct nvm_spec_bbt {
 	uint8_t		tblid[4];
