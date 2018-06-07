@@ -60,8 +60,10 @@ static CU_pSuite suite_create(const char *title, int argc, char *argv[])
 			rmode = CU_BRM_NORMAL;
 			break;
 		}
+		/* FALLTHRU */
 	case 3:
 		seed = atoi(argv[2]);		// Overwrite default seed
+		/* FALLTHRU */
 	case 2:
 		if (strlen(argv[1]) > NVM_DEV_PATH_LEN) {
 			printf("ERR: len(dev_path) > %d characters\n",
