@@ -201,11 +201,13 @@ int nvm_dev_set_pmode(struct nvm_dev *dev, int pmode)
 			errno = EINVAL;
 			return -1;
 		}
+		/* FALLTHRU */
 	case NVM_FLAG_PMODE_DUAL:
 		if (dev->geo.nplanes < 2) {
 			errno = EINVAL;
 			return -1;
 		}
+		/* FALLTHRU */
 	case NVM_FLAG_PMODE_SNGL:
 		dev->pmode = pmode;
 		return 0;
