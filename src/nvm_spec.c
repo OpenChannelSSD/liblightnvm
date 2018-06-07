@@ -219,21 +219,6 @@ static void nvm_spec_idfy_s12_pr(const struct nvm_spec_idfy *identify)
 	}
 }
 
-static void nvm_spec_idfy_s13_pr(const struct nvm_spec_idfy *identify)
-{
-	struct nvm_spec_idfy_s13 idfy = identify->s13;
-
-	printf("idfy:\n");
-	printf("  verid: "NVM_I8_FMT"\n", NVM_I8_TO_STR(idfy.verid));
-	printf("  verid_minor: "NVM_I8_FMT"\n", NVM_I8_TO_STR(idfy.verid_minor));
-	printf("  mccap: "NVM_I32_FMT"\n", NVM_I32_TO_STR(idfy.mccap));
-	nvm_spec_ppaf_nand_pr(&idfy.ppaf);
-	nvm_spec_lbaf_pr(&idfy.lbaf);
-	nvm_spec_lgeo_pr(&idfy.lgeo);
-	nvm_spec_wrt_pr(&idfy.wrt);
-	nvm_spec_perf_pr(&idfy.perf);
-}
-
 static void nvm_spec_idfy_s20_pr(const struct nvm_spec_idfy *identify)
 {
 	struct nvm_spec_idfy_s20 idfy = identify->s20;
@@ -248,32 +233,27 @@ static void nvm_spec_idfy_s20_pr(const struct nvm_spec_idfy *identify)
 	nvm_spec_perf_pr(&idfy.perf);
 }
 
-void nvm_spec_idfy_pr(const struct nvm_spec_idfy *idfy, int quirks)
+void nvm_spec_idfy_pr(const struct nvm_spec_idfy *idfy, int NVM_UNUSED(quirks))
 {
 	if (!idfy) {
 		printf("nvm_spec_idfy: ~\n");
 		return;
 	}
+	switch(idfy->s.verid) {
+	case NVM_SPEC_VERID_12:
+		nvm_spec_idfy_s12_pr(idfy);
+		break;
 
-	if (quirks & NVM_QUIRK_SEMI20) {
-		nvm_spec_idfy_s13_pr(idfy);
-	} else {
-		switch(idfy->s.verid) {
-		case NVM_SPEC_VERID_12:
-			nvm_spec_idfy_s12_pr(idfy);
-			break;
+	case NVM_SPEC_VERID_20:
+		nvm_spec_idfy_s20_pr(idfy);
+		break;
 
-		case NVM_SPEC_VERID_20:
-			nvm_spec_idfy_s20_pr(idfy);
-			break;
-
-		default:
-			printf("nvm_spec_idfy:\n");
-			printf("  verid: "NVM_I8_FMT",\n",
-			       NVM_I8_TO_STR(idfy->s.verid));
-			printf("  verid_minor: "NVM_I8_FMT",\n",
-			       NVM_I8_TO_STR(idfy->s.verid_minor));
-		}
+	default:
+		printf("nvm_spec_idfy:\n");
+		printf("  verid: "NVM_I8_FMT",\n",
+		       NVM_I8_TO_STR(idfy->s.verid));
+		printf("  verid_minor: "NVM_I8_FMT",\n",
+		       NVM_I8_TO_STR(idfy->s.verid_minor));
 	}
 }
 
