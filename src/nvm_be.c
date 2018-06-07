@@ -194,62 +194,31 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 		NVM_DEBUG("FAILED: nvm_cmd_idfy");
 		return -1; // NOTE: Propagate errno
 	}
-
 	// Handle IDFY reporting 3, mark as 2.0
 	if (idfy->s.verid == 0x3)
 		idfy->s.verid = NVM_SPEC_VERID_20;
-
-	// Handle IDFY (draft / pre 2.0) reporting 2.0, mark as 1.2 and update
-	// quirk-mask
-	if (idfy->s.verid == NVM_SPEC_VERID_20 && !(
-		idfy->s20.lbaf.pugrp &&
-		idfy->s20.lbaf.punit &&
-		idfy->s20.lbaf.chunk &&
-		idfy->s20.lbaf.sectr)) {
-		idfy->s.verid = NVM_SPEC_VERID_12;
-		dev->quirks |= NVM_QUIRK_SEMI20;
-	}
 
 	dev->idfy = *idfy;
 	dev->verid = geo->verid = idfy->s.verid;
 
 	switch (idfy->s.verid) {
 	case NVM_SPEC_VERID_12:
-		if (dev->quirks & NVM_QUIRK_SEMI20) {
-			// Geometry
-			geo->sector_nbytes = idfy->s13.lgeo._fna_nbytes;
-			geo->meta_nbytes = idfy->s13.lgeo._fna_nbytes_oob;
-			geo->page_nbytes = idfy->s13.wrt.ws_min * geo->sector_nbytes;
+		// Geometry
+		geo->page_nbytes = idfy->s12.grp[0].fpg_sz;
+		geo->sector_nbytes = idfy->s12.grp[0].csecs;
+		geo->meta_nbytes = idfy->s12.grp[0].sos;
 
-			geo->nchannels = idfy->s13.lgeo.npugrp;
-			geo->nluns = idfy->s13.lgeo.npunit;
-			geo->nplanes = idfy->s13.wrt.ws_opt / idfy->s13.wrt.ws_min;
-			geo->nblocks = idfy->s13.lgeo.nchunk;
-			geo->npages = ((idfy->s13.lgeo.nsectr * idfy->s13.lgeo._fna_nbytes) / geo->page_nbytes) / geo->nplanes;
+		geo->nchannels = idfy->s12.grp[0].num_ch;
+		geo->nluns = idfy->s12.grp[0].num_lun;
+		geo->nplanes = idfy->s12.grp[0].num_pln;
+		geo->nblocks = idfy->s12.grp[0].num_blk;
+		geo->npages = idfy->s12.grp[0].num_pg;
 
-			// Capabilities
-			dev->mccap = idfy->s13.mccap;
+		// Capabilities
+		dev->mccap = idfy->s12.grp[0].mccap;
 
-			// Addressing format / offset / mask
-			dev->ppaf = idfy->s13.ppaf;
-		} else {
-			// Geometry
-			geo->page_nbytes = idfy->s12.grp[0].fpg_sz;
-			geo->sector_nbytes = idfy->s12.grp[0].csecs;
-			geo->meta_nbytes = idfy->s12.grp[0].sos;
-
-			geo->nchannels = idfy->s12.grp[0].num_ch;
-			geo->nluns = idfy->s12.grp[0].num_lun;
-			geo->nplanes = idfy->s12.grp[0].num_pln;
-			geo->nblocks = idfy->s12.grp[0].num_blk;
-			geo->npages = idfy->s12.grp[0].num_pg;
-
-			// Capabilities
-			dev->mccap = idfy->s12.grp[0].mccap;
-
-			// Addressing format / offset / mask
-			dev->ppaf = idfy->s12.ppaf;
-		}
+		// Addressing format / offset / mask
+		dev->ppaf = idfy->s12.ppaf;
 
 		construct_ppaf_mask(&dev->ppaf, &dev->mask);
 		break;
@@ -299,18 +268,14 @@ int nvm_be_populate_quirks(struct nvm_dev *dev, const char serial[])
 	if (!strncmp("CX8800ES", serial, 8 < serial_len ? 8 : serial_len)) {
 		dev->quirks |= NVM_QUIRK_PMODE_ERASE_RUNROLL;
 
-		if (dev->quirks & NVM_QUIRK_SEMI20) {
-			dev->quirks |= NVM_QUIRK_OOB_READ_1ST4BYTES_NULL;
-		} else {
-			switch(dev->verid) {
-			case NVM_SPEC_VERID_12:
-				dev->quirks |= NVM_QUIRK_OOB_2LRG;
-				break;
+		switch(dev->verid) {
+		case NVM_SPEC_VERID_12:
+			dev->quirks |= NVM_QUIRK_OOB_2LRG;
+			break;
 
-			case NVM_SPEC_VERID_20:
-				dev->quirks |= NVM_QUIRK_OOB_READ_1ST4BYTES_NULL;
-				break;
-			}
+		case NVM_SPEC_VERID_20:
+			dev->quirks |= NVM_QUIRK_OOB_READ_1ST4BYTES_NULL;
+			break;
 		}
 
 	} else {
