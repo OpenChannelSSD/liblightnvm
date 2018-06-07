@@ -248,21 +248,6 @@ struct nvm_spec_perf {
 	uint8_t		resv[40];
 };
 
-struct nvm_spec_idfy_s13 {
-	uint8_t				verid;
-	uint8_t				verid_minor;
-	uint8_t				rsvd1[2];
-	struct nvm_spec_lbaf		lbaf;
-	struct nvm_spec_ppaf_nand	ppaf;
-	uint8_t				rsvd2[4];
-	uint32_t			mccap;
-	uint8_t				rsvd3[28];
-	struct nvm_spec_lgeo		lgeo;
-	struct nvm_spec_wrt		wrt;
-	struct nvm_spec_perf		perf;
-	uint8_t				rsvd4;
-};
-
 struct nvm_spec_idfy_s20 {
 	uint8_t				verid;
 	uint8_t				verid_minor;
@@ -286,7 +271,6 @@ static_assert(sizeof(struct nvm_spec_idfy_s20) == 4096, "Incorrect size");
 struct nvm_spec_idfy {
 	union {
 		struct nvm_spec_idfy_s12 s12;
-		struct nvm_spec_idfy_s13 s13;
 		struct nvm_spec_idfy_s20 s20;
 
 		struct {
