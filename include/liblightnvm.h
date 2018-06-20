@@ -309,7 +309,7 @@ int nvm_cmd_rprt_arbs(struct nvm_dev *dev, int cs, int naddrs,
 		      struct nvm_addr addrs[]);
 
 /**
- * Execute an Open-Channel 1.2 get bad-block-table
+ * Execute an Open-Channel 1.2 get bad-block-table command
  *
  * @return On success, pointer to bad block table is returned. On error, NULL is
  * returned and `errno` set to indicate the error and ret filled with
@@ -322,19 +322,17 @@ struct nvm_spec_bbt *nvm_cmd_gbbt(struct nvm_dev *dev, struct nvm_addr addr,
  * Find an arbitrary set of 'naddrs' block-addresses on the given 'dev', in the
  * given block state 'bs' and store them in the provided 'addrs' array
  *
- * @returns 0 on success, -1 on error and errno set to indicate the error.
+ * @returns On success, 0 is returned. On error, -1 is returned and errno set to
+ * indicate the error.
  */
 int nvm_cmd_gbbt_arbs(struct nvm_dev *dev, int bs, int naddrs,
 		      struct nvm_addr addrs[]);
 
 /**
- * Execute an Open-Channel 1.2 get bad block table command
+ * Execute an Open-Channel 1.2 set bad block table command
  *
- * NOTE: Caller is responsible for de-allocating the returned structure
- *
- * @return On success, pointer to bad block table is returned. On error, NULL is
- * returned and `errno` set to indicate the error and ret filled with
- * lower-level result codes
+ * @returns On success, 0 is returned. On error, -1 is returned and errno set to
+ * indicate the error.
  */
 int nvm_cmd_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs, int naddrs,
 		 uint16_t flags, struct nvm_ret *ret);
