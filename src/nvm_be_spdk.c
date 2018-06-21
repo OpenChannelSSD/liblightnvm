@@ -123,7 +123,7 @@ static inline int vam_execute(struct nvm_dev *dev, struct nvm_nvme_cmd *cmd,
 
 		return -1;
 	}
-	
+
 	while (state->vam_outstanding)
 		spdk_nvme_ctrlr_process_admin_completions(state->ctrlr);
 
@@ -166,6 +166,7 @@ static int nvme_get_log_page(struct nvm_dev *dev, void *buf, uint32_t ndw,
 			     uint64_t lpo, int opt, struct nvm_ret *ret)
 {
 	struct nvm_nvme_cmd cmd = { 0 };
+	struct state *state = dev->be_state;
 
 	if (lpo & 0x3) {
 		errno = EINVAL;
@@ -173,7 +174,7 @@ static int nvme_get_log_page(struct nvm_dev *dev, void *buf, uint32_t ndw,
 	}
 
 	cmd.opcode = NVM_OPC_RPRT;
-	cmd.nsid = nvm_dev_get_nsid(dev);
+	cmd.nsid = state->nsid;
 	cmd.rprt.lid = 0xCA;
 	cmd.rprt.lsp = opt;
 	cmd.rprt.numdu = ndw >> 16;
@@ -283,7 +284,7 @@ static int nvm_be_spdk_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs,
 			NVM_DEBUG("FAILED: spdk_dma_malloc(addrs)");
 			return -1;
 		}
-		
+
 		for (int i = 0; i < naddrs; ++i)
 			addrs_dma[i] = nvm_addr_gen2dev(dev, addrs[i]);
 
@@ -372,7 +373,7 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 			res = -1;
 			goto out;
 		}
-		
+
 		for (int i = 0; i < naddrs; ++i)
 			addrs_dma[i] = nvm_addr_gen2dev(dev, addrs[i]);
 
@@ -392,7 +393,7 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 				res = -1;
 				goto out;
 			}
-			
+
 			for (int i = 0; i < naddrs; ++i)
 				dst_dma[i] = nvm_addr_gen2dev(dev, dst[i]);
 			cmd.addrs_dst = dst_phys;
@@ -437,7 +438,7 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 					       meta ? data_len + meta_len : data_len,
 					       meta_dma, vio_cb, &completed)) {
 		NVM_DEBUG("FAILED: spdk_nvme_ctrlr_cmd_io_raw_with_md");
-		
+
 		omp_unset_lock(qpair_lock);
 		res = -1;
 		goto out;
@@ -534,7 +535,7 @@ static void attach_cb(void *cb_ctx,
 	// NOTE: namespace IDs start at 1, not 0.
 	for (int nsid = 1; nsid <= num_ns; nsid++) {
 		struct spdk_nvme_ns *ns = NULL;
-		
+
 		ns = spdk_nvme_ctrlr_get_ns(ctrlr, nsid);
 		if (ns == NULL) {
 			NVM_DEBUG("skipping invalid nsid: %d", nsid);
@@ -544,7 +545,7 @@ static void attach_cb(void *cb_ctx,
 			NVM_DEBUG("skipping inactive nsid: %d", nsid);
 			continue;
 		}
-		
+
 		state->ns = ns;
 		state->nsid = nsid;
 		state->ctrlr = ctrlr;
@@ -601,13 +602,13 @@ static struct nvm_dev *nvm_be_spdk_open(const char *dev_path,
 	 * library must be initialized first.
 	 */
 	spdk_env_opts_init(&(state->opts));
-	
+
 	state->opts.name = "liblightnvm";
 	state->opts.shm_id = 0;
 	state->opts.master_core = 0;
 
 	spdk_env_init(&(state->opts));
-	
+
 	/*
 	 * Parse the dev_path into transport_id so we can use it to compare to
 	 * the probed controller
@@ -697,4 +698,3 @@ struct nvm_be nvm_be_spdk = {
 
 };
 #endif
-
