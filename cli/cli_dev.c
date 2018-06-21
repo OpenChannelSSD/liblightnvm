@@ -5,27 +5,11 @@
 #include <liblightnvm.h>
 #include <liblightnvm_cli.h>
 
-static int cmd_attr(struct nvm_cli *cli)
+static int cmd_enum(struct nvm_cli *cli)
 {
-	nvm_cli_info_pr("Device information -- nvm_dev_attr_pr");
-	printf("dev_"); nvm_dev_attr_pr(cli->args.dev);
+	nvm_cli_info_pr("Device enumeration");
 
-	return 0;
-}
-
-static int cmd_geo(struct nvm_cli *cli)
-{
-	nvm_cli_info_pr("Device information -- nvm_geo_pr");
-	printf("dev_"); nvm_geo_pr(nvm_dev_get_geo(cli->args.dev));
-
-	return 0;
-}
-
-static int cmd_ppaf(struct nvm_cli *cli)
-{
-	nvm_cli_info_pr("Device information -- nvm_spec_(ppaf|ppaf_mask)_pr");
-	printf("dev_"); nvm_spec_ppaf_nand_pr(nvm_dev_get_ppaf(cli->args.dev));
-	printf("dev_"); nvm_spec_ppaf_nand_mask_pr(nvm_dev_get_ppaf_mask(cli->args.dev));
+	printf("Not implemented %p\n", (void *)cli);
 
 	return 0;
 }
@@ -44,14 +28,6 @@ static int cmd_info(struct nvm_cli *cli)
 	return 0;
 }
 
-static int cmd_enum(struct nvm_cli *cli)
-{
-	nvm_cli_info_pr("Device enumeration");
-
-	printf("huh %p\n", (void *)cli);
-
-	return 0;
-}
 
 /**
  * Command-line interface (CLI) boiler-plate
@@ -60,9 +36,6 @@ static int cmd_enum(struct nvm_cli *cli)
 /* Define commands */
 static struct nvm_cli_cmd cmds[] = {
 	{"enum", cmd_enum, NVM_CLI_ARG_NONE, NVM_CLI_OPT_HELP},
-	{"attr", cmd_attr, NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_HELP},
-	{"geo", cmd_geo, NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_HELP},
-	{"ppaf", cmd_ppaf, NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_HELP},
 	{"info", cmd_info, NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_HELP | NVM_CLI_OPT_BRIEF},
 };
 
