@@ -8,9 +8,9 @@ CMD = "nvm_vblk"
 SUBS = ["line_erase", "line_write", "line_read"]
 DEV = "/dev/nvme0n1"
 
-NCHANNELS = 16
-NLUNS = 8
-NBLOCKS = 1000
+NCHANNELS = 8
+NLUNS = 4
+NBLOCKS = 1400
 
 def main():
 
@@ -44,7 +44,7 @@ def main():
                 break
 
         if line_is_good:
-            print(line)
+            print("Good line(%S)" % pprint.pformat(line))
             break
 
 if __name__ == "__main__":
