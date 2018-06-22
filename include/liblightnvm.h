@@ -276,7 +276,7 @@ struct nvm_bbt {
 /**
  * Execute an Open-Channel 1.2 identify / Open-Channel 2.0 geometry command
  *
- * NOTE: Caller is reponsible for de-allocating the returned structure
+ * NOTE: Caller is responsible for de-allocating the returned structure
  *
  * @return On success, pointer identify structure is returned. On error, NULL is
  * returned and `errno` set to indicate the error and ret filled with
@@ -348,7 +348,7 @@ int nvm_cmd_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		  uint16_t flags, struct nvm_ret *ret);
 
 /**
- * Execute an Open-Channel 1.2 / 2.0 write command
+ * Execute an Open-Channel 1.2 / 2.0 vector-write command
  *
  * @return On success, 0 is returned. On error, -1 is returned and `errno` set
  * to indicate the error and ret filled with lower-level result codes
@@ -357,7 +357,7 @@ int nvm_cmd_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		  void *data, void *meta, uint16_t flags, struct nvm_ret *ret);
 
 /**
- * Execute an Open-Channel 1.2 / 2.0 read command
+ * Execute an Open-Channel 1.2 / 2.0 vector-read command
  *
  * @return On success, 0 is returned. On error, -1 is returned and `errno` set
  * to indicate the error and ret filled with lower-level result codes
@@ -366,7 +366,7 @@ int nvm_cmd_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		 void *data, void *meta, uint16_t flags, struct nvm_ret *ret);
 
 /**
- * Execute an Open-Channel 2.0 copy command
+ * Execute an Open-Channel 2.0 vector-copy command
  *
  * @return On success, 0 is returned. On error, -1 is returned and `errno` set
  * to indicate the error and ret filled with lower-level result codes
@@ -1212,6 +1212,14 @@ ssize_t nvm_vblk_read(struct nvm_vblk *vblk, void *buf, size_t count);
  */
 ssize_t nvm_vblk_pread(struct nvm_vblk *vblk, void *buf, size_t count,
 		       size_t offset);
+
+/**
+ * Copy the virtual block 'src' to the virtual block 'dst'
+ *
+ * @returns On success, the number of bytes copied is returned. On error, -1 is
+ * returned and `errno` set to indicate the error.
+ */
+ssize_t nvm_vblk_copy(struct nvm_vblk *src, struct nvm_vblk *dst, int flags);
 
 /**
  * Retrieve the device associated with the given virtual block
