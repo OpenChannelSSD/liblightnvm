@@ -690,6 +690,114 @@ ssize_t nvm_vblk_read(struct nvm_vblk *vblk, void *buf, size_t count)
 	return nbytes;			// Return number of bytes read
 }
 
+static inline ssize_t vblk_copy_s20(struct nvm_vblk *src, struct nvm_vblk *dst)
+{
+	size_t nerr = 0;
+
+	const size_t offset = 0;
+	const size_t count = src->nbytes;
+
+	const uint32_t WS_MIN = nvm_dev_get_ws_min(src->dev);
+
+	const struct nvm_geo *geo = nvm_dev_get_geo(src->dev);
+	const size_t nchunks = src->nblks;
+
+	const size_t sectr_nbytes = geo->l.nbytes;
+	const size_t nsectr = count / sectr_nbytes;
+
+	const size_t sectr_bgn = offset / sectr_nbytes;
+	const size_t sectr_end = sectr_bgn + (count / sectr_nbytes) - 1;
+
+	const size_t cmd_nsectr_max = (NVM_NADDR_MAX / WS_MIN) * WS_MIN;
+
+	if (nsectr % WS_MIN) {
+		NVM_DEBUG("FAILED: unaligned nsectr: %zu", nsectr);
+		errno = EINVAL;
+		return -1;
+	}
+	if (sectr_bgn % WS_MIN) {
+		NVM_DEBUG("FAILED: unaligned sectr_bgn: %zu", sectr_bgn);
+		errno = EINVAL;
+		return -1;
+	}
+
+	for (size_t sectr_ofz = sectr_bgn; sectr_ofz <= sectr_end; sectr_ofz += cmd_nsectr_max) {
+		struct nvm_ret ret = { 0, 0 };
+
+		const size_t cmd_nsectr = NVM_MIN(sectr_end - sectr_ofz + 1, cmd_nsectr_max);
+
+		struct nvm_addr addrs_src[cmd_nsectr];
+		struct nvm_addr addrs_dst[cmd_nsectr];
+
+		for (size_t idx = 0; idx < cmd_nsectr; ++idx) {
+			const size_t sectr = sectr_ofz + idx;
+			const size_t wunit = sectr / WS_MIN;
+			const size_t rnd = wunit / nchunks;
+
+			const size_t chunk = wunit % nchunks;
+			const size_t chunk_sectr = sectr % WS_MIN + rnd * WS_MIN;
+
+			addrs_src[idx].val = src->blks[chunk].val;
+			addrs_src[idx].l.sectr = chunk_sectr;
+
+			addrs_dst[idx].val = dst->blks[chunk].val;
+			addrs_dst[idx].l.sectr = chunk_sectr;
+		}
+
+		const ssize_t err = nvm_cmd_copy(src->dev, addrs_src,
+						 addrs_dst, cmd_nsectr, 0x0,
+						 &ret);
+		if (err)
+			++nerr;
+	}
+
+	if (nerr) {
+		NVM_DEBUG("FAILED: nvm_cmd_write, nerr(%zu)", nerr);
+		errno = EIO;
+		return -1;
+	}
+
+	return count;
+}
+
+ssize_t nvm_vblk_copy(struct nvm_vblk *src, struct nvm_vblk *dst, int flags)
+{
+	const int verid = nvm_dev_get_verid(nvm_vblk_get_dev(src));
+
+	if (src->dev != dst->dev) {
+		NVM_DEBUG("FAILED: unsupported cross device copy");
+		errno = ENOSYS;
+		return -1;
+	}
+
+	if (src->nblks != dst->nblks) {
+		NVM_DEBUG("FAILED: unbalanced vblks");
+		errno = ENOSYS;
+		return -1;
+	}
+
+	if (src->nbytes != dst->nbytes) {
+		NVM_DEBUG("FAILED: unbalanced vblks");
+		errno = ENOSYS;
+		return -1;
+	}
+
+	switch (verid) {
+	case NVM_SPEC_VERID_20:
+		return vblk_copy_s20(src, dst);
+
+	case NVM_SPEC_VERID_12:
+		NVM_DEBUG("FAILED: not implemented, verid: %d", verid);
+		errno = ENOSYS;
+		return -1;
+
+	default:
+		NVM_DEBUG("FAILED: unsupported, verid: %d", verid);
+		errno = ENOSYS;
+		return -1;
+	}
+}
+
 struct nvm_addr *nvm_vblk_get_addrs(struct nvm_vblk *vblk)
 {
 	return vblk->blks;
