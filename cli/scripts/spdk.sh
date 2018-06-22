@@ -22,7 +22,7 @@ do
 		;;
 	rprt)
 		echo "## Running nvm_cmd rprt $NVM_DEV"
-		sudo nvm_cmd rprt $NVM_DEV
+		sudo nvm_cmd rprt_all $NVM_DEV
 		;;
 	bbt_get)
 		echo "## Running nvm_bbt get $NVM_DEV"
