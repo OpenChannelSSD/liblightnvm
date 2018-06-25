@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
-set(NVM_VERSION_MAJOR 0)
-set(NVM_VERSION_MINOR 0)
-set(NVM_VERSION_PATCH 1)
+set(NVM_VERSION_MAJOR 18 CACHE INTEGER "nvm_ver: NVM_VERSION_MAJOR")
+set(NVM_VERSION_MINOR 6 CACHE INTEGER "nvm_ver: NVM_VERSION_MINOR")
+set(NVM_VERSION_PATCH 0 CACHE INTEGER "nvm_ver: NVM_VERSION_PATH")
 set(NVM_VERSION "${NVM_VERSION_MAJOR}.${NVM_VERSION_MINOR}.${NVM_VERSION_PATCH}")
 
 project(liblightnvm C)
@@ -10,6 +10,12 @@ include(FeatureSummary)
 include(use_c11)
 include(CheckLibraryExists)
 include(CheckFunctionExists)
+
+# Add versioning
+add_definitions(-DLNVM_VERSION_MAJOR=${NVM_VERSION_MAJOR})
+add_definitions(-DLNVM_VERSION_MINOR=${NVM_VERSION_MINOR})
+add_definitions(-DLNVM_VERSION_PATCH=${NVM_VERSION_PATCH})
+add_definitions(-DLNVM_VERSION=${NVM_VERSION})
 
 #
 # BACKENDS -- begin
