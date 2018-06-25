@@ -29,6 +29,145 @@
 #ifndef __INTERNAL_NVM_BE_IOCTL_H
 #define __INTERNAL_NVM_BE_IOCTL_H
 
+/**
+ * Encapsulation of commonly used fields of (Open-Channel) NVMe commands
+ */
+struct nvm_cmd {
+	union {
+		struct {
+			uint8_t opcode;		///< cdw00
+			uint8_t flags;
+			uint16_t control;
+			uint16_t nppas;		///< cdw01
+			uint16_t rsvd;
+			uint64_t metadata;	///< cdw02-03
+			uint64_t addr;		///< cdw04-05
+			uint64_t ppa_list;	///< cdw06-07
+			uint32_t metadata_len;	///< cdw08
+			uint32_t data_len;	///< cdw09
+			uint64_t status;	///< cdw10-11
+			uint32_t result;	///< cdw12
+			uint32_t rsvd3[3];	///< cdw13-15
+		} vuser;	///< Common Open-Channel NVMe IO cmd. fields
+
+		struct {
+			uint8_t opcode;
+			uint8_t flags;
+			uint8_t rsvd[2];
+			uint32_t nsid;
+			uint32_t cdw2;
+			uint32_t cdw3;
+			uint64_t metadata;
+			uint64_t addr;
+			uint32_t metadata_len;
+			uint32_t data_len;
+			uint64_t ppa_list;
+			uint16_t nppas;
+			uint16_t control;
+			uint32_t cdw13;
+			uint32_t cdw14;
+			uint32_t cdw15;
+			uint64_t status;
+			uint32_t result;
+			uint32_t timeout_ms;
+		} vadmin;	///< Common Open-Channel NVMe admin cmd. fields
+
+		struct {
+			uint8_t opcode;
+			uint8_t flags;
+			uint16_t rsvd1;
+			uint32_t nsid;
+			uint32_t cdw2;
+			uint32_t cdw3;
+			uint64_t metadata;
+			uint64_t addr;
+			uint32_t metadata_len;
+			uint32_t data_len;
+			uint32_t cdw10;
+			uint32_t cdw11;
+			uint32_t cdw12;
+			uint32_t cdw13;
+			uint32_t cdw14;
+			uint32_t cdw15;
+			uint32_t timeout_ms;
+			uint32_t result;
+		} admin;	///< Common NVMe admin cmd. fields
+
+		struct {
+			uint8_t opcode;
+			uint8_t flags;
+			uint16_t control;
+			uint16_t nblocks;
+			uint16_t rsvd;
+			uint64_t metadata;
+			uint64_t addr;
+			uint64_t slba;
+			uint32_t dsmgmt;
+			uint32_t reftag;
+			uint16_t apptag;
+			uint16_t appmask;
+		} user;		///< Common NVMe IO cmd. fields
+
+		struct {
+			uint8_t opcode;
+			uint8_t flags;
+			uint16_t rsvd;
+			uint32_t cdw[19];
+		} shared;	///< Shared fields among commands
+
+		uint32_t cdw[20];	///< Command as array of dwords
+	};
+};
+
+
+/**
+ * Execute an NVMe IO command on the given device
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @param cmd The command to execute
+ * @param ret Pointer to struct to fill with lower-level result-codes
+ *
+ * @returns On success, 0 is returned. On error, -1 is returned, `errno` set to
+ * indicate the error and ret filled with lower-level result codes
+ */
+int nvm_be_ioctl_io(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret);
+
+/**
+ * Execute an NVMe admin command on the given device
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @param cmd The command to execute
+ * @param ret Pointer to struct to fill with lower-level result-codes
+ *
+ * @returns On success, 0 is returned. On error, -1 is returned, `errno` set to
+ * indicate the error and ret filled with lower-level result codes
+ */
+int nvm_be_ioctl_am(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret);
+
+/**
+ * Execute an Open-Channel NVMe vector IO command on the given device
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @param cmd The command to execute
+ * @param ret Pointer to struct to fill with lower-level result-codes
+ *
+ * @returns On success, 0 is returned. On error, -1 is returned, `errno` set to
+ * indicate the error and ret filled with lower-level result codes
+ */
+int nvm_be_ioctl_vio(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret);
+
+/**
+ * Execute an Open-Channel NVMe admin command on the given device
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @param cmd The command to execute
+ * @param ret Pointer to struct to fill with lower-level result-codes
+ *
+ * @returns On success, 0 is returned. On error, -1 is returned, `errno` set to
+ * indicate the error and ret filled with lower-level result codes
+ */
+int nvm_cmd_vam(struct nvm_dev *dev, struct nvm_cmd *cmd, struct nvm_ret *ret);
+
 enum nvm_be_ioctl_flags {
 	NVM_BE_IOCTL_WRITABLE = 0x1
 };
@@ -48,5 +187,19 @@ int nvm_be_ioctl_vuser(struct nvm_dev *dev, struct nvm_cmd *cmd,
 
 int nvm_be_ioctl_vadmin(struct nvm_dev *dev, struct nvm_cmd *cmd,
 			struct nvm_ret *ret);
+
+/**
+ * Prints a text-representation of the given command
+ *
+ * @param cmd The command to print
+ */
+void nvm_cmd_pr(struct nvm_cmd *cmd);
+
+/**
+ * Prints a textual presentation of the vuser par of the given command
+ *
+ * @param cmd The command to print
+ */
+void nvm_be_ioctl_vio_pr(struct nvm_cmd *cmd);
 
 #endif /* __INTERNAL_NVM_BE_IOCTL */
