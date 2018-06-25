@@ -517,6 +517,18 @@ struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags)
 		return NULL;	// Propagate errno from open
 	}
 
+	struct nvme_admin_cmd cmd = { 0 };
+
+	cmd.opcode = 0x06; // identify
+	cmd.nsid = dev->nsid;
+	cmd.addr = (uint64_t)(uintptr_t) &dev->ns;
+	cmd.data_len = 0x1000;
+
+	if(ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, &cmd)) {
+		NVM_DEBUG("ioctl failed");
+		return NULL;
+	}
+
 	err = nvm_be_populate(dev, &nvm_be_ioctl);
 	if (err) {
 		NVM_DEBUG("FAILED: nvm_be_populate");
