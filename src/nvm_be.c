@@ -229,8 +229,11 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 		geo->l.npunit = idfy->s20.lgeo.npunit;
 		geo->l.nchunk = idfy->s20.lgeo.nchunk;
 		geo->l.nsectr = idfy->s20.lgeo.nsectr;
-		geo->l.nbytes = idfy->s20.lgeo._fna_nbytes;
-		geo->l.nbytes_oob = idfy->s20.lgeo._fna_nbytes_oob;
+
+		struct nvm_nvme_lbaf lbaf = dev->ns.lbaf[dev->ns.flbas & 0xf];
+
+		geo->l.nbytes = 1 << lbaf.ds;
+		geo->l.nbytes_oob = lbaf.ms;
 
 		// Capabilities
 		dev->mccap = idfy->s20.mccap;
