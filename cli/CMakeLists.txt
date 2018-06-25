@@ -25,7 +25,7 @@ foreach(SRC_FN ${SOURCE_FILES})
 	string(REPLACE "cli_" "" SRC_FN_WE "${SRC_FN_WE}")
 	set(EXE_FN "nvm_${SRC_FN_WE}")
 	add_executable(${EXE_FN} ${SRC_FN})
-	target_link_libraries(${EXE_FN} ${CLI_LIB_STATIC})
+	target_link_libraries(${EXE_FN} ${CLI_LIB})
 	target_include_directories(${EXE_FN} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 	install(TARGETS ${EXE_FN} DESTINATION bin COMPONENT cli)
