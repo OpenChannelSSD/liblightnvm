@@ -31,17 +31,17 @@
 
 int nvm_ver_major(void)
 {
-	return 0;
+	return LNVM_VERSION_MAJOR;
 }
 
 int nvm_ver_minor(void)
 {
-	return 0;
+	return LNVM_VERSION_MINOR;
 }
 
 int nvm_ver_patch(void)
 {
-	return 1;
+	return LNVM_VERSION_PATCH;
 }
 
 void nvm_ver_pr(void)
