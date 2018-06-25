@@ -661,6 +661,15 @@ static struct nvm_dev *nvm_be_spdk_open(const char *dev_path,
 	// Setup IO qpair lock
 	omp_init_lock(&state->qpair_lock);
 
+	const struct spdk_nvme_ns_data *nsdata = spdk_nvme_ns_get_data(state->ns);
+	if (nsdata == NULL) {
+		NVM_DEBUG("FAILED: spdk_nvme_ns_get_data");
+		nvm_be_spdk_close(dev);
+		return NULL;
+	}
+
+	dev->ns = *(struct nvm_nvme_ns *) nsdata;
+
 	err = nvm_be_populate(dev, &nvm_be_spdk);
 	if (err) {
 		NVM_DEBUG("FAILED: nvm_be_populate, err(%d)", err);
