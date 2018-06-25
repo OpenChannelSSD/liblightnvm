@@ -50,8 +50,8 @@ void nvm_spec_lgeo_pr(const struct nvm_spec_lgeo *lgeo)
 	printf("  npunit: %u\n", lgeo->npunit);
 	printf("  nchunk: %u\n", lgeo->nchunk);
 	printf("  nsectr: %u\n", lgeo->nsectr);
-	printf("  nbytes: %u\n", lgeo->_fna_nbytes);
-	printf("  nbytes_oob: %u\n", lgeo->_fna_nbytes_oob);
+	printf("  rsvr(nbytes): %u\n", lgeo->_fna_nbytes);
+	printf("  rsvr(nbytes_oob): %u\n", lgeo->_fna_nbytes_oob);
 }
 
 void nvm_spec_wrt_pr(const struct nvm_spec_wrt *wrt)
