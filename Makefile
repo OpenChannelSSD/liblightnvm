@@ -52,15 +52,15 @@ clean:
 
 .PHONY: clean-sys
 clean-sys:
-	@sudo rm /usr/include/liblightnvm_cli.h || true
-	@sudo rm /usr/include/liblightnvm.h || true
-	@sudo rm /usr/lib/liblightnvm.a || true
-	@sudo rm /usr/lib/liblightnvm_cli.a || true
-	@sudo rm /usr/bin/nvm_* || true
-	@sudo rm /usr/local/include/liblightnvm_cli.h || true
-	@sudo rm /usr/local/include/liblightnvm.h || true
-	@sudo rm /usr/local/lib/liblightnvm_cli.a || true
-	@sudo rm /usr/local/bin/nvm_* || true
+	@rm /usr/include/liblightnvm_cli.h || true
+	@rm /usr/include/liblightnvm.h || true
+	@rm /usr/lib/liblightnvm.a || true
+	@rm /usr/lib/liblightnvm_cli.a || true
+	@rm /usr/bin/nvm_* || true
+	@rm /usr/local/include/liblightnvm_cli.h || true
+	@rm /usr/local/include/liblightnvm.h || true
+	@rm /usr/local/lib/liblightnvm_cli.a || true
+	@rm /usr/local/bin/nvm_* || true
 
 #
 # Targets for assigning CMAKE build options, e.g.
@@ -148,11 +148,11 @@ deb_off:
 
 .PHONY: install-deb
 install-deb:
-	sudo dpkg -i $(BUILD_DIR)/*.deb
+	dpkg -i $(BUILD_DIR)/*.deb
 
 .PHONY: uninstall-deb
 uninstall-deb:
-	sudo apt-get --yes remove liblightnvm-* || true
+	apt-get --yes remove liblightnvm-* || true
 
 .PHONY: tags
 tags:
