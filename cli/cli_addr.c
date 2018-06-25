@@ -176,6 +176,13 @@ static int cmd_gen2off(struct nvm_cli *cli)
 
 static int cmd_gen2lpo(struct nvm_cli *cli)
 {
+	struct nvm_cli_cmd_args *args = &cli->args;
+
+	for (int i = 0; i < args->naddrs; ++i) {
+		printf("gen: "); nvm_addr_pr(args->addrs[i]);
+		printf("lpo: %064"PRIu64"\n", nvm_addr_gen2lpo(args->dev, args->addrs[i]));
+	}
+
 	return 0;
 }
 
@@ -232,6 +239,18 @@ static int cmd_off2gen(struct nvm_cli *cli)
 
 static int cmd_lpo2gen(struct nvm_cli *cli)
 {
+	struct nvm_cli_cmd_args *args = &cli->args;
+
+	for (int i = 0; i < args->ndec_vals; ++i) {
+		struct nvm_addr gen = { 0 };
+
+		gen = nvm_addr_lpo2gen(args->dev, args->dec_vals[i]);
+		
+		printf("off: %064"PRIu64"\n", args->dec_vals[i]);
+		printf("gen: ");
+		nvm_addr_prn(&gen, 1, args->dev);
+	}
+
 	return 0;
 }
 
