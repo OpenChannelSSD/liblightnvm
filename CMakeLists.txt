@@ -82,7 +82,8 @@ set(HEADER_FILES
 	include/nvm_omp.h
 	include/liblightnvm_spec.h
 	include/nvm_utils.h
-	include/nvm_vblk.h)
+	include/nvm_vblk.h
+	include/nvm_nvme.h)
 
 set(SOURCE_FILES
 	src/nvm_spec.c
