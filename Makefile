@@ -1,82 +1,158 @@
 BUILD_TYPE?=Release
 BUILD_DIR?=build
 INSTALL_PREFIX?=/usr/local
-NVM_LIBRARY_SHARED?=ON
-NVM_TESTS?=OFF
-NVM_CLI?=ON
+CMAKE_OPTS?=
 
 #
-# Traditional build commands / make interface
+# liblightnvm uses cmake, however, to provide the traditional practice of:
 #
-default: make
-
-.PHONY: debug
-debug:
-	$(eval BUILD_TYPE := Debug)
+# make
+# make install
+#
+# The initial targets of this Makefile supports the behavior, instrumenting
+# cmake with default options behind the scenes.
+#
+# Additional targets come after these which modify CMAKE build-options and other
+# common practices associated with liblightnvm development.
+#
+default: build
 
 .PHONY: cmake_check
 cmake_check:
 	@cmake --version || (echo "\n** Please install 'cmake' **\n" && exit 1)
 
 .PHONY: configure
-configure: cmake_check
+configure: cmake_check clean
 	mkdir -p $(BUILD_DIR)
-	cd $(BUILD_DIR) && cmake \
-	-DNVM_LIBRARY_SHARED=$(NVM_LIBRARY_SHARED) \
-	-DTESTS=$(NVM_TESTS) \
-	-DCLI=$(NVM_CLI) \
-	-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
-	-DCMAKE_INSTALL_PREFIX:PATH=$(INSTALL_PREFIX) \
-	$(CMAKE_AUX) \
+	cd $(BUILD_DIR) && cmake			\
+	-DCMAKE_BUILD_TYPE=$(BUILD_TYPE)		\
+	-DCMAKE_INSTALL_PREFIX:PATH=$(INSTALL_PREFIX)	\
+	$(CMAKE_OPTS)					\
 	-G "Unix Makefiles" ../
-	@echo "Modify build configuration in '$(BUILD_DIR)'"
+	@echo "cmake is configured in '$(BUILD_DIR)'"
+	@if [ "$(BUILD_DEB)" = "ON" ]; then		\
+		touch $(BUILD_DIR)/build_deb;		\
+	fi
 
-.PHONY: make
-make: configure
+.PHONY: build
+build:
 	cd $(BUILD_DIR) && make
+	@ if [ -f "$(BUILD_DIR)/build_deb" ]; then	\
+		cd $(BUILD_DIR) && make package;	\
+	fi
 
 .PHONY: install
 install:
 	cd $(BUILD_DIR) && make install
-
-.PHONY: make-pkg
-make-pkg: configure
-	cd $(BUILD_DIR) && make package
-
-.PHONY: install-pkg
-install-pkg:
-	sudo dpkg -i $(BUILD_DIR)/*.deb
-
-.PHONY: uninstall-pkg
-uninstall-pkg:
-	sudo apt-get --yes remove liblightnvm-* || true
 
 .PHONY: clean
 clean:
 	rm -fr $(BUILD_DIR) || true
 	rm -f tags || true
 
-all: clean default install
+.PHONY: clean-sys
+clean-sys:
+	@sudo rm /usr/include/liblightnvm_cli.h || true
+	@sudo rm /usr/include/liblightnvm.h || true
+	@sudo rm /usr/lib/liblightnvm.a || true
+	@sudo rm /usr/lib/liblightnvm_cli.a || true
+	@sudo rm /usr/bin/nvm_* || true
+	@sudo rm /usr/local/include/liblightnvm_cli.h || true
+	@sudo rm /usr/local/include/liblightnvm.h || true
+	@sudo rm /usr/local/lib/liblightnvm_cli.a || true
+	@sudo rm /usr/local/bin/nvm_* || true
 
-.PHONY: dev_opts
-dev_opts:
-	$(eval NVM_TESTS := ON)
-	$(eval NVM_CLI := ON)
-	$(eval NVM_LIBRARY_SHARED := ON)
+#
+# Targets for assigning CMAKE build options, e.g.
+#
+# make debug cli_on tests_on spdk_on build
+#
+# This will enable debugging, the CLI, test programs, and the SPDK backend.
+# Notice that the 'build' target must be specified as the last target
+#
+.PHONY: cli_on
+cli_on:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DCLI=ON)
 
-# Uinstall packages, clean build, builds lib, cli, tests, pkg and installs
-.PHONY: dev
-dev: uninstall-pkg clean dev_opts make-pkg install-pkg
+.PHONY: cli_off
+cli_off:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DCLI=OFF)
 
-.PHONY: spdk_otps
-spdk_opts:
-	$(eval NVM_TESTS := ON)
-	$(eval NVM_CLI := ON)
-	$(eval NVM_LIBRARY_SHARED := OFF)
-	$(eval CMAKE_AUX := -DNVM_BE_SPDK_ENABLED=ON)
+.PHONY: tests_on
+tests_on:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DTESTS=ON)
 
-.PHONY: spdk
-spdk: uninstall-pkg clean spdk_opts make-pkg install-pkg
+.PHONY: tests_off
+tests_off:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DTESTS=OFF)
+
+.PHONY: ioctl_on
+ioctl_on:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_BE_IOCTL_ENABLED=ON)
+
+.PHONY: ioctl_off
+ioctl_off:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_BE_IOCTL_ENABLED=OFF)
+
+.PHONY: sysfs_on
+sysfs_on:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_BE_SYSFS_ENABLED=ON)
+
+.PHONY: sysfs_off
+sysfs_off:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_BE_SYSFS_ENABLED=OFF)
+
+.PHONY: lba_on
+lba_on:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_BE_LBA_ENABLED=ON)
+
+.PHONY: lba_off
+lba_off:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_BE_LBA_ENABLED=OFF)
+
+.PHONY: spdk_on
+spdk_on:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_BE_SPDK_ENABLED=ON)
+
+.PHONY: spdk_off
+spdk_off:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_BE_SPDK_ENABLED=OFF)
+
+.PHONY: debug_on
+debug_on:
+	$(eval BUILD_TYPE := Debug)
+
+.PHONY: debug_off
+debug_off:
+	$(eval BUILD_TYPE := Release)
+
+.PHONY: deb_on
+deb_on:
+	$(eval BUILD_DEB := ON)
+
+.PHONY: deb_off
+deb_off:
+	$(eval BUILD_DEB := OFF)
+
+#
+# These targets works with tgz and deb packages, e.g.
+#
+# make install-deb
+#
+# Which will build a deb pkg and install it instead of copying it directly
+# into the system paths. This is convenient as it is easier to purge it by
+# running e.g.
+#
+# make uninstall-deb
+#
+
+.PHONY: install-deb
+install-deb:
+	sudo dpkg -i $(BUILD_DIR)/*.deb
+
+.PHONY: uninstall-deb
+uninstall-deb:
+	sudo apt-get --yes remove liblightnvm-* || true
 
 .PHONY: tags
 tags:
@@ -84,8 +160,51 @@ tags:
 	cscope -b `find . -name '*.c'` `find . -name '*.h'`
 
 #
-# Experimental section
+# These are common practices during development
 #
+
+.PHONY: dev
+dev-spdk: uninstall-deb clean cli_on tests_on ioctl_on sysfs_on lba_on spdk_on debug_on deb_on configure build install-deb
+
+.PHONY: dev
+dev: uninstall-deb clean cli_on tests_on ioctl_on sysfs_on lba_on spdk_off debug_on deb_on configure build install-deb
+
+#
+# DOC: This target generated API documentation based on source code
+#
+.PHONY: doc-gen-capi
+doc-gen-capi:
+	python doc/gen/capi.py doc/src/capi/ --header include/liblightnvm.h
+
+#
+# These targets generate documentation for quick-start guide, command-line
+# interface, and tutorial. They use automated command execution for extracting
+# command output, thus, they have to run on a system with an actual device
+#
+
+# Quick-Start Guide
+.PHONY: doc-gen-qs
+doc-gen-qs:
+	cd doc/src/quick_start && python ../../gen/cli.py ./
+
+# Tutorial
+.PHONY: doc-gen-tut
+doc-gen-tut:
+	python doc/gen/cli.py doc/src/tutorial/
+
+# CLI
+.PHONY: doc-gen-cli-s12
+doc-gen-cli-s12:
+	python doc/gen/cli.py doc/src/cli/ --spec s12
+
+.PHONY: doc-gen-cli-s20
+doc-gen-cli-s20:
+	python doc/gen/cli.py doc/src/cli/ --spec s20
+
+# All of them
+.PHONY: doc-gen-cmds
+doc-gen-cmds: doc-gen-qs doc-gen-cli doc-gen-tut
+
 .PHONY: doxy
 doxy:
 	@mkdir -p $(BUILD_DIR)/doc/doxy
@@ -105,25 +224,7 @@ sphinx:
 sphinx-view:
 	xdg-open $(BUILD_DIR)/doc/sphinx/html/index.html
 
-.PHONY: doc-gen-capi
-doc-gen-capi:
-	python doc/gen/capi.py doc/src/capi/ --header include/liblightnvm.h
-
-.PHONY: doc-gen-misc
-doc-gen-qs:
-	cd doc/src/quick_start && python ../../gen/cli.py ./
-
-.PHONY: doc-gen-cli
-doc-gen-cli:
-	python doc/gen/cli.py doc/src/cli/
-
-.PHONY: doc-gen-tut
-doc-gen-tut:
-	python doc/gen/cli.py doc/src/tutorial/
-
-.PHONY: doc-gen-cmds
-doc-gen-cmds: doc-gen-qs doc-gen-cli doc-gen-tut
-
+# Produce the sphinx stuff
 .PHONY: doc
 doc: doxy sphinx
 
@@ -134,10 +235,6 @@ doc-view-html:
 .PHONY: doc-view-html-tutorial
 doc-view-html-tutorial:
 	xdg-open $(BUILD_DIR)/doc/sphinx/html/tutorial/index.html
-
-#.PHONY: doc-view-pdf
-#doc-view-pdf:
-#	xdg-open $(BUILD_DIR)/doc/sphinx/pdf/liblightnvm.pdf
 
 .PHONY: doc-publish
 doc-publish:
@@ -153,4 +250,3 @@ doc-publish:
 	cd $(BUILD_DIR)/ghpages && git commit -m "Autogen docs for `git rev-parse --short HEAD`."
 	cd $(BUILD_DIR)/ghpages && git push origin --delete gh-pages
 	cd $(BUILD_DIR)/ghpages && git push origin gh-pages
-
