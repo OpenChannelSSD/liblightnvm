@@ -77,6 +77,7 @@ set(HEADER_FILES
 	include/liblightnvm.h
 	include/nvm_be.h
 	include/nvm_debug.h
+	include/nvm_timer.h
 	include/nvm_dev.h
 	include/nvm_omp.h
 	include/liblightnvm_spec.h
