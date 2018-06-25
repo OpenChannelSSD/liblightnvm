@@ -30,6 +30,7 @@
 #define __INTERNAL_NVM_DEV_H
 
 #include <liblightnvm.h>
+#include <nvm_nvme.h>
 
 struct nvm_dev {
 	int fd;				///< Device IOCTL handle
@@ -38,6 +39,7 @@ struct nvm_dev {
 	int nsid;			///< NVME namespace identifier
 	uint8_t verid;			///< Open-Channel SSD version identifier
 	struct nvm_spec_idfy idfy;	///< Content from IDFY commands
+	struct nvm_nvme_ns   ns;	///< NVMe namespace identify content
 	struct nvm_spec_lbaf lbaf;	///< Logical device address format
 	struct nvm_spec_lbaz lbaz;	///< Logical address format offsets
 	struct nvm_spec_lbam lbam;	///< Logical address format mask
