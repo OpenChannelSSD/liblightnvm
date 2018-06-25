@@ -14,7 +14,10 @@ services:
 env:
   global:
     - TAG=liblightnvm
-    - NVM_VERSION="0.0.1"
+    - NVM_MAJOR=18
+    - NVM_MINOR=6
+    - NVM_PATCH=0
+    - NVM_VERSION="18.6.0"
     - DIST_NAME=ubuntu
   matrix:
     - DIST_VERS=18.04 DIST_CODE=bionic
@@ -49,29 +52,22 @@ script:
   - CONTAINER_ID=$(cat container.id)
   - docker ps -a
   - echo "** Build everything"
-  - docker exec -t ${TAG} make clean cli tests make-pkg
-  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm0-cli.deb .
-  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm0-dev.deb .
-  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm0-lib.deb .
-  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm0-cli.tar.gz .
-  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm0-dev.tar.gz .
-  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm0-lib.tar.gz .
+  - docker exec -t ${TAG} make configure
+  - docker exec -t ${TAG} make deb_on configure
+  - docker exec -t ${TAG} make
+  - docker exec -t ${TAG} make install-deb
+  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm18-cli.deb .
+  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm18-dev.deb .
+  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm18-lib.deb .
   - docker stop "${CONTAINER_ID}"
 
 before_deploy:
   - python ci/bintray_descriptor.py --repos debs --dist_code $DIST_CODE --version ${NVM_VERSION} --branch ${TRAVIS_BRANCH} --commit ${TRAVIS_COMMIT} > ci/bintray_debs.json
-  - python ci/bintray_descriptor.py --repos binaries --dist_code $DIST_CODE --version ${NVM_VERSION} --branch ${TRAVIS_BRANCH} --commit ${TRAVIS_COMMIT} > ci/bintray_binaries.json
 
 deploy:
   - provider: bintray
     dry-run: false
     file: ci/bintray_debs.json
-    user: safl
-    key:
-      secure: "HD1LvR4KL84u6BPQncH5brE8Ng7iBvsREaOra492AEMx4sL2F1ucMIXkvNE86tfBF0Q8b2Axz9PUuktqB8hwfE4Mj/NZcHQHlWrJ/vO4zMhY79K7tujZAQ9THH/IFmktE2gjQYr7FraTlwdIws2VGJj7jlCY9s0E/vmF/euwAHkmfuTpdLv0T2IrCkrt64EBsIFAmfjoSpuFJtNiJqDxtL9rtke6Voo+yvsrQmGgkaFQLM+bhIiOC8YVw/UaZPYFjAQPl2pFGI+pJGs8A+p1b6YD+/UJdzHj1C9QaSTg6orqQCw4iSK3IA1WpZt3+/K9p0fwqNp3KO2ituuw53xBPI2jc2EfI76vMi+RVjHSlMUmsfjU6W0SFTYxSX7PNablzvIYE+FpKyE3u3sMyTIjkc3jZFtuhZSpZ4b6NEtaV59NYknbFxny3xPZa8rEiZgQkle0zwTOnxDLTX0QD/BbMfciTMW3BhQKBT6X7UqfSMUhs8zA1ydluRYSiiSllYK7+JP2kmMKs9wBRQp/djx/ATRnv+p2Vw4RVJe5zqFWniqwFnqqt6xixd0X69OWx7VKoar4iBs1f7czvhXMzKtHrYJKYBRnFCEdB2jCHTHlqc/9D1PLbP56io8yF6O0kvhI0zF8SqFEzsZbyrZGrxjzAxy6JXv8DQ3lZnTbrvBuDR0="
-  - provider: bintray
-    dry-run: false
-    file: ci/bintray_binaries.json
     user: safl
     key:
       secure: "HD1LvR4KL84u6BPQncH5brE8Ng7iBvsREaOra492AEMx4sL2F1ucMIXkvNE86tfBF0Q8b2Axz9PUuktqB8hwfE4Mj/NZcHQHlWrJ/vO4zMhY79K7tujZAQ9THH/IFmktE2gjQYr7FraTlwdIws2VGJj7jlCY9s0E/vmF/euwAHkmfuTpdLv0T2IrCkrt64EBsIFAmfjoSpuFJtNiJqDxtL9rtke6Voo+yvsrQmGgkaFQLM+bhIiOC8YVw/UaZPYFjAQPl2pFGI+pJGs8A+p1b6YD+/UJdzHj1C9QaSTg6orqQCw4iSK3IA1WpZt3+/K9p0fwqNp3KO2ituuw53xBPI2jc2EfI76vMi+RVjHSlMUmsfjU6W0SFTYxSX7PNablzvIYE+FpKyE3u3sMyTIjkc3jZFtuhZSpZ4b6NEtaV59NYknbFxny3xPZa8rEiZgQkle0zwTOnxDLTX0QD/BbMfciTMW3BhQKBT6X7UqfSMUhs8zA1ydluRYSiiSllYK7+JP2kmMKs9wBRQp/djx/ATRnv+p2Vw4RVJe5zqFWniqwFnqqt6xixd0X69OWx7VKoar4iBs1f7czvhXMzKtHrYJKYBRnFCEdB2jCHTHlqc/9D1PLbP56io8yF6O0kvhI0zF8SqFEzsZbyrZGrxjzAxy6JXv8DQ3lZnTbrvBuDR0="
