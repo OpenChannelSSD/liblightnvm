@@ -53,52 +53,99 @@ struct nvm_be nvm_be_lba = {
 #include <stdio.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <linux/fs.h>
+#include <sys/ioctl.h>
 #include <nvm_be_ioctl.h>
 #include <nvm_dev.h>
 #include <nvm_utils.h>
 #include <nvm_debug.h>
 
-int nvm_be_lba_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		    void *data, void *meta, uint16_t NVM_UNUSED(flags),
-		    struct nvm_ret *NVM_UNUSED(ret))
+static int nvm_be_lba_rw(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+		         void *data, int rw)
 {
-	const size_t count = dev->geo.sector_nbytes;
+	const size_t sect_bytes = dev->geo.sector_nbytes;
+	char *buf = (char *)data;
+	uint64_t dev_lbas[NVM_NADDR_MAX];
+	int nr_lbas[NVM_NADDR_MAX];
+	uint64_t prev_lba;
+	int i, idx = 0;
 
+	dev_lbas[idx] = prev_lba = nvm_addr_gen2dev(dev, addrs[0]);
+	nr_lbas[idx] = 1;
+
+	for (i = 1; i < naddrs; i++) {
+		const uint64_t lba_dev = nvm_addr_gen2dev(dev, addrs[i]);
+
+		/* Sequential */
+		if (prev_lba == lba_dev - 1) {
+			nr_lbas[idx]++;
+		} else {
+			idx++;
+			dev_lbas[idx] = lba_dev;
+			nr_lbas[idx] = 1;
+		}
+
+		prev_lba = lba_dev;
+	}
+
+	for (i = 0; i < idx + 1; i++) {
+		const off_t offset = nvm_addr_dev2off(dev, dev_lbas[i]);
+		ssize_t res;
+
+		if (rw)
+			res = pwrite(dev->fd, buf, sect_bytes * nr_lbas[i], offset);
+		else
+			res = pread(dev->fd, buf, sect_bytes * nr_lbas[i], offset);
+
+		if (res < 0)
+			return res;
+
+		buf += sect_bytes * nr_lbas[i];
+	}
+	return 0;
+
+}
+
+int nvm_be_lba_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+		  void *data, void *meta, uint16_t NVM_UNUSED(flags),
+		  struct nvm_ret *NVM_UNUSED(ret))
+{
 	if (meta) {
 		errno = ENOSYS;
 		return -1;
 	}
-	
-	for (int i = 0; i < naddrs; ++i) {
-		const uint64_t lba = nvm_addr_dev2off(dev, addrs[i].ppa);
-		char *buf = ((char *)data) + (i * count);
-		ssize_t res = pread(dev->fd, buf, count, lba);
 
-		if (res < 0)
-			return -1;
-	}
-
-	return 0;
+	return nvm_be_lba_rw(dev, addrs, naddrs, data, 0);
 }
 
 int nvm_be_lba_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		  void *data, void *meta, uint16_t NVM_UNUSED(flags),
 		  struct nvm_ret *NVM_UNUSED(ret))
 {
-	const size_t count = dev->geo.sector_nbytes;
-
 	if (meta) {
 		errno = ENOSYS;
 		return -1;
 	}
 
-	for (int i = 0; i < naddrs; ++i) {
-		const uint64_t lba = nvm_addr_dev2off(dev, addrs[i].ppa);
-		char *buf = ((char *)data) + (i * count);
-		ssize_t res = pwrite(dev->fd, buf, count, lba);
+	return nvm_be_lba_rw(dev, addrs, naddrs, data, 1);
+}
 
-		if (res < 0)
-			return -1;
+int nvm_be_lba_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+		     uint16_t NVM_UNUSED(flags), struct nvm_ret *NVM_UNUSED(ret))
+{
+	int i, err;
+	uint64_t range[2];
+
+	for (i = 0; i < naddrs; i++) {
+		uint64_t offset = nvm_addr_dev2off(dev, nvm_addr_gen2dev(dev, addrs[i]));
+		uint64_t length = dev->geo.l.nsectr << dev->ssw;
+
+		range[0] = offset;
+		range[1] = length;
+
+		err = ioctl(dev->fd, BLKDISCARD, &range);
+		if (err)
+			return err;
 	}
 
 	return 0;
@@ -120,7 +167,7 @@ struct nvm_be nvm_be_lba = {
 	.sbbt = nvm_be_ioctl_sbbt,
 	.gbbt = nvm_be_ioctl_gbbt,
 
-	.erase = nvm_be_ioctl_erase,
+	.erase = nvm_be_lba_erase,
 	.write = nvm_be_lba_write,
 	.read = nvm_be_lba_read,
 	.copy = nvm_be_ioctl_copy,
