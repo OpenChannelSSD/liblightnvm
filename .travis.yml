@@ -14,10 +14,6 @@ services:
 env:
   global:
     - TAG=liblightnvm
-    - NVM_MAJOR=18
-    - NVM_MINOR=6
-    - NVM_PATCH=0
-    - NVM_VERSION="18.6.0"
     - DIST_NAME=ubuntu
   matrix:
     - DIST_VERS=18.04 DIST_CODE=bionic
@@ -56,7 +52,4 @@ script:
   - docker exec -t ${TAG} make deb_on configure
   - docker exec -t ${TAG} make
   - docker exec -t ${TAG} make install-deb
-  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm18-cli.deb .
-  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm18-dev.deb .
-  - docker cp ${CONTAINER_ID}:/workdir/build/liblightnvm18-lib.deb .
   - docker stop "${CONTAINER_ID}"
