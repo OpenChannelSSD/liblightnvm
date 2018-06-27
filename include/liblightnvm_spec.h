@@ -220,9 +220,7 @@ struct nvm_spec_lgeo {
 	uint16_t	npunit;		///< # parallel units (PUN) per GRP
 	uint32_t	nchunk;		///< # chunks (CHK) per PUN
 	uint32_t	nsectr;		///< # sectors in chunk
-	uint32_t	_fna_nbytes;	///< # bytes in sector
-	uint32_t	_fna_nbytes_oob;///< # bytes in sector out-of-band area
-	uint8_t		resv[44];
+	uint8_t		resv[52];
 };
 
 void nvm_spec_lgeo_pr(const struct nvm_spec_lgeo *lgeo);
