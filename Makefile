@@ -188,9 +188,18 @@ doc-gen-qs:
 	cd doc/src/quick_start && python ../../gen/cli.py ./
 
 # Tutorial
-.PHONY: doc-gen-tut
-doc-gen-tut:
-	python doc/gen/cli.py doc/src/tutorial/
+.PHONY: doc-gen-tut-s12
+doc-gen-tut-s12:
+	python doc/gen/cli.py doc/src/tutorial/tutorial-s12
+
+.PHONY: doc-gen-tut-s20
+doc-gen-tut-s20:
+	python doc/gen/cli.py doc/src/tutorial/tutorial-s20
+
+# Backends
+.PHONY: doc-gen-backends
+doc-gen-backends:
+	python doc/gen/cli.py doc/src/backends
 
 # CLI
 .PHONY: doc-gen-cli-s12
