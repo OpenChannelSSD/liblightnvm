@@ -400,28 +400,6 @@ void nvm_ver_pr(void);
 void nvm_bounds_pr(int mask);
 
 /**
- * Read up to `count` bytes from the given `device` starting at the given
- * `offset` into the given buffer starting at `buf`.
- *
- * @note
- * This is equivalent to `pread`/`pwrite` except it takes the opaque `struct
- * nvm_dev *` instead of a file descriptor
- */
-ssize_t nvm_lba_pread(struct nvm_dev *dev, void *buf, size_t count,
-		      off_t offset);
-
-/**
- * Write up to `count` bytes from the buffer starting at `buf` to the given
- * device `dev` at given `offset`.
- *
- * @note
- * This is equivalent to `pread`/`pwrite` except it takes the opaque `struct
- * nvm_dev *` instead of a file descriptor
- */
-ssize_t nvm_lba_pwrite(struct nvm_dev *dev, const void *buf, size_t count,
-		       off_t offset);
-
-/**
  * Prints a humanly readable representation the given `struct nvm_ret`
  *
  * @param ret Pointer to the `struct nvm_ret` to print
