@@ -134,6 +134,14 @@ deb_on:
 deb_off:
 	$(eval BUILD_DEB := OFF)
 
+.PHONY: omp_on
+omp_on:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_OMP_ENABLED=ON)
+
+.PHONY: omp_off
+omp_off:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_OMP_ENABLED=OFF)
+
 #
 # These targets works with tgz and deb packages, e.g.
 #
