@@ -1,0 +1,44 @@
+# Device information -- nvm_dev_pr
+dev_attr:
+  verid: 0x02
+  be_id: 0x01
+  name: 'nvme0n1'
+  path: '/dev/nvme0n1'
+  fd: 3
+  ssw: 12
+  mccap: 00000000000000000000000000000001
+  pmode: 'SNGL'
+  erase_naddrs_max: 64
+  read_naddrs_max: 64
+  write_naddrs_max: 64
+  meta_mode: 0
+  bbts_cached: 0
+  bbts_cached: 00000000
+  quirks: 00000000
+dev_geo:
+  verid: 0x02
+  npugrp: 8
+  npunit: 4
+  nchunk: 1474
+  nsectr: 6144
+  nbytes: 4096
+  nbytes_oob: 16
+  tbytes: 1187021586432
+  tmbytes: 1132032
+dev_ppaf: ~
+dev_ppaf_mask: ~
+dev_lbaf:
+  pugrp: 3
+  punit: 2
+  chunk: 11
+  sectr: 13
+dev_lbaz:
+  pugrp: 26
+  punit: 24
+  chunk: 13
+  sectr: 0
+dev_lbam:
+  pugrp:  '0000000000000000000000000000000000011100000000000000000000000000'
+  punit:  '0000000000000000000000000000000000000011000000000000000000000000'
+  chunk:  '0000000000000000000000000000000000000000111111111110000000000000'
+  sectr:  '0000000000000000000000000000000000000000000000000001111111111111'

@@ -1,0 +1,1 @@
+NVM_CLI_PMODE="0" nvm_addr erase /dev/nvme0n1 0x000000000000000a 0x000001000000000a

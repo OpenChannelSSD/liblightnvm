@@ -1,0 +1,12 @@
+# nvm_bbt_get
+bbt:
+  addr: 0x0203000000000000: {ch: 02, lun: 03, pl: 0, blk: 0000, pg: 000, sec: 0}
+  nblks: 2040
+  npl_blks: 1020
+  pl_blks:
+    0041: [  BAD(1),  BAD(1) ]
+    0042: [ GBAD(2), GBAD(2) ]
+  nbad: 1
+  gbad: 1
+  ndmrk: 0
+  nhmrk: 0

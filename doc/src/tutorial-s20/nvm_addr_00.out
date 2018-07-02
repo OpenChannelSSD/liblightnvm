@@ -1,0 +1,3 @@
+naddrs: 1
+addrs:
+  - {val: 0x0402008e00000003, pugrp: 04, punit: 02, chunk: 0142, sectr: 0003}

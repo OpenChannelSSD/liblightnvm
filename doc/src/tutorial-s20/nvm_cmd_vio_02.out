@@ -1,0 +1,27 @@
+# nvm_cmd_write: {pmode: SNGL}
+naddrs: 24
+addrs:
+  - {val: 0x0000001400000000, pugrp: 00, punit: 00, chunk: 0020, sectr: 0000}
+  - {val: 0x0000001400000001, pugrp: 00, punit: 00, chunk: 0020, sectr: 0001}
+  - {val: 0x0000001400000002, pugrp: 00, punit: 00, chunk: 0020, sectr: 0002}
+  - {val: 0x0000001400000003, pugrp: 00, punit: 00, chunk: 0020, sectr: 0003}
+  - {val: 0x0000001400000004, pugrp: 00, punit: 00, chunk: 0020, sectr: 0004}
+  - {val: 0x0000001400000005, pugrp: 00, punit: 00, chunk: 0020, sectr: 0005}
+  - {val: 0x0000001400000006, pugrp: 00, punit: 00, chunk: 0020, sectr: 0006}
+  - {val: 0x0000001400000007, pugrp: 00, punit: 00, chunk: 0020, sectr: 0007}
+  - {val: 0x0000001400000008, pugrp: 00, punit: 00, chunk: 0020, sectr: 0008}
+  - {val: 0x0000001400000009, pugrp: 00, punit: 00, chunk: 0020, sectr: 0009}
+  - {val: 0x000000140000000a, pugrp: 00, punit: 00, chunk: 0020, sectr: 0010}
+  - {val: 0x000000140000000b, pugrp: 00, punit: 00, chunk: 0020, sectr: 0011}
+  - {val: 0x000000140000000c, pugrp: 00, punit: 00, chunk: 0020, sectr: 0012}
+  - {val: 0x000000140000000d, pugrp: 00, punit: 00, chunk: 0020, sectr: 0013}
+  - {val: 0x000000140000000e, pugrp: 00, punit: 00, chunk: 0020, sectr: 0014}
+  - {val: 0x000000140000000f, pugrp: 00, punit: 00, chunk: 0020, sectr: 0015}
+  - {val: 0x0000001400000010, pugrp: 00, punit: 00, chunk: 0020, sectr: 0016}
+  - {val: 0x0000001400000011, pugrp: 00, punit: 00, chunk: 0020, sectr: 0017}
+  - {val: 0x0000001400000012, pugrp: 00, punit: 00, chunk: 0020, sectr: 0018}
+  - {val: 0x0000001400000013, pugrp: 00, punit: 00, chunk: 0020, sectr: 0019}
+  - {val: 0x0000001400000014, pugrp: 00, punit: 00, chunk: 0020, sectr: 0020}
+  - {val: 0x0000001400000015, pugrp: 00, punit: 00, chunk: 0020, sectr: 0021}
+  - {val: 0x0000001400000016, pugrp: 00, punit: 00, chunk: 0020, sectr: 0022}
+  - {val: 0x0000001400000017, pugrp: 00, punit: 00, chunk: 0020, sectr: 0023}

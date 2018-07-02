@@ -1,0 +1,36 @@
+vblk:
+  dev: {pmode: 'SNGL'}
+  nblks: 1
+  nmbytes: 24
+  pos_write: 0
+  pos_read: 0
+naddrs: 1
+addrs:
+  - {val: 0x0402008e00000000, pugrp: 04, punit: 02, chunk: 0142, sectr: 0000}
+nvm_vblk_erase: {elapsed: 0.0049, mb: 24.00, mbsec: 4858.59}
+
+vblk:
+  dev: {pmode: 'SNGL'}
+  nblks: 1
+  nmbytes: 24
+  pos_write: 0
+  pos_read: 0
+naddrs: 1
+addrs:
+  - {val: 0x0402008e00000000, pugrp: 04, punit: 02, chunk: 0142, sectr: 0000}
+nvm_buf_alloc: {elapsed: 0.000018}
+nvm_buf_fill: {elapsed: 0.016262}
+nvm_vblk_write: {elapsed: 0.8923, mb: 24.00, mbsec: 26.90}
+
+vblk:
+  dev: {pmode: 'SNGL'}
+  nblks: 1
+  nmbytes: 24
+  pos_write: 0
+  pos_read: 0
+naddrs: 1
+addrs:
+  - {val: 0x0402008e00000000, pugrp: 04, punit: 02, chunk: 0142, sectr: 0000}
+nvm_buf_alloc: {elapsed: 0.000026}
+nvm_buf_fill: {elapsed: 0.016550}
+nvm_vblk_read: {elapsed: 0.2100, mb: 24.00, mbsec: 114.26}

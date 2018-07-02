@@ -1,0 +1,29 @@
+vblk:
+  dev: {pmode: 'DUAL'}
+  nbytes: 16777216
+  nmbytes: 16
+naddrs: 1
+addrs:
+  - 0x0000000000000002: {ch: 00, lun: 00, pl: 0, blk: 0002, pg: 000, sec: 0}
+nvm_vblk_erase: {elapsed: 0.006637}
+
+vblk:
+  dev: {pmode: 'DUAL'}
+  nbytes: 16777216
+  nmbytes: 16
+naddrs: 1
+addrs:
+  - 0x0000000000000002: {ch: 00, lun: 00, pl: 0, blk: 0002, pg: 000, sec: 0}
+nvm_buf_alloc: {elapsed: 0.000015}
+nvm_buf_fill: {elapsed: 0.022563}
+nvm_vblk_write: {elapsed: 0.886366}
+
+vblk:
+  dev: {pmode: 'DUAL'}
+  nbytes: 16777216
+  nmbytes: 16
+naddrs: 1
+addrs:
+  - 0x0000000000000002: {ch: 00, lun: 00, pl: 0, blk: 0002, pg: 000, sec: 0}
+nvm_buf_alloc: {elapsed: 0.000012}
+nvm_vblk_read: {elapsed: 0.138818}

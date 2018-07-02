@@ -1,0 +1,26 @@
+# nvm_cmd_idfy
+idfy:
+  verid: 00000010
+  verid_minor: 00000000
+  mccap: 00000000000000000000000000000001
+lbaf:
+  pugrp: 3
+  punit: 2
+  chunk: 11
+  sectr: 13
+lgeo:
+  npugrp: 8
+  npunit: 4
+  nchunk: 1474
+  nsectr: 6144
+wrt:
+  ws_min: 24
+  ws_opt: 24
+  mw_cunits: 192
+perf:
+  trdt: 40000
+  trdm: 80000
+  twrt: 1900000
+  twrm: 3700000
+  tcet: 7000000
+  tcem: 20000000

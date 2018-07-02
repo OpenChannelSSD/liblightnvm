@@ -1,0 +1,23 @@
+vblk:
+  dev: {pmode: 'SNGL'}
+  nblks: 1
+  nmbytes: 24
+  pos_write: 0
+  pos_read: 0
+naddrs: 1
+addrs:
+  - {val: 0x0402008e00000000, pugrp: 04, punit: 02, chunk: 0142, sectr: 0000}
+nvm_vblk_erase: {elapsed: 0.0049, mb: 24.00, mbsec: 4850.75}
+
+vblk:
+  dev: {pmode: 'SNGL'}
+  nblks: 1
+  nmbytes: 24
+  pos_write: 0
+  pos_read: 0
+naddrs: 1
+addrs:
+  - {val: 0x0402008e00000000, pugrp: 04, punit: 02, chunk: 0142, sectr: 0000}
+nvm_buf_alloc: {elapsed: 0.000021}
+nvm_buf_fill: {elapsed: 0.034239}
+nvm_vblk_write: {elapsed: 0.8925, mb: 24.00, mbsec: 26.89}
