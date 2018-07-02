@@ -302,11 +302,11 @@ void nvm_spec_rprt_pr(const struct nvm_spec_rprt *rprt)
 
 		printf("  - { ");
 		printf("slba: 0x%016lX, ", descr->addr);
-		printf("cnlb: %04lu, ", descr->naddrs);
-		printf("wp: %016lu, ", descr->wp);
+		printf("cnlb: 0x%04lx, ", descr->naddrs);
+		printf("wp: 0x%016lx, ", descr->wp);
 		printf("cs: 0x%02X, ", descr->cs);
 		printf("ct: 0x%02X, ", descr->ct);
-		printf("wli: %03u", descr->wli);
+		printf("wli: 0x%02x", descr->wli);
 		printf(" }\n");
 	}
 }
