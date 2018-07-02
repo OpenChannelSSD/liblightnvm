@@ -40,6 +40,10 @@ static inline int NVM_MIN(int x, int y) {
 	return x < y ? x : y;
 }
 
+static inline int NVM_MAX(int x, int y) {
+	return x > y ? x : y;
+}
+
 struct nvm_vblk* nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addrs[],
 				int naddrs)
 {
@@ -388,7 +392,7 @@ static inline ssize_t vblk_pwrite_s20(struct nvm_vblk *vblk, const void *buf,
 {
 	size_t nerr = 0;
 
-	const uint32_t WS_MIN = nvm_dev_get_ws_min(vblk->dev);
+	const uint32_t WS_OPT = nvm_dev_get_ws_min(vblk->dev);
 
 	const struct nvm_geo *geo = nvm_dev_get_geo(vblk->dev);
 	const size_t nchunks = vblk->nblks;
@@ -399,20 +403,22 @@ static inline ssize_t vblk_pwrite_s20(struct nvm_vblk *vblk, const void *buf,
 	const size_t sectr_bgn = offset / sectr_nbytes;
 	const size_t sectr_end = sectr_bgn + (count / sectr_nbytes) - 1;
 
-	const size_t cmd_nsectr_max = (NVM_NADDR_MAX / WS_MIN) * WS_MIN;
+	const size_t cmd_nsectr = WS_OPT;
 
-	const size_t meta_tbytes = cmd_nsectr_max * geo->l.nbytes_oob;
+	const size_t meta_tbytes = cmd_nsectr * geo->l.nbytes_oob;
 	char *meta_buf = NULL;
 
-	const size_t pad_nbytes = cmd_nsectr_max * nsectr * geo->l.nbytes;
+	const size_t pad_nbytes = cmd_nsectr * nsectr * geo->l.nbytes;
 	char *pad_buf = NULL;
 
-	if (nsectr % WS_MIN) {
+	const int NTHREADS = NVM_MIN(nchunks, nsectr / WS_OPT);
+
+	if (nsectr % WS_OPT) {
 		NVM_DEBUG("FAILED: unaligned nsectr: %zu", nsectr);
 		errno = EINVAL;
 		return -1;
 	}
-	if (sectr_bgn % WS_MIN) {
+	if (sectr_bgn % WS_OPT) {
 		NVM_DEBUG("FAILED: unaligned sectr_bgn: %zu", sectr_bgn);
 		errno = EINVAL;
 		return -1;
@@ -451,10 +457,9 @@ static inline ssize_t vblk_pwrite_s20(struct nvm_vblk *vblk, const void *buf,
 		}
 	}
 
-	for (size_t sectr_ofz = sectr_bgn; sectr_ofz <= sectr_end; sectr_ofz += cmd_nsectr_max) {
-		struct nvm_ret ret = {0,0};
-
-		const size_t cmd_nsectr = NVM_MIN(sectr_end - sectr_ofz + 1, cmd_nsectr_max);
+	#pragma omp parallel for num_threads(NTHREADS) schedule(static,1) reduction(+:nerr) ordered if(NTHREADS>1)
+	for (size_t sectr_ofz = sectr_bgn; sectr_ofz <= sectr_end; sectr_ofz += cmd_nsectr) {
+		struct nvm_ret ret = { 0, 0 };
 
 		struct nvm_addr addrs[cmd_nsectr];
 		char *buf_off;
@@ -466,11 +471,11 @@ static inline ssize_t vblk_pwrite_s20(struct nvm_vblk *vblk, const void *buf,
 
 		for (size_t idx = 0; idx < cmd_nsectr; ++idx) {
 			const size_t sectr = sectr_ofz + idx;
-			const size_t wunit = sectr / WS_MIN;
+			const size_t wunit = sectr / WS_OPT;
 			const size_t rnd = wunit / nchunks;
 
 			const size_t chunk = wunit % nchunks;
-			const size_t chunk_sectr = sectr % WS_MIN + rnd * WS_MIN;
+			const size_t chunk_sectr = sectr % WS_OPT + rnd * WS_OPT;
 
 			addrs[idx].ppa = vblk->blks[chunk].ppa;
 			addrs[idx].l.sectr = chunk_sectr;
@@ -480,6 +485,9 @@ static inline ssize_t vblk_pwrite_s20(struct nvm_vblk *vblk, const void *buf,
 						  buf_off, meta_buf, 0x0, &ret);
 		if (err)
 			++nerr;
+
+		#pragma omp ordered
+		{}
 	}
 
 	nvm_buf_free(pad_buf);
@@ -602,7 +610,7 @@ static inline ssize_t vblk_pread_s20(struct nvm_vblk *vblk, void *buf,
 {
 	size_t nerr = 0;
 
-	const uint32_t WS_MIN = nvm_dev_get_ws_min(vblk->dev);
+	const uint32_t WS_OPT = nvm_dev_get_ws_min(vblk->dev);
 
 	const struct nvm_geo *geo = nvm_dev_get_geo(vblk->dev);
 	const size_t nchunks = vblk->nblks;
@@ -613,34 +621,35 @@ static inline ssize_t vblk_pread_s20(struct nvm_vblk *vblk, void *buf,
 	const size_t sectr_bgn = offset / sectr_nbytes;
 	const size_t sectr_end = sectr_bgn + (count / sectr_nbytes) - 1;
 
-	const size_t cmd_nsectr_max = (NVM_NADDR_MAX / WS_MIN) * WS_MIN;
+	const size_t cmd_nsectr = (NVM_NADDR_MAX / WS_OPT) * WS_OPT;
 
-	if (nsectr % WS_MIN) {
+	const int NTHREADS = NVM_MIN(nchunks, nsectr / WS_OPT);
+
+	if (nsectr % WS_OPT) {
 		NVM_DEBUG("FAILED: unaligned nsectr: %zu", nsectr);
 		errno = EINVAL;
 		return -1;
 	}
-	if (sectr_bgn % WS_MIN) {
+	if (sectr_bgn % WS_OPT) {
 		NVM_DEBUG("FAILED: unaligned sectr_bgn: %zu", sectr_bgn);
 		errno = EINVAL;
 		return -1;
 	}
 
-	for (size_t sectr_ofz = sectr_bgn; sectr_ofz <= sectr_end; sectr_ofz += cmd_nsectr_max) {
-		const size_t cmd_nsectr = NVM_MIN(sectr_end - sectr_ofz + 1, cmd_nsectr_max);
-
+	#pragma omp parallel for num_threads(NTHREADS) schedule(static,1) reduction(+:nerr) ordered if(NTHREADS>1)
+	for (size_t sectr_ofz = sectr_bgn; sectr_ofz <= sectr_end; sectr_ofz += cmd_nsectr) {
 		struct nvm_addr addrs[cmd_nsectr];
 		char *buf_off = (char*)buf + (sectr_ofz - sectr_bgn) * sectr_nbytes;
 
 		for (size_t idx = 0; idx < cmd_nsectr; ++idx) {
 			const size_t sectr = sectr_ofz + idx;
-			const size_t wunit = sectr / WS_MIN;
+			const size_t wunit = sectr / WS_OPT;
 			const size_t rnd = wunit / nchunks;
 
 			const size_t chunk = wunit % nchunks;
-			const size_t chunk_sectr = sectr % WS_MIN + rnd * WS_MIN;
+			const size_t chunk_sectr = sectr % WS_OPT + rnd * WS_OPT;
 
-			addrs[idx].ppa = vblk->blks[chunk].ppa;
+			addrs[idx].val = vblk->blks[chunk].val;
 			addrs[idx].l.sectr = chunk_sectr;
 		}
 
