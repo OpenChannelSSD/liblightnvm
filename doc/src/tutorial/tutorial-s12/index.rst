@@ -1,8 +1,8 @@
-.. _sec-tutorial:
+.. _sec-tutorial-s12:
 
-=======================
- Tutorial Introduction
-=======================
+======================
+ Open-Channel SSD 1.2
+======================
 
 This introduction will go through how to retrieve device information, construct
 physical addresses, issue vectorized IO, retrieve and mange media state, and
@@ -15,8 +15,9 @@ the system.
 
 NOTE: This tutorial was written prior to the release of the Open-Channel SSD
 2.0 specification. Concept such as **planes/plane-mode**, thus, if you have a
-2.0 drive then ignore such terms and have a look at the CLI documentation for
-examples of device geometry and address construction.
+2.0 drive you probably would prefer to read the 2.0 guide. Also, since it has
+not been updated some of the command-line output might not reflect the latest
+state of the library.
 
 .. toctree::
    :hidden:

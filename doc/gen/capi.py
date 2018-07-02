@@ -33,8 +33,7 @@ def gen_capi(args):
         "nvm_addr": "Addressing",
         "nvm_cmd": "Raw Commands",
         "nvm_vblk": "Virtual Block",
-        "nvm_bbt": "Bad-Block-Table",
-        "nvm_lba": "LBA Interface",
+        "nvm_bbt": "Bad-Block-Table"
     }
     docs = {}
 

@@ -49,8 +49,8 @@ Contents:
    background/index.rst
    cli/index.rst
    capi/index.rst
-   tutorial-s20/index.rst
-   terminology.rst
+   tutorial/index.rst
+   backends/index.rst
    refs/index.rst
 
 Indices and tables

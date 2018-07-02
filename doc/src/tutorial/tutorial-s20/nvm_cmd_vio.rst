@@ -106,16 +106,18 @@ sector (the smallest addressable unit) and can be performed non-contiguously.
 
 The primary constraint for a read to adhere to is that the block which is read
 from must be closed. That is, all pages within the block must have been
-written. It might be that the constraint can be relaxed where only N pages
-ahead of the read must have been written instead of all pages in the block. The
-challenge with relaxing the constraint is that N is often an unknown size.
+written.
 
-We have so far written a total of nine pages (across two planes), the first
-page in one command, the remaining eight pages in a second command. Thus we
-have 503 pages that need to be written before we can start reading.
+It might be that the constraint can be relaxed, that is, instead of writing all
+sectors in the chunk, then only ``mw_cunits`` sectors ahead of the read must
+be written.
 
-Specifying the 503 x nplanes x nsectors = 4024 addresses via the CLI is
-tedious, we will therefore take a sneak peak at virtual blocks and execute:
+We have so far written a total of 72 sectors, the first 24 sectors in one
+command, the remaining 48 sectors in a second command. Thus additional 6072
+sectors must be written before the chunk changes state to **closed**.
+
+Specifying all those addresses via the CLI is tedious, we will therefore take a
+sneak peak at virtual blocks and execute:
 
 .. literalinclude:: nvm_cmd_vio_05.cmd
    :language: bash
@@ -124,8 +126,9 @@ tedious, we will therefore take a sneak peak at virtual blocks and execute:
    :language: bash
 
 What these two commands actually do will be described in the following section
-on virtual blocks. For now all we need to know is that the block is now fully
-written / closed and we can start reading from it.
+on virtual blocks. For now all we need to know is that the chunk is now fully
+written / closed and we can start reading from it without concern about
+``mw_cunits``.
 
 .. NOTE :: C API for performing write using vectorized IO with addressing at
   sector-level is done using ``nvm_cmd_read``, the received payload must be

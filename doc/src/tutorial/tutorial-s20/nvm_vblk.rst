@@ -15,16 +15,15 @@ the command and address construction of parallel vectorized IO and exposes a
 flat address space which is read/written in a manner equivalent to the
 read/write primitives offered by libc.
 
-The minimum construction encapsulates managing address-construction across
-planes and setting plane hints. See section :ref:`sec-tut-vblk-plane`.
-Increased utilization of parallel units in a device is achieved by constructing
-a virtual block as either a :ref:`sec-tut-vblk-set` or a
-:ref:`sec-tut-vblk-line`.
+See section :ref:`sec-tut-vblk-single` for the minimal construction of virtual
+blocks. Increased utilization of parallel units in a device is achieved by
+constructing a virtual block as either a :ref:`sec-tut-vblk-set-s20` or a
+:ref:`sec-tut-vblk-line-s20`.
 
 .. NOTE :: C API documentation of the virtual block is available in
   :ref:`sec-capi-nvm_vblk`
 
-.. _sec-tut-vblk-plane:
+.. _sec-tut-vblk-single:
 
 Single Chunk
 ------------
@@ -41,7 +40,7 @@ Yielding:
 .. literalinclude:: nvm_vblk_00.out
    :language: bash
 
-.. _sec-tut-vblk-set:
+.. _sec-tut-vblk-set-s20:
 
 Chunk Set
 ---------
@@ -72,7 +71,7 @@ units on the device.
 .. NOTE :: The difference between the plane span and the block set is merely
   that the virtual block creation uses multiple block-addresses instead of one
 
-.. _sec-tut-vblk-line:
+.. _sec-tut-vblk-line-s20:
 
 Chunk Line
 ----------

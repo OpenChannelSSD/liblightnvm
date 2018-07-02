@@ -9,6 +9,11 @@ nvm_vblk
 .. doxygenstruct:: nvm_vblk
    :members:
 
+nvm_vblk_copy
+-------------
+
+.. doxygenfunction:: nvm_vblk_copy
+
 nvm_vblk_erase
 --------------
 
