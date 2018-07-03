@@ -210,7 +210,7 @@ static int cmd_lba2gen(struct nvm_cli *cli)
 	for (int i = 0; i < args->ndec_vals; ++i) {
 		struct nvm_addr gen = { 0 };
 
-		gen = nvm_addr_lba2gen(args->dev, args->hex_vals[i]);
+		gen = nvm_addr_lba2gen(args->dev, args->dec_vals[i]);
 
 		printf("lba: %064"PRIu64"\n", args->dec_vals[i]);
 		printf("gen: ");
