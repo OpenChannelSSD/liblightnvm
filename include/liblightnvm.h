@@ -1111,6 +1111,7 @@ void nvm_addr_pr(const struct nvm_addr addr);
 void nvm_addr_prn(const struct nvm_addr *addr, unsigned int naddrs,
 		  const struct nvm_dev *dev);
 
+
 /**
  * Allocate a virtual block, spanning a given set of physical blocks
  *
