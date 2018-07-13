@@ -38,3 +38,20 @@ in generic format:
 
 .. literalinclude:: nvm_addr_gen2dev.out
    :language: bash
+
+Terse Format
+~~~~~~~~~~~~
+
+Prints the just the address:
+
+.. literalinclude:: nvm_addr_tex01.cmd
+   :language: bash
+
+.. literalinclude:: nvm_addr_tex01.out
+   :language: bash
+
+.. literalinclude:: nvm_addr_tex02.cmd
+   :language: bash
+
+.. literalinclude:: nvm_addr_tex02.out
+   :language: bash
