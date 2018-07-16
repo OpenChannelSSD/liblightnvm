@@ -100,7 +100,7 @@ void nvm_cli_timer_bw_pr(const char *prefix, size_t nbytes)
 
 int _parse_options(int argc, char *argv[], struct nvm_cli *cli)
 {
-	for (int opt = 0; (opt = getopt(argc, argv, ":hbvi:o:n:x:")) != -1;) {
+	for (int opt = 0; (opt = getopt(argc, argv, ":hbvti:o:n:x:")) != -1;) {
 		switch(opt) {
 		case 'h':
 			cli->opts.mask |= NVM_CLI_OPT_HELP;
@@ -117,6 +117,10 @@ int _parse_options(int argc, char *argv[], struct nvm_cli *cli)
 		case 's':
 			cli->opts.mask |= NVM_CLI_OPT_STATUS;
 			cli->opts.status = 1;
+			break;
+		case 't':
+			cli->opts.mask |= NVM_CLI_OPT_TERSE;
+			cli->opts.terse = 1;
 			break;
 		case 'i':
 			cli->opts.mask |= NVM_CLI_OPT_FILE_INPUT;
@@ -1191,6 +1195,9 @@ void _nvm_cli_opts_mask_pr(int mask) {
 		case NVM_CLI_OPT_STATUS:
 			printf(" [-s]");
 			break;
+		case NVM_CLI_OPT_TERSE:
+			printf(" [-t]");
+			break;
 		case NVM_CLI_OPT_FILE_INPUT:
 			printf(" [-i FILE]");
 			break;
@@ -1229,6 +1236,9 @@ void _nvm_cli_opts_mask_descr_pr(int mask) {
 			break;
 		case NVM_CLI_OPT_STATUS:
 			printf(" -s %5s %s", " ", "Dump status msgs to stdout");
+			break;
+		case NVM_CLI_OPT_TERSE:
+			printf(" -t %5s %s", " ", "Print only the address");
 			break;
 		case NVM_CLI_OPT_FILE_INPUT:
 			printf(" -i %5s %s", "FILE", "Path to input file");
@@ -1423,6 +1433,7 @@ void nvm_cli_opts_pr(struct nvm_cli_opts *opts)
 	printf("  help: %d\n", opts->help);
 	printf("  brief: %d\n", opts->brief);
 	printf("  verbose: %d\n", opts->verbose);
+	printf("  terse: %d\n", opts->terse);
 	printf("  dec_val: %zu\n", opts->dec_val);
 	printf("  hex_val: 0x%016"PRIx64"\n", opts->hex_val);
 	printf("  file_input: %s\n", opts->file_input);
