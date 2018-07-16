@@ -1051,6 +1051,7 @@ int _evar_and_dev_setup(struct nvm_cli *cli)
 
 		if (bounds) {
 			nvm_addr_pr(cli->args.addrs[i]);
+			printf("\n");
 			nvm_cli_info_pr("Exceeded");
 			nvm_bounds_pr(bounds);
 			errno = EINVAL;
