@@ -18,9 +18,10 @@ static int cmd_gen2dev(struct nvm_cli *cli)
 	struct nvm_cli_cmd_args *args = &cli->args;
 
 	for (int i = 0; i < args->naddrs; ++i) {
-		printf("gen: ");
+		printf("- {gen: ");
 		nvm_addr_pr(args->addrs[i]);
-		printf("dev: 0x%016"PRIx64"\n", nvm_addr_gen2dev(args->dev, args->addrs[i]));
+		printf(", dev: 0x%016"PRIx64"}\n",
+		       nvm_addr_gen2dev(args->dev, args->addrs[i]));
 	}
 
 	return 0;
@@ -31,8 +32,10 @@ static int cmd_gen2lba(struct nvm_cli *cli)
 	struct nvm_cli_cmd_args *args = &cli->args;
 
 	for (int i = 0; i < args->naddrs; ++i) {
-		printf("gen: "); nvm_addr_pr(args->addrs[i]);
-		printf("lba: %064"PRIu64"\n", nvm_addr_gen2lba(args->dev, args->addrs[i]));
+		printf("- {gen: ");
+		nvm_addr_pr(args->addrs[i]);
+		printf(", lba: %064"PRIu64"}\n",
+		       nvm_addr_gen2lba(args->dev, args->addrs[i]));
 	}
 
 	return 0;
@@ -43,8 +46,10 @@ static int cmd_gen2off(struct nvm_cli *cli)
 	struct nvm_cli_cmd_args *args = &cli->args;
 
 	for (int i = 0; i < args->naddrs; ++i) {
-		printf("gen: "); nvm_addr_pr(args->addrs[i]);
-		printf("off: %064"PRIu64"\n", nvm_addr_gen2off(args->dev, args->addrs[i]));
+		printf("- {gen: ");
+		nvm_addr_pr(args->addrs[i]);
+		printf(", off: %064"PRIu64"}\n",
+		       nvm_addr_gen2off(args->dev, args->addrs[i]));
 	}
 
 	return 0;
@@ -55,8 +60,10 @@ static int cmd_gen2lpo(struct nvm_cli *cli)
 	struct nvm_cli_cmd_args *args = &cli->args;
 
 	for (int i = 0; i < args->naddrs; ++i) {
-		printf("gen: "); nvm_addr_pr(args->addrs[i]);
-		printf("lpo: %064"PRIu64"\n", nvm_addr_gen2lpo(args->dev, args->addrs[i]));
+		printf("- {gen: ");
+		nvm_addr_pr(args->addrs[i]);
+		printf(", lpo: %064"PRIu64"}\n",
+		       nvm_addr_gen2lpo(args->dev, args->addrs[i]));
 	}
 
 	return 0;
@@ -71,9 +78,10 @@ static int cmd_dev2gen(struct nvm_cli *cli)
 
 		gen = nvm_addr_dev2gen(args->dev, args->hex_vals[i]);
 
-		printf("dev: 0x%016"PRIx64"\n", args->hex_vals[i]);
-		printf("gen: ");
-		nvm_addr_prn(&gen, 1, args->dev);
+		printf("- {dev: 0x%016"PRIx64, args->hex_vals[i]);
+		printf(", gen: ");
+		nvm_addr_pr(gen);
+		printf("}\n");
 	}
 
 	return 0;
@@ -88,9 +96,10 @@ static int cmd_lba2gen(struct nvm_cli *cli)
 
 		gen = nvm_addr_lba2gen(args->dev, args->dec_vals[i]);
 
-		printf("lba: %064"PRIu64"\n", args->dec_vals[i]);
-		printf("gen: ");
-		nvm_addr_prn(&gen, 1, args->dev);
+		printf("- {lba: %064"PRIu64, args->dec_vals[i]);
+		printf(", gen: ");
+		nvm_addr_pr(gen);
+		printf("}\n");
 	}
 
 	return 0;
@@ -105,9 +114,10 @@ static int cmd_off2gen(struct nvm_cli *cli)
 
 		gen = nvm_addr_off2gen(args->dev, args->dec_vals[i]);
 		
-		printf("off: %064"PRIu64"\n", args->dec_vals[i]);
-		printf("gen: ");
-		nvm_addr_prn(&gen, 1, args->dev);
+		printf("- {off: %064"PRIu64, args->dec_vals[i]);
+		printf(", gen: ");
+		nvm_addr_pr(gen);
+		printf("}\n");
 	}
 
 	return 0;
@@ -122,9 +132,10 @@ static int cmd_lpo2gen(struct nvm_cli *cli)
 
 		gen = nvm_addr_lpo2gen(args->dev, args->dec_vals[i]);
 		
-		printf("off: %064"PRIu64"\n", args->dec_vals[i]);
-		printf("gen: ");
-		nvm_addr_prn(&gen, 1, args->dev);
+		printf("- {off: %064"PRIu64, args->dec_vals[i]);
+		printf(", gen: ");
+		nvm_addr_pr(gen);
+		printf("}\n");
 	}
 
 	return 0;
