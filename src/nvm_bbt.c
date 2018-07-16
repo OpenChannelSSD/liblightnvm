@@ -342,13 +342,15 @@ void nvm_bbt_pr(const struct nvm_bbt *bbt)
 	npl_blks = bbt->nblks / nplanes;
 
 	printf("bbt:\n");
-	printf("  addr: "); nvm_addr_pr(bbt->addr);
+	printf("  addr: ");
+	nvm_addr_pr(bbt->addr);
+	printf("\n");
 	printf("  nblks: %"PRIu64"\n", bbt->nblks);
 	printf("  npl_blks: %"PRIu64"\n", npl_blks);
 	printf("  pl_blks:\n");
 	for (uint64_t blk = 0; blk < bbt->nblks; ++blk) {
 		if (!(blk % nplanes))
-			printf("    %04"PRIu64": [ ", blk / nplanes);
+			printf("    - %04"PRIu64": [ ", blk / nplanes);
 
 		if (blk % nplanes)
 			printf(", ");
