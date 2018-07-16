@@ -97,8 +97,7 @@ static int _mark(struct nvm_cli_cmd_args *args, enum nvm_bbt_state state)
 	struct nvm_ret ret = {0,0};
 
 	nvm_cli_info_pr("nvm_bbt_mark");
-	for (int i = 0; i < args->naddrs; ++i)
-		nvm_addr_pr(args->addrs[i]);
+	nvm_addr_prn(args->addrs, args->naddrs, args->dev);
 
 	err = nvm_bbt_mark(args->dev, args->addrs, args->naddrs, state, &ret);
 	if (err) {
