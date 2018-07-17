@@ -143,6 +143,8 @@ endif()
 
 install(TARGETS ${LNAME} DESTINATION lib COMPONENT lib)
 
+install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm_cli.h"
+	DESTINATION include COMPONENT dev)
 install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm_spec.h"
 	DESTINATION include COMPONENT dev)
 install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm.h"
