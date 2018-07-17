@@ -173,6 +173,8 @@ struct nvm_cli {
 	struct nvm_cli_cmd_args args;	// Constructed by _parse_args
 	struct nvm_cli_opts opts;	// Constructed by _parse_opts
 	struct nvm_cli_evars evars;	// Constructed from ENV
+
+	void (*ver_pr)();		// Pointer to version printing func.
 };
 
 void nvm_cli_cmd_args_pr(struct nvm_cli_cmd_args *args);
