@@ -222,7 +222,7 @@ doc-gen-cli-s20:
 
 # All of them
 .PHONY: doc-gen-cmds
-doc-gen-cmds: doc-gen-qs doc-gen-cli doc-gen-tut
+doc-gen-cmds: doc-gen-qs doc-gen-cli-s20 doc-gen-tut-s20
 
 .PHONY: doxy
 doxy:
