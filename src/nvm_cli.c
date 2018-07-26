@@ -1058,11 +1058,12 @@ int _evar_and_dev_setup(struct nvm_cli *cli)
 		}
 	}
 
+	/*	
 	if (cli->opts.verbose) {
 		nvm_cli_info_pr("Verbose enabled -- printing CLI state -- BEGIN");
 		nvm_cli_pr(cli);
 		nvm_cli_info_pr("Verbose enabled -- printing CLI state -- END");
-	}
+	}*/
 
 	return 0;
 }
