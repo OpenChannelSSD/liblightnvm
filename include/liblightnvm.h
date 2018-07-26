@@ -804,6 +804,15 @@ int nvm_dev_get_ws_min(const struct nvm_dev *dev);
 int nvm_dev_get_ws_opt(const struct nvm_dev *dev);
 
 /**
+ * Returns the minimal write cache units for the given device
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ *
+ * @returns The spec. 2.0 defined minimal write cache units, in sectors.
+ */
+int nvm_dev_get_mw_cunits(const struct nvm_dev *dev);
+
+/**
  * Allocate a buffer aligned to match the given geometry
  *
  * @note
