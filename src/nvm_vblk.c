@@ -203,7 +203,8 @@ static inline ssize_t vblk_erase_s12(struct nvm_vblk *vblk)
 			addrs[i].g.pl = i % geo->nplanes;
 		}
 
-		err = nvm_addr_erase(vblk->dev, addrs, naddrs, 0, &ret);
+		err = nvm_cmd_erase(vblk->dev, addrs, naddrs, vblk->dev->pmode,
+				    &ret);
 		if (err)
 			++nerr;
 	}
