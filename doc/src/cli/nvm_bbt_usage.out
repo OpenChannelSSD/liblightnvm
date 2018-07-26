@@ -1,4 +1,4 @@
-NVM bad-block-table (nvm_bbt_*) -- Ver { major(18), minor(6), patch(0) }
+NVM bad-block-table (nvm_bbt_*) -- Ver { major(0), minor(1), patch(2) }
 
 Retrieve (get) and modify (set/mark) the bad block table
 

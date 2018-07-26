@@ -10,4 +10,4 @@ addrs:
   - {val: 0x0100008e00000000, pugrp: 01, punit: 00, chunk: 0142, sectr: 0000}
   - {val: 0x0200008e00000000, pugrp: 02, punit: 00, chunk: 0142, sectr: 0000}
   - {val: 0x0300008e00000000, pugrp: 03, punit: 00, chunk: 0142, sectr: 0000}
-nvm_vblk_erase: {elapsed: 0.0050, mb: 96.00, mbsec: 19091.28}
+nvm_vblk_erase: {elapsed: 0.0050, mb: 96.00, mbsec: 19264.54}

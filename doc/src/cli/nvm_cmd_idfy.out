@@ -13,8 +13,6 @@ lgeo:
   npunit: 4
   nchunk: 1474
   nsectr: 6144
-  rsvr(nbytes): 4096
-  rsvr(nbytes_oob): 16
 wrt:
   ws_min: 24
   ws_opt: 24

@@ -21,6 +21,6 @@ addrs:
   - {val: 0x0202008e00000000, pugrp: 02, punit: 02, chunk: 0142, sectr: 0000}
   - {val: 0x0302008e00000000, pugrp: 03, punit: 02, chunk: 0142, sectr: 0000}
   - {val: 0x0402008e00000000, pugrp: 04, punit: 02, chunk: 0142, sectr: 0000}
-nvm_buf_alloc: {elapsed: 0.000021}
-nvm_buf_fill: {elapsed: 0.285399}
-nvm_vblk_write: {elapsed: 6.8921, mb: 360.00, mbsec: 52.23}
+nvm_buf_alloc: {elapsed: 0.000020}
+nvm_buf_fill: {elapsed: 0.280034}
+nvm_vblk_write: {elapsed: 0.8503, mb: 360.00, mbsec: 423.36}

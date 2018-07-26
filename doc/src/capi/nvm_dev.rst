@@ -74,6 +74,11 @@ nvm_dev_get_meta_mode
 
 .. doxygenfunction:: nvm_dev_get_meta_mode
 
+nvm_dev_get_mw_cunits
+---------------------
+
+.. doxygenfunction:: nvm_dev_get_mw_cunits
+
 nvm_dev_get_name
 ----------------
 

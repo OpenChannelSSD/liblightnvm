@@ -1,0 +1,10 @@
+vblk:
+  dev: {pmode: 'SNGL'}
+  nblks: 1
+  nmbytes: 24
+  pos_write: 0
+  pos_read: 0
+naddrs: 1
+addrs:
+  - {val: 0x0000000300000004, pugrp: 00, punit: 00, chunk: 0003, sectr: 0004}
+nvm_vblk_erase: {elapsed: 0.0048, mb: 24.00, mbsec: 4989.94}

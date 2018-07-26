@@ -1,4 +1,4 @@
-NVM Virtual Block (nvm_vblk_*) -- Ver { major(18), minor(6), patch(0) }
+NVM Virtual Block (nvm_vblk_*) -- Ver { major(0), minor(1), patch(2) }
 
 Erase, write, and read virtual blocks
 

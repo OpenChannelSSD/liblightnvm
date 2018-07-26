@@ -7,4 +7,4 @@ vblk:
 naddrs: 1
 addrs:
   - {val: 0x0402008e00000000, pugrp: 04, punit: 02, chunk: 0142, sectr: 0000}
-nvm_vblk_erase: {elapsed: 0.0049, mb: 24.00, mbsec: 4878.03}
+nvm_vblk_erase: {elapsed: 0.0049, mb: 24.00, mbsec: 4911.37}
