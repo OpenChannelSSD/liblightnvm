@@ -147,6 +147,19 @@ int nvm_dev_get_ws_opt(const struct nvm_dev *dev)
 	return -1;
 }
 
+int nvm_dev_get_mw_cunits(const struct nvm_dev *dev)
+{
+	switch(dev->verid) {
+	case NVM_SPEC_VERID_20:
+		return dev->idfy.s20.wrt.mw_cunits;
+
+	case NVM_SPEC_VERID_12:
+	default:
+		errno = ENOSYS;
+		return -1;
+	}
+}
+
 int nvm_dev_get_verid(const struct nvm_dev *dev)
 {
 	return dev->verid;
