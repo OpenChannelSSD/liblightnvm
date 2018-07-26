@@ -1,0 +1,400 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>nvm_cmd - Raw Commands &mdash; liblightnvm 0.1.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="nvm_vblk - Virtual Block" href="nvm_vblk.html" />
+    <link rel="prev" title="nvm_addr - Addressing" href="nvm_addr.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> liblightnvm
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prereqs/index.html">Prerequisites</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../background/index.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli/index.html">Command-Line Interface</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">C API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="nvm_dev.html">nvm_dev - Device Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_geo.html">nvm_geo - Geometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_buf.html">nvm_buf - Buffer Allocation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_addr.html">nvm_addr - Addressing</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">nvm_cmd - Raw Commands</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-idfy">nvm_cmd_idfy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-erase">nvm_cmd_erase</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-gbbt-arbs">nvm_cmd_gbbt_arbs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-sbbt">nvm_cmd_sbbt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-rprt">nvm_cmd_rprt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-rprt-arbs">nvm_cmd_rprt_arbs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-gbbt">nvm_cmd_gbbt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-copy">nvm_cmd_copy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-write">nvm_cmd_write</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-read">nvm_cmd_read</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_vblk.html">nvm_vblk - Virtual Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_bbt.html">nvm_bbt - Bad-Block-Table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="misc.html">Miscellaneous</a></li>
+<li class="toctree-l2"><a class="reference internal" href="header.html">Public Header</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../backends/index.html">Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../refs/index.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">liblightnvm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">C API</a> &raquo;</li>
+        
+      <li>nvm_cmd - Raw Commands</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/capi/nvm_cmd.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="nvm-cmd-raw-commands">
+<span id="sec-capi-nvm-cmd"></span><h1>nvm_cmd - Raw Commands<a class="headerlink" href="#nvm-cmd-raw-commands" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="nvm-cmd-idfy">
+<h2>nvm_cmd_idfy<a class="headerlink" href="#nvm-cmd-idfy" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_cmd_idfy">
+<span class="target" id="liblightnvm_8h_1a3e362fda83e44aa702386eec542c4387"></span>struct nvm_spec_idfy* <code class="descname">nvm_cmd_idfy</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_idfy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute an Open-Channel 1.2 identify / Open-Channel 2.0 geometry command. </p>
+<p>NOTE: Caller is responsible for de-allocating the returned structure</p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>On success, pointer identify structure is returned. On error, NULL is returned and <code class="docutils literal notranslate"><span class="pre">errno</span></code> set to indicate the error and ret filled with lower-level result codes </dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-cmd-erase">
+<h2>nvm_cmd_erase<a class="headerlink" href="#nvm-cmd-erase" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_cmd_erase">
+<span class="target" id="liblightnvm_8h_1ac469286a1add51f412e199707826113f"></span>int <code class="descname">nvm_cmd_erase</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addrs[]</em>, int<em>&nbsp;naddrs</em>, uint16_t<em>&nbsp;flags</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_erase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute an Open-Channel 1.2 erase / Open-Channel 2.0 reset command. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>On success, 0 is returned. On error, -1 is returned and <code class="docutils literal notranslate"><span class="pre">errno</span></code> set to indicate the error and ret filled with lower-level result codes </dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-cmd-gbbt-arbs">
+<h2>nvm_cmd_gbbt_arbs<a class="headerlink" href="#nvm-cmd-gbbt-arbs" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_cmd_gbbt_arbs">
+<span class="target" id="liblightnvm_8h_1abbdd671f18944bf7327f12de3a46e3f6"></span>int <code class="descname">nvm_cmd_gbbt_arbs</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, int<em>&nbsp;bs</em>, int<em>&nbsp;naddrs</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addrs[]</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_gbbt_arbs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find an arbitrary set of ‘naddrs’ block-addresses on the given ‘dev’, in the given block state ‘bs’ and store them in the provided ‘addrs’ array. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>On success, 0 is returned. On error, -1 is returned and errno set to indicate the error. </dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-cmd-sbbt">
+<h2>nvm_cmd_sbbt<a class="headerlink" href="#nvm-cmd-sbbt" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_cmd_sbbt">
+<span class="target" id="liblightnvm_8h_1ab5cd49eff1aa6d48fe57a3f3b266f8c8"></span>int <code class="descname">nvm_cmd_sbbt</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a>  *<em>&nbsp;addrs</em>, int<em>&nbsp;naddrs</em>, uint16_t<em>&nbsp;flags</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_sbbt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute an Open-Channel 1.2 set bad block table command. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>On success, 0 is returned. On error, -1 is returned and errno set to indicate the error. </dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-cmd-rprt">
+<h2>nvm_cmd_rprt<a class="headerlink" href="#nvm-cmd-rprt" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_cmd_rprt">
+<span class="target" id="liblightnvm_8h_1a785e8abb02468f10d3da659c627e8676"></span>struct nvm_spec_rprt* <code class="descname">nvm_cmd_rprt</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a>  *<em>&nbsp;addr</em>, int<em>&nbsp;opt</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_rprt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute an Open-Channel 2.0 report chunk command. </p>
+<p>NOTE: Caller is responsible for de-allocating the returned structure</p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>On success, pointer report chunk structure is returned. On error, NULL is returned and <code class="docutils literal notranslate"><span class="pre">errno</span></code> set to indicate the error and ret filled with lower-level result codes </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">dev</span></code>: Device handle obtained with <code class="docutils literal notranslate"><span class="pre">nvm_dev_open</span></code> report for </li>
+<li><code class="docutils literal notranslate"><span class="pre">opts</span></code>: Reporting options, see <code class="docutils literal notranslate"><span class="pre">enum</span> <span class="pre">nvm_spec_chunk_state</span></code></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-cmd-rprt-arbs">
+<h2>nvm_cmd_rprt_arbs<a class="headerlink" href="#nvm-cmd-rprt-arbs" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_cmd_rprt_arbs">
+<span class="target" id="liblightnvm_8h_1a789c06d0d8cfc079814affb15d73471d"></span>int <code class="descname">nvm_cmd_rprt_arbs</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, int<em>&nbsp;cs</em>, int<em>&nbsp;naddrs</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addrs[]</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_rprt_arbs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find an arbitrary set of ‘naddrs’ chunk-addresses on the given ‘dev’, in the given chunk state ‘cs’ and store them in the provided ‘addrs’ array. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>0 on success, -1 on error and errno set to indicate the error. </dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-cmd-gbbt">
+<h2>nvm_cmd_gbbt<a class="headerlink" href="#nvm-cmd-gbbt" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_cmd_gbbt">
+<span class="target" id="liblightnvm_8h_1a611b8c7024c31fe3405daef6506c7ce7"></span>struct nvm_spec_bbt* <code class="descname">nvm_cmd_gbbt</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addr</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_gbbt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute an Open-Channel 1.2 get bad-block-table command. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>On success, pointer to bad block table is returned. On error, NULL is returned and <code class="docutils literal notranslate"><span class="pre">errno</span></code> set to indicate the error and ret filled with lower-level result codes </dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-cmd-copy">
+<h2>nvm_cmd_copy<a class="headerlink" href="#nvm-cmd-copy" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_cmd_copy">
+<span class="target" id="liblightnvm_8h_1a07c7760376683a3885b60c6a9c638756"></span>int <code class="descname">nvm_cmd_copy</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;src[]</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;dst[]</em>, int<em>&nbsp;naddrs</em>, uint16_t<em>&nbsp;flags</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute an Open-Channel 2.0 vector-copy command. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>On success, 0 is returned. On error, -1 is returned and <code class="docutils literal notranslate"><span class="pre">errno</span></code> set to indicate the error and ret filled with lower-level result codes </dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-cmd-write">
+<h2>nvm_cmd_write<a class="headerlink" href="#nvm-cmd-write" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_cmd_write">
+<span class="target" id="liblightnvm_8h_1a650e17fd338f7fdd845a51311078de98"></span>int <code class="descname">nvm_cmd_write</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addrs[]</em>, int<em>&nbsp;naddrs</em>, void *<em>&nbsp;data</em>, void *<em>&nbsp;meta</em>, uint16_t<em>&nbsp;flags</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute an Open-Channel 1.2 / 2.0 vector-write command. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>On success, 0 is returned. On error, -1 is returned and <code class="docutils literal notranslate"><span class="pre">errno</span></code> set to indicate the error and ret filled with lower-level result codes </dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-cmd-read">
+<h2>nvm_cmd_read<a class="headerlink" href="#nvm-cmd-read" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_cmd_read">
+<span class="target" id="liblightnvm_8h_1aad4aa76beb44eaeeb3a5da7fb237f2d3"></span>int <code class="descname">nvm_cmd_read</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addrs[]</em>, int<em>&nbsp;naddrs</em>, void *<em>&nbsp;data</em>, void *<em>&nbsp;meta</em>, uint16_t<em>&nbsp;flags</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute an Open-Channel 1.2 / 2.0 vector-read command. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>On success, 0 is returned. On error, -1 is returned and <code class="docutils literal notranslate"><span class="pre">errno</span></code> set to indicate the error and ret filled with lower-level result codes </dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="nvm_vblk.html" class="btn btn-neutral float-right" title="nvm_vblk - Virtual Block" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="nvm_addr.html" class="btn btn-neutral" title="nvm_addr - Addressing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, LightNVM.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

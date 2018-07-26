@@ -1,0 +1,386 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Background &mdash; liblightnvm 0.1.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Command-Line Interface" href="../cli/index.html" />
+    <link rel="prev" title="Management Tool" href="../prereqs/tools.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> liblightnvm
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prereqs/index.html">Prerequisites</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Background</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#device-architecture">Device Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#media-constraints">Media Constraints</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#writes">Writes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reads">Reads</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#failure-modes">Failure Modes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#terminology">Terminology</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cli/index.html">Command-Line Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../capi/index.html">C API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../backends/index.html">Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../refs/index.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">liblightnvm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Background</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/background/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="background">
+<span id="sec-background"></span><h1>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h1>
+<p>Dealing directly with physical media requires understanding its characteristics
+and respecting its constraints. In this section, we will discuss general
+constraints, good manners, and rules of thumb specific to NAND flash memories.
+However, since all NAND is slightly different, some NAND might have extra
+constraints or optimizations not described here and only available when working
+directly with vendors.</p>
+<div class="section" id="device-architecture">
+<h2>Device Architecture<a class="headerlink" href="#device-architecture" title="Permalink to this headline">¶</a></h2>
+<p>NAND flash provides a read- /write/erase interface. Within a NAND package,
+storage media is organized into a hierarchy of die, plane, block, and page. A
+die allows a single I/O command to be executed at a time. There may be one or
+several dies within a single physical package. A plane allows similar flash
+commands to be executed in parallel within a die. The die defines then the
+parallel unit of the device.</p>
+<p>Within each plane, NAND is organized in blocks and pages. Each plane contains
+the same number of blocks, and each block contains the same number of pages.
+Pages are the minimal units of read and write, while the unit of erase is a
+block. Each page is further decomposed into fixed-size sectors with an
+additional out-of-bound area, e.g., a 16KB page contains four sectors of 4KB
+and out-of-bound area frequently used for ECC and user-specific data.</p>
+</div>
+<div class="section" id="media-constraints">
+<h2>Media Constraints<a class="headerlink" href="#media-constraints" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="writes">
+<h3>Writes<a class="headerlink" href="#writes" title="Permalink to this headline">¶</a></h3>
+<p>There are three fundamental programming constraints that apply to NAND:</p>
+<ol class="arabic simple">
+<li>A write command must always contain enough data to program one (or several)
+full flash page(s)</li>
+<li>A write must be sequential within a block</li>
+<li>An erase must be performed before a page within a block can be (re)written.
+The number of program/erase (PE) cycles is limited. The limit depends on the
+type of flash: 10E2 for TLC/QLC flash, 10E3 for MLC, or 10E5 for SLC.</li>
+</ol>
+<p>Additional constraints must be considered for different types of NAND flash.
+For example, in multi-level cell memories, the bits stored in the same cell
+belongs to different write pages, referred to as lower/upper pages. The upper
+page must be written before the lower page can be read successfully. The lower
+and upper page are often not sequential, and any pages in between must be
+written to prevent write neighbor disturbance. Not writing all lower/upper
+pages before reading a sector might result on a read error. This is discussed
+in the next section.</p>
+<p>The size of a flash page when writing, must be calculated considering the media
+access mode, i.e., the number of planes being used. For example, a NAND flash
+with 4KB sectors, 4 sectors per page and operating in dual-plane mode, must
+write 32KB of data (4KB * 4 sectors * 2 planes) before a “flash page” is
+written. In this case, hints might be used in the write command to inform the
+hardware that a dual-plane write has been issue. This allows to process the
+writes in parallel within the controller.</p>
+</div>
+<div class="section" id="reads">
+<h3>Reads<a class="headerlink" href="#reads" title="Permalink to this headline">¶</a></h3>
+<p>Reads can be done at the granularity of a single sector, which is typically
+4KB.  Lower granularities must be handled internally by liblightnvm clients.</p>
+<p>Typically, reads issued to a closed block, i.e., a block that is fully written,
+will succeed. Reads issued to an open block must respect that all lower/upper
+pages within the pages being read has been fully written. Note that lower/upper
+pages might be shared across flash pages. Since the actual sequence for
+lower/upper pages is usually protected under NDA, it might be necessary to
+consult the hardware manufacturer for information about the specifics of the
+used media. A rule of thumb is to write 8-12 pages after a page can be read.
+The data in between must be cached by the client if it is required to be read
+within this threshold.</p>
+</div>
+<div class="section" id="failure-modes">
+<h3>Failure Modes<a class="headerlink" href="#failure-modes" title="Permalink to this headline">¶</a></h3>
+<p>Failure Modes. NAND Flash might fail in various ways:</p>
+<dl class="docutils">
+<dt>Bit Errors.</dt>
+<dd>The downside of shrinking cell size is an increase in errors when storing
+bits. While error rates of 2 bits per KB were common for SLC, this rate has
+increased four to eight times for MLC.</dd>
+<dt>Read and Write Disturb.</dt>
+<dd>The media is prone to leak currents to nearby cells as bits are written or
+read. This causes some of the write constraints described above.</dd>
+<dt>Data Retention.</dt>
+<dd>As cells wear out, data retention capability decreases. To persist over time,
+data must be rewritten multiple times.</dd>
+<dt>Write/Erase Error.</dt>
+<dd>During write or erase, a failure can occur due to an unrecoverable error at
+the block level. In that case, the block should be retired and data already
+written should be rewritten to a new block.</dd>
+<dt>Die Failure.</dt>
+<dd>A logical unit of storage, i.e., a die on a NAND chip may cease to function
+over time due to a defect. In that case, all its data will be lost unless
+RAID or other replication techniques has been used.</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="terminology">
+<span id="sec-terminology"></span><h2>Terminology<a class="headerlink" href="#terminology" title="Permalink to this headline">¶</a></h2>
+<p>Mostly, the terms used in liblightnvm are directly mapped to the OCSSD
+specification(s). However, since the specifications have changed naming from
+1.2 to 2.0, then a brief overview is provided here for reference as what a
+liblightnvm term maps to in specifications.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="29%" />
+<col width="41%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">liblightnvm</th>
+<th class="head">OCSSD 1.2</th>
+<th class="head">OCSSD 2.0</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>PUGRP</td>
+<td>Channel</td>
+<td>Parallel Unit Group</td>
+</tr>
+<tr class="row-odd"><td>PUNIT</td>
+<td>LUN / die</td>
+<td>Parallel Unit</td>
+</tr>
+<tr class="row-even"><td>CHUNK</td>
+<td>Block</td>
+<td>Chunk</td>
+</tr>
+<tr class="row-odd"><td><ul class="first last simple">
+<li></li>
+</ul>
+</td>
+<td>Plane</td>
+<td><ul class="first last simple">
+<li></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><ul class="first last simple">
+<li></li>
+</ul>
+</td>
+<td>Page</td>
+<td><ul class="first last simple">
+<li></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td>SECTR</td>
+<td>Sector</td>
+<td>Logical Block</td>
+</tr>
+</tbody>
+</table>
+<p>Notice that from 1.2 to 2.0, the concept of BLOCK / PLANE / PAGE  is ‘squashed’
+into Chunk / Logical Block, however, liblightnvm refers to this as CHUNK/SECTR.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../cli/index.html" class="btn btn-neutral float-right" title="Command-Line Interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../prereqs/tools.html" class="btn btn-neutral" title="Management Tool" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, LightNVM.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

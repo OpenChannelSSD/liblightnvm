@@ -1,0 +1,311 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Physical Addressing &mdash; liblightnvm 0.1.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Vectorized IO to NAND media" href="nvm_addr_vio.html" />
+    <link rel="prev" title="Obtaining device information" href="nvm_dev.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> liblightnvm
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start/index.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prereqs/index.html">Prerequisites</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../background/index.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli/index.html">Command-Line Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../capi/index.html">C API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Tutorial Introduction</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../tutorial-s20/index.html">Open-Channel SSD 2.0</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Open-Channel SSD 1.2</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="nvm_dev.html">Obtaining device information</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Physical Addressing</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#generic-format">Generic format</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#device-format">Device format</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#address-scope">Address scope</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_addr_vio.html">Vectorized IO to NAND media</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_vblk.html">Virtual Block</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_bbt.html">Bad-Block-Table</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../backends/index.html">Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../refs/index.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">liblightnvm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Tutorial Introduction</a> &raquo;</li>
+        
+          <li><a href="index.html">Open-Channel SSD 1.2</a> &raquo;</li>
+        
+      <li>Physical Addressing</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/tutorial/tutorial-s12/nvm_addr.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="physical-addressing">
+<h1>Physical Addressing<a class="headerlink" href="#physical-addressing" title="Permalink to this headline">¶</a></h1>
+<p>Most of the library takes one or more physical addresses as parameter.</p>
+<div class="section" id="generic-format">
+<h2>Generic format<a class="headerlink" href="#generic-format" title="Permalink to this headline">¶</a></h2>
+<p>The physical addresses are represented in generic format by the data-structure
+<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">nvm_addr</span></code>. One can construct an address by specifying the relative
+location within the device geometry down to the granularity of a sector.</p>
+<p>Construct an address for sector 3 within page 11 in block 200 on plane 0 of LUN
+1 in channel 4:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_addr from_geo /dev/nvme0n1 <span class="m">4</span> <span class="m">1</span> <span class="m">0</span> <span class="m">200</span> <span class="m">10</span> <span class="m">3</span>
+</pre></div>
+</div>
+<p>Yielding:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>0x04010003000a00c8: <span class="o">{</span>ch: <span class="m">04</span>, lun: <span class="m">01</span>, pl: <span class="m">0</span>, blk: <span class="m">0200</span>, pg: <span class="m">010</span>, sec: <span class="m">3</span><span class="o">}</span>
+</pre></div>
+</div>
+<p>The above hexadecimal-value can be given to any CLI command taking an <code class="docutils literal notranslate"><span class="pre">0xADDR</span></code>
+as parameter.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Addresses are zero-indexed, so channel 4 is the fifth channel</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">C API address construction is done by assigning the members of <code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">nvm_addr</span></code></p>
+</div>
+</div>
+<div class="section" id="device-format">
+<h2>Device format<a class="headerlink" href="#device-format" title="Permalink to this headline">¶</a></h2>
+<p>As the output from the device information shows, then there is a notion of a
+device format. The library user need not be concerned with the device format as
+the translation to device format is handled by the library for every part of
+the interface with the exception of the low-level command-interface
+<code class="docutils literal notranslate"><span class="pre">nvm_cmd</span></code>.</p>
+<p>However, if one needs an address on device format for <code class="docutils literal notranslate"><span class="pre">nvm_cmd</span></code> or another
+tool such as <code class="docutils literal notranslate"><span class="pre">nvme-cli</span></code>, then the generic-format can be converted to
+device format using:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_addr gen2dev /dev/nvme0n1 0x04010003000a00c8
+</pre></div>
+</div>
+<p>Yielding:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gen: 0x04010003000a00c8: <span class="o">{</span>ch: <span class="m">04</span>, lun: <span class="m">01</span>, pl: <span class="m">0</span>, blk: <span class="m">0200</span>, pg: <span class="m">010</span>, sec: <span class="m">3</span><span class="o">}</span>
+dev: 0x00000000084c8053
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">C API address format conversion is done using <code class="docutils literal notranslate"><span class="pre">nvm_addr_gen2dev</span></code></p>
+</div>
+</div>
+<div class="section" id="address-scope">
+<h2>Address scope<a class="headerlink" href="#address-scope" title="Permalink to this headline">¶</a></h2>
+<p>An address specifies the relative location of all parts of the geometry,
+channel, lun, plane, block, page and sector. However, not all parts of the
+library uses all location information. Most common uses are:</p>
+<dl class="docutils">
+<dt>LUN address</dt>
+<dd>Specify channel and LUN within the channel</dd>
+<dt>Block address</dt>
+<dd>Specify channel, LUN within the channel, plane within the LUN, and block
+within the plane</dd>
+<dt>Sector address</dt>
+<dd>Specify all relative locations of the geometry</dd>
+</dl>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="nvm_addr_vio.html" class="btn btn-neutral float-right" title="Vectorized IO to NAND media" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="nvm_dev.html" class="btn btn-neutral" title="Obtaining device information" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, LightNVM.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

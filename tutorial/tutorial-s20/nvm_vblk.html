@@ -1,0 +1,535 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Virtual Block &mdash; liblightnvm 0.1.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Open-Channel SSD 1.2" href="../tutorial-s12/index.html" />
+    <link rel="prev" title="Vectorized IO to NAND media" href="nvm_cmd_vio.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> liblightnvm
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start/index.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prereqs/index.html">Prerequisites</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../background/index.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli/index.html">Command-Line Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../capi/index.html">C API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Tutorial Introduction</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Open-Channel SSD 2.0</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="nvm_dev_info_01.html">Device Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_dev_info_02.html">Device Media State</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_addr.html">Hierarchical Addressing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_cmd_vio.html">Vectorized IO to NAND media</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Virtual Block</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#single-chunk">Single Chunk</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#chunk-set">Chunk Set</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#chunk-line">Chunk Line</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial-s12/index.html">Open-Channel SSD 1.2</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../backends/index.html">Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../refs/index.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">liblightnvm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Tutorial Introduction</a> &raquo;</li>
+        
+          <li><a href="index.html">Open-Channel SSD 2.0</a> &raquo;</li>
+        
+      <li>Virtual Block</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/tutorial/tutorial-s20/nvm_vblk.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="virtual-block">
+<h1>Virtual Block<a class="headerlink" href="#virtual-block" title="Permalink to this headline">¶</a></h1>
+<p>The command interface <code class="docutils literal notranslate"><span class="pre">nvm_cmd</span></code> provides full control over the construction
+of vectorized IO commands. It is known that with great power comes great
+responsibility. Responsibility which increase the cognitive load on the
+developer when integrating vectorized IO at the application level.</p>
+<p>liblightnvm, therefore, introduces a pure software abstraction, a virtual
+block, to reduce the cognitive load for application developers.</p>
+<p>A virtual block behaves as a physical, that is, the constraints of working with
+NAND media also apply to a virtual block. However, the abstraction encapsulates
+the command and address construction of parallel vectorized IO and exposes a
+flat address space which is read/written in a manner equivalent to the
+read/write primitives offered by libc.</p>
+<p>See section <a class="reference internal" href="#sec-tut-vblk-single"><span class="std std-ref">Single Chunk</span></a> for the minimal construction of virtual
+blocks. Increased utilization of parallel units in a device is achieved by
+constructing a virtual block as either a <a class="reference internal" href="#sec-tut-vblk-set-s20"><span class="std std-ref">Chunk Set</span></a> or a
+<a class="reference internal" href="#sec-tut-vblk-line-s20"><span class="std std-ref">Chunk Line</span></a>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">C API documentation of the virtual block is available in
+<a class="reference internal" href="../../capi/nvm_vblk.html#sec-capi-nvm-vblk"><span class="std std-ref">nvm_vblk - Virtual Block</span></a></p>
+</div>
+<div class="section" id="single-chunk">
+<span id="sec-tut-vblk-single"></span><h2>Single Chunk<a class="headerlink" href="#single-chunk" title="Permalink to this headline">¶</a></h2>
+<p>A virtual block will at a minimum consist of a single chunk.</p>
+<p>We erase, write, and read the virtual block:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_vblk erase /dev/nvme0n1 0x0402008e00000000
+nvm_vblk write /dev/nvme0n1 0x0402008e00000000
+nvm_vblk <span class="nb">read</span> /dev/nvme0n1 0x0402008e00000000
+</pre></div>
+</div>
+<p>Yielding:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">1</span>
+  nmbytes: <span class="m">24</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">1</span>
+addrs:
+  - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0049, mb: <span class="m">24</span>.00, mbsec: <span class="m">4913</span>.02<span class="o">}</span>
+
+vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">1</span>
+  nmbytes: <span class="m">24</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">1</span>
+addrs:
+  - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000016<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.021612<span class="o">}</span>
+nvm_vblk_write: <span class="o">{</span>elapsed: <span class="m">0</span>.8337, mb: <span class="m">24</span>.00, mbsec: <span class="m">28</span>.79<span class="o">}</span>
+
+vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">1</span>
+  nmbytes: <span class="m">24</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">1</span>
+addrs:
+  - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000020<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.020989<span class="o">}</span>
+nvm_vblk_read: <span class="o">{</span>elapsed: <span class="m">0</span>.1972, mb: <span class="m">24</span>.00, mbsec: <span class="m">121</span>.69<span class="o">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="chunk-set">
+<span id="sec-tut-vblk-set-s20"></span><h2>Chunk Set<a class="headerlink" href="#chunk-set" title="Permalink to this headline">¶</a></h2>
+<p>To obtain parallel IO, we construct a virtual block
+consisting of multiple chunks on distinct parallel units:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="n">val</span><span class="p">:</span> <span class="mh">0x0000008e00000000</span><span class="p">,</span> <span class="n">pugrp</span><span class="p">:</span> <span class="mi">00</span><span class="p">,</span> <span class="n">punit</span><span class="p">:</span> <span class="mi">00</span><span class="p">,</span> <span class="n">chunk</span><span class="p">:</span> <span class="mi">0142</span><span class="p">,</span> <span class="n">sectr</span><span class="p">:</span> <span class="mi">0000</span><span class="p">}</span>
+<span class="p">{</span><span class="n">val</span><span class="p">:</span> <span class="mh">0x0100008e00000000</span><span class="p">,</span> <span class="n">pugrp</span><span class="p">:</span> <span class="mi">01</span><span class="p">,</span> <span class="n">punit</span><span class="p">:</span> <span class="mi">00</span><span class="p">,</span> <span class="n">chunk</span><span class="p">:</span> <span class="mi">0142</span><span class="p">,</span> <span class="n">sectr</span><span class="p">:</span> <span class="mi">0000</span><span class="p">}</span>
+<span class="p">{</span><span class="n">val</span><span class="p">:</span> <span class="mh">0x0200008e00000000</span><span class="p">,</span> <span class="n">pugrp</span><span class="p">:</span> <span class="mi">02</span><span class="p">,</span> <span class="n">punit</span><span class="p">:</span> <span class="mi">00</span><span class="p">,</span> <span class="n">chunk</span><span class="p">:</span> <span class="mi">0142</span><span class="p">,</span> <span class="n">sectr</span><span class="p">:</span> <span class="mi">0000</span><span class="p">}</span>
+<span class="p">{</span><span class="n">val</span><span class="p">:</span> <span class="mh">0x0300008e00000000</span><span class="p">,</span> <span class="n">pugrp</span><span class="p">:</span> <span class="mi">03</span><span class="p">,</span> <span class="n">punit</span><span class="p">:</span> <span class="mi">00</span><span class="p">,</span> <span class="n">chunk</span><span class="p">:</span> <span class="mi">0142</span><span class="p">,</span> <span class="n">sectr</span><span class="p">:</span> <span class="mi">0000</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>We erase, write and read the virtual block:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_vblk set_erase /dev/nvme0n1 0x0000008e00000000 0x0100008e00000000 0x0200008e00000000 0x0300008e00000000
+nvm_vblk set_write /dev/nvme0n1 0x0000008e00000000 0x0100008e00000000 0x0200008e00000000 0x0300008e00000000
+nvm_vblk set_read /dev/nvme0n1 0x0000008e00000000 0x0100008e00000000 0x0200008e00000000 0x0300008e00000000
+</pre></div>
+</div>
+<p>Yielding:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">4</span>
+  nmbytes: <span class="m">96</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">4</span>
+addrs:
+  - <span class="o">{</span>val: 0x0000008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0100008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0200008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0300008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0050, mb: <span class="m">96</span>.00, mbsec: <span class="m">19290</span>.98<span class="o">}</span>
+
+vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">4</span>
+  nmbytes: <span class="m">96</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">4</span>
+addrs:
+  - <span class="o">{</span>val: 0x0000008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0100008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0200008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0300008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000020<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.104024<span class="o">}</span>
+nvm_vblk_write: <span class="o">{</span>elapsed: <span class="m">0</span>.8386, mb: <span class="m">96</span>.00, mbsec: <span class="m">114</span>.47<span class="o">}</span>
+
+vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">4</span>
+  nmbytes: <span class="m">96</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">4</span>
+addrs:
+  - <span class="o">{</span>val: 0x0000008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0100008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0200008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0300008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000004<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.068129<span class="o">}</span>
+nvm_vblk_read: <span class="o">{</span>elapsed: <span class="m">0</span>.1821, mb: <span class="m">96</span>.00, mbsec: <span class="m">527</span>.19<span class="o">}</span>
+</pre></div>
+</div>
+<p>This demonstrates a weak-scaling experiment, increasing the workload
+proportionally with the parallel units consumes approximately the same amount
+of wall-clock time, thus achieving near linear speedup by utilizing parallel
+units on the device.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The difference between the plane span and the block set is merely
+that the virtual block creation uses multiple block-addresses instead of one</p>
+</div>
+</div>
+<div class="section" id="chunk-line">
+<span id="sec-tut-vblk-line-s20"></span><h2>Chunk Line<a class="headerlink" href="#chunk-line" title="Permalink to this headline">¶</a></h2>
+<p>The chunk line provides convenient construction of a virtual block spanning
+<strong>lines</strong> of chunks. With a chunk line, the block index is fixed and one can
+specify true subsets of the parallel units.</p>
+<p>For example, chunk 142 on all parallel units on the given device, which in this
+case has eight parallel unit groups, each with four parallel units:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_vblk line_erase /dev/nvme0n1 <span class="m">0</span> <span class="m">7</span> <span class="m">0</span> <span class="m">3</span> <span class="m">142</span>
+nvm_vblk line_write /dev/nvme0n1 <span class="m">0</span> <span class="m">7</span> <span class="m">0</span> <span class="m">3</span> <span class="m">142</span>
+nvm_vblk line_read /dev/nvme0n1 <span class="m">0</span> <span class="m">7</span> <span class="m">0</span> <span class="m">3</span> <span class="m">142</span>
+</pre></div>
+</div>
+<p>Yielding:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">32</span>
+  nmbytes: <span class="m">768</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">32</span>
+addrs:
+  - <span class="o">{</span>val: 0x0000008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0100008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0200008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0300008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0400008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0500008e00000000, pugrp: <span class="m">05</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0600008e00000000, pugrp: <span class="m">06</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0700008e00000000, pugrp: <span class="m">07</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0001008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0101008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0201008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0301008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0401008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0501008e00000000, pugrp: <span class="m">05</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0601008e00000000, pugrp: <span class="m">06</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0701008e00000000, pugrp: <span class="m">07</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0002008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0102008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0202008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0302008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0502008e00000000, pugrp: <span class="m">05</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0602008e00000000, pugrp: <span class="m">06</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0702008e00000000, pugrp: <span class="m">07</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0003008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0103008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0203008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0303008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0403008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0503008e00000000, pugrp: <span class="m">05</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0603008e00000000, pugrp: <span class="m">06</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0703008e00000000, pugrp: <span class="m">07</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0052, mb: <span class="m">768</span>.00, mbsec: <span class="m">148063</span>.49<span class="o">}</span>
+
+vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">32</span>
+  nmbytes: <span class="m">768</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">32</span>
+addrs:
+  - <span class="o">{</span>val: 0x0000008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0100008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0200008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0300008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0400008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0500008e00000000, pugrp: <span class="m">05</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0600008e00000000, pugrp: <span class="m">06</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0700008e00000000, pugrp: <span class="m">07</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0001008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0101008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0201008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0301008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0401008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0501008e00000000, pugrp: <span class="m">05</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0601008e00000000, pugrp: <span class="m">06</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0701008e00000000, pugrp: <span class="m">07</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0002008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0102008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0202008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0302008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0502008e00000000, pugrp: <span class="m">05</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0602008e00000000, pugrp: <span class="m">06</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0702008e00000000, pugrp: <span class="m">07</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0003008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0103008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0203008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0303008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0403008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0503008e00000000, pugrp: <span class="m">05</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0603008e00000000, pugrp: <span class="m">06</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0703008e00000000, pugrp: <span class="m">07</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000022<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.622275<span class="o">}</span>
+nvm_vblk_write: <span class="o">{</span>elapsed: <span class="m">0</span>.8560, mb: <span class="m">768</span>.00, mbsec: <span class="m">897</span>.25<span class="o">}</span>
+
+vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">32</span>
+  nmbytes: <span class="m">768</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">32</span>
+addrs:
+  - <span class="o">{</span>val: 0x0000008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0100008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0200008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0300008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0400008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0500008e00000000, pugrp: <span class="m">05</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0600008e00000000, pugrp: <span class="m">06</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0700008e00000000, pugrp: <span class="m">07</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0001008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0101008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0201008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0301008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0401008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0501008e00000000, pugrp: <span class="m">05</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0601008e00000000, pugrp: <span class="m">06</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0701008e00000000, pugrp: <span class="m">07</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0002008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0102008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0202008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0302008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0502008e00000000, pugrp: <span class="m">05</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0602008e00000000, pugrp: <span class="m">06</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0702008e00000000, pugrp: <span class="m">07</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0003008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0103008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0203008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0303008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0403008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0503008e00000000, pugrp: <span class="m">05</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0603008e00000000, pugrp: <span class="m">06</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0703008e00000000, pugrp: <span class="m">07</span>, punit: <span class="m">03</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000004<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.532617<span class="o">}</span>
+nvm_vblk_read: <span class="o">{</span>elapsed: <span class="m">0</span>.3658, mb: <span class="m">768</span>.00, mbsec: <span class="m">2099</span>.59<span class="o">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../tutorial-s12/index.html" class="btn btn-neutral float-right" title="Open-Channel SSD 1.2" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="nvm_cmd_vio.html" class="btn btn-neutral" title="Vectorized IO to NAND media" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, LightNVM.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

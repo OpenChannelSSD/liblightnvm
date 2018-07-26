@@ -1,0 +1,719 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Vectorized IO to NAND media &mdash; liblightnvm 0.1.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Virtual Block" href="nvm_vblk.html" />
+    <link rel="prev" title="Hierarchical Addressing" href="nvm_addr.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> liblightnvm
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start/index.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prereqs/index.html">Prerequisites</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../background/index.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli/index.html">Command-Line Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../capi/index.html">C API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Tutorial Introduction</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Open-Channel SSD 2.0</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="nvm_dev_info_01.html">Device Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_dev_info_02.html">Device Media State</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_addr.html">Hierarchical Addressing</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Vectorized IO to NAND media</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#erase-before-write">Erase before write</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#write">Write</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#read">Read</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_vblk.html">Virtual Block</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial-s12/index.html">Open-Channel SSD 1.2</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../backends/index.html">Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../refs/index.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">liblightnvm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Tutorial Introduction</a> &raquo;</li>
+        
+          <li><a href="index.html">Open-Channel SSD 2.0</a> &raquo;</li>
+        
+      <li>Vectorized IO to NAND media</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/tutorial/tutorial-s20/nvm_cmd_vio.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="vectorized-io-to-nand-media">
+<h1>Vectorized IO to NAND media<a class="headerlink" href="#vectorized-io-to-nand-media" title="Permalink to this headline">¶</a></h1>
+<p>With the basics of obtaining device information and constructing addresses in
+place, one can dive into the task of creating commands for doing vectorized IO.</p>
+<p>As the section on background information describes, then there are a handful of
+constraints to handle for IOs to NAND media to succeed.</p>
+<div class="section" id="erase-before-write">
+<h2>Erase before write<a class="headerlink" href="#erase-before-write" title="Permalink to this headline">¶</a></h2>
+<p>The first constraint to handle is that a <strong>chunk</strong> must be <strong>erased</strong> before it
+can be <strong>written</strong>. We do so by constructing a <strong>chunk-address</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_addr s20_to_gen /dev/nvme0n1 <span class="m">0</span> <span class="m">0</span> <span class="m">20</span> <span class="m">0</span>
+</pre></div>
+</div>
+<p>Yielding:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>naddrs: <span class="m">1</span>
+addrs:
+  - <span class="o">{</span>val: 0x0000001400000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+</pre></div>
+</div>
+<p>With the address we can now construct the erase command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_cmd erase /dev/nvme0n1 0x0000001400000000
+</pre></div>
+</div>
+<p>On success, yielding:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># nvm_cmd_erase: {pmode: SNGL}</span>
+naddrs: <span class="m">1</span>
+addrs:
+  - <span class="o">{</span>val: 0x0000001400000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+</pre></div>
+</div>
+<p>On error, yielding:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># nvm_cmd_erase: {pmode: SNGL}</span>
+<span class="n">naddrs</span><span class="p">:</span> <span class="mi">1</span>
+<span class="n">addrs</span><span class="p">:</span>
+  <span class="o">-</span> <span class="p">{</span><span class="n">val</span><span class="p">:</span> <span class="mh">0x0000001400000000</span><span class="p">,</span> <span class="n">pugrp</span><span class="p">:</span> <span class="mi">00</span><span class="p">,</span> <span class="n">punit</span><span class="p">:</span> <span class="mi">00</span><span class="p">,</span> <span class="n">chunk</span><span class="p">:</span> <span class="mi">0020</span><span class="p">,</span> <span class="n">sectr</span><span class="p">:</span> <span class="mi">0000</span><span class="p">}</span>
+<span class="n">nvm_addr_erase</span><span class="p">:</span> <span class="n">Input</span><span class="o">/</span><span class="n">output</span> <span class="n">error</span>
+<span class="n">nvm_ret</span> <span class="p">{</span> <span class="n">result</span><span class="p">(</span><span class="mh">0xff</span><span class="p">),</span> <span class="n">status</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p>If an erase fails, it is most likely due to bad media. This is where the
+information retrieved with <code class="docutils literal notranslate"><span class="pre">nvm_cmd</span> <span class="pre">rprt</span></code> is useful, that is, to avoid using
+known bad chunks.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">C API for performing erases using chunk-adressing is done with <code class="docutils literal notranslate"><span class="pre">nvm_cmd_erase</span></code></p>
+</div>
+</div>
+<div class="section" id="write">
+<h2>Write<a class="headerlink" href="#write" title="Permalink to this headline">¶</a></h2>
+<p>The two primary constraints for issuing writes are that they must be contiguous
+within a chunk and span <cite>ws_min</cite> sectors.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">C API for performing write using vectorized IO with addressing at
+sector-level is done using <code class="docutils literal notranslate"><span class="pre">nvm_cmd_write</span></code>, note that the payload must
+be aligned to sector size, the helper function <code class="docutils literal notranslate"><span class="pre">nvm_buf_alloc</span></code> is
+provided for convenience</p>
+</div>
+<div class="section" id="minimum-write">
+<h3>Minimum Write<a class="headerlink" href="#minimum-write" title="Permalink to this headline">¶</a></h3>
+<p>For the geometry in figure X, the <code class="docutils literal notranslate"><span class="pre">ws_min</span></code> dictates that 24 sectors must be
+written of each 4096 bytes, a command satisfying the minimum-write constraint
+thus contains 24 addresses in sequential with a payload of 96Kbytes.</p>
+<p>The command can be constructed via the CLI as:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_cmd write /dev/nvme0n1 <span class="se">\</span>
+0x0000001400000000 0x0000001400000001 0x0000001400000002 0x0000001400000003 <span class="se">\</span>
+0x0000001400000004 0x0000001400000005 0x0000001400000006 0x0000001400000007 <span class="se">\</span>
+0x0000001400000008 0x0000001400000009 0x000000140000000a 0x000000140000000b <span class="se">\</span>
+0x000000140000000c 0x000000140000000d 0x000000140000000e 0x000000140000000f <span class="se">\</span>
+0x0000001400000010 0x0000001400000011 0x0000001400000012 0x0000001400000013 <span class="se">\</span>
+0x0000001400000014 0x0000001400000015 0x0000001400000016 0x0000001400000017
+</pre></div>
+</div>
+<p>The CLI creates an arbitrary payload, so we do not concern us with the payload
+at this point. The result of the command is:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># nvm_cmd_write: {pmode: SNGL}</span>
+naddrs: <span class="m">24</span>
+addrs:
+  - <span class="o">{</span>val: 0x0000001400000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000001, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0001</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000002, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0002</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000003, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0003</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000004, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0004</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000005, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0005</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000006, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0006</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000007, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0007</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000008, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0008</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000009, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0009</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000000a, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0010</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000000b, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0011</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000000c, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0012</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000000d, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0013</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000000e, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0014</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000000f, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0015</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000010, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0016</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000011, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0017</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000012, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0018</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000013, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0019</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000014, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0020</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000015, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0021</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000016, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0022</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000017, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0023</span><span class="o">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="optimal-write">
+<h3>Optimal Write<a class="headerlink" href="#optimal-write" title="Permalink to this headline">¶</a></h3>
+<p>For this specific device then <code class="docutils literal notranslate"><span class="pre">ws_min</span></code> is the same as <code class="docutils literal notranslate"><span class="pre">ws_min</span></code>. However, an
+improvement of round-trip-time can be obtained by increasing the amount of work
+done by a single command, that is, increase the number of addresses to a
+multiple of <code class="docutils literal notranslate"><span class="pre">ws_opt</span></code> and less than or equal to  write-naddrs-max.  In our
+case we can construct a command with 48 addresses.</p>
+<p>Abiding to all of the above mentioned constraints a write command can be
+constructed as:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_cmd write /dev/nvme0n1 <span class="se">\</span>
+0x0000001400000018 0x0000001400000019 0x000000140000001a 0x000000140000001b <span class="se">\</span>
+0x000000140000001c 0x000000140000001d 0x000000140000001e 0x000000140000001f <span class="se">\</span>
+0x0000001400000020 0x0000001400000021 0x0000001400000022 0x0000001400000023 <span class="se">\</span>
+0x0000001400000024 0x0000001400000025 0x0000001400000026 0x0000001400000027 <span class="se">\</span>
+0x0000001400000028 0x0000001400000029 0x000000140000002a 0x000000140000002b <span class="se">\</span>
+0x000000140000002c 0x000000140000002d 0x000000140000002e 0x000000140000002f <span class="se">\</span>
+0x0000001400000030 0x0000001400000031 0x0000001400000032 0x0000001400000033 <span class="se">\</span>
+0x0000001400000034 0x0000001400000035 0x0000001400000036 0x0000001400000037 <span class="se">\</span>
+0x0000001400000038 0x0000001400000039 0x000000140000003a 0x000000140000003b <span class="se">\</span>
+0x000000140000003c 0x000000140000003d 0x000000140000003e 0x000000140000003f <span class="se">\</span>
+0x0000001400000040 0x0000001400000041 0x0000001400000042 0x0000001400000043 <span class="se">\</span>
+0x0000001400000044 0x0000001400000045 0x0000001400000046 0x0000001400000047
+</pre></div>
+</div>
+<p>Successfully yielding:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># nvm_cmd_write: {pmode: SNGL}</span>
+naddrs: <span class="m">48</span>
+addrs:
+  - <span class="o">{</span>val: 0x0000001400000018, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0024</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000019, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0025</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000001a, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0026</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000001b, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0027</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000001c, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0028</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000001d, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0029</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000001e, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0030</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000001f, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0031</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000020, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0032</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000021, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0033</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000022, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0034</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000023, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0035</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000024, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0036</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000025, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0037</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000026, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0038</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000027, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0039</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000028, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0040</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000029, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0041</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000002a, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0042</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000002b, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0043</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000002c, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0044</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000002d, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0045</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000002e, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0046</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000002f, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0047</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000030, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0048</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000031, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0049</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000032, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0050</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000033, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0051</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000034, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0052</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000035, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0053</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000036, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0054</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000037, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0055</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000038, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0056</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000039, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0057</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000003a, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0058</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000003b, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0059</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000003c, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0060</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000003d, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0061</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000003e, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0062</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000003f, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0063</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000040, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0064</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000041, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0065</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000042, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0066</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000043, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0067</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000044, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0068</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000045, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0069</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000046, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0070</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000047, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0071</span><span class="o">}</span>
+</pre></div>
+</div>
+<p>Using vectorized IO we have with a single command successfully written a
+payload of 48 x 4096 bytes = 192 KB.</p>
+</div>
+</div>
+<div class="section" id="read">
+<h2>Read<a class="headerlink" href="#read" title="Permalink to this headline">¶</a></h2>
+<p>Reads have fewer constraints than writes. The granularity of a read is a single
+sector (the smallest addressable unit) and can be performed non-contiguously.</p>
+<p>The primary constraint for a read to adhere to is that the block which is read
+from must be closed. That is, all pages within the block must have been
+written.</p>
+<p>It might be that the constraint can be relaxed, that is, instead of writing all
+sectors in the chunk, then only <code class="docutils literal notranslate"><span class="pre">mw_cunits</span></code> sectors ahead of the read must
+be written.</p>
+<p>We have so far written a total of 72 sectors, the first 24 sectors in one
+command, the remaining 48 sectors in a second command. Thus additional 6072
+sectors must be written before the chunk changes state to <strong>closed</strong>.</p>
+<p>Specifying all those addresses via the CLI is tedious, we will therefore take a
+sneak peak at virtual blocks and execute:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_vblk erase /dev/nvme0n1 0x0402008e00000000
+nvm_vblk write /dev/nvme0n1 0x0402008e00000000
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">1</span>
+  nmbytes: <span class="m">24</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">1</span>
+addrs:
+  - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0049, mb: <span class="m">24</span>.00, mbsec: <span class="m">4939</span>.13<span class="o">}</span>
+
+vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">1</span>
+  nmbytes: <span class="m">24</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">1</span>
+addrs:
+  - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000020<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.020712<span class="o">}</span>
+nvm_vblk_write: <span class="o">{</span>elapsed: <span class="m">0</span>.8339, mb: <span class="m">24</span>.00, mbsec: <span class="m">28</span>.78<span class="o">}</span>
+</pre></div>
+</div>
+<p>What these two commands actually do will be described in the following section
+on virtual blocks. For now all we need to know is that the chunk is now fully
+written / closed and we can start reading from it without concern about
+<code class="docutils literal notranslate"><span class="pre">mw_cunits</span></code>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">C API for performing write using vectorized IO with addressing at
+sector-level is done using <code class="docutils literal notranslate"><span class="pre">nvm_cmd_read</span></code>, the received payload must be
+stored in a sector-aligned buffer, the helper function <code class="docutils literal notranslate"><span class="pre">nvm_buf_alloc</span></code> is
+provided for convenience</p>
+</div>
+<div class="section" id="minimal-read">
+<h3>Minimal Read<a class="headerlink" href="#minimal-read" title="Permalink to this headline">¶</a></h3>
+<p>We can read a single sector:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_cmd <span class="nb">read</span> /dev/nvme0n1 0x0402008e00000000
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># nvm_cmd_read: {pmode: SNGL}</span>
+naddrs: <span class="m">1</span>
+addrs:
+  - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+</pre></div>
+</div>
+<p>The data read from device can be written to a file system using the <code class="docutils literal notranslate"><span class="pre">-o</span> <span class="pre">FILE</span></code>
+option:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_cmd <span class="nb">read</span> /dev/nvme0n1 0x0402008e00000000 -o /tmp/dump.bin
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># nvm_cmd_read: {pmode: SNGL}</span>
+naddrs: <span class="m">1</span>
+addrs:
+  - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+</pre></div>
+</div>
+<p>The payload is then available by inspection, e.g. with <code class="docutils literal notranslate"><span class="pre">hexdump</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>hexdump /tmp/dump.bin -C -n <span class="m">128</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="m">00000000</span>  <span class="m">41</span> <span class="m">42</span> <span class="m">43</span> <span class="m">44</span> <span class="m">45</span> <span class="m">46</span> <span class="m">47</span> <span class="m">48</span>  <span class="m">49</span> 4a 4b 4c 4d 4e 4f <span class="m">50</span>  <span class="p">|</span>ABCDEFGHIJKLMNOP<span class="p">|</span>
+<span class="m">00000010</span>  <span class="m">51</span> <span class="m">52</span> <span class="m">53</span> <span class="m">54</span> <span class="m">55</span> <span class="m">56</span> <span class="m">57</span> <span class="m">58</span>  <span class="m">59</span> 5a <span class="m">41</span> <span class="m">42</span> <span class="m">43</span> <span class="m">44</span> <span class="m">45</span> <span class="m">46</span>  <span class="p">|</span>QRSTUVWXYZABCDEF<span class="p">|</span>
+<span class="m">00000020</span>  <span class="m">47</span> <span class="m">48</span> <span class="m">49</span> 4a 4b 4c 4d 4e  4f <span class="m">50</span> <span class="m">51</span> <span class="m">52</span> <span class="m">53</span> <span class="m">54</span> <span class="m">55</span> <span class="m">56</span>  <span class="p">|</span>GHIJKLMNOPQRSTUV<span class="p">|</span>
+<span class="m">00000030</span>  <span class="m">57</span> <span class="m">58</span> <span class="m">59</span> 5a <span class="m">41</span> <span class="m">42</span> <span class="m">43</span> <span class="m">44</span>  <span class="m">45</span> <span class="m">46</span> <span class="m">47</span> <span class="m">48</span> <span class="m">49</span> 4a 4b 4c  <span class="p">|</span>WXYZABCDEFGHIJKL<span class="p">|</span>
+<span class="m">00000040</span>  4d 4e 4f <span class="m">50</span> <span class="m">51</span> <span class="m">52</span> <span class="m">53</span> <span class="m">54</span>  <span class="m">55</span> <span class="m">56</span> <span class="m">57</span> <span class="m">58</span> <span class="m">59</span> 5a <span class="m">41</span> <span class="m">42</span>  <span class="p">|</span>MNOPQRSTUVWXYZAB<span class="p">|</span>
+<span class="m">00000050</span>  <span class="m">43</span> <span class="m">44</span> <span class="m">45</span> <span class="m">46</span> <span class="m">47</span> <span class="m">48</span> <span class="m">49</span> 4a  4b 4c 4d 4e 4f <span class="m">50</span> <span class="m">51</span> <span class="m">52</span>  <span class="p">|</span>CDEFGHIJKLMNOPQR<span class="p">|</span>
+<span class="m">00000060</span>  <span class="m">53</span> <span class="m">54</span> <span class="m">55</span> <span class="m">56</span> <span class="m">57</span> <span class="m">58</span> <span class="m">59</span> 5a  <span class="m">41</span> <span class="m">42</span> <span class="m">43</span> <span class="m">44</span> <span class="m">45</span> <span class="m">46</span> <span class="m">47</span> <span class="m">48</span>  <span class="p">|</span>STUVWXYZABCDEFGH<span class="p">|</span>
+<span class="m">00000070</span>  <span class="m">49</span> 4a 4b 4c 4d 4e 4f <span class="m">50</span>  <span class="m">51</span> <span class="m">52</span> <span class="m">53</span> <span class="m">54</span> <span class="m">55</span> <span class="m">56</span> <span class="m">57</span> <span class="m">58</span>  <span class="p">|</span>IJKLMNOPQRSTUVWX<span class="p">|</span>
+<span class="m">00000080</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="maximum-read">
+<h3>Maximum Read<a class="headerlink" href="#maximum-read" title="Permalink to this headline">¶</a></h3>
+<p>Same as a write, a read has an upper bound on the number of addresses in a
+single command. However, since there is no <code class="docutils literal notranslate"><span class="pre">ws_min</span></code> to align to, then the
+read can utilize all <code class="docutils literal notranslate"><span class="pre">NVM_NADDR_MAX</span></code>, that is 64 whereas the write was
+confined to the even multiple less than or equal to <code class="docutils literal notranslate"><span class="pre">NVM_NADDRS_MAX</span></code>, that
+was, 48.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_cmd <span class="nb">read</span> /dev/nvme0n1 <span class="se">\</span>
+0x0000001400000000 0x0000001400000001 0x0000001400000002 0x0000001400000003 <span class="se">\</span>
+0x0000001400000004 0x0000001400000005 0x0000001400000006 0x0000001400000007 <span class="se">\</span>
+0x0000001400000008 0x0000001400000009 0x000000140000000a 0x000000140000000b <span class="se">\</span>
+0x000000140000000c 0x000000140000000d 0x000000140000000e 0x000000140000000f <span class="se">\</span>
+0x0000001400000010 0x0000001400000011 0x0000001400000012 0x0000001400000013 <span class="se">\</span>
+0x0000001400000014 0x0000001400000015 0x0000001400000016 0x0000001400000017 <span class="se">\</span>
+0x0000001400000018 0x0000001400000019 0x000000140000001a 0x000000140000001b <span class="se">\</span>
+0x000000140000001c 0x000000140000001d 0x000000140000001e 0x000000140000001f <span class="se">\</span>
+0x0000001400000020 0x0000001400000021 0x0000001400000022 0x0000001400000023 <span class="se">\</span>
+0x0000001400000024 0x0000001400000025 0x0000001400000026 0x0000001400000027 <span class="se">\</span>
+0x0000001400000028 0x0000001400000029 0x000000140000002a 0x000000140000002b <span class="se">\</span>
+0x000000140000002c 0x000000140000002d 0x000000140000002e 0x000000140000002f <span class="se">\</span>
+0x0000001400000030 0x0000001400000031 0x0000001400000032 0x0000001400000033 <span class="se">\</span>
+0x0000001400000034 0x0000001400000035 0x0000001400000036 0x0000001400000037 <span class="se">\</span>
+0x0000001400000038 0x0000001400000039 0x000000140000003a 0x000000140000003b <span class="se">\</span>
+0x000000140000003c 0x000000140000003d 0x000000140000003e 0x000000140000003f
+</pre></div>
+</div>
+<p>Successfully yielding:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># nvm_cmd_read: {pmode: SNGL}</span>
+naddrs: <span class="m">64</span>
+addrs:
+  - <span class="o">{</span>val: 0x0000001400000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000001, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0001</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000002, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0002</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000003, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0003</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000004, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0004</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000005, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0005</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000006, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0006</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000007, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0007</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000008, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0008</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000009, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0009</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000000a, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0010</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000000b, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0011</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000000c, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0012</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000000d, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0013</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000000e, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0014</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000000f, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0015</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000010, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0016</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000011, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0017</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000012, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0018</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000013, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0019</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000014, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0020</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000015, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0021</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000016, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0022</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000017, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0023</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000018, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0024</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000019, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0025</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000001a, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0026</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000001b, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0027</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000001c, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0028</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000001d, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0029</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000001e, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0030</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000001f, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0031</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000020, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0032</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000021, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0033</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000022, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0034</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000023, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0035</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000024, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0036</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000025, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0037</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000026, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0038</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000027, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0039</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000028, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0040</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000029, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0041</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000002a, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0042</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000002b, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0043</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000002c, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0044</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000002d, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0045</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000002e, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0046</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000002f, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0047</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000030, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0048</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000031, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0049</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000032, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0050</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000033, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0051</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000034, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0052</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000035, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0053</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000036, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0054</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000037, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0055</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000038, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0056</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000039, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0057</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000003a, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0058</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000003b, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0059</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000003c, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0060</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000003d, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0061</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000003e, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0062</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000003f, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0063</span><span class="o">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="non-contiguous-read">
+<h3>Non-Contiguous Read<a class="headerlink" href="#non-contiguous-read" title="Permalink to this headline">¶</a></h3>
+<p>Reading 64 different sectors in arbitrary order:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_cmd <span class="nb">read</span> /dev/nvme0n1 <span class="se">\</span>
+0x000000140000001a 0x000000140000001d 0x000000140000001f 0x0000001400000009 <span class="se">\</span>
+0x000000140000002e 0x0000001400000000 0x000000140000000b 0x000000140000000d <span class="se">\</span>
+0x000000140000002f 0x0000001400000001 0x000000140000003c 0x000000140000003b <span class="se">\</span>
+0x000000140000003e 0x0000001400000036 0x0000001400000030 0x000000140000001e <span class="se">\</span>
+0x000000140000003d 0x0000001400000026 0x0000001400000037 0x0000001400000024 <span class="se">\</span>
+0x0000001400000035 0x000000140000000e 0x0000001400000008 0x0000001400000004 <span class="se">\</span>
+0x000000140000001c 0x0000001400000023 0x0000001400000012 0x0000001400000006 <span class="se">\</span>
+0x0000001400000018 0x0000001400000013 0x0000001400000005 0x0000001400000031 <span class="se">\</span>
+0x0000001400000027 0x000000140000002c 0x0000001400000017 0x0000001400000010 <span class="se">\</span>
+0x0000001400000039 0x0000001400000028 0x0000001400000007 0x0000001400000015 <span class="se">\</span>
+0x000000140000000a 0x0000001400000032 0x000000140000000f 0x0000001400000002 <span class="se">\</span>
+0x000000140000003f 0x000000140000002b 0x0000001400000033 0x0000001400000020 <span class="se">\</span>
+0x0000001400000038 0x000000140000002d 0x000000140000001b 0x0000001400000003 <span class="se">\</span>
+0x0000001400000025 0x000000140000000c 0x000000140000003a 0x0000001400000022 <span class="se">\</span>
+0x0000001400000021 0x0000001400000019 0x0000001400000014 0x0000001400000029 <span class="se">\</span>
+0x0000001400000034 0x0000001400000011 0x0000001400000016 0x000000140000002a
+</pre></div>
+</div>
+<p>Successfully yielding:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># nvm_cmd_read: {pmode: SNGL}</span>
+naddrs: <span class="m">64</span>
+addrs:
+  - <span class="o">{</span>val: 0x000000140000001a, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0026</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000001d, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0029</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000001f, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0031</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000009, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0009</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000002e, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0046</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000000b, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0011</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000000d, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0013</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000002f, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0047</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000001, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0001</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000003c, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0060</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000003b, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0059</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000003e, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0062</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000036, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0054</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000030, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0048</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000001e, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0030</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000003d, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0061</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000026, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0038</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000037, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0055</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000024, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0036</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000035, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0053</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000000e, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0014</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000008, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0008</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000004, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0004</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000001c, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0028</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000023, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0035</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000012, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0018</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000006, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0006</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000018, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0024</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000013, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0019</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000005, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0005</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000031, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0049</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000027, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0039</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000002c, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0044</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000017, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0023</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000010, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0016</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000039, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0057</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000028, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0040</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000007, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0007</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000015, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0021</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000000a, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0010</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000032, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0050</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000000f, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0015</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000002, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0002</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000003f, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0063</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000002b, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0043</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000033, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0051</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000020, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0032</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000038, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0056</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000002d, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0045</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000001b, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0027</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000003, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0003</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000025, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0037</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000000c, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0012</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000003a, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0058</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000022, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0034</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000021, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0033</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000019, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0025</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000014, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0020</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000029, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0041</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000034, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0052</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000011, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0017</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0000001400000016, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0022</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x000000140000002a, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0020</span>, sectr: <span class="m">0042</span><span class="o">}</span>
+</pre></div>
+</div>
+<p>It is worth mentioning that vectorized reads can be non-contiguous not only
+within a chunk but also scattered across chunks, in different PUNIT, and PUGRP.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="nvm_vblk.html" class="btn btn-neutral float-right" title="Virtual Block" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="nvm_addr.html" class="btn btn-neutral" title="Hierarchical Addressing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, LightNVM.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

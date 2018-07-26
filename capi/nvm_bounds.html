@@ -1,0 +1,325 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>nvm_bounds &mdash; liblightnvm 0.1.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="nvm_quirks" href="nvm_quirks.html" />
+    <link rel="prev" title="nvm_pmode" href="nvm_pmode.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> liblightnvm
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prereqs/index.html">Prerequisites</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../background/index.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli/index.html">Command-Line Interface</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">C API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="nvm_dev.html">nvm_dev - Device Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_geo.html">nvm_geo - Geometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_buf.html">nvm_buf - Buffer Allocation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_addr.html">nvm_addr - Addressing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_cmd.html">nvm_cmd - Raw Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_vblk.html">nvm_vblk - Virtual Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_bbt.html">nvm_bbt - Bad-Block-Table</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="misc.html">Miscellaneous</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="nvm_be.html">nvm_be</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_ret.html">nvm_ret</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_ver.html">nvm_ver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_meta.html">nvm_meta</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_mode.html">nvm_mode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_pmode.html">nvm_pmode</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">nvm_bounds</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">nvm_bounds</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nvm-bounds-pr">nvm_bounds_pr</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_quirks.html">nvm_quirks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="header.html">Public Header</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../backends/index.html">Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../refs/index.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">liblightnvm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">C API</a> &raquo;</li>
+        
+          <li><a href="misc.html">Miscellaneous</a> &raquo;</li>
+        
+      <li>nvm_bounds</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/capi/nvm_bounds.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="nvm-bounds">
+<span id="sec-capi-nvm-bounds"></span><h1>nvm_bounds<a class="headerlink" href="#nvm-bounds" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2>nvm_bounds<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<dl class="enum">
+<dt id="c.nvm_bounds">
+<span class="target" id="liblightnvm_8h_1a3f6c5d66f64be561293d9f0b3e877615"></span><em class="property">enum </em><code class="descname">nvm_bounds</code><a class="headerlink" href="#c.nvm_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enumeration of device bounds. </p>
+<p><em>Values:</em></p>
+<dl class="enumvalue">
+<dt id="c.NVM_BOUNDS_CHANNEL">
+<span class="target" id="liblightnvm_8h_1a3f6c5d66f64be561293d9f0b3e877615ac7f61012b286756f77c5680a6298866a"></span><code class="descname">NVM_BOUNDS_CHANNEL</code> = 0x1<a class="headerlink" href="#c.NVM_BOUNDS_CHANNEL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="enumvalue">
+<dt id="c.NVM_BOUNDS_LUN">
+<span class="target" id="liblightnvm_8h_1a3f6c5d66f64be561293d9f0b3e877615a593219045e5745ee340075dc28edb14f"></span><code class="descname">NVM_BOUNDS_LUN</code> = 0x1 &lt;&lt; 1<a class="headerlink" href="#c.NVM_BOUNDS_LUN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="enumvalue">
+<dt id="c.NVM_BOUNDS_PLANE">
+<span class="target" id="liblightnvm_8h_1a3f6c5d66f64be561293d9f0b3e877615a4f068e6a83b781f283f2610107d7e976"></span><code class="descname">NVM_BOUNDS_PLANE</code> = 0x1 &lt;&lt; 2<a class="headerlink" href="#c.NVM_BOUNDS_PLANE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="enumvalue">
+<dt id="c.NVM_BOUNDS_BLOCK">
+<span class="target" id="liblightnvm_8h_1a3f6c5d66f64be561293d9f0b3e877615a2ee61e476fc92bc557f5172df6814fbd"></span><code class="descname">NVM_BOUNDS_BLOCK</code> = 0x1 &lt;&lt; 3<a class="headerlink" href="#c.NVM_BOUNDS_BLOCK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="enumvalue">
+<dt id="c.NVM_BOUNDS_PAGE">
+<span class="target" id="liblightnvm_8h_1a3f6c5d66f64be561293d9f0b3e877615aeaa2e7617b65376d322ac4158650abfe"></span><code class="descname">NVM_BOUNDS_PAGE</code> = 0x1 &lt;&lt; 4<a class="headerlink" href="#c.NVM_BOUNDS_PAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="enumvalue">
+<dt id="c.NVM_BOUNDS_SECTOR">
+<span class="target" id="liblightnvm_8h_1a3f6c5d66f64be561293d9f0b3e877615aa7795142a4123686eaab676f9ed0f1a1"></span><code class="descname">NVM_BOUNDS_SECTOR</code> = 0x1 &lt;&lt; 5<a class="headerlink" href="#c.NVM_BOUNDS_SECTOR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="enumvalue">
+<dt id="c.NVM_BOUNDS_PUGRP">
+<span class="target" id="liblightnvm_8h_1a3f6c5d66f64be561293d9f0b3e877615a2df3fd788a04ce17fb16049a0b12672e"></span><code class="descname">NVM_BOUNDS_PUGRP</code> = 0x1 &lt;&lt; 6<a class="headerlink" href="#c.NVM_BOUNDS_PUGRP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="enumvalue">
+<dt id="c.NVM_BOUNDS_PUNIT">
+<span class="target" id="liblightnvm_8h_1a3f6c5d66f64be561293d9f0b3e877615a5c6b60c0d9334dbac9cb37f074137dbc"></span><code class="descname">NVM_BOUNDS_PUNIT</code> = 0x1 &lt;&lt; 7<a class="headerlink" href="#c.NVM_BOUNDS_PUNIT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="enumvalue">
+<dt id="c.NVM_BOUNDS_CHUNK">
+<span class="target" id="liblightnvm_8h_1a3f6c5d66f64be561293d9f0b3e877615a90fd26dca485d4aff08871c47d5429e0"></span><code class="descname">NVM_BOUNDS_CHUNK</code> = 0x1 &lt;&lt; 8<a class="headerlink" href="#c.NVM_BOUNDS_CHUNK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="enumvalue">
+<dt id="c.NVM_BOUNDS_SECTR">
+<span class="target" id="liblightnvm_8h_1a3f6c5d66f64be561293d9f0b3e877615ac731d6c6d8c9e98354740004a30378f8"></span><code class="descname">NVM_BOUNDS_SECTR</code> = 0x1 &lt;&lt; 9<a class="headerlink" href="#c.NVM_BOUNDS_SECTR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-bounds-pr">
+<h2>nvm_bounds_pr<a class="headerlink" href="#nvm-bounds-pr" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_bounds_pr">
+<span class="target" id="liblightnvm_8h_1a555f928b395514817d7a990ac4521bad"></span>void <code class="descname">nvm_bounds_pr</code><span class="sig-paren">(</span>int<em>&nbsp;mask</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bounds_pr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints a humanly readable description of given boundary mask. </p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="nvm_quirks.html" class="btn btn-neutral float-right" title="nvm_quirks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="nvm_pmode.html" class="btn btn-neutral" title="nvm_pmode" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, LightNVM.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

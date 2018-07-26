@@ -1,0 +1,559 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>nvm_vblk &mdash; liblightnvm 0.1.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="nvm_bbt" href="nvm_bbt.html" />
+    <link rel="prev" title="nvm_cmd" href="nvm_cmd.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> liblightnvm
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prereqs/index.html">Prerequisites</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../background/index.html">Background</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Command-Line Interface</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="nvm_env.html">Environment Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_dev.html">nvm_dev</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_addr.html">nvm_addr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_cmd.html">nvm_cmd</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">nvm_vblk</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#plane-span">Plane Span</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#erase">Erase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#write">Write</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#read">Read</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#block-set">Block Set</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Erase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Write</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">Read</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#block-line">Block Line</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id4">Erase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">Write</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">Read</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_bbt.html">nvm_bbt</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../capi/index.html">C API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../backends/index.html">Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../refs/index.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">liblightnvm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Command-Line Interface</a> &raquo;</li>
+        
+      <li>nvm_vblk</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/cli/nvm_vblk.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="nvm-vblk">
+<span id="sec-cli-vblk"></span><h1>nvm_vblk<a class="headerlink" href="#nvm-vblk" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>NVM Virtual Block (nvm_vblk_*) -- Ver { major(0), minor(1), patch(2) }
+
+Erase, write, and read virtual blocks
+
+Usage:
+ nvm_vblk        erase dev_path 0xADDR [-h] [-v]
+ nvm_vblk        write dev_path 0xADDR [-h] [-v] [-i FILE]
+ nvm_vblk         read dev_path 0xADDR [-h] [-v] [-o FILE]
+ nvm_vblk          pad dev_path 0xADDR [-h] [-v]
+ nvm_vblk         copy dev_path 0xSRC 0xDST [-h] [-v]
+ nvm_vblk    set_erase dev_path 0xADDR [0xADDR...] [-h] [-v]
+ nvm_vblk    set_write dev_path 0xADDR [0xADDR...] [-h] [-v] [-i FILE]
+ nvm_vblk     set_read dev_path 0xADDR [0xADDR...] [-h] [-v] [-o FILE]
+ nvm_vblk      set_pad dev_path 0xADDR [0xADDR...] [-h] [-v]
+ nvm_vblk   line_erase dev_path ch_bgn ch_end lun_bgn lun_end blk [-h] [-v]
+ nvm_vblk   line_write dev_path ch_bgn ch_end lun_bgn lun_end blk [-h] [-v] [-i FILE]
+ nvm_vblk    line_read dev_path ch_bgn ch_end lun_bgn lun_end blk [-h] [-v] [-o FILE]
+ nvm_vblk   line_pread dev_path ch_bgn ch_end lun_bgn lun_end blk count offset [-h] [-v] [-o FILE]
+ nvm_vblk     line_pad dev_path ch_bgn ch_end lun_bgn lun_end blk [-h] [-v]
+
+Options:
+ -h       Print usage
+ -v       Dump CLI state to stdout
+ -i  FILE Path to input file
+ -o  FILE Path to output file
+
+See: http://lightnvm.io/liblightnvm/cli/ for usage examples
+</pre></div>
+</div>
+<p>A virtual block consists, at a minimum, of the physical blocks at a given block
+address across all planes in a LUN. The minimum construction encapsulates
+managing address-construction across planes and setting plane hints. See
+section <a class="reference internal" href="#sec-cli-vblk-plane"><span class="std std-ref">Plane Span</span></a>.</p>
+<p>Increased utilization of parallel units in a device is achieved by constructing
+a virtual block as either a <a class="reference internal" href="#sec-cli-vblk-set"><span class="std std-ref">Block Set</span></a> or a
+<a class="reference internal" href="#sec-cli-vblk-line"><span class="std std-ref">Block Line</span></a>.</p>
+<p>The write operation by default uses a synthetically constructed payload, use
+the <code class="docutils literal notranslate"><span class="pre">-i</span> <span class="pre">FILE</span></code> option to provide a payload from file. Payloads can likewise be
+dumped to file system when read using the <code class="docutils literal notranslate"><span class="pre">-o</span> <span class="pre">FILE</span></code> option.</p>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p class="last">See section <a class="reference internal" href="nvm_env.html#sec-cli-env"><span class="std std-ref">Environment Variables</span></a> for a full list of environment
+variables modifying command behavior</p>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">See <a class="reference internal" href="nvm_addr.html#sec-cli-nvm-addr"><span class="std std-ref">nvm_addr</span></a> on how to construct the <code class="docutils literal notranslate"><span class="pre">0xADDR</span></code> parameter</p>
+</div>
+<div class="section" id="plane-span">
+<span id="sec-cli-vblk-plane"></span><h2>Plane Span<a class="headerlink" href="#plane-span" title="Permalink to this headline">¶</a></h2>
+<p>Construct a virtual block providing the address of block 42 in LUN 5 on channel
+2:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_addr s20_to_gen /dev/nvme0n1 <span class="m">4</span> <span class="m">2</span> <span class="m">142</span> <span class="m">0</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>naddrs: <span class="m">1</span>
+addrs:
+  - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+</pre></div>
+</div>
+<div class="section" id="erase">
+<h3>Erase<a class="headerlink" href="#erase" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_vblk erase /dev/nvme0n1 0x0402008e00000000
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">1</span>
+  nmbytes: <span class="m">24</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">1</span>
+addrs:
+  - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0049, mb: <span class="m">24</span>.00, mbsec: <span class="m">4911</span>.37<span class="o">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="write">
+<h3>Write<a class="headerlink" href="#write" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_vblk write /dev/nvme0n1 0x0402008e00000000
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">1</span>
+  nmbytes: <span class="m">24</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">1</span>
+addrs:
+  - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000020<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.028409<span class="o">}</span>
+nvm_vblk_write: <span class="o">{</span>elapsed: <span class="m">0</span>.8354, mb: <span class="m">24</span>.00, mbsec: <span class="m">28</span>.73<span class="o">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="read">
+<h3>Read<a class="headerlink" href="#read" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_vblk <span class="nb">read</span> /dev/nvme0n1 0x0402008e00000000
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">1</span>
+  nmbytes: <span class="m">24</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">1</span>
+addrs:
+  - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000018<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.020935<span class="o">}</span>
+nvm_vblk_read: <span class="o">{</span>elapsed: <span class="m">0</span>.1969, mb: <span class="m">24</span>.00, mbsec: <span class="m">121</span>.88<span class="o">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="block-set">
+<span id="sec-cli-vblk-set"></span><h2>Block Set<a class="headerlink" href="#block-set" title="Permalink to this headline">¶</a></h2>
+<p>Construct a virtual block using an arbitrary set of physical block addresses.
+E.g. construct a virtual block spanning the physical blocks:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="mh">0x0000000000000002</span><span class="p">){</span> <span class="n">ch</span><span class="p">(</span><span class="mi">00</span><span class="p">),</span> <span class="n">lun</span><span class="p">(</span><span class="mi">00</span><span class="p">),</span> <span class="n">pl</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">blk</span><span class="p">(</span><span class="mi">0002</span><span class="p">),</span> <span class="n">pg</span><span class="p">(</span><span class="mi">000</span><span class="p">),</span> <span class="n">sec</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">}</span>
+<span class="p">(</span><span class="mh">0x0a0700000000014d</span><span class="p">){</span> <span class="n">ch</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">lun</span><span class="p">(</span><span class="mi">07</span><span class="p">),</span> <span class="n">pl</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">blk</span><span class="p">(</span><span class="mi">0333</span><span class="p">),</span> <span class="n">pg</span><span class="p">(</span><span class="mi">000</span><span class="p">),</span> <span class="n">sec</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">}</span>
+<span class="p">(</span><span class="mh">0x0301000000000014</span><span class="p">){</span> <span class="n">ch</span><span class="p">(</span><span class="mi">03</span><span class="p">),</span> <span class="n">lun</span><span class="p">(</span><span class="mi">01</span><span class="p">),</span> <span class="n">pl</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">blk</span><span class="p">(</span><span class="mi">0020</span><span class="p">),</span> <span class="n">pg</span><span class="p">(</span><span class="mi">000</span><span class="p">),</span> <span class="n">sec</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">}</span>
+<span class="p">(</span><span class="mh">0x0500000000000190</span><span class="p">){</span> <span class="n">ch</span><span class="p">(</span><span class="mi">05</span><span class="p">),</span> <span class="n">lun</span><span class="p">(</span><span class="mi">00</span><span class="p">),</span> <span class="n">pl</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">blk</span><span class="p">(</span><span class="mi">0400</span><span class="p">),</span> <span class="n">pg</span><span class="p">(</span><span class="mi">000</span><span class="p">),</span> <span class="n">sec</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">}</span>
+</pre></div>
+</div>
+<div class="section" id="id1">
+<h3>Erase<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_vblk set_erase /dev/nvme0n1 0x0000008e00000000 0x0100008e00000000 0x0200008e00000000 0x0300008e00000000
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">4</span>
+  nmbytes: <span class="m">96</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">4</span>
+addrs:
+  - <span class="o">{</span>val: 0x0000008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0100008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0200008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0300008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0050, mb: <span class="m">96</span>.00, mbsec: <span class="m">19264</span>.54<span class="o">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id2">
+<h3>Write<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_vblk set_write /dev/nvme0n1 0x0000008e00000000 0x0100008e00000000 0x0200008e00000000 0x0300008e00000000
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">4</span>
+  nmbytes: <span class="m">96</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">4</span>
+addrs:
+  - <span class="o">{</span>val: 0x0000008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0100008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0200008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0300008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000015<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.144720<span class="o">}</span>
+nvm_vblk_write: <span class="o">{</span>elapsed: <span class="m">0</span>.8402, mb: <span class="m">96</span>.00, mbsec: <span class="m">114</span>.26<span class="o">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h3>Read<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_vblk set_read /dev/nvme0n1 0x0000008e00000000 0x0100008e00000000 0x0200008e00000000 0x0300008e00000000
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">4</span>
+  nmbytes: <span class="m">96</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">4</span>
+addrs:
+  - <span class="o">{</span>val: 0x0000008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0100008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0200008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0300008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000022<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.066288<span class="o">}</span>
+nvm_vblk_read: <span class="o">{</span>elapsed: <span class="m">0</span>.1784, mb: <span class="m">96</span>.00, mbsec: <span class="m">537</span>.99<span class="o">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="block-line">
+<span id="sec-cli-vblk-line"></span><h2>Block Line<a class="headerlink" href="#block-line" title="Permalink to this headline">¶</a></h2>
+<p>Construct a virtual block using block 10 in the ranges channel[0,0] and
+LUN[0,3]. That is, Block ten in the first four LUNs of channel 0.</p>
+<div class="section" id="id4">
+<h3>Erase<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_vblk line_erase /dev/nvme0n1 <span class="m">0</span> <span class="m">4</span> <span class="m">0</span> <span class="m">2</span> <span class="m">142</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">15</span>
+  nmbytes: <span class="m">360</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">15</span>
+addrs:
+  - <span class="o">{</span>val: 0x0000008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0100008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0200008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0300008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0400008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0001008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0101008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0201008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0301008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0401008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0002008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0102008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0202008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0302008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0051, mb: <span class="m">360</span>.00, mbsec: <span class="m">70546</span>.54<span class="o">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id5">
+<h3>Write<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_vblk line_write /dev/nvme0n1 <span class="m">0</span> <span class="m">4</span> <span class="m">0</span> <span class="m">2</span> <span class="m">142</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">15</span>
+  nmbytes: <span class="m">360</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">15</span>
+addrs:
+  - <span class="o">{</span>val: 0x0000008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0100008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0200008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0300008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0400008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0001008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0101008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0201008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0301008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0401008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0002008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0102008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0202008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0302008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000020<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.280034<span class="o">}</span>
+nvm_vblk_write: <span class="o">{</span>elapsed: <span class="m">0</span>.8503, mb: <span class="m">360</span>.00, mbsec: <span class="m">423</span>.36<span class="o">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id6">
+<h3>Read<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_vblk line_read /dev/nvme0n1 <span class="m">0</span> <span class="m">4</span> <span class="m">0</span> <span class="m">2</span> <span class="m">142</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
+  nblks: <span class="m">15</span>
+  nmbytes: <span class="m">360</span>
+  pos_write: <span class="m">0</span>
+  pos_read: <span class="m">0</span>
+naddrs: <span class="m">15</span>
+addrs:
+  - <span class="o">{</span>val: 0x0000008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0100008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0200008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0300008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0400008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0001008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0101008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0201008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0301008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0401008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">01</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0002008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0102008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0202008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0302008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+  - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000005<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.258656<span class="o">}</span>
+nvm_vblk_read: <span class="o">{</span>elapsed: <span class="m">0</span>.2647, mb: <span class="m">360</span>.00, mbsec: <span class="m">1360</span>.26<span class="o">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="nvm_bbt.html" class="btn btn-neutral float-right" title="nvm_bbt" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="nvm_cmd.html" class="btn btn-neutral" title="nvm_cmd" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, LightNVM.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

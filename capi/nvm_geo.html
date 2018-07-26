@@ -1,0 +1,389 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>nvm_geo - Geometry &mdash; liblightnvm 0.1.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="nvm_buf - Buffer Allocation" href="nvm_buf.html" />
+    <link rel="prev" title="nvm_dev - Device Management" href="nvm_dev.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> liblightnvm
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prereqs/index.html">Prerequisites</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../background/index.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli/index.html">Command-Line Interface</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">C API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="nvm_dev.html">nvm_dev - Device Management</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">nvm_geo - Geometry</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-geo">nvm_geo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-geo-pr">nvm_geo_pr</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_buf.html">nvm_buf - Buffer Allocation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_addr.html">nvm_addr - Addressing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_cmd.html">nvm_cmd - Raw Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_vblk.html">nvm_vblk - Virtual Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_bbt.html">nvm_bbt - Bad-Block-Table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="misc.html">Miscellaneous</a></li>
+<li class="toctree-l2"><a class="reference internal" href="header.html">Public Header</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../backends/index.html">Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../refs/index.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">liblightnvm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">C API</a> &raquo;</li>
+        
+      <li>nvm_geo - Geometry</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/capi/nvm_geo.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="nvm-geo-geometry">
+<span id="sec-capi-nvm-geo"></span><h1>nvm_geo - Geometry<a class="headerlink" href="#nvm-geo-geometry" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="nvm-geo">
+<h2>nvm_geo<a class="headerlink" href="#nvm-geo" title="Permalink to this headline">¶</a></h2>
+<dl class="struct">
+<dt id="c.nvm_geo">
+<span class="target" id="structnvm__geo"></span><em class="property">struct </em><code class="descname">nvm_geo</code><a class="headerlink" href="#c.nvm_geo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Representation of device geometry. </p>
+<p><dl class="docutils">
+<dt><strong>See</strong></dt>
+<dd><a class="reference internal" href="nvm_dev.html#liblightnvm_8h_1acdbb9db29109a697744abc307a6b0e46"><span class="std std-ref">nvm_dev_get_geo</span></a> </dd>
+</dl>
+</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Members</p>
+<dl class="variable">
+<dt id="c.nvm_geo::npugrp">
+<span class="target" id="structnvm__geo_1aefa77cba316aff05112a62d67a27fe7d"></span>size_t <code class="descname">npugrp</code><a class="headerlink" href="#c.nvm_geo::npugrp" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Parallel Unit Groups</em></p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_geo::npunit">
+<span class="target" id="structnvm__geo_1a710559368f33e286c048b264c1b5454a"></span>size_t <code class="descname">npunit</code><a class="headerlink" href="#c.nvm_geo::npunit" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Parallel Units in PUG</em></p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_geo::nchunk">
+<span class="target" id="structnvm__geo_1a5eb79c37d5fe6c61c3e9061536bf2b14"></span>size_t <code class="descname">nchunk</code><a class="headerlink" href="#c.nvm_geo::nchunk" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Chunks in PU</em></p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_geo::nsectr">
+<span class="target" id="structnvm__geo_1ad30e9430ff60387f83b599b08bf3880f"></span>size_t <code class="descname">nsectr</code><a class="headerlink" href="#c.nvm_geo::nsectr" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Sectors per CNK</em></p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_geo::nbytes">
+<span class="target" id="structnvm__geo_1a1310dfa38a09f118b8591dd37781cacb"></span>size_t <code class="descname">nbytes</code><a class="headerlink" href="#c.nvm_geo::nbytes" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Bytes per SECTOR</em></p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_geo::nbytes_oob">
+<span class="target" id="structnvm__geo_1ab1d50bbb36976c445eff2fdc41d1fb20"></span>size_t <code class="descname">nbytes_oob</code><a class="headerlink" href="#c.nvm_geo::nbytes_oob" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Bytes per SECTOR in OOB</em></p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_geo::l">
+<span class="target" id="structnvm__geo_1abce66bd00e18805e1c226e1c079fab1f"></span>struct <a class="reference internal" href="#c.nvm_geo" title="nvm_geo">nvm_geo</a>::&#64;4::&#64;6  <code class="descname">l</code><a class="headerlink" href="#c.nvm_geo::l" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spec 2.0. </p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_geo::nchannels">
+<span class="target" id="structnvm__geo_1a202afc3940fcf740e1628d4082b44c25"></span>size_t <code class="descname">nchannels</code><a class="headerlink" href="#c.nvm_geo::nchannels" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>of channels on device</em></p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_geo::nluns">
+<span class="target" id="structnvm__geo_1ab9ea66e8dded890438425b744985cd68"></span>size_t <code class="descname">nluns</code><a class="headerlink" href="#c.nvm_geo::nluns" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>of LUNs per channel</em></p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_geo::nblocks">
+<span class="target" id="structnvm__geo_1ab743264c6be0d5fa0ac71ca95b95d8ac"></span>size_t <code class="descname">nblocks</code><a class="headerlink" href="#c.nvm_geo::nblocks" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>of blocks per plane</em></p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_geo::nsectors">
+<span class="target" id="structnvm__geo_1a1fa8ed4fd3860b7721ff49e3d75e397f"></span>size_t <code class="descname">nsectors</code><a class="headerlink" href="#c.nvm_geo::nsectors" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>of sectors per page</em></p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_geo::sector_nbytes">
+<span class="target" id="structnvm__geo_1a43fec2da1aa9a5a2998386132562994c"></span>size_t <code class="descname">sector_nbytes</code><a class="headerlink" href="#c.nvm_geo::sector_nbytes" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>of bytes per sector</em></p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_geo::meta_nbytes">
+<span class="target" id="structnvm__geo_1a8585f0920b8b563431b50c651059f124"></span>size_t <code class="descname">meta_nbytes</code><a class="headerlink" href="#c.nvm_geo::meta_nbytes" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>of bytes for OOB</em></p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_geo::nplanes">
+<span class="target" id="structnvm__geo_1a0928993c813ac7977cb00b77d583cf8c"></span>size_t <code class="descname">nplanes</code><a class="headerlink" href="#c.nvm_geo::nplanes" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>of planes per LUN</em></p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_geo::npages">
+<span class="target" id="structnvm__geo_1ac35e64684ff910d6a6c2e31add673753"></span>size_t <code class="descname">npages</code><a class="headerlink" href="#c.nvm_geo::npages" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>of pages per block</em></p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_geo::page_nbytes">
+<span class="target" id="structnvm__geo_1a75ffda38bc052d5a87ce637f0d37ec86"></span>size_t <code class="descname">page_nbytes</code><a class="headerlink" href="#c.nvm_geo::page_nbytes" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>of bytes per page</em></p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_geo::g">
+<span class="target" id="structnvm__geo_1a106fef4f0fdd4b8a8bb5f0911fb85b16"></span>struct <a class="reference internal" href="#c.nvm_geo" title="nvm_geo">nvm_geo</a>::&#64;4::&#64;7  <code class="descname">g</code><a class="headerlink" href="#c.nvm_geo::g" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spec 1.2. </p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.5">
+<span class="target" id="structnvm__geo_1a4378d855dd154227b2e0afc70984cc26"></span>union <a class="reference internal" href="#c.nvm_geo" title="nvm_geo">nvm_geo</a>::&#64;4 <a class="reference internal" href="#c.nvm_geo" title="nvm_geo">nvm_geo</a>::&#64;<code class="descname">5</code><a class="headerlink" href="#c.5" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_geo::tbytes">
+<span class="target" id="structnvm__geo_1a274c96ba885358fec8d56c689ea0d4ff"></span>size_t <code class="descname">tbytes</code><a class="headerlink" href="#c.nvm_geo::tbytes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Total # bytes in geometry. </p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_geo::verid">
+<span class="target" id="structnvm__geo_1a81fd9266401c8b04f6ecb2e49eb1f21e"></span>int <code class="descname">verid</code><a class="headerlink" href="#c.nvm_geo::verid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Associated dev verid. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-geo-pr">
+<h2>nvm_geo_pr<a class="headerlink" href="#nvm-geo-pr" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_geo_pr">
+<span class="target" id="liblightnvm_8h_1ae1e030c59680f889363fc51a6875dea4"></span>void <code class="descname">nvm_geo_pr</code><span class="sig-paren">(</span>const struct  <a class="reference internal" href="#c.nvm_geo" title="nvm_geo">nvm_geo</a>  *<em>&nbsp;geo</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_geo_pr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints human readable representation of the given geometry. </p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="nvm_buf.html" class="btn btn-neutral float-right" title="nvm_buf - Buffer Allocation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="nvm_dev.html" class="btn btn-neutral" title="nvm_dev - Device Management" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, LightNVM.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

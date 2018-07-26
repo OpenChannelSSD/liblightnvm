@@ -1,0 +1,303 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>nvm_pmode &mdash; liblightnvm 0.1.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="nvm_bounds" href="nvm_bounds.html" />
+    <link rel="prev" title="nvm_mode" href="nvm_mode.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> liblightnvm
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prereqs/index.html">Prerequisites</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../background/index.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli/index.html">Command-Line Interface</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">C API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="nvm_dev.html">nvm_dev - Device Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_geo.html">nvm_geo - Geometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_buf.html">nvm_buf - Buffer Allocation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_addr.html">nvm_addr - Addressing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_cmd.html">nvm_cmd - Raw Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_vblk.html">nvm_vblk - Virtual Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_bbt.html">nvm_bbt - Bad-Block-Table</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="misc.html">Miscellaneous</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="nvm_be.html">nvm_be</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_ret.html">nvm_ret</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_ver.html">nvm_ver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_meta.html">nvm_meta</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_mode.html">nvm_mode</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">nvm_pmode</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">nvm_pmode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nvm-pmode-str">nvm_pmode_str</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_bounds.html">nvm_bounds</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_quirks.html">nvm_quirks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="header.html">Public Header</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../backends/index.html">Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../refs/index.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">liblightnvm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">C API</a> &raquo;</li>
+        
+          <li><a href="misc.html">Miscellaneous</a> &raquo;</li>
+        
+      <li>nvm_pmode</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/capi/nvm_pmode.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="nvm-pmode">
+<span id="sec-capi-nvm-pmode"></span><h1>nvm_pmode<a class="headerlink" href="#nvm-pmode" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2>nvm_pmode<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<dl class="enum">
+<dt id="c.nvm_pmode">
+<span class="target" id="liblightnvm_8h_1a4d6747181aee0d88fa6663bce470eb07"></span><em class="property">enum </em><code class="descname">nvm_pmode</code><a class="headerlink" href="#c.nvm_pmode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plane-mode access for IO. </p>
+<p><em>Values:</em></p>
+<dl class="enumvalue">
+<dt id="c.NVM_FLAG_PMODE_SNGL">
+<span class="target" id="liblightnvm_8h_1a4d6747181aee0d88fa6663bce470eb07adc64703ef96d3a2cb403fb577b4ef1b1"></span><code class="descname">NVM_FLAG_PMODE_SNGL</code> = 0x0<a class="headerlink" href="#c.NVM_FLAG_PMODE_SNGL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Single-plane. </p>
+</dd></dl>
+
+<dl class="enumvalue">
+<dt id="c.NVM_FLAG_PMODE_DUAL">
+<span class="target" id="liblightnvm_8h_1a4d6747181aee0d88fa6663bce470eb07a1d02bead038d37a6ebe62a1d3fa6b9aa"></span><code class="descname">NVM_FLAG_PMODE_DUAL</code> = 0x1<a class="headerlink" href="#c.NVM_FLAG_PMODE_DUAL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dual-plane. </p>
+</dd></dl>
+
+<dl class="enumvalue">
+<dt id="c.NVM_FLAG_PMODE_QUAD">
+<span class="target" id="liblightnvm_8h_1a4d6747181aee0d88fa6663bce470eb07ac3d984398a952635422918c3bd3b0632"></span><code class="descname">NVM_FLAG_PMODE_QUAD</code> = 0x1 &lt;&lt; 1<a class="headerlink" href="#c.NVM_FLAG_PMODE_QUAD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Quad-plane. </p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-pmode-str">
+<h2>nvm_pmode_str<a class="headerlink" href="#nvm-pmode-str" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_pmode_str">
+<span class="target" id="liblightnvm_8h_1a6c54464f5d7a8a240c92e30f602cceb5"></span>const char* <code class="descname">nvm_pmode_str</code><span class="sig-paren">(</span>int<em>&nbsp;pmode</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_pmode_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obtain string representation of the given plane-mode. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>On success, string representation of the given plane-mode. On error, “UNKN”. </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">pmode</span></code>: The plane-mode to obtain string representation of</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="nvm_bounds.html" class="btn btn-neutral float-right" title="nvm_bounds" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="nvm_mode.html" class="btn btn-neutral" title="nvm_mode" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, LightNVM.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

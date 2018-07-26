@@ -1,0 +1,601 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Vectorized IO to NAND media &mdash; liblightnvm 0.1.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Virtual Block" href="nvm_vblk.html" />
+    <link rel="prev" title="Physical Addressing" href="nvm_addr.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> liblightnvm
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start/index.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prereqs/index.html">Prerequisites</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../background/index.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli/index.html">Command-Line Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../capi/index.html">C API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Tutorial Introduction</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../tutorial-s20/index.html">Open-Channel SSD 2.0</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Open-Channel SSD 1.2</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="nvm_dev.html">Obtaining device information</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_addr.html">Physical Addressing</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Vectorized IO to NAND media</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#erase-before-write">Erase before write</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#write">Write</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#read">Read</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_vblk.html">Virtual Block</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_bbt.html">Bad-Block-Table</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../backends/index.html">Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../refs/index.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">liblightnvm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Tutorial Introduction</a> &raquo;</li>
+        
+          <li><a href="index.html">Open-Channel SSD 1.2</a> &raquo;</li>
+        
+      <li>Vectorized IO to NAND media</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/tutorial/tutorial-s12/nvm_addr_vio.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="vectorized-io-to-nand-media">
+<h1>Vectorized IO to NAND media<a class="headerlink" href="#vectorized-io-to-nand-media" title="Permalink to this headline">¶</a></h1>
+<p>With the basics of obtaining device information and constructing addresses in
+place one can dive into the task of constructing commands for doing vectorized
+IO.</p>
+<p>As the section on background information describes, then there are handful of
+constraints to handle for IOs to NAND media to succeed.</p>
+<div class="section" id="erase-before-write">
+<h2>Erase before write<a class="headerlink" href="#erase-before-write" title="Permalink to this headline">¶</a></h2>
+<p>The first constraint to handle is that a block must be <strong>erased</strong> before it can
+be <strong>written</strong>. We do so by constructing block-addresses for all blocks within
+a plane:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_addr from_geo /dev/nvme0n1 <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">10</span> <span class="m">0</span> <span class="m">0</span>
+nvm_addr from_geo /dev/nvme0n1 <span class="m">0</span> <span class="m">0</span> <span class="m">1</span> <span class="m">10</span> <span class="m">0</span> <span class="m">0</span>
+</pre></div>
+</div>
+<p>Yielding:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>0x000000000000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">0</span><span class="o">}</span>
+
+0x000001000000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">0</span><span class="o">}</span>
+</pre></div>
+</div>
+<p>With the addresses we can now construct a single command with two addresses and
+send of the erase:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">NVM_CLI_PMODE</span><span class="o">=</span><span class="s2">&quot;0&quot;</span> nvm_addr erase /dev/nvme0n1 0x000000000000000a 0x000001000000000a
+</pre></div>
+</div>
+<p>On success, yielding:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># nvm_addr_erase: {pmode: SNGL}</span>
+0x000000000000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000001000000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">0</span><span class="o">}</span>
+</pre></div>
+</div>
+<p>On error, yielding:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">**</span> <span class="n">nvm_addr_erase</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="p">:</span> <span class="n">pmode</span><span class="p">(</span><span class="mh">0x1</span><span class="p">)</span>
+<span class="p">(</span><span class="mh">0x000000000000000a</span><span class="p">){</span> <span class="n">ch</span><span class="p">(</span><span class="mi">00</span><span class="p">),</span> <span class="n">lun</span><span class="p">(</span><span class="mi">00</span><span class="p">),</span> <span class="n">pl</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">blk</span><span class="p">(</span><span class="mi">0010</span><span class="p">),</span> <span class="n">pg</span><span class="p">(</span><span class="mi">000</span><span class="p">),</span> <span class="n">sec</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">}</span>
+<span class="p">(</span><span class="mh">0x000001000000000a</span><span class="p">){</span> <span class="n">ch</span><span class="p">(</span><span class="mi">00</span><span class="p">),</span> <span class="n">lun</span><span class="p">(</span><span class="mi">00</span><span class="p">),</span> <span class="n">pl</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">blk</span><span class="p">(</span><span class="mi">0010</span><span class="p">),</span> <span class="n">pg</span><span class="p">(</span><span class="mi">000</span><span class="p">),</span> <span class="n">sec</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">}</span>
+<span class="n">nvm_addr_erase</span><span class="p">:</span> <span class="n">Input</span><span class="o">/</span><span class="n">output</span> <span class="n">error</span>
+<span class="n">nvm_ret</span> <span class="p">{</span> <span class="n">result</span><span class="p">(</span><span class="mh">0xff</span><span class="p">),</span> <span class="n">status</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p>If an erase fails as above then it is because a block is bad. The
+bad-block-table interface (nvm_bbt) is provided to communicate and update media
+state. Introduction to the bad-block-table is given in a later section.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">C API for performing erases using block-adressing is done with <code class="docutils literal notranslate"><span class="pre">nvm_addr_erase</span></code></p>
+</div>
+</div>
+<div class="section" id="write">
+<h2>Write<a class="headerlink" href="#write" title="Permalink to this headline">¶</a></h2>
+<p>The two primary constraints for issuing writes are that they must be at the
+granularity of a full flash page and contiguous within a block.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">C API for performing write using vectorized IO with addressing at
+sector-level is done using <code class="docutils literal notranslate"><span class="pre">nvm_addr_write</span></code>, note that the payload must
+be aligned to sector size, the helper function <code class="docutils literal notranslate"><span class="pre">nvm_buf_alloc</span></code> is
+provided for convenience</p>
+</div>
+<div class="section" id="minimum-write">
+<h3>Minimum write<a class="headerlink" href="#minimum-write" title="Permalink to this headline">¶</a></h3>
+<p>For the geometry in figure X, a full flash page is four sectors of each 4096
+bytes, a command satisfying the minimum-write constraint thus contains four
+addresses with a payload of 16384 bytes of data. The command can constructed
+via the CLI as:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_addr write /dev/nvme0n1 <span class="se">\</span>
+0x000000000000000a 0x000000010000000a 0x000000020000000a 0x000000030000000a
+</pre></div>
+</div>
+<p>The CLI creates an arbitrary payload, so we do not concern us with the
+payload at this point.</p>
+<p>The result of the command is:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># nvm_addr_write : {pmode: DUAL}</span>
+0x000000000000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000000010000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000000020000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000000030000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">3</span><span class="o">}</span>
+nvm_ret: <span class="o">{</span>result: 0x2, status: <span class="m">0</span><span class="o">}</span>
+<span class="c1"># nvm_addr_write: Input/output error</span>
+<span class="c1"># write: Invalid argument</span>
+</pre></div>
+</div>
+<p>An unexpected write error occured, the constraints are satisfied, so what goes
+wrong? The issue in this case is that the command is constructed using
+plane-mode.</p>
+<p>This introduces an additional constraint that writes must be performed to the
+block accross all planes. One can choose to disable the plane-mode, which is
+done by setting environment var <code class="docutils literal notranslate"><span class="pre">NVM_CLI_PMODE=&quot;0&quot;</span></code> or by constructing a
+command satisfying the plane-mode constraint:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_addr write /dev/nvme0n1 <span class="se">\</span>
+0x000000000000000a 0x000000010000000a 0x000000020000000a 0x000000030000000a <span class="se">\</span>
+0x000001000000000a 0x000001010000000a 0x000001020000000a 0x000001030000000a
+</pre></div>
+</div>
+<p>Yielding without error:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># nvm_addr_write : {pmode: DUAL}</span>
+0x000000000000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000000010000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000000020000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000000030000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000001000000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000001010000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000001020000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000001030000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">3</span><span class="o">}</span>
+</pre></div>
+</div>
+<p>The plane-mode allows for multiple writes to be done in parallel across the
+planes.</p>
+</div>
+<div class="section" id="maximum-write">
+<h3>Maximum write<a class="headerlink" href="#maximum-write" title="Permalink to this headline">¶</a></h3>
+<p>An improvement of round-trip-time can be obtained by increasing the amount of
+work done by a single command, that is, increase the number of addresses.</p>
+<p>There is an upper limit, write-naddrs-max,  as can be seen in figure X, and
+retrieved from the device. In our case we can construct a command with 64
+addresses.</p>
+<p>Abiding to all of the above mentioned constraints a write command can be
+constructed as:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_addr write /dev/nvme0n1 <span class="se">\</span>
+0x000000000001000a 0x000000010001000a 0x000000020001000a 0x000000030001000a <span class="se">\</span>
+0x000001000001000a 0x000001010001000a 0x000001020001000a 0x000001030001000a <span class="se">\</span>
+0x000000000002000a 0x000000010002000a 0x000000020002000a 0x000000030002000a <span class="se">\</span>
+0x000001000002000a 0x000001010002000a 0x000001020002000a 0x000001030002000a <span class="se">\</span>
+0x000000000003000a 0x000000010003000a 0x000000020003000a 0x000000030003000a <span class="se">\</span>
+0x000001000003000a 0x000001010003000a 0x000001020003000a 0x000001030003000a <span class="se">\</span>
+0x000000000004000a 0x000000010004000a 0x000000020004000a 0x000000030004000a <span class="se">\</span>
+0x000001000004000a 0x000001010004000a 0x000001020004000a 0x000001030004000a <span class="se">\</span>
+0x000000000005000a 0x000000010005000a 0x000000020005000a 0x000000030005000a <span class="se">\</span>
+0x000001000005000a 0x000001010005000a 0x000001020005000a 0x000001030005000a <span class="se">\</span>
+0x000000000006000a 0x000000010006000a 0x000000020006000a 0x000000030006000a <span class="se">\</span>
+0x000001000006000a 0x000001010006000a 0x000001020006000a 0x000001030006000a <span class="se">\</span>
+0x000000000007000a 0x000000010007000a 0x000000020007000a 0x000000030007000a <span class="se">\</span>
+0x000001000007000a 0x000001010007000a 0x000001020007000a 0x000001030007000a <span class="se">\</span>
+0x000000000008000a 0x000000010008000a 0x000000020008000a 0x000000030008000a <span class="se">\</span>
+0x000001000008000a 0x000001010008000a 0x000001020008000a 0x000001030008000a
+</pre></div>
+</div>
+<p>Successfully yielding:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># nvm_addr_write : {pmode: DUAL}</span>
+0x000000000001000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">001</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000000010001000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">001</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000000020001000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">001</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000000030001000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">001</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000001000001000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">001</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000001010001000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">001</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000001020001000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">001</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000001030001000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">001</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000000000002000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">002</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000000010002000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">002</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000000020002000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">002</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000000030002000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">002</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000001000002000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">002</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000001010002000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">002</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000001020002000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">002</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000001030002000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">002</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000000000003000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">003</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000000010003000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">003</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000000020003000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">003</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000000030003000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">003</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000001000003000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">003</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000001010003000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">003</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000001020003000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">003</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000001030003000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">003</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000000000004000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">004</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000000010004000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">004</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000000020004000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">004</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000000030004000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">004</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000001000004000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">004</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000001010004000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">004</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000001020004000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">004</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000001030004000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">004</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000000000005000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">005</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000000010005000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">005</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000000020005000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">005</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000000030005000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">005</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000001000005000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">005</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000001010005000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">005</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000001020005000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">005</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000001030005000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">005</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000000000006000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">006</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000000010006000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">006</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000000020006000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">006</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000000030006000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">006</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000001000006000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">006</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000001010006000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">006</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000001020006000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">006</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000001030006000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">006</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000000000007000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">007</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000000010007000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">007</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000000020007000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">007</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000000030007000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">007</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000001000007000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">007</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000001010007000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">007</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000001020007000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">007</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000001030007000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">007</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000000000008000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">008</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000000010008000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">008</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000000020008000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">008</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000000030008000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">008</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000001000008000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">008</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000001010008000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">008</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000001020008000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">008</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000001030008000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">008</span>, sec: <span class="m">3</span><span class="o">}</span>
+</pre></div>
+</div>
+<p>Using vectorized IO we have with a single command successfully written a
+payload of 64 x 4096 bytes = 256 KB.</p>
+</div>
+</div>
+<div class="section" id="read">
+<h2>Read<a class="headerlink" href="#read" title="Permalink to this headline">¶</a></h2>
+<p>Reads have fewer constraints than writes. The granularity of a read is a single
+sector (the smallest addressable unit) and can be performed non-contiguously.</p>
+<p>The primary constraint for a read to adhere to is that the block which is read
+from must be closed. That is, all pages within the block must have been
+written. It might be that the constraint can be relaxed where only N pages
+ahead of the read must have been written instead of all pages in the block. The
+challenge with relaxing the constraint is that N is often an unknown size.</p>
+<p>We have so far written a total of nine pages (across two planes), the first
+page in one command, the remaining eight pages in a second command. Thus we
+have 503 pages that need to be written before we can start reading.</p>
+<p>Specifying the 503 x nplanes x nsectors = 4024 addresses via the CLI is
+tedious, we will therefore take a sneak peak at virtual blocks and execute:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_vblk erase /dev/nvme0n1 0x000000000000000a
+nvm_vblk write /dev/nvme0n1 0x000000000000000a
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;DUAL&#39;</span><span class="o">}</span>
+  nbytes: <span class="m">16777216</span>
+  nmbytes: <span class="m">16</span>
+naddrs: <span class="m">1</span>
+addrs:
+  - 0x000000000000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">0</span><span class="o">}</span>
+nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.005633<span class="o">}</span>
+
+vblk:
+  dev: <span class="o">{</span>pmode: <span class="s1">&#39;DUAL&#39;</span><span class="o">}</span>
+  nbytes: <span class="m">16777216</span>
+  nmbytes: <span class="m">16</span>
+naddrs: <span class="m">1</span>
+addrs:
+  - 0x000000000000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">0</span><span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000012<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.019201<span class="o">}</span>
+nvm_vblk_write: <span class="o">{</span>elapsed: <span class="m">0</span>.861263<span class="o">}</span>
+</pre></div>
+</div>
+<p>What these two commands actually do will be described in the following section
+on virtual blocks. For now all we need to know is that the block is now fully
+written / closed and we can start reading from it.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">C API for performing write using vectorized IO with addressing at
+sector-level is done using <code class="docutils literal notranslate"><span class="pre">nvm_addr_read</span></code>, the received payload must be
+stored in a sector-aligned buffer, the helper function <code class="docutils literal notranslate"><span class="pre">nvm_buf_alloc</span></code> is
+provided for convenience</p>
+</div>
+<div class="section" id="minimal-read">
+<h3>Minimal Read<a class="headerlink" href="#minimal-read" title="Permalink to this headline">¶</a></h3>
+<p>We can read a single sector:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_addr <span class="nb">read</span> /dev/nvme0n1 0x000000000000000a
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># nvm_addr_read: {pmode: DUAL}</span>
+0x000000000000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">0</span><span class="o">}</span>
+</pre></div>
+</div>
+<p>The data read from device can be written to a file system using the <code class="docutils literal notranslate"><span class="pre">-o</span> <span class="pre">FILE</span></code>
+option:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_addr <span class="nb">read</span> /dev/nvme0n1 0x000000000000000a -o /tmp/dump.bin
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># nvm_addr_read: {pmode: DUAL}</span>
+0x000000000000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">0</span><span class="o">}</span>
+</pre></div>
+</div>
+<p>The payload is then available by inspection, e.g. with <code class="docutils literal notranslate"><span class="pre">hexdump</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>hexdump /tmp/dump.bin -C -n <span class="m">128</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="m">00000000</span>  <span class="m">41</span> <span class="m">42</span> <span class="m">43</span> <span class="m">44</span> <span class="m">45</span> <span class="m">46</span> <span class="m">47</span> <span class="m">48</span>  <span class="m">49</span> 4a 4b 4c 4d 4e 4f <span class="m">50</span>  <span class="p">|</span>ABCDEFGHIJKLMNOP<span class="p">|</span>
+<span class="m">00000010</span>  <span class="m">51</span> <span class="m">52</span> <span class="m">53</span> <span class="m">54</span> <span class="m">55</span> <span class="m">56</span> <span class="m">57</span> <span class="m">58</span>  <span class="m">59</span> 5a <span class="m">41</span> <span class="m">42</span> <span class="m">43</span> <span class="m">44</span> <span class="m">45</span> <span class="m">46</span>  <span class="p">|</span>QRSTUVWXYZABCDEF<span class="p">|</span>
+<span class="m">00000020</span>  <span class="m">47</span> <span class="m">48</span> <span class="m">49</span> 4a 4b 4c 4d 4e  4f <span class="m">50</span> <span class="m">51</span> <span class="m">52</span> <span class="m">53</span> <span class="m">54</span> <span class="m">55</span> <span class="m">56</span>  <span class="p">|</span>GHIJKLMNOPQRSTUV<span class="p">|</span>
+<span class="m">00000030</span>  <span class="m">57</span> <span class="m">58</span> <span class="m">59</span> 5a <span class="m">41</span> <span class="m">42</span> <span class="m">43</span> <span class="m">44</span>  <span class="m">45</span> <span class="m">46</span> <span class="m">47</span> <span class="m">48</span> <span class="m">49</span> 4a 4b 4c  <span class="p">|</span>WXYZABCDEFGHIJKL<span class="p">|</span>
+<span class="m">00000040</span>  4d 4e 4f <span class="m">50</span> <span class="m">51</span> <span class="m">52</span> <span class="m">53</span> <span class="m">54</span>  <span class="m">55</span> <span class="m">56</span> <span class="m">57</span> <span class="m">58</span> <span class="m">59</span> 5a <span class="m">41</span> <span class="m">42</span>  <span class="p">|</span>MNOPQRSTUVWXYZAB<span class="p">|</span>
+<span class="m">00000050</span>  <span class="m">43</span> <span class="m">44</span> <span class="m">45</span> <span class="m">46</span> <span class="m">47</span> <span class="m">48</span> <span class="m">49</span> 4a  4b 4c 4d 4e 4f <span class="m">50</span> <span class="m">51</span> <span class="m">52</span>  <span class="p">|</span>CDEFGHIJKLMNOPQR<span class="p">|</span>
+<span class="m">00000060</span>  <span class="m">53</span> <span class="m">54</span> <span class="m">55</span> <span class="m">56</span> <span class="m">57</span> <span class="m">58</span> <span class="m">59</span> 5a  <span class="m">41</span> <span class="m">42</span> <span class="m">43</span> <span class="m">44</span> <span class="m">45</span> <span class="m">46</span> <span class="m">47</span> <span class="m">48</span>  <span class="p">|</span>STUVWXYZABCDEFGH<span class="p">|</span>
+<span class="m">00000070</span>  <span class="m">49</span> 4a 4b 4c 4d 4e 4f <span class="m">50</span>  <span class="m">51</span> <span class="m">52</span> <span class="m">53</span> <span class="m">54</span> <span class="m">55</span> <span class="m">56</span> <span class="m">57</span> <span class="m">58</span>  <span class="p">|</span>IJKLMNOPQRSTUVWX<span class="p">|</span>
+<span class="m">00000080</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="maximum-read">
+<h3>Maximum Read<a class="headerlink" href="#maximum-read" title="Permalink to this headline">¶</a></h3>
+<p>Same as a write, a read has an upper bound on the number of addresses in a
+single command. Address-construction is equivalent.</p>
+</div>
+<div class="section" id="non-contiguous-read">
+<h3>Non-Contiguous Read<a class="headerlink" href="#non-contiguous-read" title="Permalink to this headline">¶</a></h3>
+<p>Reading pages 500, 200, 0, and 6 across planes:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_addr <span class="nb">read</span> /dev/nvme0n1 <span class="se">\</span>
+0x0000000001f4000a 0x0000000101f4000a 0x0000000201f4000a 0x0000000301f4000a <span class="se">\</span>
+0x0000010001f4000a 0x0000010101f4000a 0x0000010201f4000a 0x0000010301f4000a <span class="se">\</span>
+0x0000000000c8000a 0x0000000100c8000a 0x0000000200c8000a 0x0000000300c8000a <span class="se">\</span>
+0x0000010000c8000a 0x0000010100c8000a 0x0000010200c8000a 0x0000010300c8000a <span class="se">\</span>
+0x000000000000000a 0x000000010000000a 0x000000020000000a 0x000000030000000a <span class="se">\</span>
+0x000001000000000a 0x000001010000000a 0x000001020000000a 0x000001030000000a <span class="se">\</span>
+0x000000000006000a 0x000000010006000a 0x000000020006000a 0x000000030006000a <span class="se">\</span>
+0x000001000006000a 0x000001010006000a 0x000001020006000a 0x000001030006000a
+</pre></div>
+</div>
+<p>Successfully yielding:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># nvm_addr_read: {pmode: DUAL}</span>
+0x0000000001f4000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">500</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x0000000101f4000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">500</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x0000000201f4000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">500</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x0000000301f4000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">500</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x0000010001f4000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">500</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x0000010101f4000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">500</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x0000010201f4000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">500</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x0000010301f4000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">500</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x0000000000c8000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">200</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x0000000100c8000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">200</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x0000000200c8000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">200</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x0000000300c8000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">200</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x0000010000c8000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">200</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x0000010100c8000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">200</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x0000010200c8000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">200</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x0000010300c8000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">200</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000000000000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000000010000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000000020000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000000030000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000001000000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000001010000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000001020000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000001030000000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">000</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000000000006000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">006</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000000010006000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">006</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000000020006000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">006</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000000030006000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">0</span>, blk: <span class="m">0010</span>, pg: <span class="m">006</span>, sec: <span class="m">3</span><span class="o">}</span>
+0x000001000006000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">006</span>, sec: <span class="m">0</span><span class="o">}</span>
+0x000001010006000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">006</span>, sec: <span class="m">1</span><span class="o">}</span>
+0x000001020006000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">006</span>, sec: <span class="m">2</span><span class="o">}</span>
+0x000001030006000a: <span class="o">{</span>ch: <span class="m">00</span>, lun: <span class="m">00</span>, pl: <span class="m">1</span>, blk: <span class="m">0010</span>, pg: <span class="m">006</span>, sec: <span class="m">3</span><span class="o">}</span>
+</pre></div>
+</div>
+<p>It is worth mentioning that the vectorized reads can be non-contiguous not only
+within a block but also scattered across different different blocks, in
+different LUNs, and channels.</p>
+<p>However, when using plane-mode ensure that addresses are constructed across
+planes and all sectors are read as in the example above.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="nvm_vblk.html" class="btn btn-neutral float-right" title="Virtual Block" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="nvm_addr.html" class="btn btn-neutral" title="Physical Addressing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, LightNVM.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

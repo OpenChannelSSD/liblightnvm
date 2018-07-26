@@ -1,0 +1,321 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Backends &mdash; liblightnvm 0.1.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="IOCTL" href="nvm_be_ioctl.html" />
+    <link rel="prev" title="Bad-Block-Table" href="../tutorial/tutorial-s12/nvm_bbt.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> liblightnvm
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prereqs/index.html">Prerequisites</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../background/index.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli/index.html">Command-Line Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../capi/index.html">C API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Backends</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="nvm_be_ioctl.html">IOCTL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_be_lba.html">IOCTL - LBA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_be_sysfs.html">IOCTL - SYSFS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_be_spdk.html">SPDK</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../refs/index.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">liblightnvm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Backends</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/backends/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="backends">
+<span id="sec-backends"></span><h1>Backends<a class="headerlink" href="#backends" title="Permalink to this headline">¶</a></h1>
+<p>liblightnvm hides the implementation of operating system interaction from the
+user. That is, the implementation of the <code class="docutils literal notranslate"><span class="pre">nvm_cmd_*</span></code> interface, which is
+available in the public C API, is delegated at runtime to a backend
+implementation.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="56%" />
+<col width="44%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Backend Name</th>
+<th class="head">Identifier</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>NVM_BE_IOCTL</td>
+<td>0x1</td>
+</tr>
+<tr class="row-odd"><td>NVM_BE_SYSFS</td>
+<td>0x2</td>
+</tr>
+<tr class="row-even"><td>NVM_BE_LBA</td>
+<td>0x4</td>
+</tr>
+<tr class="row-odd"><td>NVM_BE_SPDK</td>
+<td>0x8</td>
+</tr>
+</tbody>
+</table>
+<p>By default liblightnvm goes through the available backends in the order as
+listed above and chooses to use the first backend capable of opening a device
+without error.</p>
+<p>The user can choose to use a specific backend by providing the backend
+identifier. When using the CLI, this is done by setting the environment
+variable NVM_CLI_BE_ID e.g.:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">NVM_CLI_BE_ID</span><span class="o">=</span>0x1 nvm_dev info /dev/nvme0n1
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Device information -- nvm_dev_pr</span>
+dev_attr:
+  verid: 0x02
+  be_id: 0x01
+  name: <span class="s1">&#39;nvme0n1&#39;</span>
+  path: <span class="s1">&#39;/dev/nvme0n1&#39;</span>
+  fd: <span class="m">3</span>
+  ssw: <span class="m">12</span>
+  mccap: <span class="m">00000000000000000000000000000001</span>
+  pmode: <span class="s1">&#39;SNGL&#39;</span>
+  erase_naddrs_max: <span class="m">64</span>
+  read_naddrs_max: <span class="m">64</span>
+  write_naddrs_max: <span class="m">64</span>
+  meta_mode: <span class="m">0</span>
+  bbts_cached: <span class="m">0</span>
+  bbts_cached: <span class="m">00000000</span>
+  quirks: <span class="m">00000000</span>
+dev_geo:
+  verid: 0x02
+  npugrp: <span class="m">8</span>
+  npunit: <span class="m">4</span>
+  nchunk: <span class="m">1474</span>
+  nsectr: <span class="m">6144</span>
+  nbytes: <span class="m">4096</span>
+  nbytes_oob: <span class="m">16</span>
+  tbytes: <span class="m">1187021586432</span>
+  tmbytes: <span class="m">1132032</span>
+dev_ppaf: ~
+dev_ppaf_mask: ~
+dev_lbaf:
+  pugrp: <span class="m">3</span>
+  punit: <span class="m">2</span>
+  chunk: <span class="m">11</span>
+  sectr: <span class="m">13</span>
+dev_lbaz:
+  pugrp: <span class="m">26</span>
+  punit: <span class="m">24</span>
+  chunk: <span class="m">13</span>
+  sectr: <span class="m">0</span>
+dev_lbam:
+  pugrp:  <span class="s1">&#39;0000000000000000000000000000000000011100000000000000000000000000&#39;</span>
+  punit:  <span class="s1">&#39;0000000000000000000000000000000000000011000000000000000000000000&#39;</span>
+  chunk:  <span class="s1">&#39;0000000000000000000000000000000000000000111111111110000000000000&#39;</span>
+  sectr:  <span class="s1">&#39;0000000000000000000000000000000000000000000000000001111111111111&#39;</span>
+</pre></div>
+</div>
+<p>Or when using the <code class="docutils literal notranslate"><span class="pre">C</span> <span class="pre">API</span></code>, by providing the backend identifier to function
+<cite>nvm_dev_openf</cite>.</p>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="nvm_be_ioctl.html" class="btn btn-neutral float-right" title="IOCTL" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../tutorial/tutorial-s12/nvm_bbt.html" class="btn btn-neutral" title="Bad-Block-Table" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, LightNVM.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

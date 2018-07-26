@@ -1,0 +1,302 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Obtaining device information &mdash; liblightnvm 0.1.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Physical Addressing" href="nvm_addr.html" />
+    <link rel="prev" title="Open-Channel SSD 1.2" href="index.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> liblightnvm
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start/index.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prereqs/index.html">Prerequisites</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../background/index.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli/index.html">Command-Line Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../capi/index.html">C API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Tutorial Introduction</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../tutorial-s20/index.html">Open-Channel SSD 2.0</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Open-Channel SSD 1.2</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Obtaining device information</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_addr.html">Physical Addressing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_addr_vio.html">Vectorized IO to NAND media</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_vblk.html">Virtual Block</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nvm_bbt.html">Bad-Block-Table</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../backends/index.html">Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../refs/index.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">liblightnvm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Tutorial Introduction</a> &raquo;</li>
+        
+          <li><a href="index.html">Open-Channel SSD 1.2</a> &raquo;</li>
+        
+      <li>Obtaining device information</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/tutorial/tutorial-s12/nvm_dev.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="obtaining-device-information">
+<h1>Obtaining device information<a class="headerlink" href="#obtaining-device-information" title="Permalink to this headline">¶</a></h1>
+<p>To begin with, knowing the physical geometry of a device is essential for
+working with physical addressing. Device information is obtained by invoking:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_dev info /dev/nvme0n1
+</pre></div>
+</div>
+<p>Which will yield device information as shown below:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Device information -- nvm_dev_pr</span>
+dev:
+  verid: 0x02
+  be_id: 0x02
+  name: <span class="s1">&#39;nvme0n1&#39;</span>
+  path: <span class="s1">&#39;/dev/nvme0n1&#39;</span>
+  fd: <span class="m">3</span>
+  ssw: <span class="m">12</span>
+  pmode: <span class="s1">&#39;DUAL&#39;</span>
+  erase_naddrs_max: <span class="m">64</span>
+  read_naddrs_max: <span class="m">64</span>
+  write_naddrs_max: <span class="m">64</span>
+  meta_mode: <span class="m">0</span>
+  bbts_cached: <span class="m">0</span>
+dev_geo:
+  nchannels: <span class="m">16</span>
+  nluns: <span class="m">8</span>
+  nplanes: <span class="m">2</span>
+  nblocks: <span class="m">1020</span>
+  npages: <span class="m">512</span>
+  nsectors: <span class="m">4</span>
+  page_nbytes: <span class="m">16384</span>
+  sector_nbytes: <span class="m">4096</span>
+  meta_nbytes: <span class="m">16</span>
+  tbytes: <span class="m">2190433320960</span>
+  tmbytes: <span class="m">2088960</span>
+dev_ppaf:
+  ch_off: <span class="m">25</span>
+  ch_len: <span class="m">04</span>
+  lun_off: <span class="m">22</span>
+  lun_len: <span class="m">03</span>
+  pl_off: <span class="m">02</span>
+  pl_len: <span class="m">01</span>
+  blk_off: <span class="m">12</span>
+  blk_len: <span class="m">10</span>
+  pg_off: <span class="m">03</span>
+  pg_len: <span class="m">09</span>
+  sec_off: <span class="m">00</span>
+  sec_len: <span class="m">02</span>
+dev_ppaf_mask:
+  ch:  <span class="s1">&#39;0000000000000000000000000000000000011110000000000000000000000000&#39;</span>
+  lun: <span class="s1">&#39;0000000000000000000000000000000000000001110000000000000000000000&#39;</span>
+  pl:  <span class="s1">&#39;0000000000000000000000000000000000000000000000000000000000000100&#39;</span>
+  blk: <span class="s1">&#39;0000000000000000000000000000000000000000001111111111000000000000&#39;</span>
+  pg:  <span class="s1">&#39;0000000000000000000000000000000000000000000000000000111111111000&#39;</span>
+  sec: <span class="s1">&#39;0000000000000000000000000000000000000000000000000000000000000011&#39;</span>
+</pre></div>
+</div>
+<p>The parts involved from the C API are: <code class="docutils literal notranslate"><span class="pre">nvm_dev_open</span></code> to obtain a device
+handle, <code class="docutils literal notranslate"><span class="pre">nvm_dev_pr</span></code> to produce the output above, and lastly
+<code class="docutils literal notranslate"><span class="pre">nvm_dev_close</span></code> to terminate the handle properly.</p>
+<p>When using the C API, values and structures are retrieved using the attribute
+getters <code class="docutils literal notranslate"><span class="pre">nvm_dev_get_*</span></code> e.g. use <code class="docutils literal notranslate"><span class="pre">nvm_dev_get_geo</span></code> to obtain the geometry
+of a given device.</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="nvm_addr.html" class="btn btn-neutral float-right" title="Physical Addressing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Open-Channel SSD 1.2" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, LightNVM.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
