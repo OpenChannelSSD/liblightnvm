@@ -171,11 +171,13 @@ tags:
 # These are common practices during development
 #
 
-.PHONY: dev
-dev-spdk: uninstall-deb clean cli_on tests_on ioctl_on sysfs_on lba_on spdk_on debug_on deb_on configure build install-deb
+.PHONY: dev-spdk
+dev-spdk: clean cli_on tests_on ioctl_on sysfs_on lba_on spdk_on debug_on deb_on configure build
+	sudo make install-deb
 
 .PHONY: dev
-dev: uninstall-deb clean cli_on tests_on ioctl_on sysfs_on lba_on spdk_off debug_on deb_on configure build install-deb
+dev: clean cli_on tests_on ioctl_on sysfs_on lba_on spdk_off debug_on deb_on configure build
+	sudo make install-deb
 
 #
 # DOC: This target generated API documentation based on source code
