@@ -20,7 +20,7 @@ static struct nvm_addr arb_lun_addr(void)
 	return addr;
 }
 
-static void verify_counters(struct nvm_dev *dev, const struct nvm_bbt *bbt)
+static void verify_counters(const struct nvm_bbt *bbt)
 {
 	uint32_t nbad = 0, ngbad = 0, ndmrk = 0, nhmrk = 0;
 
@@ -46,15 +46,6 @@ static void verify_counters(struct nvm_dev *dev, const struct nvm_bbt *bbt)
 			break;
 		}
 	}
-
-	/* b0rk3d
-	if (nvm_dev_get_verid(dev) == 0x2) {	// Spec 2.0
-		nbad = nbad / geo->nplanes;
-		ngbad = ngbad / geo->nplanes;
-		ndmrk = ndmrk / geo->nplanes;
-		nhmrk = nhmrk / geo->nplanes;
-	}
-	*/
 
 	CU_ASSERT_EQUAL(bbt->nbad, nbad);
 	CU_ASSERT_EQUAL(bbt->ngbad, ngbad);
@@ -104,7 +95,7 @@ static void bbt_get(int bbts_cached)
 		}
 	}
 
-	verify_counters(dev, bbt);
+	verify_counters(bbt);
 
 	return;
 }
