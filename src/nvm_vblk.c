@@ -769,7 +769,8 @@ static inline ssize_t vblk_copy_s20(struct nvm_vblk *src, struct nvm_vblk *dst)
 	return count;
 }
 
-ssize_t nvm_vblk_copy(struct nvm_vblk *src, struct nvm_vblk *dst, int flags)
+ssize_t nvm_vblk_copy(struct nvm_vblk *src, struct nvm_vblk *dst,
+		      int NVM_UNUSED(flags))
 {
 	const int verid = nvm_dev_get_verid(nvm_vblk_get_dev(src));
 
