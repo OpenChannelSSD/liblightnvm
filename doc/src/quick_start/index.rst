@@ -36,8 +36,9 @@ target. For example:
   make
   sudo make install
 
-This will enable the SPDK backend, debugging, and build Debian packages. NOTE:
-``spdk_on`` expects SPDK to be available in ``/opt/spdk``.
+This will enable the SPDK backend, debugging, and build Debian packages.
+
+.. note: ``spdk_on`` expects SPDK to be available in ``/opt/spdk``.
 
 In case you enable build of Debian packages via ``deb_on``, then you can modify
 the ``make install`` step to install/uninstall using the Debian package:
@@ -51,6 +52,38 @@ the ``make install`` step to install/uninstall using the Debian package:
 
   # Conveniently remove liblightnvm by uninstalling the Debian package
   sudo make uninstall-deb
+
+BUILD: Cross-compiling for ARM on x86
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+liblightnvm compiles on ARM machines, however, in case you do not have the
+build-tools available on your ARM target, then you can cross-compile
+liblightnvm by setting the ``CC`` environment variable to your cross-compiler,
+e.g.:
+
+.. code-block:: bash
+
+  CC=aarch64-linux-gnu-gcc-7 make tests_off configure
+  make
+
+Then transfer the following files:
+
+.. code-block:: bash
+
+  $BUILD_DIR/liblightnvm.a
+  $BUILD_DIR/liblightnvm_cli.a
+  $BUILD_DIR/cli/nvm_addr
+  $BUILD_DIR/cli/nvm_bbt
+  $BUILD_DIR/cli/nvm_cmd
+  $BUILD_DIR/cli/nvm_dev
+  $BUILD_DIR/cli/nvm_vblk
+
+To your ARM target.
+
+.. note::
+
+  The tests, the binaries named `nvm_test_*`, are not cross-compiled as they
+  depend on `libcunit`.
 
 With liblightnvm built and installed as you see fit, try the following examples
 of the :ref:`sec-c-api` and :ref:`sec-cli`.
