@@ -6,7 +6,7 @@ endif()
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DNVM_DEBUG_ENABLED")
 
-include_directories("${CMAKE_SOURCE}/include")
+include_directories("${PROJECT_SOURCE_DIR}/include")
 message("CLI-CMAKE_C_FLAGS(${CMAKE_C_FLAGS})")
 
 set(SOURCE_FILES
