@@ -85,33 +85,33 @@ endif()
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DNVM_DEBUG_ENABLED")
 
 set(HEADER_FILES
-	include/liblightnvm.h
-	include/nvm_be.h
-	include/nvm_debug.h
-	include/nvm_timer.h
-	include/nvm_dev.h
-	include/nvm_omp.h
-	include/liblightnvm_spec.h
-	include/nvm_utils.h
-	include/nvm_vblk.h
-	include/nvm_nvme.h)
+	${PROJECT_SOURCE_DIR}/include/liblightnvm.h
+	${PROJECT_SOURCE_DIR}/include/nvm_be.h
+	${PROJECT_SOURCE_DIR}/include/nvm_debug.h
+	${PROJECT_SOURCE_DIR}/include/nvm_timer.h
+	${PROJECT_SOURCE_DIR}/include/nvm_dev.h
+	${PROJECT_SOURCE_DIR}/include/nvm_omp.h
+	${PROJECT_SOURCE_DIR}/include/liblightnvm_spec.h
+	${PROJECT_SOURCE_DIR}/include/nvm_utils.h
+	${PROJECT_SOURCE_DIR}/include/nvm_vblk.h
+	${PROJECT_SOURCE_DIR}/include/nvm_nvme.h)
 
 set(SOURCE_FILES
-	src/nvm_spec.c
-	src/nvm_be.c
-	src/nvm_be_ioctl.c
-	src/nvm_be_spdk.c
-	src/nvm_be_sysfs.c
-	src/nvm_be_lba.c
-	src/nvm_dev.c
-	src/nvm_buf.c
-	src/nvm_bbt.c
-	src/nvm_geo.c
-	src/nvm_ver.c
-	src/nvm_cmd.c
-	src/nvm_addr.c
-	src/nvm_vblk.c
-	src/nvm_bounds.c
+	${PROJECT_SOURCE_DIR}/src/nvm_spec.c
+	${PROJECT_SOURCE_DIR}/src/nvm_be.c
+	${PROJECT_SOURCE_DIR}/src/nvm_be_ioctl.c
+	${PROJECT_SOURCE_DIR}/src/nvm_be_spdk.c
+	${PROJECT_SOURCE_DIR}/src/nvm_be_sysfs.c
+	${PROJECT_SOURCE_DIR}/src/nvm_be_lba.c
+	${PROJECT_SOURCE_DIR}/src/nvm_dev.c
+	${PROJECT_SOURCE_DIR}/src/nvm_buf.c
+	${PROJECT_SOURCE_DIR}/src/nvm_bbt.c
+	${PROJECT_SOURCE_DIR}/src/nvm_geo.c
+	${PROJECT_SOURCE_DIR}/src/nvm_ver.c
+	${PROJECT_SOURCE_DIR}/src/nvm_cmd.c
+	${PROJECT_SOURCE_DIR}/src/nvm_addr.c
+	${PROJECT_SOURCE_DIR}/src/nvm_vblk.c
+	${PROJECT_SOURCE_DIR}/src/nvm_bounds.c
 )
 
 include_directories("${PROJECT_SOURCE_DIR}/include")
@@ -156,20 +156,22 @@ install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm.h"
 #
 ##
 set(HEADER_FILES
-	../include/liblightnvm_cli.h
+	${PROJECT_SOURCE_DIR}/include/liblightnvm_cli.h
+)
+set(SOURCE_FILES
+	${PROJECT_SOURCE_DIR}/src/nvm_cli.c
 )
 
 set(CLI_LIB "lightnvm_cli")
 
-set(SOURCE_FILES
-	src/nvm_cli.c
-)
+include_directories("${PROJECT_SOURCE_DIR}/include")
 
 add_library(${CLI_LIB} STATIC ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${CLI_LIB} ${LNAME})
 if ((NOT ${LIBC_HAS_CLOCK_GETTIME}) AND (${LIBRT_HAS_CLOCK_GETTIME}))
 	target_link_libraries(${CLI_LIB} rt)
 endif()
+set_target_properties(${CLI_LIB} PROPERTIES LINKER_LANGUAGE C)
 set_target_properties(${CLI_LIB} PROPERTIES OUTPUT_NAME ${CLI_LIB})
 install(TARGETS ${CLI_LIB} DESTINATION lib COMPONENT cli)
 
