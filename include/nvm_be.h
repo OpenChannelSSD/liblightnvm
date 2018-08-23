@@ -166,7 +166,6 @@ int nvm_be_populate_derived(struct nvm_dev *dev);
 int nvm_be_populate_quirks(struct nvm_dev *dev, const char serial[]);
 
 extern struct nvm_be nvm_be_ioctl;
-extern struct nvm_be nvm_be_sysfs;
 extern struct nvm_be nvm_be_lbd;
 extern struct nvm_be nvm_be_spdk;
 
