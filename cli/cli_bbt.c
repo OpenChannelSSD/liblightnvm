@@ -11,7 +11,7 @@
 static int get(struct nvm_cli *cli)
 {
 	const struct nvm_bbt* bbt;
-	struct nvm_ret ret = {0,0};
+	struct nvm_ret ret = { 0 };
 
 	nvm_cli_info_pr("nvm_bbt_get");
 
@@ -30,7 +30,7 @@ static int get(struct nvm_cli *cli)
 static int _set(struct nvm_cli_cmd_args *args, enum nvm_bbt_state state)
 {
 	struct nvm_bbt* bbt;
-	struct nvm_ret ret = {0,0};
+	struct nvm_ret ret = { 0 };
 	int nupdates;
 
 	nvm_cli_info_pr("nvm_bbt_set\n");
@@ -94,7 +94,7 @@ static int set_h(struct nvm_cli *cli)
 static int _mark(struct nvm_cli_cmd_args *args, enum nvm_bbt_state state)
 {
 	ssize_t err = 0;
-	struct nvm_ret ret = {0,0};
+	struct nvm_ret ret = { 0 };
 
 	nvm_cli_info_pr("nvm_bbt_mark");
 	nvm_addr_prn(args->addrs, args->naddrs, args->dev);
@@ -168,7 +168,7 @@ int main(int argc, char **argv)
 	}
 
 	res = nvm_cli_run(&cli);
-	
+
 	nvm_cli_destroy(&cli);
 
 	return res;
