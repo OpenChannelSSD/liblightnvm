@@ -149,21 +149,6 @@ inline uint64_t nvm_addr_gen2dev(struct nvm_dev *dev, struct nvm_addr addr)
 	}
 }
 
-uint64_t nvm_addr_gen2off(struct nvm_dev *dev, struct nvm_addr addr)
-{
-	return nvm_addr_gen2dev(dev, addr) << dev->ssw;
-}
-
-uint64_t nvm_addr_dev2off(struct nvm_dev *dev, uint64_t addr)
-{
-	return addr << dev->ssw;
-}
-
-uint64_t nvm_addr_off2dev(struct nvm_dev *dev, uint64_t off)
-{
-	return off >> dev->ssw;
-}
-
 inline struct nvm_addr nvm_addr_dev2gen(struct nvm_dev *dev, uint64_t addr)
 {
 	if (dev->verid == NVM_SPEC_VERID_20) {// TODO: Fix this for spec. 2.0
@@ -187,6 +172,26 @@ inline struct nvm_addr nvm_addr_dev2gen(struct nvm_dev *dev, uint64_t addr)
 
 		return gen;
 	}
+}
+
+uint64_t nvm_addr_gen2off(struct nvm_dev *dev, struct nvm_addr addr)
+{
+	return nvm_addr_gen2dev(dev, addr) << dev->ssw;
+}
+
+struct nvm_addr nvm_addr_off2gen(struct nvm_dev *dev, size_t off)
+{
+	return nvm_addr_dev2gen(dev, off >> dev->ssw);
+}
+
+uint64_t nvm_addr_dev2off(struct nvm_dev *dev, uint64_t addr)
+{
+	return addr << dev->ssw;
+}
+
+uint64_t nvm_addr_off2dev(struct nvm_dev *dev, uint64_t off)
+{
+	return off >> dev->ssw;
 }
 
 uint64_t nvm_addr_gen2lpo(struct nvm_dev *dev, struct nvm_addr addr)
@@ -218,11 +223,7 @@ struct nvm_addr nvm_addr_lpo2gen(struct nvm_dev *dev, uint64_t lpo)
 	return addr;
 }
 
-struct nvm_addr nvm_addr_off2gen(struct nvm_dev *dev, size_t off)
-{
-	return nvm_addr_dev2gen(dev, off >> dev->ssw);
-}
-
+// The functions below are deprecated
 ssize_t nvm_addr_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		       uint16_t flags, struct nvm_ret *ret)
 {
