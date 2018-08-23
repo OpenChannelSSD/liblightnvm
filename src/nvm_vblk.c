@@ -36,6 +36,8 @@
 #include <nvm_utils.h>
 #include <nvm_debug.h>
 
+#define NVM_VBLK_CMD_OPTS (NVM_CMD_SYNC | NVM_CMD_VECTOR | NVM_CMD_PRP)
+
 static inline int NVM_MIN(int x, int y) {
 	return x < y ? x : y;
 }
@@ -49,7 +51,7 @@ struct nvm_vblk* nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addrs[],
 {
 	struct nvm_vblk *vblk;
 	const struct nvm_geo *geo;
-	
+
 	if (naddrs > 128) {
 		errno = EINVAL;
 		return NULL;
@@ -88,7 +90,7 @@ struct nvm_vblk* nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addrs[],
 		vblk->nbytes = vblk->nblks * geo->nplanes * geo->npages *
 			       geo->nsectors * geo->sector_nbytes;
 		break;
-	
+
 	case NVM_SPEC_VERID_20:
 		vblk->nbytes = vblk->nblks * geo->l.nsectr * geo->l.nbytes;
 		break;
@@ -185,7 +187,9 @@ static inline ssize_t vblk_erase_s12(struct nvm_vblk *vblk)
 
 	const int BLK_NADDRS = geo->nplanes;
 	const int CMD_NBLKS = cmd_nblks(vblk->nblks,
-				vblk->dev->erase_naddrs_max / BLK_NADDRS);
+			nvm_dev_get_erase_naddrs_max(vblk->dev) / BLK_NADDRS);
+
+	const int pmode = nvm_dev_get_pmode(vblk->dev);
 
 	for (int off = 0; off < vblk->nblks; off += CMD_NBLKS) {
 		ssize_t err;
@@ -203,8 +207,8 @@ static inline ssize_t vblk_erase_s12(struct nvm_vblk *vblk)
 			addrs[i].g.pl = i % geo->nplanes;
 		}
 
-		err = nvm_cmd_erase(vblk->dev, addrs, naddrs, vblk->dev->pmode,
-				    &ret);
+		err = nvm_cmd_erase(vblk->dev, addrs, naddrs,
+				    pmode | NVM_VBLK_CMD_OPTS, &ret);
 		if (err)
 			++nerr;
 	}
@@ -224,7 +228,8 @@ static inline ssize_t vblk_erase_s20(struct nvm_vblk *vblk)
 {
 	size_t nerr = 0;
 
-	const int CMD_NBLKS = cmd_nblks(vblk->nblks, vblk->dev->erase_naddrs_max);
+	const int CMD_NBLKS = cmd_nblks(vblk->nblks,
+				nvm_dev_get_erase_naddrs_max(vblk->dev));
 
 	for (int off = 0; off < vblk->nblks; off += CMD_NBLKS) {
 		const int naddrs = NVM_MIN(CMD_NBLKS, vblk->nblks - off);
@@ -286,7 +291,7 @@ static inline ssize_t vblk_pwrite_s12(struct nvm_vblk *vblk, const void *buf,
 
 	const int SPAGE_NADDRS = geo->nplanes * geo->nsectors;
 	const int CMD_NSPAGES = _cmd_nspages(vblk->nblks,
-				vblk->dev->write_naddrs_max / SPAGE_NADDRS);
+			nvm_dev_get_write_naddrs_max(vblk->dev) / SPAGE_NADDRS);
 
 	const int ALIGN = SPAGE_NADDRS * geo->sector_nbytes;
 	const int NTHREADS = vblk->nblks < CMD_NSPAGES ? 1 : vblk->nblks / CMD_NSPAGES;
@@ -298,6 +303,8 @@ static inline ssize_t vblk_pwrite_s12(struct nvm_vblk *vblk, const void *buf,
 
 	const size_t meta_tbytes = CMD_NSPAGES * SPAGE_NADDRS * geo->meta_nbytes;
 	char *meta = NULL;
+
+	const int meta_mode = nvm_dev_get_meta_mode(vblk->dev);
 
 	if (offset + count > vblk->nbytes) {		// Check bounds
 		errno = EINVAL;
@@ -321,7 +328,7 @@ static inline ssize_t vblk_pwrite_s12(struct nvm_vblk *vblk, const void *buf,
 		nvm_buf_fill(padding_buf, nbytes);
 	}
 
-	if (vblk->dev->meta_mode != NVM_META_MODE_NONE) {	// Meta
+	if (meta_mode != NVM_META_MODE_NONE) {	// Meta
 		meta = nvm_buf_alloc(geo, meta_tbytes);		// Alloc buf
 		if (!meta) {
 			NVM_DEBUG("FAILED: nvm_buf_alloc(meta)");
@@ -329,7 +336,7 @@ static inline ssize_t vblk_pwrite_s12(struct nvm_vblk *vblk, const void *buf,
 			return -1;
 		}
 
-		switch(vblk->dev->meta_mode) {			// Fill it
+		switch(meta_mode) {			// Fill it
 			case NVM_META_MODE_ALPHA:
 				nvm_buf_fill(meta, meta_tbytes);
 				break;
@@ -414,6 +421,8 @@ static inline ssize_t vblk_pwrite_s20(struct nvm_vblk *vblk, const void *buf,
 
 	const int NTHREADS = NVM_MIN(nchunks, nsectr / WS_OPT);
 
+	const int meta_mode = nvm_dev_get_meta_mode(vblk->dev);
+
 	if (nsectr % WS_OPT) {
 		NVM_DEBUG("FAILED: unaligned nsectr: %zu", nsectr);
 		errno = EINVAL;
@@ -436,7 +445,7 @@ static inline ssize_t vblk_pwrite_s20(struct nvm_vblk *vblk, const void *buf,
 		nvm_buf_fill(pad_buf, pad_nbytes);
 	}
 
-	if (vblk->dev->meta_mode != NVM_META_MODE_NONE) {	// Meta
+	if (meta_mode != NVM_META_MODE_NONE) {	// Meta
 		meta_buf = nvm_buf_alloc(geo, meta_tbytes);	// Alloc buf
 		if (!meta_buf) {
 			nvm_buf_free(pad_buf);
@@ -445,7 +454,7 @@ static inline ssize_t vblk_pwrite_s20(struct nvm_vblk *vblk, const void *buf,
 			return -1;
 		}
 
-		switch(vblk->dev->meta_mode) {			// Fill it
+		switch(meta_mode) {			// Fill it
 			case NVM_META_MODE_ALPHA:
 				nvm_buf_fill(meta_buf, meta_tbytes);
 				break;
@@ -483,7 +492,8 @@ static inline ssize_t vblk_pwrite_s20(struct nvm_vblk *vblk, const void *buf,
 		}
 
 		const ssize_t err = nvm_cmd_write(vblk->dev, addrs, cmd_nsectr,
-						  buf_off, meta_buf, 0x0, &ret);
+						  buf_off, meta_buf,
+						  NVM_VBLK_CMD_OPTS, &ret);
 		if (err)
 			++nerr;
 
@@ -528,7 +538,7 @@ ssize_t nvm_vblk_write(struct nvm_vblk *vblk, const void *buf, size_t count)
 
 	if (nbytes < 0)
 		return nbytes;		// Propagate errno
-	
+
 	vblk->pos_write += nbytes;	// All is good, increment write position
 
 	return nbytes;			// Return number of bytes written
@@ -548,7 +558,7 @@ static inline ssize_t vblk_pread_s12(struct nvm_vblk *vblk, void *buf,
 
 	const int SPAGE_NADDRS = geo->nplanes * geo->nsectors;
 	const int CMD_NSPAGES = _cmd_nspages(vblk->nblks,
-				vblk->dev->read_naddrs_max / SPAGE_NADDRS);
+			nvm_dev_get_read_naddrs_max(vblk->dev) / SPAGE_NADDRS);
 
 	const int ALIGN = SPAGE_NADDRS * geo->sector_nbytes;
 	const int NTHREADS = vblk->nblks < CMD_NSPAGES ? 1 : vblk->nblks / CMD_NSPAGES;
@@ -655,7 +665,8 @@ static inline ssize_t vblk_pread_s20(struct nvm_vblk *vblk, void *buf,
 		}
 
 		const ssize_t err = nvm_cmd_read(vblk->dev, addrs, cmd_nsectr,
-						   buf_off, NULL, 0x0, NULL);
+						 buf_off, NULL,
+						 NVM_VBLK_CMD_OPTS, NULL);
 		if (err)
 			++nerr;
 	}
@@ -755,8 +766,8 @@ static inline ssize_t vblk_copy_s20(struct nvm_vblk *src, struct nvm_vblk *dst)
 		}
 
 		const ssize_t err = nvm_cmd_copy(src->dev, addrs_src,
-						 addrs_dst, cmd_nsectr, 0x0,
-						 &ret);
+						 addrs_dst, cmd_nsectr,
+						 NVM_VBLK_CMD_OPTS, &ret);
 		if (err)
 			++nerr;
 	}
@@ -876,4 +887,3 @@ void nvm_vblk_pr(struct nvm_vblk *vblk)
 	printf("  pos_read: %zu\n", vblk->pos_read);
         nvm_addr_prn(vblk->blks, vblk->nblks, vblk->dev);
 }
-
