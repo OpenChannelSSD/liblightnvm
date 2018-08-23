@@ -76,7 +76,7 @@ int nvm_cmd_rprt_arbs(struct nvm_dev *dev, int cs, int naddrs,
 
 		for (des_idx = 0; des_idx < rprt->ndescr; ++des_idx) {
 			int des_cur = (des_idx + arb) % rprt->ndescr;
-			
+
 			if (rprt->descr[des_cur].cs != cs)
 				continue;
 
@@ -196,4 +196,3 @@ int nvm_cmd_copy(struct nvm_dev *dev, struct nvm_addr src[],
 {
 	return dev->be->copy(dev, src, dst, naddrs, flags, ret);
 }
-
