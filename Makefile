@@ -94,21 +94,13 @@ ioctl_on:
 ioctl_off:
 	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_BE_IOCTL_ENABLED=OFF)
 
-.PHONY: sysfs_on
-sysfs_on:
-	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_BE_SYSFS_ENABLED=ON)
+.PHONY: lbd_on
+lbd_on:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_BE_LBD_ENABLED=ON)
 
-.PHONY: sysfs_off
-sysfs_off:
-	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_BE_SYSFS_ENABLED=OFF)
-
-.PHONY: lba_on
-lba_on:
-	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_BE_LBA_ENABLED=ON)
-
-.PHONY: lba_off
-lba_off:
-	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_BE_LBA_ENABLED=OFF)
+.PHONY: lbd_off
+lbd_off:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_BE_LBD_ENABLED=OFF)
 
 .PHONY: spdk_on
 spdk_on:
@@ -172,11 +164,11 @@ tags:
 #
 
 .PHONY: dev-spdk
-dev-spdk: clean cli_on tests_on ioctl_on sysfs_on lba_on spdk_on debug_on deb_on configure build
+dev-spdk: clean cli_on tests_on ioctl_on lbd_on spdk_on debug_on deb_on configure build
 	sudo make install-deb
 
 .PHONY: dev
-dev: clean cli_on tests_on ioctl_on sysfs_on lba_on spdk_off debug_on deb_on configure build
+dev: clean cli_on tests_on ioctl_on lbd_on spdk_off debug_on deb_on configure build
 	sudo make install-deb
 
 #
