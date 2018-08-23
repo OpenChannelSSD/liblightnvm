@@ -39,7 +39,7 @@
 void nvm_spec_lgeo_pr(const struct nvm_spec_lgeo *lgeo)
 {
 	printf("lgeo:");
-	
+
 	if (!lgeo) {
 		printf(" ~\n");
 		return;
@@ -310,4 +310,3 @@ void nvm_spec_rprt_pr(const struct nvm_spec_rprt *rprt)
 		printf(" }\n");
 	}
 }
-
