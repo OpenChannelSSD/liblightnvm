@@ -159,6 +159,11 @@ uint64_t nvm_addr_dev2off(struct nvm_dev *dev, uint64_t addr)
 	return addr << dev->ssw;
 }
 
+uint64_t nvm_addr_off2dev(struct nvm_dev *dev, uint64_t off)
+{
+	return off >> dev->ssw;
+}
+
 inline struct nvm_addr nvm_addr_dev2gen(struct nvm_dev *dev, uint64_t addr)
 {
 	if (dev->verid == NVM_SPEC_VERID_20) {// TODO: Fix this for spec. 2.0
