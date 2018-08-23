@@ -1,5 +1,5 @@
 /*
- * be_lba - Backend based on kernel support for NVM IOCTL and LBA for VECTOR IO
+ * be_lbd - IOCTL be using Linux Block Device (LBD) for read, write and erase
  *
  * Copyright (C) 2015-2017 Javier Gonzáles <javier@cnexlabs.com>
  * Copyright (C) 2015-2017 Matias Bjørling <matias@cnexlabs.com>
@@ -29,9 +29,9 @@
 #include <liblightnvm.h>
 #include <nvm_be.h>
 
-#ifndef NVM_BE_LBA_ENABLED
-struct nvm_be nvm_be_lba = {
-	.id = NVM_BE_LBA,
+#ifndef NVM_BE_LBD_ENABLED
+struct nvm_be nvm_be_lbd = {
+	.id = NVM_BE_LBD,
 
 	.open = nvm_be_nosys_open,
 	.close = nvm_be_nosys_close,
@@ -62,7 +62,7 @@ struct nvm_be nvm_be_lba = {
 #include <nvm_utils.h>
 #include <nvm_debug.h>
 
-static int nvm_be_lba_rw(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+static int nvm_be_lbd_rw(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		         void *data, int rw)
 {
 	const size_t sect_bytes = dev->geo.sector_nbytes;
@@ -108,7 +108,7 @@ static int nvm_be_lba_rw(struct nvm_dev *dev, struct nvm_addr addrs[], int naddr
 
 }
 
-int nvm_be_lba_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+int nvm_be_lbd_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		  void *data, void *meta, uint16_t NVM_UNUSED(flags),
 		  struct nvm_ret *NVM_UNUSED(ret))
 {
@@ -117,10 +117,10 @@ int nvm_be_lba_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		return -1;
 	}
 
-	return nvm_be_lba_rw(dev, addrs, naddrs, data, 0);
+	return nvm_be_lbd_rw(dev, addrs, naddrs, data, 0);
 }
 
-int nvm_be_lba_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+int nvm_be_lbd_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		  void *data, void *meta, uint16_t NVM_UNUSED(flags),
 		  struct nvm_ret *NVM_UNUSED(ret))
 {
@@ -129,10 +129,10 @@ int nvm_be_lba_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		return -1;
 	}
 
-	return nvm_be_lba_rw(dev, addrs, naddrs, data, 1);
+	return nvm_be_lbd_rw(dev, addrs, naddrs, data, 1);
 }
 
-int nvm_be_lba_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
+int nvm_be_lbd_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		     uint16_t NVM_UNUSED(flags), struct nvm_ret *NVM_UNUSED(ret))
 {
 	int i, err;
@@ -153,15 +153,15 @@ int nvm_be_lba_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 	return 0;
 }
 
-struct nvm_dev *nvm_be_lba_open(const char *dev_path, int NVM_UNUSED(flags))
+struct nvm_dev *nvm_be_lbd_open(const char *dev_path, int NVM_UNUSED(flags))
 {
 	return nvm_be_ioctl_open(dev_path, NVM_BE_IOCTL_WRITABLE);
 }
 
-struct nvm_be nvm_be_lba = {
-	.id = NVM_BE_LBA,
+struct nvm_be nvm_be_lbd = {
+	.id = NVM_BE_LBD,
 
-	.open = nvm_be_lba_open,
+	.open = nvm_be_lbd_open,
 	.close = nvm_be_ioctl_close,
 
 	.idfy = nvm_be_ioctl_idfy,
@@ -171,9 +171,9 @@ struct nvm_be nvm_be_lba = {
 	.sbbt = nvm_be_ioctl_sbbt,
 	.gbbt = nvm_be_ioctl_gbbt,
 
-	.erase = nvm_be_lba_erase,
-	.write = nvm_be_lba_write,
-	.read = nvm_be_lba_read,
+	.erase = nvm_be_lbd_erase,
+	.write = nvm_be_lbd_write,
+	.read = nvm_be_lbd_read,
 	.copy = nvm_be_ioctl_copy,
 };
 #endif
