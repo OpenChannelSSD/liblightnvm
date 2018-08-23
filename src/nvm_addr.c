@@ -154,19 +154,9 @@ uint64_t nvm_addr_gen2off(struct nvm_dev *dev, struct nvm_addr addr)
 	return nvm_addr_gen2dev(dev, addr) << dev->ssw;
 }
 
-uint64_t nvm_addr_gen2lba(struct nvm_dev *dev, struct nvm_addr addr)
-{
-	return nvm_addr_gen2off(dev, addr) >> NVM_UNIVERSAL_SECT_SH;
-}
-
 uint64_t nvm_addr_dev2off(struct nvm_dev *dev, uint64_t addr)
 {
 	return addr << dev->ssw;
-}
-
-uint64_t nvm_addr_dev2lba(struct nvm_dev *dev, uint64_t addr)
-{
-	return nvm_addr_dev2off(dev, addr) >> NVM_UNIVERSAL_SECT_SH;
 }
 
 inline struct nvm_addr nvm_addr_dev2gen(struct nvm_dev *dev, uint64_t addr)
@@ -226,11 +216,6 @@ struct nvm_addr nvm_addr_lpo2gen(struct nvm_dev *dev, uint64_t lpo)
 struct nvm_addr nvm_addr_off2gen(struct nvm_dev *dev, size_t off)
 {
 	return nvm_addr_dev2gen(dev, off >> dev->ssw);
-}
-
-struct nvm_addr nvm_addr_lba2gen(struct nvm_dev *dev, uint64_t off)
-{
-	return nvm_addr_off2gen(dev, off << NVM_UNIVERSAL_SECT_SH);
 }
 
 ssize_t nvm_addr_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
