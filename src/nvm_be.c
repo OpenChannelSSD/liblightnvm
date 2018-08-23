@@ -128,46 +128,81 @@ int nvm_be_nosys_sbbt(struct nvm_dev *NVM_UNUSED(dev),
 	return -1;
 }
 
-int nvm_be_nosys_erase(struct nvm_dev *NVM_UNUSED(dev),
-		       struct nvm_addr *NVM_UNUSED(addrs),
-		       int NVM_UNUSED(naddrs),
-		       uint16_t NVM_UNUSED(flags),
-		       struct nvm_ret *NVM_UNUSED(ret))
+int nvm_be_nosys_scalar_erase(struct nvm_dev *NVM_UNUSED(dev),
+			      struct nvm_addr *NVM_UNUSED(addrs),
+			      int NVM_UNUSED(naddrs),
+			      uint16_t NVM_UNUSED(flags),
+			      struct nvm_ret *NVM_UNUSED(ret))
 {
 	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
 	errno = ENOSYS;
 	return -1;
 }
 
-int nvm_be_nosys_write(struct nvm_dev *NVM_UNUSED(dev),
-		       struct nvm_addr *NVM_UNUSED(addrs),
-		       int NVM_UNUSED(naddrs),
-		       void *NVM_UNUSED(data), void *NVM_UNUSED(meta),
-		       uint16_t NVM_UNUSED(flags),
-		       struct nvm_ret *NVM_UNUSED(ret))
+int nvm_be_nosys_scalar_write(struct nvm_dev *NVM_UNUSED(dev),
+			      struct nvm_addr *NVM_UNUSED(addrs),
+			      int NVM_UNUSED(naddrs),
+			      void *NVM_UNUSED(data), void *NVM_UNUSED(meta),
+			      uint16_t NVM_UNUSED(flags),
+			      struct nvm_ret *NVM_UNUSED(ret))
 {
 	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
 	errno = ENOSYS;
 	return -1;
 }
 
-int nvm_be_nosys_read(struct nvm_dev *NVM_UNUSED(dev),
-		      struct nvm_addr *NVM_UNUSED(addrs),
-		      int NVM_UNUSED(naddrs), void *NVM_UNUSED(data),
-		      void *NVM_UNUSED(meta), uint16_t NVM_UNUSED(flags),
-		      struct nvm_ret *NVM_UNUSED(ret))
+int nvm_be_nosys_scalar_read(struct nvm_dev *NVM_UNUSED(dev),
+			     struct nvm_addr *NVM_UNUSED(addrs),
+			     int NVM_UNUSED(naddrs), void *NVM_UNUSED(data),
+			     void *NVM_UNUSED(meta), uint16_t NVM_UNUSED(flags),
+			     struct nvm_ret *NVM_UNUSED(ret))
 {
 	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
 	errno = ENOSYS;
 	return -1;
 }
 
-int nvm_be_nosys_copy(struct nvm_dev *NVM_UNUSED(dev),
-		      struct nvm_addr NVM_UNUSED(src[]),
-		      struct nvm_addr NVM_UNUSED(dst[]),
-		      int NVM_UNUSED(naddrs),
-		      uint16_t NVM_UNUSED(flags),
-		      struct nvm_ret *NVM_UNUSED(ret))
+int nvm_be_nosys_vector_erase(struct nvm_dev *NVM_UNUSED(dev),
+			      struct nvm_addr *NVM_UNUSED(addrs),
+			      int NVM_UNUSED(naddrs),
+			      void *NVM_UNUSED(meta),
+			      uint16_t NVM_UNUSED(flags),
+			      struct nvm_ret *NVM_UNUSED(ret))
+{
+	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
+	errno = ENOSYS;
+	return -1;
+}
+
+int nvm_be_nosys_vector_write(struct nvm_dev *NVM_UNUSED(dev),
+			      struct nvm_addr *NVM_UNUSED(addrs),
+			      int NVM_UNUSED(naddrs),
+			      void *NVM_UNUSED(data), void *NVM_UNUSED(meta),
+			      uint16_t NVM_UNUSED(flags),
+			      struct nvm_ret *NVM_UNUSED(ret))
+{
+	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
+	errno = ENOSYS;
+	return -1;
+}
+
+int nvm_be_nosys_vector_read(struct nvm_dev *NVM_UNUSED(dev),
+			     struct nvm_addr *NVM_UNUSED(addrs),
+			     int NVM_UNUSED(naddrs), void *NVM_UNUSED(data),
+			     void *NVM_UNUSED(meta), uint16_t NVM_UNUSED(flags),
+			     struct nvm_ret *NVM_UNUSED(ret))
+{
+	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
+	errno = ENOSYS;
+	return -1;
+}
+
+int nvm_be_nosys_vector_copy(struct nvm_dev *NVM_UNUSED(dev),
+			     struct nvm_addr NVM_UNUSED(src[]),
+			     struct nvm_addr NVM_UNUSED(dst[]),
+			     int NVM_UNUSED(naddrs),
+			     uint16_t NVM_UNUSED(flags),
+			     struct nvm_ret *NVM_UNUSED(ret))
 {
 	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
 	errno = ENOSYS;
@@ -333,13 +368,13 @@ int nvm_be_populate_derived(struct nvm_dev *dev)
 		/* Derive a default plane mode */
 		switch(geo->nplanes) {
 		case 4:
-			dev->pmode = NVM_FLAG_PMODE_QUAD;
+			nvm_dev_set_pmode(dev, NVM_FLAG_PMODE_QUAD);
 			break;
 		case 2:
-			dev->pmode = NVM_FLAG_PMODE_DUAL;
+			nvm_dev_set_pmode(dev, NVM_FLAG_PMODE_DUAL);
 			break;
 		case 1:
-			dev->pmode = NVM_FLAG_PMODE_SNGL;
+			nvm_dev_set_pmode(dev, NVM_FLAG_PMODE_SNGL);
 			break;
 
 		default:
@@ -361,11 +396,10 @@ int nvm_be_populate_derived(struct nvm_dev *dev)
 		break;
 	}
 
-	dev->erase_naddrs_max = NVM_NADDR_MAX;
-	dev->write_naddrs_max = NVM_NADDR_MAX;
-	dev->read_naddrs_max = NVM_NADDR_MAX;
-
-	dev->meta_mode = NVM_META_MODE_NONE;
+	nvm_dev_set_erase_naddrs_max(dev, NVM_NADDR_MAX);
+	nvm_dev_set_write_naddrs_max(dev, NVM_NADDR_MAX);
+	nvm_dev_set_read_naddrs_max(dev, NVM_NADDR_MAX);
+	nvm_dev_set_meta_mode(dev, NVM_META_MODE_NONE);
 
 	return 0;
 }
