@@ -59,7 +59,7 @@ static void verify_counters(const struct nvm_bbt *bbt)
 static void bbt_get(int bbts_cached)
 {
 	struct nvm_addr lun_addr = arb_lun_addr();
-	struct nvm_ret ret = {0, 0};
+	struct nvm_ret ret = { 0 };
 	const struct nvm_bbt *bbt;
 
 	nvm_dev_set_bbts_cached(dev, bbts_cached);
@@ -136,9 +136,9 @@ void test_BBT_GET_CACHED(void)
 static void bbt_mark_naddr(unsigned int naddr_pr_call, int bbts_cached)
 {
 	struct nvm_addr lun_addr = arb_lun_addr();
-	struct nvm_ret ret = {0,0};
+	struct nvm_ret ret = { 0 };
 	const int nblks = NVM_NADDR_MAX;
-	
+
 	const int nvblks = nblks / geo->nplanes;
 	const int vblk_ofz = 4;
 	const int vblk_skip = (geo->nblocks - vblk_ofz) / nvblks;
@@ -159,7 +159,7 @@ static void bbt_mark_naddr(unsigned int naddr_pr_call, int bbts_cached)
 			addrs[i + pl].g.pl = pl;
 		}
 	}
-	
+
 	for (int i = 0; i < nblks; ++i) {	// Verify constructed addrs
 		if (nvm_addr_check(addrs[i], dev)) {
 			CU_FAIL("FAILED: Constructing addresses");
@@ -175,7 +175,7 @@ static void bbt_mark_naddr(unsigned int naddr_pr_call, int bbts_cached)
 		// number of calls to nvm_bbt_mark
 		for (int ofz = 0; ofz < nblks; ofz += naddr_pr_call) {
 			int err;
-			
+
 			err = nvm_bbt_mark(dev, &addrs[ofz], naddr_pr_call,
 					   state, &ret);
 			if (err) {
@@ -287,11 +287,11 @@ void test_BBT_MARK_NADDR_1_CACHED(void)
 static void bbt_set(int bbts_cached)
 {
 	struct nvm_addr lun_addr = arb_lun_addr();
-	struct nvm_ret ret = {0,0};
+	struct nvm_ret ret = { 0 };
 	struct nvm_bbt *bbt_exp;
 	const struct nvm_bbt *bbt_act;
 	int res;
-	
+
 	nvm_dev_set_bbts_cached(dev, bbts_cached);
 	if (FLUSH_ALL && nvm_bbt_flush_all(dev, &ret)) {
 		CU_FAIL("FAILED: nvm_bbt_flush_all");
