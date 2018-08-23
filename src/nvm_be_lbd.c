@@ -32,6 +32,7 @@
 #ifndef NVM_BE_LBD_ENABLED
 struct nvm_be nvm_be_lbd = {
 	.id = NVM_BE_LBD,
+	.name = "NVM_BE_LBD",
 
 	.open = nvm_be_nosys_open,
 	.close = nvm_be_nosys_close,
@@ -43,10 +44,14 @@ struct nvm_be nvm_be_lbd = {
 	.sbbt = nvm_be_nosys_sbbt,
 	.gbbt = nvm_be_nosys_gbbt,
 
-	.erase = nvm_be_nosys_erase,
-	.write = nvm_be_nosys_write,
-	.read = nvm_be_nosys_read,
-	.copy = nvm_be_nosys_copy,
+	.scalar_erase = nvm_be_nosys_scalar_erase,
+	.scalar_write = nvm_be_nosys_scalar_write,
+	.scalar_read = nvm_be_nosys_scalar_read,
+
+	.vector_erase = nvm_be_nosys_vector_erase,
+	.vector_write = nvm_be_nosys_vector_write,
+	.vector_read = nvm_be_nosys_vector_read,
+	.vector_copy = nvm_be_nosys_vector_copy,
 };
 #else
 #include <stdlib.h>
@@ -62,92 +67,71 @@ struct nvm_be nvm_be_lbd = {
 #include <nvm_utils.h>
 #include <nvm_debug.h>
 
-static int nvm_be_lbd_rw(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		         void *data, int rw)
+static int nvm_be_lbd_scalar_erase(struct nvm_dev *dev, struct nvm_addr addrs[],
+				   int naddrs, uint16_t NVM_UNUSED(flags),
+				   struct nvm_ret *NVM_UNUSED(ret))
 {
-	const size_t sect_bytes = dev->geo.sector_nbytes;
-	char *buf = (char *)data;
-	uint64_t dev_lbas[NVM_NADDR_MAX];
-	int nr_lbas[NVM_NADDR_MAX];
-	uint64_t prev_lba;
-	int i, idx = 0;
-
-	dev_lbas[idx] = prev_lba = nvm_addr_gen2dev(dev, addrs[0]);
-	nr_lbas[idx] = 1;
-
-	for (i = 1; i < naddrs; i++) {
-		const uint64_t lba_dev = nvm_addr_gen2dev(dev, addrs[i]);
-
-		/* Sequential */
-		if (prev_lba == lba_dev - 1) {
-			nr_lbas[idx]++;
-		} else {
-			idx++;
-			dev_lbas[idx] = lba_dev;
-			nr_lbas[idx] = 1;
-		}
-
-		prev_lba = lba_dev;
-	}
-
-	for (i = 0; i < idx + 1; i++) {
-		const off_t offset = nvm_addr_dev2off(dev, dev_lbas[i]);
-		ssize_t res;
-
-		if (rw)
-			res = pwrite(dev->fd, buf, sect_bytes * nr_lbas[i], offset);
-		else
-			res = pread(dev->fd, buf, sect_bytes * nr_lbas[i], offset);
-
-		if (res < 0)
-			return res;
-
-		buf += sect_bytes * nr_lbas[i];
-	}
-	return 0;
-
-}
-
-int nvm_be_lbd_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		  void *data, void *meta, uint16_t NVM_UNUSED(flags),
-		  struct nvm_ret *NVM_UNUSED(ret))
-{
-	if (meta) {
-		errno = ENOSYS;
-		return -1;
-	}
-
-	return nvm_be_lbd_rw(dev, addrs, naddrs, data, 0);
-}
-
-int nvm_be_lbd_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		  void *data, void *meta, uint16_t NVM_UNUSED(flags),
-		  struct nvm_ret *NVM_UNUSED(ret))
-{
-	if (meta) {
-		errno = ENOSYS;
-		return -1;
-	}
-
-	return nvm_be_lbd_rw(dev, addrs, naddrs, data, 1);
-}
-
-int nvm_be_lbd_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		     uint16_t NVM_UNUSED(flags), struct nvm_ret *NVM_UNUSED(ret))
-{
-	int i, err;
-	uint64_t range[2];
-
-	for (i = 0; i < naddrs; i++) {
-		uint64_t offset = nvm_addr_dev2off(dev, nvm_addr_gen2dev(dev, addrs[i]));
-		uint64_t length = dev->geo.l.nsectr << dev->ssw;
-
-		range[0] = offset;
-		range[1] = length;
+	for (int i = 0; i < naddrs; i++) {
+		uint64_t range[2];
+		int err;
+		
+		range[0] = nvm_addr_gen2off(dev, addrs[i]);
+		range[1] = dev->geo.l.nsectr << dev->ssw;
 
 		err = ioctl(dev->fd, BLKDISCARD, &range);
-		if (err)
-			return err;
+		if (err) {
+			NVM_DEBUG("FAILED: BLKDISCARD, err: %d, %s", err,
+				  strerror(errno));
+			// Propagate errno
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
+int nvm_be_lbd_scalar_read(struct nvm_dev *dev, struct nvm_addr addr,
+			   int naddrs, void *data, void *meta,
+			   uint16_t NVM_UNUSED(flags),
+			   struct nvm_ret *NVM_UNUSED(ret))
+{
+	const off_t offset = nvm_addr_gen2off(dev, addr);
+	ssize_t res;
+
+	if (meta) {
+		NVM_DEBUG("FAILED: LBD read with meta is not supported");
+		errno = ENOSYS;
+		return -1;
+	}
+
+	res = pread(dev->fd, data, dev->geo.l.nbytes * naddrs, offset);
+	if (res) {
+		NVM_DEBUG("FAILED: res: %zu", res);
+		return -1;
+	}
+
+	return 0;
+}
+
+int nvm_be_lbd_scalar_write(struct nvm_dev *dev, struct nvm_addr addr,
+			    int naddrs, const void *data, const void *meta,
+			    uint16_t NVM_UNUSED(flags),
+			    struct nvm_ret *NVM_UNUSED(ret))
+{
+	const off_t offset = nvm_addr_gen2off(dev, addr);
+	ssize_t res;
+
+	if (meta) {
+		NVM_DEBUG("FAILED: LBD write with meta is not supported");
+		errno = ENOSYS;
+		return -1;
+	}
+
+	res = pwrite(dev->fd, data, dev->geo.l.nbytes * naddrs, offset);
+	if (res) {
+		NVM_DEBUG("FAILED: res: %zu", res);
+		// Propagate errno
+		return -1;
 	}
 
 	return 0;
@@ -155,11 +139,21 @@ int nvm_be_lbd_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 
 struct nvm_dev *nvm_be_lbd_open(const char *dev_path, int NVM_UNUSED(flags))
 {
-	return nvm_be_ioctl_open(dev_path, NVM_BE_IOCTL_WRITABLE);
+	struct nvm_dev *dev;
+	
+	dev = nvm_be_ioctl_open(dev_path, NVM_BE_IOCTL_WRITABLE);
+	if (!dev) {
+		NVM_DEBUG("FAILED: opening via IOCTL_WRITABLE");
+		// Propagate errno
+		return NULL;
+	}
+
+	return dev;
 }
 
 struct nvm_be nvm_be_lbd = {
 	.id = NVM_BE_LBD,
+	.name = "NVM_BE_LBD",
 
 	.open = nvm_be_lbd_open,
 	.close = nvm_be_ioctl_close,
@@ -171,9 +165,13 @@ struct nvm_be nvm_be_lbd = {
 	.sbbt = nvm_be_ioctl_sbbt,
 	.gbbt = nvm_be_ioctl_gbbt,
 
-	.erase = nvm_be_lbd_erase,
-	.write = nvm_be_lbd_write,
-	.read = nvm_be_lbd_read,
-	.copy = nvm_be_ioctl_copy,
+	.scalar_erase = nvm_be_lbd_scalar_erase,
+	.scalar_write = nvm_be_lbd_scalar_write,
+	.scalar_read = nvm_be_lbd_scalar_read,
+
+	.vector_erase = nvm_be_ioctl_vector_erase,
+	.vector_write = nvm_be_ioctl_vector_write,
+	.vector_read = nvm_be_ioctl_vector_read,
+	.vector_copy = nvm_be_ioctl_vector_copy,
 };
 #endif
