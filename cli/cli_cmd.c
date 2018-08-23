@@ -88,13 +88,13 @@ static int cmd_erase(struct nvm_cli *cli)
 {
 	struct nvm_cli_cmd_args *args = &cli->args;
 	const int pmode = cli->evars.pmode;
-	struct nvm_ret ret = {0,0};
+	struct nvm_ret ret = { 0 };
 	ssize_t err = 0;
 
 	nvm_cli_info_pr("nvm_cmd_erase: {pmode: %s}", nvm_pmode_str(pmode));
 	nvm_addr_prn(args->addrs, args->naddrs, args->dev);
 
-	err = nvm_cmd_erase(args->dev, args->addrs, args->naddrs, pmode,
+	err = nvm_cmd_erase(args->dev, args->addrs, args->naddrs, NULL, pmode,
 			     &ret);
 	if (err) {
 		nvm_cli_perror("nvm_cmd_erase");
@@ -108,7 +108,7 @@ static int cmd_write(struct nvm_cli *cli)
 {
 	struct nvm_cli_cmd_args *args = &cli->args;
 	const int pmode = cli->evars.pmode;
-	struct nvm_ret ret = {0,0};
+	struct nvm_ret ret = { 0 };
 	ssize_t err = 0;
 
 	int buf_nbytes = args->naddrs * args->geo->sector_nbytes;
@@ -160,7 +160,7 @@ static int cmd_read(struct nvm_cli *cli)
 {
 	struct nvm_cli_cmd_args *args = &cli->args;
 	const int pmode = cli->evars.pmode;
-	struct nvm_ret ret = {0,0};
+	struct nvm_ret ret = { 0 };
 	ssize_t err = 0;
 
 	int buf_nbytes = args->naddrs * args->geo->sector_nbytes;
@@ -196,7 +196,7 @@ static int cmd_read(struct nvm_cli *cli)
 		nvm_cli_perror("nvm_cmd_read");
 		nvm_ret_pr(&ret);
 	}
-	
+
 	if (meta && cli->evars.meta_pr) {
 		nvm_cli_info_pr("after_read: {meta_tbytes: %d}", meta_tbytes);
 		for (int i = 0; i < meta_tbytes; ++i) {
@@ -295,7 +295,7 @@ static int cmd_copy(struct nvm_cli *cli)
 	}
 
 	for (size_t sectr_ofz = sectr_bgn; sectr_ofz <= sectr_end; sectr_ofz += cmd_nsectr_max) {
-		struct nvm_ret ret = { 0, 0 };
+		struct nvm_ret ret = { 0 };
 
 		const size_t cmd_nsectr = NVM_MIN(sectr_end - sectr_ofz + 1, cmd_nsectr_max);
 
@@ -377,4 +377,3 @@ int main(int argc, char **argv)
 
 	return res;
 }
-
