@@ -30,6 +30,7 @@
 
 struct nvm_be nvm_be_spdk = {
 	.id = NVM_BE_SPDK,
+	.name = "NVM_BE_SPDK",
 
 	.open = nvm_be_nosys_open,
 	.close = nvm_be_nosys_close,
@@ -41,10 +42,14 @@ struct nvm_be nvm_be_spdk = {
 	.sbbt = nvm_be_nosys_sbbt,
 	.gbbt = nvm_be_nosys_gbbt,
 
-	.erase = nvm_be_nosys_erase,
-	.write = nvm_be_nosys_write,
-	.read = nvm_be_nosys_read,
-	.copy = nvm_be_nosys_copy,
+	.scalar_erase = nvm_be_nosys_scalar_erase,
+	.scalar_write = nvm_be_nosys_scalar_write,
+	.scalar_read = nvm_be_nosys_scalar_read,
+
+	.vector_erase = nvm_be_nosys_vector_erase,
+	.vector_write = nvm_be_nosys_vector_write,
+	.vector_read = nvm_be_nosys_vector_read,
+	.vector_copy = nvm_be_nosys_vector_copy,
 };
 #else
 #include <stdlib.h>
@@ -54,6 +59,7 @@ struct nvm_be nvm_be_spdk = {
 #include <unistd.h>
 #include <spdk/stdinc.h>
 #include <spdk/nvme.h>
+#include <spdk/nvme_ocssd.h>
 #include <spdk/env.h>
 #include <liblightnvm.h>
 #include <omp.h>
@@ -66,10 +72,6 @@ struct nvm_be nvm_be_spdk = {
 #define NVM_BE_SPDK_ALIGN 0x1000
 
 #define NVM_BE_SPDK_QDEPTH_MAX 128
-
-static inline int NVM_MIN(int x, int y) {
-	return x < y ? x : y;
-}
 
 struct state {
 	struct spdk_nvme_transport_id trid;
@@ -85,20 +87,25 @@ struct state {
 	omp_lock_t qpair_lock;
 };
 
+struct cpl_ctx {
+	struct spdk_nvme_cpl cpl;
+	bool completed;
+};
+
 static void vam_cpl(void *cb_arg, const struct spdk_nvme_cpl *cpl)
 {
-	struct state *state = cb_arg;
+	struct cpl_ctx *ctx = cb_arg;
 
 	if (spdk_nvme_cpl_is_error(cpl)) {
 		NVM_DEBUG("FAILED: spdk_nvme_cpl_is_error");
 	}
 
-	--(state->vam_outstanding);
+	memcpy(&ctx->cpl, cpl, sizeof(*cpl));
+	ctx->completed = true;
 }
 
 static inline int vam_execute(struct nvm_dev *dev, struct nvm_nvme_cmd *cmd,
-			      void *buf, size_t buf_len,
-			      struct nvm_ret *NVM_UNUSED(ret))
+			      void *buf, size_t buf_len, struct nvm_ret *ret)
 {
 	struct state *state = dev->be_state;
 	struct spdk_nvme_cmd *nvme_cmd = (struct spdk_nvme_cmd *)cmd;
@@ -115,23 +122,31 @@ static inline int vam_execute(struct nvm_dev *dev, struct nvm_nvme_cmd *cmd,
 		}
 	}
 
-	++(state->vam_outstanding);
-	if (spdk_nvme_ctrlr_cmd_admin_raw(state->ctrlr, nvme_cmd, buf_dma,
-					  buf_len, vam_cpl, state)) {
-		--(state->vam_outstanding);
+	struct cpl_ctx ctx = { 0 };
 
+	if (spdk_nvme_ctrlr_cmd_admin_raw(state->ctrlr, nvme_cmd, buf_dma,
+					  buf_len, vam_cpl, &ctx)) {
 		NVM_DEBUG("FAILED: spdk_nvme_ctrlr_cmd_admin_raw");
 		spdk_dma_free(buf_dma);
 
 		return -1;
 	}
 
-	while (state->vam_outstanding)
+	while (!ctx.completed) {
 		spdk_nvme_ctrlr_process_admin_completions(state->ctrlr);
+	}
 
 	if (buf && buf_len) {
 		memcpy(buf, buf_dma, buf_len);
 		spdk_dma_free(buf_dma);
+	}
+
+	if (ret) {
+		ret->result.cdw0 = ctx.cpl.cdw0;
+		ret->status = ctx.cpl.status.sc
+				| (ctx.cpl.status.sct << 8)
+				| (ctx.cpl.status.m   << 13)
+				| (ctx.cpl.status.dnr << 14);
 	}
 
 	return 0;
@@ -146,7 +161,7 @@ static struct nvm_spec_idfy *nvm_be_spdk_idfy(struct nvm_dev *dev,
 
 	struct nvm_nvme_cmd cmd = { 0 };
 
-	cmd.opcode = NVM_OPC_IDFY;
+	cmd.opcode = NVM_AOPC_IDFY;
 	cmd.nsid = state->nsid;
 
 	idfy = nvm_buf_alloca(NVM_BE_SPDK_ALIGN, idfy_len);
@@ -175,7 +190,7 @@ static int nvme_get_log_page(struct nvm_dev *dev, void *buf, uint32_t ndw,
 		return -1;
 	}
 
-	cmd.opcode = NVM_OPC_RPRT;
+	cmd.opcode = NVM_AOPC_RPRT;
 	cmd.nsid = state->nsid;
 	cmd.rprt.lid = 0xCA;
 	cmd.rprt.lsp = opt;
@@ -201,7 +216,7 @@ int nvm_be_spdk_gfeat(struct nvm_dev *dev, uint8_t id,
 	struct nvm_nvme_cmd cmd = { 0 };
 	struct nvm_ret _ret;
 
-	cmd.opcode = NVM_OPC_GFEAT;
+	cmd.opcode = NVM_AOPC_GFEAT;
 	cmd.nsid = state->nsid;
 	cmd.gfeat.fid = id;
 
@@ -212,7 +227,7 @@ int nvm_be_spdk_gfeat(struct nvm_dev *dev, uint8_t id,
 		return -1;
 	}
 
-	*((uint32_t *) feat) = ret->result;
+	*((uint32_t *) feat) = ret->result.cdw0;
 
 	return 0;
 }
@@ -226,7 +241,7 @@ int nvm_be_spdk_sfeat(struct nvm_dev *dev, uint8_t id,
 
 	struct nvm_nvme_cmd cmd = { 0 };
 
-	cmd.opcode = NVM_OPC_SFEAT;
+	cmd.opcode = NVM_AOPC_SFEAT;
 	cmd.nsid = state->nsid;
 	cmd.sfeat.fid = id;
 	cmd.sfeat.feat = *feat;
@@ -300,7 +315,7 @@ static struct nvm_spec_bbt *nvm_be_spdk_gbbt(struct nvm_dev *dev,
 	}
 	memset(bbt, 0, sizeof(*bbt));
 
-	cmd.opcode = NVM_S12_OPC_GET_BBT;
+	cmd.opcode = NVM_AOPC_GBBT;
 	cmd.nsid = state->nsid;
 	cmd.addrs = nvm_addr_gen2dev(dev, addr);
 
@@ -322,7 +337,7 @@ static int nvm_be_spdk_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs,
 
 	struct nvm_nvme_cmd cmd = { 0 };
 
-	cmd.opcode = NVM_S12_OPC_SET_BBT; // Construct command
+	cmd.opcode = NVM_AOPC_SBBT; // Construct command
 	cmd.s12.control = flags;
 	cmd.s12.naddrs = naddrs - 1;
 
@@ -353,7 +368,7 @@ static int nvm_be_spdk_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs,
 	return 0;
 }
 
-static void vio_cb(void *cb_arg, const struct spdk_nvme_cpl *cpl)
+static void be_callback(void *cb_arg, const struct spdk_nvme_cpl *cpl)
 {
 	int *completed = cb_arg;
 
@@ -364,6 +379,205 @@ static void vio_cb(void *cb_arg, const struct spdk_nvme_cpl *cpl)
 	}
 
 	*completed = 1;
+}
+
+int nvm_be_spdk_scalar_erase(struct nvm_dev *dev, struct nvm_addr addrs[],
+			     int naddrs, uint16_t NVM_UNUSED(flags),
+			     struct nvm_ret *NVM_UNUSED(ret))
+{
+	struct state *state = dev->be_state;
+	struct spdk_nvme_qpair *qpair = state->qpair;
+	omp_lock_t *qpair_lock = &state->qpair_lock;
+	struct spdk_nvme_ns *ns = state->ns;
+	const struct nvm_geo *geo = &dev->geo;
+
+	struct spdk_nvme_dsm_range *dsmr = NULL;
+	size_t dsmr_len = sizeof(*dsmr) * naddrs;
+
+	int completed = 0;
+	int res = 0;
+	int err;
+
+	if ((!naddrs) || (naddrs > NVM_NADDR_MAX)) {
+		NVM_DEBUG("FAILED: invalid naddrs: %d", naddrs);
+		errno = EINVAL;
+		return -1;
+	}
+
+	dsmr = nvm_buf_alloc(geo, dsmr_len);
+	if (!dsmr) {
+		NVM_DEBUG("FAILED: nvm_buf_alloc of DSM range");
+		return -1;
+	}
+
+	for(int idx = 0; idx < naddrs; ++idx) {
+		dsmr[idx].attributes.raw = 0;
+		dsmr[idx].length = geo->l.nsectr;
+		dsmr[idx].starting_lba = nvm_addr_gen2dev(dev, addrs[idx]);
+	}
+
+	omp_set_lock(qpair_lock);
+	err = spdk_nvme_ns_cmd_dataset_management(ns, qpair,
+						  SPDK_NVME_DSM_ATTR_DEALLOCATE,
+						  dsmr, naddrs, be_callback,
+						  &completed);
+	if (err) {
+		NVM_DEBUG("FAILED: err: %d", err);
+	}
+	omp_unset_lock(qpair_lock);
+
+	// Wait for completion
+	while (!completed) {
+		omp_set_lock(qpair_lock);
+		spdk_nvme_qpair_process_completions(qpair, 0);
+		omp_unset_lock(qpair_lock);
+	}
+
+	if (completed < 0) {
+		res = completed;
+		goto out;
+	}
+
+out:
+	nvm_buf_free(dsmr);
+
+	return res;
+}
+
+static inline int scalar_wr(struct nvm_dev *dev, struct nvm_addr addr,
+			    int naddrs, void *data, void *meta,
+			    uint16_t NVM_UNUSED(flags),
+			    int opcode, struct nvm_ret *NVM_UNUSED(ret))
+{
+	struct state *state = dev->be_state;
+	struct spdk_nvme_qpair *qpair = state->qpair;
+	omp_lock_t *qpair_lock = &state->qpair_lock;
+	struct spdk_nvme_ns *ns = state->ns;
+	const struct nvm_geo *geo = &dev->geo;
+	int completed = 0;
+
+	size_t data_len = data ? geo->l.nbytes * naddrs : 0;
+	void *data_dma = NULL;
+
+	size_t meta_len = meta ? geo->l.nbytes_oob * naddrs : 0;
+	void *meta_dma = NULL;
+
+	uint64_t addr_dev = nvm_addr_gen2dev(dev, addr);
+
+	int res = 0;
+	int err;
+
+	if (data) {		// Allocate and populate data
+		data_dma = spdk_dma_malloc(data_len, NVM_BE_SPDK_ALIGN, NULL);
+		if (!data_dma) {
+			NVM_DEBUG("FAILED: spdk_dma_malloc(data_dma)");
+			res = -1;
+			goto out;
+		}
+
+		if (opcode == NVM_DOPC_SCALAR_WRITE)
+			memcpy(data_dma, data, data_len);
+	}
+
+	if (meta) {		// Allocate and populate meta
+		meta_dma = spdk_dma_malloc(meta_len, NVM_BE_SPDK_ALIGN, NULL);
+		if (!meta_dma) {
+			NVM_DEBUG("FAILED: spdk_dma_malloc(meta_dma)");
+			res = -1;
+			goto out;
+		}
+
+		if (opcode == NVM_DOPC_SCALAR_WRITE)
+			memcpy(meta_dma, meta, meta_len);
+	}
+
+	omp_set_lock(qpair_lock);
+	switch(opcode) {
+	case NVM_DOPC_SCALAR_WRITE:
+		if (meta_dma) {
+			err = spdk_nvme_ns_cmd_write_with_md(ns, qpair, data_dma,
+							     meta_dma, addr_dev,
+							     naddrs,
+							     be_callback,
+							     &completed, 0x0,
+							     0x0, 0x0);
+		} else {
+			err = spdk_nvme_ns_cmd_write(ns, qpair, data_dma,
+						     addr_dev, naddrs,
+						     be_callback, &completed,
+						     0x0);
+		}
+		break;
+
+	case NVM_DOPC_SCALAR_READ:
+		if (meta_dma) {
+			err = spdk_nvme_ns_cmd_read_with_md(ns, qpair, data_dma,
+							    meta_dma, addr_dev,
+							    naddrs, be_callback,
+							    &completed, 0x0,
+							    0x0, 0x0);
+		} else {
+			err = spdk_nvme_ns_cmd_read(ns, qpair, data_dma,
+					    addr_dev, naddrs, be_callback,
+					    &completed, 0x0);
+		}
+		break;
+	default:
+		NVM_DEBUG("FAILED: invalid opcode: %d", opcode);
+		goto out;
+		omp_unset_lock(qpair_lock);
+	}
+	if (err) {
+		NVM_DEBUG("FAILED: spdk-cmd err: %d", err);
+
+		omp_unset_lock(qpair_lock);
+		res = -1;
+		goto out;
+	}
+	omp_unset_lock(qpair_lock);
+
+	// Wait for completion
+	while (!completed) {
+		omp_set_lock(qpair_lock);
+		spdk_nvme_qpair_process_completions(qpair, 0);
+		omp_unset_lock(qpair_lock);
+	}
+
+	if (completed < 0) {
+		res = completed;
+		goto out;
+	}
+
+	if ((opcode == NVM_DOPC_SCALAR_READ) && data)
+		memcpy(data, data_dma, data_len);
+
+	if ((opcode == NVM_DOPC_SCALAR_READ) && meta)
+		memcpy(meta, meta_dma, meta_len);
+
+out:
+	spdk_dma_free(data_dma);
+	spdk_dma_free(meta_dma);
+
+	return res;
+}
+
+int nvm_be_spdk_scalar_write(struct nvm_dev *dev, struct nvm_addr addr,
+			     int naddrs, const void *data, const void *meta,
+			     uint16_t flags, struct nvm_ret *ret)
+{
+	void *cdata = (char *)data;
+	void *cmeta = (char *)meta;
+
+	return scalar_wr(dev, addr, naddrs, cdata, cmeta, flags,
+			 NVM_DOPC_SCALAR_WRITE, ret);
+}
+
+int nvm_be_spdk_scalar_read(struct nvm_dev *dev, struct nvm_addr addr,
+			    int naddrs, void *data, void *meta, uint16_t flags,
+			    struct nvm_ret *ret)
+{
+	return scalar_wr(dev, addr, naddrs, data, meta, flags,
+			 NVM_DOPC_SCALAR_READ, ret);
 }
 
 static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
@@ -423,8 +637,9 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 			goto out;
 		}
 
-		for (int i = 0; i < naddrs; ++i)
+		for (int i = 0; i < naddrs; ++i) {
 			addrs_dma[i] = nvm_addr_gen2dev(dev, addrs[i]);
+		}
 
 		cmd.addrs = addrs_phys;
 	} else {
@@ -443,8 +658,9 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 				goto out;
 			}
 
-			for (int i = 0; i < naddrs; ++i)
+			for (int i = 0; i < naddrs; ++i) {
 				dst_dma[i] = nvm_addr_gen2dev(dev, dst[i]);
+			}
 			cmd.addrs_dst = dst_phys;
 		} else {
 			cmd.addrs_dst = nvm_addr_gen2dev(dev, dst[0]);
@@ -459,7 +675,7 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 			goto out;
 		}
 
-		if (opcode == NVM_OPC_WRITE)
+		if (opcode == NVM_DOPC_VECTOR_WRITE)
 			memcpy(data_dma, data, data_len);
 	}
 
@@ -474,7 +690,7 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 			goto out;
 		}
 
-		if (opcode == NVM_OPC_WRITE)
+		if (opcode == NVM_DOPC_VECTOR_WRITE)
 			memcpy(meta_dma, meta, meta_len);
 
 		nvme_cmd->mptr = meta_phys;
@@ -485,7 +701,7 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 	if (spdk_nvme_ctrlr_cmd_io_raw_with_md(ctrlr, qpair, nvme_cmd,
 					       data_dma,
 					       meta ? data_len + meta_len : data_len,
-					       meta_dma, vio_cb, &completed)) {
+					       meta_dma, be_callback, &completed)) {
 		NVM_DEBUG("FAILED: spdk_nvme_ctrlr_cmd_io_raw_with_md");
 
 		omp_unset_lock(qpair_lock);
@@ -506,10 +722,10 @@ static inline int vio_execute(struct nvm_dev *dev, struct nvm_addr addrs[],
 		goto out;
 	}
 
-	if ((opcode == NVM_OPC_READ) && data)
+	if ((opcode == NVM_DOPC_VECTOR_READ) && data)
 		memcpy(data, data_dma, data_len);
 
-	if ((opcode == NVM_OPC_READ) && meta)
+	if ((opcode == NVM_DOPC_VECTOR_READ) && meta)
 		memcpy(meta, meta_dma, meta_len);
 
 out:
@@ -521,35 +737,107 @@ out:
 	return res;
 }
 
-static int nvm_be_spdk_erase(struct nvm_dev *dev, struct nvm_addr addrs[],
-			     int naddrs, uint16_t flags, struct nvm_ret *ret)
+static int nvm_be_spdk_vector_erase(struct nvm_dev *dev,
+				    struct nvm_addr addrs[], int naddrs,
+				    void *meta, uint16_t NVM_UNUSED(flags),
+				    struct nvm_ret *NVM_UNUSED(ret))
 {
-	return vio_execute(dev, addrs, NULL, naddrs, NULL, NULL, flags,
-			   NVM_OPC_ERASE, ret);
+	struct state *state = dev->be_state;
+	omp_lock_t *qpair_lock = &state->qpair_lock;
+	int completed = 0;
+
+	const size_t addrs_len = naddrs * sizeof(uint64_t);
+	uint64_t *addrs_dma = NULL;
+
+	size_t meta_len = meta ? naddrs * sizeof(struct nvm_spec_rprt_descr) : 0;
+	void *meta_dma = NULL;
+
+	int res = 0;
+	int err;
+
+	addrs_dma = spdk_dma_malloc(addrs_len, NVM_BE_SPDK_ALIGN,
+				    NULL);
+	if (!addrs_dma) {
+		NVM_DEBUG("FAILED: spdk_dma_malloc(addrs)");
+		res = -1;
+		goto out;
+	}
+	for (int i = 0; i < naddrs; ++i) {
+		addrs_dma[i] = nvm_addr_gen2dev(dev, addrs[i]);
+	}
+	
+	if (meta) {		// Allocate and populate meta
+		meta_dma = spdk_dma_malloc(meta_len, NVM_BE_SPDK_ALIGN,
+					   NULL);
+		if (!meta_dma) {
+			NVM_DEBUG("FAILED: spdk_dma_malloc(meta_dma)");
+			res = -1;
+			goto out;
+		}
+	}
+
+	// Submit command
+	omp_set_lock(qpair_lock);
+	err = spdk_nvme_ocssd_ns_cmd_vector_reset(state->ns, state->qpair,
+						  addrs_dma, naddrs,
+						  meta_dma, be_callback,
+						  &completed);
+	if (err) {
+		NVM_DEBUG("FAILED: ocssd_ns_cmd_vector_reset err: %d", err);
+
+		omp_unset_lock(qpair_lock);
+		res = -1;
+		goto out;
+	}
+	omp_unset_lock(qpair_lock);
+
+	// Wait for completion
+	while (!completed) {
+		omp_set_lock(qpair_lock);
+		spdk_nvme_qpair_process_completions(state->qpair, 0);
+		omp_unset_lock(qpair_lock);
+	}
+
+	if (completed < 0) {
+		res = completed;
+		goto out;
+	}
+
+	memcpy(meta, meta_dma, meta_len);
+
+out:
+	spdk_dma_free(addrs_dma);
+	spdk_dma_free(meta_dma);
+
+	return res;
 }
 
-static int nvm_be_spdk_write(struct nvm_dev *dev, struct nvm_addr addrs[],
-			     int naddrs, void *data, void *meta, uint16_t flags,
-			     struct nvm_ret *ret)
+static int nvm_be_spdk_vector_write(struct nvm_dev *dev,
+				    struct nvm_addr addrs[], int naddrs,
+				    const void *data, const void *meta,
+				    uint16_t flags, struct nvm_ret *ret)
 {
-	return vio_execute(dev, addrs, NULL, naddrs, data, meta, flags,
-			   NVM_OPC_WRITE, ret);
+	char *cdata = (char *)data;
+	char *cmeta = (char *)meta;
+
+	return vio_execute(dev, addrs, NULL, naddrs, cdata, cmeta, flags,
+			   NVM_DOPC_VECTOR_WRITE, ret);
 }
 
-static int nvm_be_spdk_read(struct nvm_dev *dev, struct nvm_addr addrs[],
+static int nvm_be_spdk_vector_read(struct nvm_dev *dev, struct nvm_addr addrs[],
 			    int naddrs, void *data, void *meta, uint16_t flags,
 			    struct nvm_ret *ret)
 {
 	return vio_execute(dev, addrs, NULL, naddrs, data, meta, flags,
-			   NVM_OPC_READ, ret);
+			   NVM_DOPC_VECTOR_READ, ret);
 }
 
-static int nvm_be_spdk_copy(struct nvm_dev *dev, struct nvm_addr src[],
+static int nvm_be_spdk_vector_copy(struct nvm_dev *dev, struct nvm_addr src[],
 			    struct nvm_addr dst[], int naddrs, uint16_t flags,
 			    struct nvm_ret *ret)
 {
 	return vio_execute(dev, src, dst, naddrs, NULL, NULL, flags,
-			   NVM_OPC_COPY, ret);
+			   NVM_DOPC_VECTOR_COPY, ret);
 }
 
 /**
@@ -733,13 +1021,14 @@ static struct nvm_dev *nvm_be_spdk_open(const char *dev_path,
 		return NULL;
 	}
 
-	NVM_DEBUG("Good to go!?");
+	NVM_DEBUG("Let's go!");
 
 	return dev;
 }
 
 struct nvm_be nvm_be_spdk = {
 	.id = NVM_BE_SPDK,
+	.name = "NVM_BE_SPDK",
 
 	.open = nvm_be_spdk_open,
 	.close = nvm_be_spdk_close,
@@ -751,10 +1040,13 @@ struct nvm_be nvm_be_spdk = {
 	.sbbt = nvm_be_spdk_sbbt,
 	.gbbt = nvm_be_spdk_gbbt,
 
-	.erase = nvm_be_spdk_erase,
-	.write = nvm_be_spdk_write,
-	.read = nvm_be_spdk_read,
-	.copy = nvm_be_spdk_copy,
+	.scalar_erase = nvm_be_spdk_scalar_erase,
+	.scalar_write = nvm_be_spdk_scalar_write,
+	.scalar_read = nvm_be_spdk_scalar_read,
 
+	.vector_erase = nvm_be_spdk_vector_erase,
+	.vector_write = nvm_be_spdk_vector_write,
+	.vector_read = nvm_be_spdk_vector_read,
+	.vector_copy = nvm_be_spdk_vector_copy,
 };
 #endif
