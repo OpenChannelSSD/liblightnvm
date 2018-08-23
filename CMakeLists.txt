@@ -25,14 +25,9 @@ if (NVM_BE_IOCTL_ENABLED)
 	add_definitions(-DNVM_BE_IOCTL_ENABLED)
 endif()
 
-set(NVM_BE_LBA_ENABLED ${UNIX} CACHE BOOL "be_lba: Linux IOCTL/LBA backend")
-if (NVM_BE_LBA_ENABLED)
-	add_definitions(-DNVM_BE_LBA_ENABLED)
-endif()
-
-set(NVM_BE_SYSFS_ENABLED ${UNIX} CACHE BOOL "be_sysfs: Linux IOCTL/sysfs backend")
-if(NVM_BE_SYSFS_ENABLED)
-	add_definitions(-DNVM_BE_SYSFS_ENABLED)
+set(NVM_BE_LBD_ENABLED ${UNIX} CACHE BOOL "be_lbd: Linux IOCTL/LBD backend")
+if (NVM_BE_LBD_ENABLED)
+	add_definitions(-DNVM_BE_LBD_ENABLED)
 endif()
 
 # SPDK is disabled by default
@@ -58,8 +53,6 @@ enable_c_flag("-pedantic")
 
 set(NVM_OMP_ENABLED TRUE CACHE BOOL "nvm_omp: Compile with OpenMP?")
 if(NVM_OMP_ENABLED)
-	add_definitions(-DNVM_BE_SYSFS_ENABLED)
-
 	if (NOT CMAKE_VERSION VERSION_LESS "2.8.12")
 		find_package(OpenMP)
 		if (OPENMP_FOUND)
@@ -101,8 +94,7 @@ set(SOURCE_FILES
 	${PROJECT_SOURCE_DIR}/src/nvm_be.c
 	${PROJECT_SOURCE_DIR}/src/nvm_be_ioctl.c
 	${PROJECT_SOURCE_DIR}/src/nvm_be_spdk.c
-	${PROJECT_SOURCE_DIR}/src/nvm_be_sysfs.c
-	${PROJECT_SOURCE_DIR}/src/nvm_be_lba.c
+	${PROJECT_SOURCE_DIR}/src/nvm_be_lbd.c
 	${PROJECT_SOURCE_DIR}/src/nvm_dev.c
 	${PROJECT_SOURCE_DIR}/src/nvm_buf.c
 	${PROJECT_SOURCE_DIR}/src/nvm_bbt.c
@@ -112,6 +104,7 @@ set(SOURCE_FILES
 	${PROJECT_SOURCE_DIR}/src/nvm_addr.c
 	${PROJECT_SOURCE_DIR}/src/nvm_vblk.c
 	${PROJECT_SOURCE_DIR}/src/nvm_bounds.c
+	${PROJECT_SOURCE_DIR}/src/nvm_ret.c
 )
 
 include_directories("${PROJECT_SOURCE_DIR}/include")
