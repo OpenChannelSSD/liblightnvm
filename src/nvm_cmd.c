@@ -171,28 +171,74 @@ int nvm_cmd_sfeat(struct nvm_dev *dev, uint8_t id,
 }
 
 int nvm_cmd_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		  uint16_t flags, struct nvm_ret *ret)
+		  void *meta, uint16_t flags, struct nvm_ret *ret)
 {
-	return dev->be->erase(dev, addrs, naddrs, flags, ret);
+	int opt = flags & NVM_CMD_MASK_ADDR;
+
+	opt = opt ? opt : (dev->cmd_opts & NVM_CMD_MASK_ADDR);
+
+	switch(opt) {
+	case NVM_CMD_SCALAR:
+		if (meta) {
+			errno = EINVAL;
+			return -1;
+		}
+
+		return dev->be->scalar_erase(dev, addrs, naddrs, flags, ret);
+	case NVM_CMD_VECTOR:
+		return dev->be->vector_erase(dev, addrs, naddrs, meta, flags,
+					     ret);
+	default:
+		errno = EINVAL;
+		return -1;
+	}
 }
 
 int nvm_cmd_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		  void *data, void *meta, uint16_t flags,
+		  const void *data, const void *meta, uint16_t flags,
 		  struct nvm_ret *ret)
 {
-	return dev->be->write(dev, addrs, naddrs, data, meta, flags, ret);
+	int opt = flags & NVM_CMD_MASK_ADDR;
+
+	opt = opt ? opt : (dev->cmd_opts & NVM_CMD_MASK_ADDR);
+
+	switch(opt) {
+	case NVM_CMD_SCALAR:
+		return dev->be->scalar_write(dev, *addrs, naddrs, data, meta,
+					     flags, ret);
+	case NVM_CMD_VECTOR:
+		return dev->be->vector_write(dev, addrs, naddrs, data, meta,
+					     flags, ret);
+	default:
+		errno = EINVAL;
+		return -1;
+	}
 }
 
 int nvm_cmd_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		 void *data, void *meta, uint16_t flags,
 		 struct nvm_ret *ret)
 {
-	return dev->be->read(dev, addrs, naddrs, data, meta, flags, ret);
+	int opt = flags & NVM_CMD_MASK_ADDR;
+
+	opt = opt ? opt : (dev->cmd_opts & NVM_CMD_MASK_ADDR);
+
+	switch(opt) {
+	case NVM_CMD_SCALAR:
+		return dev->be->scalar_read(dev, *addrs, naddrs, data, meta,
+					    flags, ret);
+	case NVM_CMD_VECTOR:
+		return dev->be->vector_read(dev, addrs, naddrs, data, meta,
+					    flags, ret);
+	default:
+		errno = EINVAL;
+		return -1;
+	}
 }
 
 int nvm_cmd_copy(struct nvm_dev *dev, struct nvm_addr src[],
 		 struct nvm_addr dst[], int naddrs, uint16_t flags,
 		 struct nvm_ret *ret)
 {
-	return dev->be->copy(dev, src, dst, naddrs, flags, ret);
+	return dev->be->vector_copy(dev, src, dst, naddrs, flags, ret);
 }
