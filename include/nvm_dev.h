@@ -56,8 +56,8 @@ struct nvm_dev {
 	size_t nbbts;			///< Number of entries in cache
 	struct nvm_bbt **bbts;		///< Cache of bad-block-tables
 	enum nvm_meta_mode meta_mode;	///< Flag to indicate the how meta is w
-	struct nvm_be *be;		///< Backend interface
 	int quirks;			///< Mask representing known quirks
+	struct nvm_be *be;		///< Backend interface
 	void *be_state;			///< Backend state
 };
 
