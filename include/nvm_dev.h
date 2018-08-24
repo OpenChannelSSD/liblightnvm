@@ -59,6 +59,7 @@ struct nvm_dev {
 	int quirks;			///< Mask representing known quirks
 	struct nvm_be *be;		///< Backend interface
 	void *be_state;			///< Backend state
+	int cmd_opts;			///< Default options for CMD execution
 };
 
 #endif /* __INTERNAL_NVM_DEV_H */
