@@ -48,14 +48,16 @@ struct nvm_dev {
 	struct nvm_geo geo;		///< Device geometry
 	uint64_t ssw;			///< Bit-width for LBA fmt conversion
 	uint32_t mccap;			///< Media-controller capabilities
-	int pmode;			///< Default plane-mode I/O
-	int erase_naddrs_max;		///< Maximum # of cmd-addrs. for erase
-	int read_naddrs_max;		///< Maximum # of cmd-addrs. for read
-	int write_naddrs_max;		///< Maximum # of cmd-addrs. for write
+	struct {
+		int pmode;			///< Default plane-mode I/O
+		int erase_naddrs_max;		///< Max # of addrs. vblk erase
+		int read_naddrs_max;		///< Max # of addrs. vblk read
+		int write_naddrs_max;		///< Max # of addrs. vblk write
+		enum nvm_meta_mode meta_mode;	///< Pseudo-meta pattern
+	} vblk_opts;
 	int bbts_cached;		///< Whether to cache bbts
 	size_t nbbts;			///< Number of entries in cache
 	struct nvm_bbt **bbts;		///< Cache of bad-block-tables
-	enum nvm_meta_mode meta_mode;	///< Flag to indicate the how meta is w
 	int quirks;			///< Mask representing known quirks
 	struct nvm_be *be;		///< Backend interface
 	void *be_state;			///< Backend state
