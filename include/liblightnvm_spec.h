@@ -339,7 +339,8 @@ void nvm_spec_rprt_pr(const struct nvm_spec_rprt *rprt);
  * Representation of Spec. 2.0 feature types
  */
 enum nvm_spec_feat_id {
-	NVM_FEAT_ERROR_RECOVERY = 0x5
+	NVM_FEAT_ERROR_RECOVERY = 0x5,
+	NVM_FEAT_MEDIA_FEEDBACK = 0xCA
 };
 
 /**
@@ -356,6 +357,15 @@ union nvm_spec_feat {
 		uint32_t dulbe :  1;
 		uint32_t rsvd  : 15;
 	} error_recovery;
+
+	/**
+	 * This feature controls read command feedback.
+	 */
+	struct {
+		uint32_t hecc  : 1;
+		uint32_t vhecc : 1;
+		uint32_t rsvd  : 30;
+	} media_feedback;
 
 	/**
 	* Address format formed as anonymous consecutive fields
