@@ -65,6 +65,7 @@ struct nvm_cli_evars {
 	int read_naddrs_max;
 	int write_naddrs_max;
 	int meta_pr;
+	int cmd_opts;
 };
 
 /**
