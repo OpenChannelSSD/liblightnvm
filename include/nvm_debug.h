@@ -35,8 +35,10 @@
 
 #ifdef NVM_DEBUG_ENABLED
 
+#define __FILENAME__ strrchr("/" __FILE__, '/') + 1
+
 #define NVM_DEBUG(...) printf("# %s:%s-%d: " FIRST(__VA_ARGS__) "\n" , \
-	__FILE__, __func__, __LINE__ REST(__VA_ARGS__)); fflush(stdout);
+	__FILENAME__, __func__, __LINE__ REST(__VA_ARGS__)); fflush(stdout);
 
 #define FIRST(...) FIRST_HELPER(__VA_ARGS__, throwaway)
 #define FIRST_HELPER(first, ...) first
