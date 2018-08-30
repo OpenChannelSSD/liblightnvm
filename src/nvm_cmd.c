@@ -158,6 +158,18 @@ int nvm_cmd_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs, int naddrs,
 	return dev->be->sbbt(dev, addrs, naddrs, flags, ret);
 }
 
+int nvm_cmd_gfeat(struct nvm_dev *dev, uint8_t id, union nvm_spec_feat *feat,
+		  struct nvm_ret *ret)
+{
+	return dev->be->gfeat(dev, id, feat, ret);
+}
+
+int nvm_cmd_sfeat(struct nvm_dev *dev, uint8_t id,
+		  const union nvm_spec_feat *feat, struct nvm_ret *ret)
+{
+	return dev->be->sfeat(dev, id, feat, ret);
+}
+
 int nvm_cmd_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 		  uint16_t flags, struct nvm_ret *ret)
 {
