@@ -40,6 +40,11 @@ struct nvm_be {
 	enum nvm_be_id id;
 
 	/**
+	 * Backend name
+	 */
+	char name[64];
+
+	/**
 	 * Open a device
 	 */
 	struct nvm_dev *(*open)(const char *, int flags);
@@ -61,6 +66,18 @@ struct nvm_be {
 				      struct nvm_ret *);
 
 	/**
+	 * Execute get feature command
+	 */
+	int (*gfeat)(struct nvm_dev *, uint8_t, union nvm_spec_feat *,
+		     struct nvm_ret *);
+
+	/**
+	 * Execute set feature command
+	 */
+	int (*sfeat)(struct nvm_dev *, uint8_t, const union nvm_spec_feat *,
+		     struct nvm_ret *);
+
+	/**
 	 * Execute get bad-block-table command
 	 */
 	struct nvm_spec_bbt *(*gbbt)(struct nvm_dev *, struct nvm_addr,
@@ -75,26 +92,45 @@ struct nvm_be {
 	/**
 	 * Execute erase command
 	 */
-	int (*erase)(struct nvm_dev *, struct nvm_addr *, int, uint16_t,
-		     struct nvm_ret *);
+	int (*scalar_erase)(struct nvm_dev *, struct nvm_addr *, int, uint16_t,
+			    struct nvm_ret *);
 
 	/**
 	 * Execute write command
 	 */
-	int (*write)(struct nvm_dev *dev, struct nvm_addr *, int naddrs, void *,
-		     void *, uint16_t, struct nvm_ret *);
+	int (*scalar_write)(struct nvm_dev *dev, struct nvm_addr *, int naddrs,
+			    void *, void *, uint16_t, struct nvm_ret *);
 
 	/**
 	 * Execute read command
 	 */
-	int (*read)(struct nvm_dev *dev, struct nvm_addr *, int naddrs, void *,
-		    void *, uint16_t, struct nvm_ret *);
+	int (*scalar_read)(struct nvm_dev *dev, struct nvm_addr *, int naddrs,
+			   void *, void *, uint16_t, struct nvm_ret *);
 
 	/**
-	 * Execute copy command
+	 * Execute vector-erase command
 	 */
-	int (*copy)(struct nvm_dev *, struct nvm_addr *, struct nvm_addr *, int,
-		    uint16_t, struct nvm_ret *);
+	int (*vector_erase)(struct nvm_dev *, struct nvm_addr *, int, void *,
+			    uint16_t, struct nvm_ret *);
+
+	/**
+	 * Execute vector-write command
+	 */
+	int (*vector_write)(struct nvm_dev *dev, struct nvm_addr *,
+			    int, void *, void *, uint16_t,
+			    struct nvm_ret *);
+
+	/**
+	 * Execute vector-read command
+	 */
+	int (*vector_read)(struct nvm_dev *dev, struct nvm_addr *, int naddrs,
+			   void *, void *, uint16_t, struct nvm_ret *);
+
+	/**
+	 * Execute vector-copy command
+	 */
+	int (*vector_copy)(struct nvm_dev *, struct nvm_addr *,
+			   struct nvm_addr *, int, uint16_t, struct nvm_ret *);
 };
 
 /**
@@ -112,6 +148,12 @@ struct nvm_spec_rprt *nvm_be_nosys_rprt(struct nvm_dev *dev,
 					struct nvm_addr *addr, int opt,
 					struct nvm_ret *ret);
 
+int nvm_be_nosys_gfeat(struct nvm_dev *, uint8_t, union nvm_spec_feat *,
+		       struct nvm_ret *);
+
+int nvm_be_nosys_sfeat(struct nvm_dev *, uint8_t, const union nvm_spec_feat *,
+		       struct nvm_ret *);
+
 struct nvm_spec_bbt *nvm_be_nosys_gbbt(struct nvm_dev *dev,
 				       struct nvm_addr addr,
 				       struct nvm_ret *ret);
@@ -119,20 +161,32 @@ struct nvm_spec_bbt *nvm_be_nosys_gbbt(struct nvm_dev *dev,
 int nvm_be_nosys_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs, int naddrs,
 		      uint16_t flags, struct nvm_ret *ret);
 
-int nvm_be_nosys_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		       uint16_t flags, struct nvm_ret *ret);
+int nvm_be_nosys_scalar_erase(struct nvm_dev *dev, struct nvm_addr addrs[],
+			      int naddrs, uint16_t flags, struct nvm_ret *ret);
 
-int nvm_be_nosys_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		       void *data, void *meta, uint16_t flags,
-		       struct nvm_ret *ret);
+int nvm_be_nosys_scalar_write(struct nvm_dev *dev, struct nvm_addr addrs[],
+			      int naddrs, void *data, void *meta,
+			      uint16_t flags, struct nvm_ret *ret);
 
-int nvm_be_nosys_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		      void *data, void *meta, uint16_t flags,
-		      struct nvm_ret *ret);
+int nvm_be_nosys_scalar_read(struct nvm_dev *dev, struct nvm_addr addrs[],
+			     int naddrs, void *data, void *meta, uint16_t flags,
+			     struct nvm_ret *ret);
 
-int nvm_be_nosys_copy(struct nvm_dev *dev, struct nvm_addr src[],
-		      struct nvm_addr dst[], int naddrs, uint16_t flags,
-		      struct nvm_ret *ret);
+int nvm_be_nosys_vector_erase(struct nvm_dev *dev, struct nvm_addr addrs[],
+			      int naddrs, void *meta, uint16_t flags,
+			      struct nvm_ret *ret);
+
+int nvm_be_nosys_vector_write(struct nvm_dev *dev, struct nvm_addr addrs[],
+			      int naddrs, void *data, void *meta,
+			      uint16_t flags, struct nvm_ret *ret);
+
+int nvm_be_nosys_vector_read(struct nvm_dev *dev, struct nvm_addr addrs[],
+			     int naddrs, void *data, void *meta, uint16_t flags,
+			     struct nvm_ret *ret);
+
+int nvm_be_nosys_vector_copy(struct nvm_dev *dev, struct nvm_addr src[],
+			     struct nvm_addr dst[], int naddrs, uint16_t flags,
+			     struct nvm_ret *ret);
 
 /**
  * Auxilary helpers
