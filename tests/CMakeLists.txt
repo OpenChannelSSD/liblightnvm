@@ -23,9 +23,12 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/test_vblk.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_bbt.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_rprt.c
-	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_vcopy.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_rprt_ordr.c
-	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_ewr.c)
+	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_feat.c
+	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_erase.c
+	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_ewr_scalar.c
+	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_ewr_vector.c
+	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_copy.c)
 
 #
 # static linking, against lightnvm_a, to avoid runtime dependency on liblightnvm
