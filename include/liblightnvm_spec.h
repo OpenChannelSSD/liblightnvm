@@ -336,6 +336,35 @@ struct nvm_spec_rprt {
 void nvm_spec_rprt_pr(const struct nvm_spec_rprt *rprt);
 
 /**
+ * Representation of Spec. 2.0 feature types
+ */
+enum nvm_spec_feat_id {
+	NVM_FEAT_ERROR_RECOVERY = 0x5
+};
+
+/**
+ * Encapsulation of NVMe/NVM features.
+ *
+ * @union nvm_spec_feat
+ */
+union nvm_spec_feat {
+	/**
+	 * This feature controls the error recovery attributes.
+	 */
+	struct {
+		uint32_t tler  : 16;
+		uint32_t dulbe :  1;
+		uint32_t rsvd  : 15;
+	} error_recovery;
+
+	/**
+	* Address format formed as anonymous consecutive fields
+	*/
+	uint32_t a;
+};
+static_assert(sizeof(union nvm_spec_feat) == 4, "Incorrect size");
+
+/**
  * Prints a humanly readable representation of the give address format mask
  *
  * @param ppaf The address format to print
@@ -414,6 +443,22 @@ struct nvm_nvme_cmd {
 			uint32_t numdu	: 16;
 			uint32_t rsvd11	: 16;
 		} rprt;				///< RPRT accessor
+
+		struct {
+			uint32_t fid    : 8;	///< Feature Identifier
+			uint32_t rsvd10 : 23;
+			uint32_t save   : 1;	///< Save
+
+			union nvm_spec_feat feat;
+		} sfeat;
+
+		struct {
+			uint32_t fid    : 8;	///< Feature Identifier
+			uint32_t sel	: 3;	///< Select
+			uint32_t rsvd10 : 21;
+
+			uint32_t unused11;
+		} gfeat;
 	};
 
 	/* cdw 12 */
