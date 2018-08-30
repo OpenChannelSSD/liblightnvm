@@ -80,7 +80,7 @@ struct nvm_spec_idfy *nvm_be_nosys_idfy(struct nvm_dev *NVM_UNUSED(dev),
 	return NULL;
 }
 
-		
+
 struct nvm_spec_rprt *nvm_be_nosys_rprt(struct nvm_dev *NVM_UNUSED(dev),
 					struct nvm_addr *NVM_UNUSED(addr),
 					int NVM_UNUSED(opt),
@@ -291,7 +291,7 @@ int nvm_be_populate_quirks(struct nvm_dev *dev, const char serial[])
 	    (dev->geo.g.meta_nbytes > (dev->geo.g.sector_nbytes * 0.1))) {
 		dev->geo.g.meta_nbytes = 16; // Naively hope this is right
 	}
-	
+
 	return 0;
 }
 
