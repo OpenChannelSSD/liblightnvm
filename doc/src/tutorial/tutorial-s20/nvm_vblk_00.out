@@ -7,7 +7,7 @@ vblk:
 naddrs: 1
 addrs:
   - {val: 0x0402008e00000000, pugrp: 04, punit: 02, chunk: 0142, sectr: 0000}
-nvm_vblk_erase: {elapsed: 0.0049, mb: 24.00, mbsec: 4913.02}
+nvm_vblk_erase: {elapsed: 0.0049, mb: 24.00, mbsec: 4860.51}
 
 vblk:
   dev: {pmode: 'SNGL'}
@@ -18,9 +18,9 @@ vblk:
 naddrs: 1
 addrs:
   - {val: 0x0402008e00000000, pugrp: 04, punit: 02, chunk: 0142, sectr: 0000}
-nvm_buf_alloc: {elapsed: 0.000016}
-nvm_buf_fill: {elapsed: 0.021612}
-nvm_vblk_write: {elapsed: 0.8337, mb: 24.00, mbsec: 28.79}
+nvm_buf_alloc: {elapsed: 0.000017}
+nvm_buf_fill: {elapsed: 0.015043}
+nvm_vblk_write: {elapsed: 0.8366, mb: 24.00, mbsec: 28.69}
 
 vblk:
   dev: {pmode: 'SNGL'}
@@ -31,6 +31,6 @@ vblk:
 naddrs: 1
 addrs:
   - {val: 0x0402008e00000000, pugrp: 04, punit: 02, chunk: 0142, sectr: 0000}
-nvm_buf_alloc: {elapsed: 0.000020}
-nvm_buf_fill: {elapsed: 0.020989}
-nvm_vblk_read: {elapsed: 0.1972, mb: 24.00, mbsec: 121.69}
+nvm_buf_alloc: {elapsed: 0.000017}
+nvm_buf_fill: {elapsed: 0.015394}
+nvm_vblk_read: {elapsed: 0.1987, mb: 24.00, mbsec: 120.76}

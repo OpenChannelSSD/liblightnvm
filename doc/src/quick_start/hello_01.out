@@ -2,19 +2,14 @@
 dev_attr:
   verid: 0x02
   be_id: 0x01
+  be_name: 'NVM_BE_IOCTL'
   name: 'nvme0n1'
   path: '/dev/nvme0n1'
   fd: 3
   ssw: 12
-  mccap: 00000000000000000000000000000001
-  pmode: 'SNGL'
-  erase_naddrs_max: 64
-  read_naddrs_max: 64
-  write_naddrs_max: 64
-  meta_mode: 0
+  mccap: '00000000000000000000000000000001'
   bbts_cached: 0
-  bbts_cached: 00000000
-  quirks: 00000000
+  quirks: '00000000'
 dev_geo:
   verid: 0x02
   npugrp: 8
@@ -25,6 +20,17 @@ dev_geo:
   nbytes_oob: 16
   tbytes: 1187021586432
   tmbytes: 1132032
+dev_cmd_opts:
+  mask: '00000000000000000000000011001000'
+  iomd: 'SYNC'
+  addr: 'VECTOR'
+  plod: 'PRP'
+dev_vblk_opts:
+  pmode: 'SNGL'
+  erase_naddrs_max: 64
+  read_naddrs_max: 64
+  write_naddrs_max: 64
+  meta_mode: 0
 dev_ppaf: ~
 dev_ppaf_mask: ~
 dev_lbaf:

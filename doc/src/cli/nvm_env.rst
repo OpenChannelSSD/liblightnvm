@@ -8,7 +8,7 @@ The following environment variables control the behavior of the CLI commands.
 NVM_CLI_BE_ID
   Controls which transport backend to use, default to NVM_BE_ANY(0x0).
 
-  NVM_BE_IOCTL(0x1), NVM_BE_IOCTL_SYSFS(0x2)
+  NVM_BE_IOCTL(0x1), NVM_BE_LBD(0x2), NVM_BE_SPDK(0x4)
 NVM_CLI_PMODE
   Control the plane-hint of ``nvm_addr`` and ``nvm_vblk``, values are:
 

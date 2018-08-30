@@ -1,4 +1,4 @@
-NVM address (nvm_addr_*) -- Ver { major(0), minor(1), patch(2) }
+NVM address (nvm_addr_*) -- Ver { major(0), minor(1), patch(4) }
 
 Construct and convert addresses
 
@@ -6,12 +6,10 @@ Usage:
  nvm_addr   s12_to_gen dev_path ch lun blk pl pg sec [-h] [-v] [-t]
  nvm_addr   s20_to_gen dev_path pugrp punit chunk sectr [-h] [-v] [-t]
  nvm_addr      gen2dev dev_path 0xADDR [0xADDR...] [-h] [-v] [-t]
- nvm_addr      gen2lba dev_path 0xADDR [0xADDR...] [-h] [-v] [-t]
- nvm_addr      gen2off dev_path 0xADDR [0xADDR...] [-h] [-v] [-t]
- nvm_addr      gen2lpo dev_path 0xADDR [0xADDR...] [-h] [-v] [-t]
  nvm_addr      dev2gen dev_path 0xVAL [0xVAL...] [-h] [-v] [-t]
- nvm_addr      lba2gen dev_path val [val...] [-h] [-v] [-t]
+ nvm_addr      gen2off dev_path 0xADDR [0xADDR...] [-h] [-v] [-t]
  nvm_addr      off2gen dev_path val [val...] [-h] [-v] [-t]
+ nvm_addr      gen2lpo dev_path 0xADDR [0xADDR...] [-h] [-v] [-t]
  nvm_addr      lpo2gen dev_path val [val...] [-h] [-v] [-t]
 
 Options:

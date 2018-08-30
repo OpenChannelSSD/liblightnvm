@@ -8,5 +8,5 @@ naddrs: 1
 addrs:
   - {val: 0x0402008e00000000, pugrp: 04, punit: 02, chunk: 0142, sectr: 0000}
 nvm_buf_alloc: {elapsed: 0.000018}
-nvm_buf_fill: {elapsed: 0.020935}
-nvm_vblk_read: {elapsed: 0.1969, mb: 24.00, mbsec: 121.88}
+nvm_buf_fill: {elapsed: 0.015288}
+nvm_vblk_read: {elapsed: 0.1991, mb: 24.00, mbsec: 120.51}

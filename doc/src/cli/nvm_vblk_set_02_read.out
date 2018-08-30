@@ -10,6 +10,6 @@ addrs:
   - {val: 0x0100008e00000000, pugrp: 01, punit: 00, chunk: 0142, sectr: 0000}
   - {val: 0x0200008e00000000, pugrp: 02, punit: 00, chunk: 0142, sectr: 0000}
   - {val: 0x0300008e00000000, pugrp: 03, punit: 00, chunk: 0142, sectr: 0000}
-nvm_buf_alloc: {elapsed: 0.000022}
-nvm_buf_fill: {elapsed: 0.066288}
-nvm_vblk_read: {elapsed: 0.1784, mb: 96.00, mbsec: 537.99}
+nvm_buf_alloc: {elapsed: 0.000017}
+nvm_buf_fill: {elapsed: 0.047017}
+nvm_vblk_read: {elapsed: 0.1775, mb: 96.00, mbsec: 540.81}

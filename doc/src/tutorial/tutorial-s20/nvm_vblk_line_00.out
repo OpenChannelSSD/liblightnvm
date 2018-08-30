@@ -38,7 +38,7 @@ addrs:
   - {val: 0x0503008e00000000, pugrp: 05, punit: 03, chunk: 0142, sectr: 0000}
   - {val: 0x0603008e00000000, pugrp: 06, punit: 03, chunk: 0142, sectr: 0000}
   - {val: 0x0703008e00000000, pugrp: 07, punit: 03, chunk: 0142, sectr: 0000}
-nvm_vblk_erase: {elapsed: 0.0052, mb: 768.00, mbsec: 148063.49}
+nvm_vblk_erase: {elapsed: 0.0052, mb: 768.00, mbsec: 147261.43}
 
 vblk:
   dev: {pmode: 'SNGL'}
@@ -80,9 +80,9 @@ addrs:
   - {val: 0x0503008e00000000, pugrp: 05, punit: 03, chunk: 0142, sectr: 0000}
   - {val: 0x0603008e00000000, pugrp: 06, punit: 03, chunk: 0142, sectr: 0000}
   - {val: 0x0703008e00000000, pugrp: 07, punit: 03, chunk: 0142, sectr: 0000}
-nvm_buf_alloc: {elapsed: 0.000022}
-nvm_buf_fill: {elapsed: 0.622275}
-nvm_vblk_write: {elapsed: 0.8560, mb: 768.00, mbsec: 897.25}
+nvm_buf_alloc: {elapsed: 0.000018}
+nvm_buf_fill: {elapsed: 0.453613}
+nvm_vblk_write: {elapsed: 0.8626, mb: 768.00, mbsec: 890.37}
 
 vblk:
   dev: {pmode: 'SNGL'}
@@ -124,6 +124,6 @@ addrs:
   - {val: 0x0503008e00000000, pugrp: 05, punit: 03, chunk: 0142, sectr: 0000}
   - {val: 0x0603008e00000000, pugrp: 06, punit: 03, chunk: 0142, sectr: 0000}
   - {val: 0x0703008e00000000, pugrp: 07, punit: 03, chunk: 0142, sectr: 0000}
-nvm_buf_alloc: {elapsed: 0.000004}
-nvm_buf_fill: {elapsed: 0.532617}
-nvm_vblk_read: {elapsed: 0.3658, mb: 768.00, mbsec: 2099.59}
+nvm_buf_alloc: {elapsed: 0.000005}
+nvm_buf_fill: {elapsed: 0.343525}
+nvm_vblk_read: {elapsed: 0.3618, mb: 768.00, mbsec: 2123.00}

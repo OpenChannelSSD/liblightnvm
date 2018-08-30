@@ -32,13 +32,13 @@ target. For example:
 .. code-block:: bash
 
   # Change configuration, build and install
-  make spdk_on debug_on deb_on configure
+  make spdk_on debug_on configure
   make
   sudo make install
 
-This will enable the SPDK backend, debugging, and build Debian packages.
+This will enable debugging and the SPDK backend.
 
-.. note: ``spdk_on`` expects SPDK to be available in ``/opt/spdk``.
+.. note: See the section on SPDK backend for info on SPDK installation / usage.
 
 In case you enable build of Debian packages via ``deb_on``, then you can modify
 the ``make install`` step to install/uninstall using the Debian package:
@@ -104,7 +104,8 @@ Compile it
    :language: bash
 
 .. tip:: If you compiled liblightnvm with SPDK, then add SPDK to the command
-  above as well.
+  above as well. Have a look in the SPDK backend section for information on
+  installing and linking with SPDK.
 
 Run it
 ~~~~~~

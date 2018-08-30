@@ -7,7 +7,7 @@ vblk:
 naddrs: 1
 addrs:
   - {val: 0x0402008e00000000, pugrp: 04, punit: 02, chunk: 0142, sectr: 0000}
-nvm_vblk_erase: {elapsed: 0.0049, mb: 24.00, mbsec: 4939.13}
+nvm_vblk_erase: {elapsed: 0.0050, mb: 24.00, mbsec: 4811.13}
 
 vblk:
   dev: {pmode: 'SNGL'}
@@ -18,6 +18,6 @@ vblk:
 naddrs: 1
 addrs:
   - {val: 0x0402008e00000000, pugrp: 04, punit: 02, chunk: 0142, sectr: 0000}
-nvm_buf_alloc: {elapsed: 0.000020}
-nvm_buf_fill: {elapsed: 0.020712}
-nvm_vblk_write: {elapsed: 0.8339, mb: 24.00, mbsec: 28.78}
+nvm_buf_alloc: {elapsed: 0.000003}
+nvm_buf_fill: {elapsed: 0.010750}
+nvm_vblk_write: {elapsed: 0.8363, mb: 24.00, mbsec: 28.70}

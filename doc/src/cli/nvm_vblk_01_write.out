@@ -7,6 +7,6 @@ vblk:
 naddrs: 1
 addrs:
   - {val: 0x0402008e00000000, pugrp: 04, punit: 02, chunk: 0142, sectr: 0000}
-nvm_buf_alloc: {elapsed: 0.000020}
-nvm_buf_fill: {elapsed: 0.028409}
-nvm_vblk_write: {elapsed: 0.8354, mb: 24.00, mbsec: 28.73}
+nvm_buf_alloc: {elapsed: 0.000017}
+nvm_buf_fill: {elapsed: 0.018428}
+nvm_vblk_write: {elapsed: 0.8362, mb: 24.00, mbsec: 28.70}
