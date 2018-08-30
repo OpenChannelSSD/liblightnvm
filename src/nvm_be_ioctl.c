@@ -38,6 +38,8 @@ struct nvm_be nvm_be_ioctl = {
 
 	.idfy = nvm_be_nosys_idfy,
 	.rprt = nvm_be_nosys_rprt,
+	.gfeat = nvm_be_nosys_gfeat,
+	.sfeat = nvm_be_nosys_sfeat,
 	.sbbt = nvm_be_nosys_sbbt,
 	.gbbt = nvm_be_nosys_gbbt,
 
@@ -196,6 +198,47 @@ struct nvm_spec_idfy *nvm_be_ioctl_idfy(struct nvm_dev *dev,
 	}
 
 	return idfy;
+}
+
+int nvm_be_ioctl_gfeat(struct nvm_dev *dev, uint8_t id,
+		       union nvm_spec_feat *feat,
+		       struct nvm_ret *NVM_UNUSED(ret))
+{
+	struct nvme_passthru_cmd cmd = { 0 };
+
+	cmd.opcode = NVM_S20_OPC_GFEAT;
+	cmd.nsid = dev->nsid;
+	cmd.cdw10 = id;
+
+
+	if(ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, &cmd)) {
+		NVM_DEBUG("ioctl failed");
+		return -1;
+	}
+
+	*((uint32_t *) feat) = cmd.result;
+
+	return 0;
+}
+
+
+int nvm_be_ioctl_sfeat(struct nvm_dev *dev, uint8_t id,
+		       const union nvm_spec_feat *feat,
+		       struct nvm_ret *NVM_UNUSED(ret))
+{
+	struct nvme_passthru_cmd cmd = { 0 };
+
+	cmd.opcode = NVM_S20_OPC_SFEAT;
+	cmd.nsid = dev->nsid;
+	cmd.cdw10 = id;
+	cmd.cdw11 = *((uint32_t *) feat);
+
+	if(ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, &cmd)) {
+		NVM_DEBUG("ioctl failed");
+		return -1;
+	}
+
+	return 0;
 }
 
 struct nvm_spec_rprt *nvm_be_ioctl_rprt(struct nvm_dev *dev,
@@ -561,6 +604,8 @@ struct nvm_be nvm_be_ioctl = {
 
 	.idfy = nvm_be_ioctl_idfy,
 	.rprt = nvm_be_ioctl_rprt,
+	.gfeat = nvm_be_ioctl_gfeat,
+	.sfeat = nvm_be_ioctl_sfeat,
 	.sbbt = nvm_be_ioctl_sbbt,
 	.gbbt = nvm_be_ioctl_gbbt,
 
