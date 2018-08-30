@@ -93,7 +93,8 @@ void ewr_s12_1addr(int use_meta)
 		}
 	}
 
-	res = nvm_addr_erase(dev, addrs, pmode ? 1 : geo->nplanes, pmode, &ret);
+	res = nvm_cmd_erase(dev, addrs, pmode ? 1 : geo->nplanes, NULL, pmode,
+			    &ret);
 	if (res < 0) {
 		CU_FAIL("Erase failure");
 		goto out;
@@ -107,7 +108,7 @@ void ewr_s12_1addr(int use_meta)
 			addrs[i].g.sec = i % geo->nsectors;
 			addrs[i].g.pl = (i / geo->nsectors) % geo->nplanes;
 		}
-		res = nvm_addr_write(dev, addrs, naddrs, buf_w,
+		res = nvm_cmd_write(dev, addrs, naddrs, buf_w,
 				     use_meta ? meta_w : NULL, pmode, &ret);
 		if (res < 0) {
 			CU_FAIL("Write failure");
@@ -137,7 +138,7 @@ void ewr_s12_1addr(int use_meta)
 				if (use_meta)
 					memset(meta_r, 0, meta_r_nbytes);
 
-				res = nvm_addr_read(dev, &addr, 1, buf_r,
+				res = nvm_cmd_read(dev, &addr, 1, buf_r,
 						    use_meta ? meta_r : NULL, pmode, &ret);
 				if (res < 0) {
 					CU_FAIL("Read failure");
@@ -155,7 +156,7 @@ void ewr_s12_1addr(int use_meta)
 							meta_r_nbytes,
 							geo->g.meta_nbytes,
 							NBYTES_QRK);
-				
+
 				if (buf_diff)
 					CU_FAIL("Read failure: buffer mismatch");
 				if (use_meta && meta_diff) {
@@ -250,14 +251,14 @@ void ewr_s12_naddr(int use_meta, int pmode)
 	// TODO: This should do quirks-testing
 	if (pmode) {					///< Erase
 		addrs[0].ppa = blk_addr.ppa;
-		res = nvm_cmd_erase(dev, addrs, 1, pmode, &ret);
+		res = nvm_cmd_erase(dev, addrs, 1, NULL, pmode, &ret);
 	} else {
 		for (size_t pl = 0; pl < geo->nplanes; ++pl) {
 			addrs[pl].ppa = blk_addr.ppa;
 
 			addrs[pl].g.pl = pl;
 		}
-		res = nvm_cmd_erase(dev, addrs, geo->nplanes, pmode, &ret);
+		res = nvm_cmd_erase(dev, addrs, geo->nplanes, NULL, pmode, &ret);
 	}
 	if (res < 0) {
 		CU_FAIL("Erase failure");
@@ -279,7 +280,7 @@ void ewr_s12_naddr(int use_meta, int pmode)
 			goto out;
 		}
 	}
-	
+
 	for (size_t pg = 0; pg < geo->npages; ++pg) {	///< Read
 		size_t buf_diff = 0, meta_diff = 0;
 
@@ -312,7 +313,7 @@ void ewr_s12_naddr(int use_meta, int pmode)
 						bufs->nbytes_meta,
 						geo->g.meta_nbytes,
 						NBYTES_QRK);
-		
+
 		if (buf_diff)
 			CU_FAIL("Read failure: buffer mismatch");
 		if (use_meta && meta_diff) {
@@ -453,11 +454,13 @@ void test_EWR_S12_NADDR_META1_QUAD(void)
 	}
 }
 
-static void ewr_s20(int use_meta)
+// Erase, write, and read an single chunk
+static void ewr_s20(int use_rwmeta, int use_erase_meta)
 {
 	const int naddrs = nvm_dev_get_ws_min(dev);
 	struct nvm_addr addrs[naddrs];
 	struct nvm_buf_set *bufs = NULL;
+	struct nvm_spec_rprt_descr *erase_meta = NULL;
 	struct nvm_ret ret;
 	struct nvm_addr chunk_addr = { .val = 0 };
 	ssize_t res;
@@ -467,18 +470,33 @@ static void ewr_s20(int use_meta)
 		goto out;
 	}
 
-	bufs = nvm_buf_set_alloc(dev, naddrs * geo->sector_nbytes,
-				 use_meta ? naddrs * geo->l.nbytes_oob : 0);
+	bufs = nvm_buf_set_alloc(dev, naddrs * geo->l.nbytes,
+				 use_rwmeta ? naddrs * geo->l.nbytes_oob : 0);
 	if (!bufs) {
 		CU_FAIL("nvm_buf_set_alloc");
 		goto out;
 	}
 	nvm_buf_set_fill(bufs);
 
-	res = nvm_cmd_erase(dev, addrs, 1, 0x0, &ret);		///< Erase
+	if (use_erase_meta) {
+		erase_meta = nvm_buf_alloc(geo, naddrs * sizeof(*erase_meta));
+		if (!erase_meta) {
+			CU_FAIL("nvm_buf_alloc for erase_meta");
+			goto out;
+		}
+	}
+
+	res = nvm_cmd_erase(dev, &chunk_addr, 1, erase_meta, 0x0, &ret); ///< Erase
 	if (res < 0) {
 		CU_FAIL("Erase failure");
 		goto out;
+	}
+    
+	if (use_erase_meta) {
+		CU_ASSERT(erase_meta->cs == NVM_CHUNK_STATE_FREE);
+		CU_ASSERT(erase_meta->wp == 0);
+		CU_ASSERT(erase_meta->naddrs == geo->l.nsectr);
+		CU_ASSERT(erase_meta->addr == nvm_addr_gen2dev(dev, chunk_addr));
 	}
 
 								///< Write
@@ -506,7 +524,7 @@ static void ewr_s20(int use_meta)
 		}
 
 		memset(bufs->read, 0, bufs->nbytes);	///< Reset read buffers
-		if (use_meta)
+		if (use_rwmeta)
 			memset(bufs->read_meta, 0, bufs->nbytes_meta);
 
 		res = nvm_cmd_read(dev, addrs, naddrs, bufs->read,
@@ -523,7 +541,7 @@ static void ewr_s20(int use_meta)
 			CU_FAIL("Read failure: buffer mismatch");
 		}
 
-		if (use_meta) {
+		if (use_rwmeta) {
 			meta_diff = nvm_buf_diff_qrk(bufs->read_meta,
 						 bufs->write_meta,
 						 bufs->nbytes_meta,
@@ -549,37 +567,70 @@ static void ewr_s20(int use_meta)
 
 out:
 	nvm_buf_set_free(bufs);
+	nvm_buf_free(erase_meta);
 }
 
-void test_EWR_S20_META0(void)
+void test_EWR_S20_RWMETA0_EMETA0(void)
 {
 	switch(nvm_dev_get_verid(dev)) {
 	case NVM_SPEC_VERID_12:
-		CU_PASS("Nothing to test");
+		CU_PASS("nothing to test");
 		break;
 
 	case NVM_SPEC_VERID_20:
-		ewr_s20(0);
+		ewr_s20(0, 0);
 		break;
 
 	default:
-		CU_FAIL("Invalid VERID");
+		CU_FAIL("invalid verid");
 	}
 }
 
-void test_EWR_S20_META1(void)
+void test_EWR_S20_RWMETA1_EMETA0(void)
 {
 	switch(nvm_dev_get_verid(dev)) {
 	case NVM_SPEC_VERID_12:
-		CU_PASS("Nothing to test");
+		CU_PASS("nothing to test");
 		break;
 
 	case NVM_SPEC_VERID_20:
-		ewr_s20(1);
+		ewr_s20(1, 0);
 		break;
 
 	default:
-		CU_FAIL("Invalid VERID");
+		CU_FAIL("invalid verid");
+	}
+}
+
+void test_EWR_S20_RWMETA0_EMETA1(void)
+{
+	switch(nvm_dev_get_verid(dev)) {
+	case NVM_SPEC_VERID_12:
+		CU_PASS("nothing to test");
+		break;
+
+	case NVM_SPEC_VERID_20:
+		ewr_s20(0, 1);
+		break;
+
+	default:
+		CU_FAIL("invalid verid");
+	}
+}
+
+void test_EWR_S20_RWMETA1_EMETA1(void)
+{
+	switch(nvm_dev_get_verid(dev)) {
+	case NVM_SPEC_VERID_12:
+		CU_PASS("nothing to test");
+		break;
+
+	case NVM_SPEC_VERID_20:
+		ewr_s20(1, 1);
+		break;
+
+	default:
+		CU_FAIL("invalid verid");
 	}
 }
 
@@ -592,9 +643,13 @@ int main(int argc, char **argv)
 	if (!pSuite)
 		goto out;
 
-	if (!CU_add_test(pSuite, "EWR S20 - META", test_EWR_S20_META0))
+	if (!CU_add_test(pSuite, "EWR_S20_RWMETA0_EMETA0", test_EWR_S20_RWMETA0_EMETA0))
 		goto out;
-	if (!CU_add_test(pSuite, "EWR S20 + META", test_EWR_S20_META1))
+	if (!CU_add_test(pSuite, "EWR_S20_RWMETA1_EMETA0", test_EWR_S20_RWMETA1_EMETA0))
+		goto out;
+	if (!CU_add_test(pSuite, "EWR_S20_RWMETA0_EMETA1", test_EWR_S20_RWMETA0_EMETA1))
+		goto out;
+	if (!CU_add_test(pSuite, "EWR_S20_RWMETA1_EMETA1", test_EWR_S20_RWMETA1_EMETA1))
 		goto out;
 
 	if (!CU_add_test(pSuite, "EWR S12 - META NADDR QUAD", test_EWR_S12_NADDR_META0_QUAD))
