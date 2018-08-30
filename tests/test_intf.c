@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <errno.h>
 #include <time.h>
 #include <unistd.h>
@@ -12,6 +13,7 @@
 
 #define NVM_TEST_RMODE_AUTO 0xA
 
+static int be_id = NVM_BE_ANY;
 static int rmode = CU_BRM_NORMAL;
 static int seed = 0;
 static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
@@ -22,9 +24,10 @@ static int suite_setup(void)
 {
 	srand(seed);
 
-	dev = nvm_dev_open(nvm_dev_path);
-	if (!dev)
+	dev = nvm_dev_openf(nvm_dev_path, be_id);
+	if (!dev) {
 		return -1;
+	}
 
 	geo = nvm_dev_get_geo(dev);
 
@@ -44,6 +47,9 @@ static CU_pSuite suite_create(const char *title, int argc, char *argv[])
 	seed = time(NULL);			// Default arbitrary seed
 
 	switch(argc) {
+	case 5:
+		be_id = atoi(argv[4]);
+		/* FALLTHRU */
 	case 4:
 		switch(atoi(argv[3])) {
 		case NVM_TEST_RMODE_AUTO:
@@ -74,8 +80,8 @@ static CU_pSuite suite_create(const char *title, int argc, char *argv[])
 		break;
 	}
 
-	printf("# TEST_INPUT: {dev: '%s', seed: %u, rmode: 0x%x}\n",
-	       nvm_dev_path, seed, rmode);
+	printf("# ARGS: {dev: '%s', seed: %u, rmode: 0x%x, be_id: 0x%x}\n",
+	       nvm_dev_path, seed, rmode, be_id);
 
 	CU_set_error_action(CUEA_ABORT);
 
@@ -84,4 +90,3 @@ static CU_pSuite suite_create(const char *title, int argc, char *argv[])
 
 	return CU_add_suite(title, suite_setup, suite_teardown);
 }
-
