@@ -37,6 +37,8 @@ struct nvm_be nvm_be_sysfs = {
 
 	.idfy = nvm_be_nosys_idfy,
 	.rprt = nvm_be_nosys_rprt,
+	.gfeat = nvm_be_nosys_gfeat,
+	.sfeat = nvm_be_nosys_sfeat,
 	.sbbt = nvm_be_nosys_sbbt,
 	.gbbt = nvm_be_nosys_gbbt,
 
@@ -310,7 +312,7 @@ struct nvm_dev *nvm_be_sysfs_open(const char *dev_path, int flags)
 
 	errno = ENOSYS;
 	return NULL;
-	
+
 	if (strlen(dev_path) > NVM_DEV_PATH_LEN) {
 		NVM_DEBUG("FAILED: Device path too long\n");
 		errno = EINVAL;
@@ -373,6 +375,8 @@ struct nvm_be nvm_be_sysfs = {
 
 	.idfy = nvm_be_ioctl_idfy,
 	.rprt = nvm_be_ioctl_rprt,
+	.gfeat = nvm_be_ioctl_gfeat,
+	.sfeat = nvm_be_ioctl_sfeat,
 	.sbbt = nvm_be_ioctl_sbbt,
 	.gbbt = nvm_be_ioctl_gbbt,
 
@@ -382,4 +386,3 @@ struct nvm_be nvm_be_sysfs = {
 	.copy = nvm_be_ioctl_copy,
 };
 #endif
-
