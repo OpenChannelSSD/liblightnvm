@@ -193,7 +193,7 @@ static inline ssize_t vblk_erase_s12(struct nvm_vblk *vblk)
 
 	for (int off = 0; off < vblk->nblks; off += CMD_NBLKS) {
 		ssize_t err;
-		struct nvm_ret ret = {0,0};
+		struct nvm_ret ret = { 0 };
 
 		const int nblks = NVM_MIN(CMD_NBLKS, vblk->nblks - off);
 		const int naddrs = nblks * BLK_NADDRS;
@@ -233,7 +233,7 @@ static inline ssize_t vblk_erase_s20(struct nvm_vblk *vblk)
 
 	for (int off = 0; off < vblk->nblks; off += CMD_NBLKS) {
 		const int naddrs = NVM_MIN(CMD_NBLKS, vblk->nblks - off);
-		struct nvm_ret ret = {0,0};
+		struct nvm_ret ret = { 0 };
 
 		struct nvm_addr addrs[naddrs];
 
@@ -351,7 +351,7 @@ static inline ssize_t vblk_pwrite_s12(struct nvm_vblk *vblk, const void *buf,
 
 	#pragma omp parallel for num_threads(NTHREADS) schedule(static,1) reduction(+:nerr) ordered if(NTHREADS>1)
 	for (size_t off = bgn; off < end; off += CMD_NSPAGES) {
-		struct nvm_ret ret = {0,0};
+		struct nvm_ret ret = { 0 };
 
 		const int nspages = NVM_MIN(CMD_NSPAGES, (int)(end - off));
 		const int naddrs = nspages * SPAGE_NADDRS;
@@ -469,11 +469,11 @@ static inline ssize_t vblk_pwrite_s20(struct nvm_vblk *vblk, const void *buf,
 
 	#pragma omp parallel for num_threads(NTHREADS) schedule(static,1) reduction(+:nerr) ordered if(NTHREADS>1)
 	for (size_t sectr_ofz = sectr_bgn; sectr_ofz <= sectr_end; sectr_ofz += cmd_nsectr) {
-		struct nvm_ret ret = { 0, 0 };
+		struct nvm_ret ret = { 0 };
 
 		struct nvm_addr addrs[cmd_nsectr];
 		char *buf_off;
-		
+
 		if (pad_buf)
 			buf_off = pad_buf;
 		else
@@ -578,7 +578,7 @@ static inline ssize_t vblk_pread_s12(struct nvm_vblk *vblk, void *buf,
 
 	#pragma omp parallel for num_threads(NTHREADS) schedule(static,1) reduction(+:nerr) ordered if(NTHREADS>1)
 	for (size_t off = bgn; off < end; off += CMD_NSPAGES) {
-		struct nvm_ret ret = {0,0};
+		struct nvm_ret ret = { 0 };
 
 		const int nspages = NVM_MIN(CMD_NSPAGES, (int)(end - off));
 		const int naddrs = nspages * SPAGE_NADDRS;
@@ -743,7 +743,7 @@ static inline ssize_t vblk_copy_s20(struct nvm_vblk *src, struct nvm_vblk *dst)
 	}
 
 	for (size_t sectr_ofz = sectr_bgn; sectr_ofz <= sectr_end; sectr_ofz += cmd_nsectr_max) {
-		struct nvm_ret ret = { 0, 0 };
+		struct nvm_ret ret = { 0 };
 
 		const size_t cmd_nsectr = NVM_MIN(sectr_end - sectr_ofz + 1, cmd_nsectr_max);
 
