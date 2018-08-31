@@ -223,26 +223,3 @@ struct nvm_addr nvm_addr_lpo2gen(struct nvm_dev *dev, uint64_t lpo)
 	return addr;
 }
 
-// The functions below are deprecated
-ssize_t nvm_addr_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		       uint16_t flags, struct nvm_ret *ret)
-{
-	return nvm_cmd_erase(dev, addrs, naddrs, flags, ret);
-}
-
-ssize_t nvm_addr_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		       const void *data, const void *meta, uint16_t flags,
-		       struct nvm_ret *ret)
-{
-	char *cdata = (char *)data;
-	char *cmeta = (char *)meta;
-
-	return nvm_cmd_write(dev, addrs, naddrs, cdata, cmeta, flags, ret);
-}
-
-ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		      void *data, void *meta, uint16_t flags,
-		      struct nvm_ret *ret)
-{
-	return nvm_cmd_read(dev, addrs, naddrs, data, meta, flags, ret);
-}
