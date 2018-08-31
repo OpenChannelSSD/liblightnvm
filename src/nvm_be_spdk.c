@@ -36,6 +36,8 @@ struct nvm_be nvm_be_spdk = {
 
 	.idfy = nvm_be_nosys_idfy,
 	.rprt = nvm_be_nosys_rprt,
+	.gfeat = nvm_be_nosys_gfeat,
+	.sfeat = nvm_be_nosys_sfeat,
 	.sbbt = nvm_be_nosys_sbbt,
 	.gbbt = nvm_be_nosys_gbbt,
 
@@ -183,6 +185,53 @@ static int nvme_get_log_page(struct nvm_dev *dev, void *buf, uint32_t ndw,
 	cmd.lpol = lpo & 0xfffffff;
 
 	if (vam_execute(dev, &cmd, buf, (ndw + 1) * 4, ret)) {
+		NVM_DEBUG("FAILED: vam_execute");
+		return -1;
+	}
+
+	return 0;
+}
+
+int nvm_be_spdk_gfeat(struct nvm_dev *dev, uint8_t id,
+		       union nvm_spec_feat *feat,
+		       struct nvm_ret *ret)
+{
+	struct state *state = dev->be_state;
+
+	struct nvm_nvme_cmd cmd = { 0 };
+	struct nvm_ret _ret;
+
+	cmd.opcode = NVM_OPC_GFEAT;
+	cmd.nsid = state->nsid;
+	cmd.gfeat.fid = id;
+
+	ret = ret ? ret : &_ret;
+
+	if (vam_execute(dev, &cmd, NULL, 0, ret)) {
+		NVM_DEBUG("FAILED: vam_execute");
+		return -1;
+	}
+
+	*((uint32_t *) feat) = ret->result;
+
+	return 0;
+}
+
+
+int nvm_be_spdk_sfeat(struct nvm_dev *dev, uint8_t id,
+		       const union nvm_spec_feat *feat,
+		       struct nvm_ret *ret)
+{
+	struct state *state = dev->be_state;
+
+	struct nvm_nvme_cmd cmd = { 0 };
+
+	cmd.opcode = NVM_OPC_SFEAT;
+	cmd.nsid = state->nsid;
+	cmd.sfeat.fid = id;
+	cmd.sfeat.feat = *feat;
+
+	if (vam_execute(dev, &cmd, NULL, 0, ret)) {
 		NVM_DEBUG("FAILED: vam_execute");
 		return -1;
 	}
@@ -697,6 +746,8 @@ struct nvm_be nvm_be_spdk = {
 
 	.idfy = nvm_be_spdk_idfy,
 	.rprt = nvm_be_spdk_rprt,
+	.gfeat = nvm_be_spdk_gfeat,
+	.sfeat = nvm_be_spdk_sfeat,
 	.sbbt = nvm_be_spdk_sbbt,
 	.gbbt = nvm_be_spdk_gbbt,
 
