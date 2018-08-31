@@ -91,6 +91,24 @@ struct nvm_spec_rprt *nvm_be_nosys_rprt(struct nvm_dev *NVM_UNUSED(dev),
 	return NULL;
 }
 
+int nvm_be_nosys_gfeat(struct nvm_dev *NVM_UNUSED(dev), uint8_t NVM_UNUSED(id),
+		       union nvm_spec_feat *NVM_UNUSED(feat),
+		       struct nvm_ret *NVM_UNUSED(ret))
+{
+	NVM_DEBUG("FAILED: not implemented (possibly intentionally)");
+	errno = ENOSYS;
+	return -1;
+}
+
+int nvm_be_nosys_sfeat(struct nvm_dev *NVM_UNUSED(dev), uint8_t NVM_UNUSED(id),
+		       const union nvm_spec_feat *NVM_UNUSED(feat),
+		       struct nvm_ret *NVM_UNUSED(ret))
+{
+	NVM_DEBUG("FAILED: not implemented (possibly intentionally)");
+	errno = ENOSYS;
+	return -1;
+}
+
 struct nvm_spec_bbt *nvm_be_nosys_gbbt(struct nvm_dev *NVM_UNUSED(dev),
 				       struct nvm_addr NVM_UNUSED(addr),
 				       struct nvm_ret *NVM_UNUSED(ret))
