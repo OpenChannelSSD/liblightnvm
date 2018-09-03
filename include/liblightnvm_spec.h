@@ -396,6 +396,16 @@ void nvm_spec_ppaf_nand_mask_pr(const struct nvm_spec_ppaf_nand_mask *mask);
 void nvm_spec_bbt_pr(const struct nvm_spec_bbt *bbt);
 
 /**
+ * Representation of DSM ranges as defined in NVM Express 1.3 Figure 207 Dataset
+ * Management Range Definition Figure 207
+ */
+struct nvm_nvme_dsm_range {
+	uint32_t	cattr;	///< Context attributes
+	uint32_t	nlb;	///< Length in logical blocks
+	uint64_t	slba;	///< Starting LBA
+};
+
+/**
  * Enumeration of NVMe flags
  */
 enum nvm_nvme_flag {
