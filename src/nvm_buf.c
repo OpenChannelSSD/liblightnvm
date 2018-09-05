@@ -130,16 +130,17 @@ void nvm_buf_diff_pr(char *expected, char *actual, size_t nbytes)
 {
 	size_t diff = 0;
 
-	printf("diffs:\n");
+	printf("buf_diffs:\n");
 	for (size_t i = 0; i < nbytes; ++i) {
 		if (expected[i] != actual[i]) {
 			++diff;
-			printf("i(%06lu), expected(%c) != actual(%02d|0x%02x|%c)\n",
+			printf(" - {i: '%06lu', exp: '%c', actd: %02d, acth: 0x%02x, actc: %c)\n",
 				i, expected[i], (int)actual[i], (int)actual[i],
 				(actual[i] > 31 && actual[i] < 127) ? actual[i] : '?');
 		}
 	}
-	printf("nbytes: %zu, nbytes_diff: %zu\n", nbytes, diff);
+	printf("buf_nbytes: %zu\n", nbytes);
+	printf("buf_nbytes_diff: %zu\n", diff);
 }
 
 int nvm_buf_from_file(char *buf, size_t nbytes, const char *path)
@@ -176,22 +177,43 @@ int nvm_buf_to_file(char *buf, size_t nbytes, const char *path)
 	return 0;
 }
 
+void nvm_buf_set_pr(struct nvm_buf_set *bufs)
+{
+	if (!bufs) {
+		printf("buf_set: ~\n");
+		return;
+	}
+
+	printf("buf_set:\n");
+	printf("  bufs: %p\n", (void*)bufs);
+	printf("  nbytes: %zu\n", bufs->nbytes);
+	printf("  nbytes_meta: %zu\n", bufs->nbytes_meta);
+	printf("  write: %p\n", (void*)bufs->write);
+	printf("  write_meta: %p\n", (void*)bufs->write_meta);
+	printf("  read: %p\n",(void*) bufs->read);
+	printf("  read_meta: %p\n", (void*)bufs->read_meta);
+}
+
 void nvm_buf_set_free(struct nvm_buf_set *bufs)
 {
-	if (!bufs)
+	if (!bufs) {
+		NVM_DEBUG("nothing to do, bufs: %p", (void*)bufs);
 		return;
+	}
 
-	free(bufs->write);
-	free(bufs->write_meta);
-	free(bufs->read);
-	free(bufs->read_meta);
-	free(bufs);
+	nvm_buf_free(bufs->write);
+	nvm_buf_free(bufs->write_meta);
+	nvm_buf_free(bufs->read);
+	nvm_buf_free(bufs->read_meta);
+	nvm_buf_free(bufs);
 }
 
 void nvm_buf_set_fill(struct nvm_buf_set *bufs)
 {
-	nvm_buf_fill(bufs->write, bufs->nbytes);
-	memset(bufs->read, 0, bufs->nbytes);
+	if (bufs->nbytes) {
+		nvm_buf_fill(bufs->write, bufs->nbytes);
+		memset(bufs->read, 0, bufs->nbytes);
+	}
 
 	if (bufs->nbytes_meta) {
 		nvm_buf_fill(bufs->write_meta, bufs->nbytes_meta);
@@ -203,29 +225,47 @@ struct nvm_buf_set *nvm_buf_set_alloc(struct nvm_dev *dev, size_t nbytes,
 				      size_t nbytes_meta)
 {
 	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
-	struct nvm_buf_set *bufs = nvm_buf_alloc(geo, sizeof(*bufs));
+	struct nvm_buf_set *bufs = NULL;
 
-	if (!bufs)
+	bufs = nvm_buf_alloc(geo, sizeof(*bufs));
+	if (!bufs) {
+		NVM_DEBUG("FAILED: allocating bufs");
 		return NULL;
-
+	}
 	memset(bufs, 0, sizeof(*bufs));
 
 	if (nbytes) {
 		bufs->nbytes = nbytes;
-		bufs->write = malloc(bufs->nbytes);
-		bufs->read = malloc(bufs->nbytes);
-		if (!(bufs->write && bufs->read)) {
-			free(bufs);
+
+		bufs->write = nvm_buf_alloc(geo, bufs->nbytes);
+		if (!bufs->write) {
+			NVM_DEBUG("FAILED: alloc w nbytes: %zu", bufs->nbytes);
+			nvm_buf_set_free(bufs);
+			return NULL;
+		}
+
+		bufs->read = nvm_buf_alloc(geo, bufs->nbytes);
+		if (!bufs->read) {
+			NVM_DEBUG("FAILED: alloc r nbytes: %zu", bufs->nbytes);
+			nvm_buf_set_free(bufs);
 			return NULL;
 		}
 	}
 
 	if (nbytes_meta) {
 		bufs->nbytes_meta = nbytes_meta;
-		bufs->write_meta = malloc(bufs->nbytes_meta);
-		bufs->read_meta = malloc(bufs->nbytes_meta);
-		if (!(bufs->write_meta && bufs->read_meta)) {
-			free(bufs);
+
+		bufs->write_meta = nvm_buf_alloc(geo, bufs->nbytes_meta);
+		if (!bufs->write_meta) {
+			NVM_DEBUG("FAILED: alloc wm nbytes_meta: %zu", bufs->nbytes_meta);
+			nvm_buf_set_free(bufs);
+			return NULL;
+		}
+
+		bufs->read_meta = nvm_buf_alloc(geo, bufs->nbytes_meta);
+		if (!bufs->read_meta) {
+			NVM_DEBUG("FAILED: alloc rm nbytes_meta: %zu", bufs->nbytes_meta);
+			nvm_buf_set_free(bufs);
 			return NULL;
 		}
 	}
