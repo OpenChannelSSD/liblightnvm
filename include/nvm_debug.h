@@ -35,6 +35,8 @@
 
 #ifdef NVM_DEBUG_ENABLED
 
+#define NVM_DEBUG_FCALL(x) x
+
 #define __FILENAME__ strrchr("/" __FILE__, '/') + 1
 
 #define NVM_DEBUG(...) printf("# %s:%s-%d: " FIRST(__VA_ARGS__) "\n" , \
@@ -55,5 +57,6 @@
 
 #else
 	#define NVM_DEBUG(...)
+	#define NVM_DEBUG_FCALL(x)
 #endif
 #endif /* __INTERNAL_NVM_DEBUG_H */
