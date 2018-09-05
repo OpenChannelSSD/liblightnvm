@@ -424,38 +424,72 @@ int nvm_be_ioctl_scalar_erase(struct nvm_dev *dev, struct nvm_addr *addrs,
 }
 
 /**
- * Helper function for SCALAR IO: write/read
+ * Kernel-issue workaround, using deprecated IOCTL for scalar commands with meta
+ * due to a bug in the kernel (see kernel commit 9b382768), we have to
+ * use the deprecated ioctl NVME_IOCTL_SUBMIT_IO command to submit the
+ * request if it uses meta data.
+ *
+ * NOTE: NVME_IOCTL_SUBMIT_IO does NOT work if the request does NOT have
+ * metadata the bug is fixed in linux v4.18.
  */
-static inline int cmd_scalar_wr(struct nvm_dev *dev, struct nvm_addr addrs[],
-				 int naddrs, void *data, void *meta,
-				 uint16_t NVM_UNUSED(flags), uint16_t opcode,
-				 struct nvm_ret *NVM_UNUSED(ret))
+static inline int cmd_scalar_wr_dep_ioc(struct nvm_dev *dev,
+					struct nvm_addr addr, int naddrs,
+					void *data, void *meta,
+					uint16_t NVM_UNUSED(flags),
+					uint16_t opcode,
+					struct nvm_ret *NVM_UNUSED(ret))
 {
-	struct nvme_user_io cmd = {
-		.opcode		= opcode,
-		.flags		= 0,
-		.control	= 0,
-		.nblocks	= naddrs - 1,
-		.rsvd		= 0,
-		.metadata	= (__u64)(uintptr_t) meta,
-		.addr		= (__u64)(uintptr_t) data,
-		.slba		= nvm_addr_gen2dev(dev, *addrs),
-		.dsmgmt		= 0,
-		.reftag		= 0,
-		.appmask	= 0,
-		.apptag		= 0,
-	};
-	int err;
+	struct nvme_user_io cmd = { 0 };
+	cmd.opcode = opcode;
+	cmd.nblocks = naddrs - 1;
+	cmd.metadata = (__u64)(uintptr_t) meta;
+	cmd.addr = (__u64)(uintptr_t) data;
+	cmd.slba = nvm_addr_gen2dev(dev, addr);
 
-	if (naddrs > NVM_NADDR_MAX) {
-		NVM_DEBUG("FAILED: invalid naddrs");
-		errno = EINVAL;
-		return -1;
-	}
+	int err;
 
 	err = ioctl(dev->fd, NVME_IOCTL_SUBMIT_IO, &cmd);
 	if (err) {
-		NVM_DEBUG("FAILED: ioctl-scalar failed, err: %d", err);
+		NVM_DEBUG("FAILED: ioctl-scalar failed: %s", strerror(errno));
+		return -1;
+	}
+
+	return 0;
+}
+
+/**
+ * Helper function for SCALAR IO: write/read
+ */
+static inline int cmd_scalar_wr(struct nvm_dev *dev, struct nvm_addr addr,
+				int naddrs, void *data, void *meta,
+				uint16_t flags, uint16_t opcode,
+				struct nvm_ret *ret)
+{
+	if (meta) {
+		return cmd_scalar_wr_dep_ioc(dev, addr, naddrs, data, meta,
+					     flags, opcode, ret);
+	}
+
+	struct nvme_passthru_cmd cmd = { 0 };
+
+	cmd.opcode = opcode;
+	cmd.nsid = dev->nsid;
+	cmd.metadata = (__u64)(uintptr_t) meta;
+	cmd.addr = (__u64)(uintptr_t) data;
+	cmd.metadata_len = meta ? dev->geo.meta_nbytes * naddrs : 0;
+	cmd.data_len = dev->geo.sector_nbytes * naddrs;
+
+	uint64_t slba = nvm_addr_gen2dev(dev, *addrs);
+
+	cmd.cdw10 = slba;
+	cmd.cdw11 = slba >> 32;
+	cmd.cdw12 = naddrs - 1;
+
+	int err;
+
+	err = ioctl(dev->fd, NVME_IOCTL_IO_CMD, &cmd);
+	if (err) {
+		NVM_DEBUG("FAILED: ioctl-scalar failed: %s", strerror(errno));
 		return -1;
 	}
 
