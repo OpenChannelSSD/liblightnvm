@@ -270,7 +270,7 @@ struct nvm_spec_rprt *nvm_be_ioctl_rprt(struct nvm_dev *dev,
 		errno = ENOMEM;
 		return NULL;
 	}
-	memset(rprt, 0, sizeof(*rprt));
+	memset(rprt, 0, rprt_len);
 
 	rprt->ndescr = ndescr;
 
