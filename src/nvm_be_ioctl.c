@@ -70,6 +70,8 @@ struct nvm_be nvm_be_ioctl = {
 #include <nvm_utils.h>
 #include <nvm_debug.h>
 
+static void *erase_meta_hack;
+
 static inline int NVM_MIN(int x, int y) {
 	return x < y ? x : y;
 }
@@ -497,8 +499,9 @@ static inline int cmd_vector_ewr(struct nvm_dev *dev, struct nvm_addr addrs[],
 	cmd.vuser.control = flags | NVM_FLAG_DEFAULT;
 
 	// Setup PPAs: Convert address format from generic to device specific
-	for (i = 0; i < naddrs; ++i)
+	for (i = 0; i < naddrs; ++i) {
 		dev_addrs[i] = nvm_addr_gen2dev(dev, addrs[i]);
+	}
 
 	// Unnatural numbers: counting from zero
 	cmd.vuser.nppas = naddrs - 1;
@@ -511,6 +514,14 @@ static inline int cmd_vector_ewr(struct nvm_dev *dev, struct nvm_addr addrs[],
 	// Setup metadata
 	cmd.vuser.metadata = (uint64_t)meta;
 	cmd.vuser.metadata_len = meta ? dev->geo.meta_nbytes * naddrs : 0;
+
+	if ((opcode == NVM_DOPC_VECTOR_ERASE) && meta) {
+		// Fake data setup to force IOCTL kernel-handling to transfer meta
+		cmd.vuser.addr = (uint64_t)erase_meta_hack;
+		cmd.vuser.data_len = dev->geo.l.nbytes;
+
+		cmd.vuser.metadata_len = sizeof(struct nvm_spec_rprt_descr) * naddrs;
+	}
 
 	err = ioctl_vio(dev, &cmd, ret);
 	if (!err)
@@ -682,11 +693,20 @@ struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags)
 		return NULL;
 	}
 
+	erase_meta_hack = nvm_buf_alloc(&dev->geo, dev->geo.l.nbytes);
+	if (!erase_meta_hack) {
+		NVM_DEBUG("FAILED: erase_meta_hack alloc");
+		close(dev->fd);
+		free(dev);
+		return NULL;
+	}
+
 	return dev;
 }
 
 void nvm_be_ioctl_close(struct nvm_dev *dev)
 {
+	nvm_buf_free(erase_meta_hack);
 	close(dev->fd);
 }
 
