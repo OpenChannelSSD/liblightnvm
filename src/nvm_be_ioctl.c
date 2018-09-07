@@ -43,10 +43,14 @@ struct nvm_be nvm_be_ioctl = {
 	.sbbt = nvm_be_nosys_sbbt,
 	.gbbt = nvm_be_nosys_gbbt,
 
-	.erase = nvm_be_nosys_erase,
-	.write = nvm_be_nosys_write,
-	.read = nvm_be_nosys_read,
-	.copy = nvm_be_nosys_copy,
+	.scalar_erase = nvm_be_nosys_scalar_erase,
+	.scalar_write = nvm_be_nosys_scalar_write,
+	.scalar_read = nvm_be_nosys_scalar_read,
+
+	.vector_erase = nvm_be_nosys_vector_erase,
+	.vector_write = nvm_be_nosys_vector_write,
+	.vector_read = nvm_be_nosys_vector_read,
+	.vector_copy = nvm_be_nosys_vector_copy,
 };
 #else
 #define _GNU_SOURCE
@@ -475,7 +479,7 @@ int nvm_be_ioctl_scalar_read(struct nvm_dev *dev, struct nvm_addr addrs[],
 /**
  * Helper function for vector IO: erase/write/read
  */
-static inline int cmd_ewr(struct nvm_dev *dev, struct nvm_addr addrs[],
+static inline int cmd_vector_ewr(struct nvm_dev *dev, struct nvm_addr addrs[],
 			  int naddrs, void *data, void *meta,
 			  uint16_t flags, uint16_t opcode,
 			  struct nvm_ret *ret)
@@ -522,32 +526,33 @@ static inline int cmd_ewr(struct nvm_dev *dev, struct nvm_addr addrs[],
 	}
 }
 
-int nvm_be_ioctl_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		  uint16_t flags, struct nvm_ret *ret)
+int nvm_be_ioctl_vector_erase(struct nvm_dev *dev, struct nvm_addr addrs[],
+			      int naddrs, void *meta, uint16_t flags,
+			      struct nvm_ret *ret)
 {
-	return cmd_ewr(dev, addrs, naddrs, NULL, NULL, flags, NVM_S12_OPC_ERASE,
-		       ret);
+	return cmd_vector_ewr(dev, addrs, naddrs, NULL, meta, flags,
+			      NVM_DOPC_VECTOR_ERASE, ret);
 }
 
-int nvm_be_ioctl_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		  void *data, void *meta, uint16_t flags,
-		  struct nvm_ret *ret)
+int nvm_be_ioctl_vector_write(struct nvm_dev *dev, struct nvm_addr addrs[],
+			      int naddrs, void *data, void *meta,
+			      uint16_t flags, struct nvm_ret *ret)
 {
-	return cmd_ewr(dev, addrs, naddrs, data, meta, flags, NVM_S12_OPC_WRITE,
-		       ret);
+	return cmd_vector_ewr(dev, addrs, naddrs, data, meta, flags,
+			      NVM_DOPC_VECTOR_WRITE, ret);
 }
 
-int nvm_be_ioctl_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		 void *data, void *meta, uint16_t flags,
-		 struct nvm_ret *ret)
+int nvm_be_ioctl_vector_read(struct nvm_dev *dev, struct nvm_addr addrs[],
+			     int naddrs, void *data, void *meta, uint16_t flags,
+			     struct nvm_ret *ret)
 {
-	return cmd_ewr(dev, addrs, naddrs, data, meta, flags, NVM_S12_OPC_READ,
-		       ret);
+	return cmd_vector_ewr(dev, addrs, naddrs, data, meta, flags,
+			      NVM_DOPC_VECTOR_READ, ret);
 }
 
-int nvm_be_ioctl_copy(struct nvm_dev *dev, struct nvm_addr src[],
-		      struct nvm_addr dst[], int naddrs,
-		      uint16_t flags, struct nvm_ret *ret)
+int nvm_be_ioctl_vector_copy(struct nvm_dev *dev, struct nvm_addr src[],
+			     struct nvm_addr dst[], int naddrs, uint16_t flags,
+			     struct nvm_ret *ret)
 {
 	struct nvm_cmd cmd = {.cdw={0}};
 	uint64_t src_dev[naddrs];
@@ -699,9 +704,13 @@ struct nvm_be nvm_be_ioctl = {
 	.sbbt = nvm_be_ioctl_sbbt,
 	.gbbt = nvm_be_ioctl_gbbt,
 
-	.erase = nvm_be_ioctl_erase,
-	.write = nvm_be_ioctl_write,
-	.read = nvm_be_ioctl_read,
-	.copy = nvm_be_ioctl_copy,
+	.scalar_erase = nvm_be_ioctl_scalar_erase,
+	.scalar_write = nvm_be_ioctl_scalar_write,
+	.scalar_read = nvm_be_ioctl_scalar_read,
+
+	.vector_erase = nvm_be_ioctl_vector_erase,
+	.vector_write = nvm_be_ioctl_vector_write,
+	.vector_read = nvm_be_ioctl_vector_read,
+	.vector_copy = nvm_be_ioctl_vector_copy,
 };
 #endif
