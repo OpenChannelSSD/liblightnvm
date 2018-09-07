@@ -370,6 +370,53 @@ int nvm_be_ioctl_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs, int naddrs,
 	return 0;
 }
 
+int nvm_be_ioctl_scalar_erase(struct nvm_dev *dev, struct nvm_addr *addrs,
+			      int naddrs, uint16_t NVM_UNUSED(flags),
+			      struct nvm_ret *NVM_UNUSED(ret))
+{
+	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
+	struct nvm_nvme_dsm_range *dsmr = NULL;
+	size_t dsmr_len = sizeof(*dsmr) * naddrs;
+	struct nvme_passthru_cmd cmd = { 0 };
+	int err = 0;
+
+	if ((!naddrs) || (naddrs > NVM_NADDR_MAX)) {
+		NVM_DEBUG("FAILED: invalid naddrs: %d", naddrs);
+		errno = EINVAL;
+		return -1;
+	}
+
+	dsmr = nvm_buf_alloc(geo, dsmr_len);
+	if (!dsmr) {
+		NVM_DEBUG("FAILED: nvm_buf_alloc of DSM range");
+		return -1;
+	}
+
+	for(int idx = 0; idx < naddrs; ++idx) {
+		dsmr[idx].cattr = 0;
+		dsmr[idx].nlb = geo->l.nsectr;
+		dsmr[idx].slba = nvm_addr_gen2dev(dev, addrs[idx]);
+	}
+
+	cmd.opcode = NVM_DOPC_SCALAR_ERASE;
+	cmd.nsid = dev->nsid;
+	cmd.addr = (__u64)(uintptr_t) dsmr;
+	cmd.data_len = naddrs * sizeof(*dsmr);
+	cmd.cdw10 = naddrs - 1;
+	cmd.cdw11 = 0x1 << 2; // Assign Bit: Attribute Deallocate (AD)
+
+	err = ioctl(dev->fd, NVME_IOCTL_IO_CMD, &cmd);
+	if (err) {
+		NVM_DEBUG("FAILED: ioctl-scalar failed");
+		nvm_buf_free(dsmr);
+		return -1;
+	}
+
+	nvm_buf_free(dsmr);
+
+	return 0;
+}
+
 /**
  * Helper function for vector IO: erase/write/read
  */
