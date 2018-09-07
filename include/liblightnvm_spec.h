@@ -325,6 +325,8 @@ struct nvm_spec_rprt_descr {
 };
 static_assert(sizeof(struct nvm_spec_rprt_descr) == 32, "Incorrect size");
 
+void nvm_spec_rprt_descr_pr(const struct nvm_spec_rprt_descr *descr);
+
 /**
  * Representation of spec. 2.0 Get Log Page for chunk information
  */
