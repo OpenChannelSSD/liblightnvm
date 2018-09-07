@@ -68,45 +68,6 @@ static inline int NVM_MIN(int x, int y) {
 	return x < y ? x : y;
 }
 
-/*
-static int ioctl_io(struct nvm_dev *dev, struct nvm_cmd *cmd,
-		    struct nvm_ret *ret)
-{
-	const int err = ioctl(dev->fd, NVME_IOCTL_SUBMIT_IO, cmd);
-
-	if (ret) {
-		ret->result = 0x0;
-		ret->status = 0x0;
-	}
-
-	if (err == -1)
-		return err; // Propagate errno from IOCTL error
-
-	return 0;
-}
-
-static int ioctl_am(struct nvm_dev *dev, struct nvm_cmd *cmd,
-		    struct nvm_ret *ret)
-{
-	const int err = ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, cmd);
-
-	if (ret) {
-		ret->result = cmd->admin.result;
-		ret->status = 0x0;
-	}
-
-	if (err == -1)
-		return err;		// Propagate errno from IOCTL error
-
-	if (cmd->vadmin.result) {	// Construct errno on cmd error
-		errno = EIO;
-		return -1;
-	}
-
-	return 0;
-}
-*/
-
 static inline int ioctl_vio(struct nvm_dev *dev, struct nvm_cmd *cmd,
 			    struct nvm_ret *ret)
 {
