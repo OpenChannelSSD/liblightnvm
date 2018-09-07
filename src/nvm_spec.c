@@ -280,6 +280,17 @@ void nvm_spec_bbt_pr(const struct nvm_spec_bbt *bbt)
 		printf("  - 0x%02x\n", bbt->blk[i]);
 }
 
+void nvm_spec_rprt_descr_pr(const struct nvm_spec_rprt_descr *descr) {
+	printf("  - { ");
+	printf("slba: 0x%016lX, ", descr->addr);
+	printf("cnlb: 0x%04lx, ", descr->naddrs);
+	printf("wp: 0x%016lx, ", descr->wp);
+	printf("cs: 0x%02X, ", descr->cs);
+	printf("ct: 0x%02X, ", descr->ct);
+	printf("wli: 0x%02x", descr->wli);
+	printf(" }\n");
+}
+
 void nvm_spec_rprt_pr(const struct nvm_spec_rprt *rprt)
 {
 	if (!rprt) {
@@ -298,15 +309,6 @@ void nvm_spec_rprt_pr(const struct nvm_spec_rprt *rprt)
 
 	printf("\n");
 	for (uint64_t i = 0; i < rprt->ndescr; ++i) {
-		const struct nvm_spec_rprt_descr *descr = &rprt->descr[i];
-
-		printf("  - { ");
-		printf("slba: 0x%016lX, ", descr->addr);
-		printf("cnlb: 0x%04lx, ", descr->naddrs);
-		printf("wp: 0x%016lx, ", descr->wp);
-		printf("cs: 0x%02X, ", descr->cs);
-		printf("ct: 0x%02X, ", descr->ct);
-		printf("wli: 0x%02x", descr->wli);
-		printf(" }\n");
+		nvm_spec_rprt_descr_pr(&rprt->descr[i]);
 	}
 }
