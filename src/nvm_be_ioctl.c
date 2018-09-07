@@ -55,8 +55,10 @@ struct nvm_be nvm_be_ioctl = {
 #include <string.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <sys/stat.h>
 #include <linux/lightnvm.h>
 #include <linux/nvme_ioctl.h>
+#include <linux/fs.h>
 #include <liblightnvm.h>
 #include <nvm_be.h>
 #include <nvm_be_ioctl.h>
@@ -490,7 +492,7 @@ int nvm_be_ioctl_copy(struct nvm_dev *dev, struct nvm_addr src[],
 struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags)
 {
 	struct nvm_dev *dev = NULL;
-	char nvme_name[NVM_DEV_PATH_LEN];
+	struct stat dev_stat;
 	int err;
 
 	if (strlen(dev_path) > NVM_DEV_PATH_LEN) {
@@ -502,16 +504,12 @@ struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags)
 	dev = calloc(1, sizeof(*dev));
 	if (!dev) {
 		NVM_DEBUG("FAILED: allocating 'struct nvm_dev'\n");
-		return NULL;	// Propagate errno from malloc
+		// Propagate errno from malloc
+		return NULL;
 	}
 
 	strncpy(dev->path, dev_path, NVM_DEV_PATH_LEN);
 	strncpy(dev->name, dev_path+5, NVM_DEV_NAME_LEN);
-
-
-	// HACK: use naming conventions to determine nsid, fallback to hardcode
-	if (nvm_be_split_dpath(dev_path, nvme_name, &dev->nsid))
-		dev->nsid = 1;
 
 	switch (flags) {
 	case NVM_BE_IOCTL_WRITABLE:
@@ -526,7 +524,27 @@ struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags)
 		NVM_DEBUG("FAILED: open(dev->path(%s)), dev->fd(%d)\n",
 			  dev->path, dev->fd);
 		free(dev);
-		return NULL;	// Propagate errno from open
+		// Propagate errno from open
+		return NULL;
+	}
+
+	err = fstat(dev->fd, &dev_stat);
+	if (err < 0) {
+		// Propagate errno from fstat
+		return NULL;
+	}
+
+	if (!S_ISBLK(dev_stat.st_mode)) {
+		NVM_DEBUG("FAILED: device is not a block device");
+		errno = ENOTBLK;
+		return NULL;
+	}
+
+	dev->nsid = ioctl(dev->fd, NVME_IOCTL_ID);
+	if (dev->nsid < 1) {
+		NVM_DEBUG("FAILED: failed retrieving nsid");
+		// Propagate errno from ioctl
+		return NULL;
 	}
 
 	struct nvme_admin_cmd cmd = { 0 };
