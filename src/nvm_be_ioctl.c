@@ -418,6 +418,61 @@ int nvm_be_ioctl_scalar_erase(struct nvm_dev *dev, struct nvm_addr *addrs,
 }
 
 /**
+ * Helper function for SCALAR IO: write/read
+ */
+static inline int cmd_scalar_wr(struct nvm_dev *dev, struct nvm_addr addrs[],
+				 int naddrs, void *data, void *meta,
+				 uint16_t NVM_UNUSED(flags), uint16_t opcode,
+				 struct nvm_ret *NVM_UNUSED(ret))
+{
+	struct nvme_user_io cmd = {
+		.opcode		= opcode,
+		.flags		= 0,
+		.control	= 0,
+		.nblocks	= naddrs - 1,
+		.rsvd		= 0,
+		.metadata	= (__u64)(uintptr_t) meta,
+		.addr		= (__u64)(uintptr_t) data,
+		.slba		= nvm_addr_gen2dev(dev, *addrs),
+		.dsmgmt		= 0,
+		.reftag		= 0,
+		.appmask	= 0,
+		.apptag		= 0,
+	};
+	int err;
+
+	if (naddrs > NVM_NADDR_MAX) {
+		NVM_DEBUG("FAILED: invalid naddrs");
+		errno = EINVAL;
+		return -1;
+	}
+
+	err = ioctl(dev->fd, NVME_IOCTL_SUBMIT_IO, &cmd);
+	if (err) {
+		NVM_DEBUG("FAILED: ioctl-scalar failed, err: %d", err);
+		return -1;
+	}
+
+	return 0;
+}
+
+int nvm_be_ioctl_scalar_write(struct nvm_dev *dev, struct nvm_addr addrs[],
+			      int naddrs, void *data, void *meta,
+			      uint16_t flags, struct nvm_ret *ret)
+{
+	return cmd_scalar_wr(dev, addrs, naddrs, data, meta, flags,
+			     NVM_DOPC_SCALAR_WRITE, ret);
+}
+
+int nvm_be_ioctl_scalar_read(struct nvm_dev *dev, struct nvm_addr addrs[],
+			     int naddrs, void *data, void *meta, uint16_t flags,
+			     struct nvm_ret *ret)
+{
+	return cmd_scalar_wr(dev, addrs, naddrs, data, meta, flags,
+			     NVM_DOPC_SCALAR_READ, ret);
+}
+
+/**
  * Helper function for vector IO: erase/write/read
  */
 static inline int cmd_ewr(struct nvm_dev *dev, struct nvm_addr addrs[],
