@@ -113,15 +113,19 @@ static inline int ioctl_vio(struct nvm_dev *dev, struct nvm_cmd *cmd,
 	const int err = ioctl(dev->fd, NVME_NVM_IOCTL_SUBMIT_VIO, cmd);
 
 	if (ret) {
-		ret->result = cmd->vuser.result;
-		ret->status = cmd->vuser.status;
+		ret->result.vio.cs = cmd->vuser.status;
+		ret->status = cmd->vuser.result;
 	}
 
-	if (err == -1)
-		return err;		// Propagate errno from IOCTL error
+	if (err) {
+		// Propagate errno from IOCTL error
+		NVM_DEBUG("FAILED: err: %d", err);
+		return -1;
+	}
 
-	if (cmd->vuser.result) {	// Construct errno on cmd error
+	if (cmd->vuser.result) {
 		errno = EIO;
+		NVM_DEBUG("FAILED: cmd->vuser.result: %d", cmd->vuser.result);
 		return -1;
 	}
 
@@ -134,15 +138,19 @@ static inline int ioctl_vam(struct nvm_dev *dev, struct nvm_cmd *cmd,
 	const int err = ioctl(dev->fd, NVME_NVM_IOCTL_ADMIN_VIO, cmd);
 
 	if (ret) {
-		ret->result = cmd->vadmin.result;
-		ret->status = cmd->vadmin.status;
+		ret->result.vio.cs = cmd->vadmin.status;
+		ret->status = cmd->vadmin.result;
 	}
 
-	if (err == -1)
-		return err;		// Propagate errno from IOCTL error
+	if (err) {
+		// Propagate errno from IOCTL error
+		NVM_DEBUG("FAILED: err: %d", err);
+		return -1;
+	}
 
-	if (cmd->vadmin.result) {	// Construct errno on cmd error
+	if (cmd->vadmin.result) {
 		errno = EIO;
+		NVM_DEBUG("FAILED: cmd->vadmin.result: %d", cmd->vadmin.result);
 		return -1;
 	}
 
