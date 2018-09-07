@@ -559,7 +559,7 @@ int nvm_be_ioctl_copy(struct nvm_dev *dev, struct nvm_addr src[],
 		return -1;
 	}
 
-	cmd.vuser.opcode = NVM_S20_OPC_COPY;
+	cmd.vuser.opcode = NVM_DOPC_VECTOR_COPY;
 	cmd.vuser.control = flags | NVM_FLAG_DEFAULT;
 
 	// Setup PPAs: Convert address format from generic to device specific
