@@ -209,7 +209,8 @@ int nvm_be_ioctl_sfeat(struct nvm_dev *dev, uint8_t id,
 }
 
 struct nvm_spec_rprt *nvm_be_ioctl_rprt(struct nvm_dev *dev,
-					struct nvm_addr *addr, int NVM_UNUSED(opt),
+					struct nvm_addr *addr,
+					int NVM_UNUSED(opt),
 					struct nvm_ret *NVM_UNUSED(ret))
 {
 	if (NVM_SPEC_VERID_20 != dev->verid) {
