@@ -190,20 +190,32 @@ struct nvm_spec_bbt *nvm_be_ioctl_gbbt(struct nvm_dev *dev,
 int nvm_be_ioctl_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs, int naddrs,
 		      uint16_t flags, struct nvm_ret *ret);
 
-int nvm_be_ioctl_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		       uint16_t flags, struct nvm_ret *ret);
+int nvm_be_ioctl_scalar_erase(struct nvm_dev *dev, struct nvm_addr addrs[],
+			      int naddrs, uint16_t flags, struct nvm_ret *ret);
 
-int nvm_be_ioctl_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		       void *data, void *meta, uint16_t flags,
-		       struct nvm_ret *ret);
+int nvm_be_ioctl_scalar_write(struct nvm_dev *dev, struct nvm_addr addrs[],
+			      int naddrs, void *data, void *meta,
+			      uint16_t flags, struct nvm_ret *ret);
 
-int nvm_be_ioctl_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		      void *data, void *meta, uint16_t flags,
-		      struct nvm_ret *ret);
+int nvm_be_ioctl_scalar_read(struct nvm_dev *dev, struct nvm_addr addrs[],
+			     int naddrs, void *data, void *meta, uint16_t flags,
+			     struct nvm_ret *ret);
 
-int nvm_be_ioctl_copy(struct nvm_dev *dev, struct nvm_addr src[],
-		      struct nvm_addr dst[], int naddrs, uint16_t flags,
-		      struct nvm_ret *ret);
+int nvm_be_ioctl_vector_erase(struct nvm_dev *dev, struct nvm_addr addrs[],
+			      int naddrs, void *meta, uint16_t flags,
+			      struct nvm_ret *ret);
+
+int nvm_be_ioctl_vector_write(struct nvm_dev *dev, struct nvm_addr addrs[],
+			      int naddrs, void *data, void *meta,
+			      uint16_t flags, struct nvm_ret *ret);
+
+int nvm_be_ioctl_vector_read(struct nvm_dev *dev, struct nvm_addr addrs[],
+			     int naddrs, void *data, void *meta, uint16_t flags,
+			     struct nvm_ret *ret);
+
+int nvm_be_ioctl_vector_copy(struct nvm_dev *dev, struct nvm_addr src[],
+			     struct nvm_addr dst[], int naddrs, uint16_t flags,
+			     struct nvm_ret *ret);
 
 /**
  * Prints a text-representation of the given command
