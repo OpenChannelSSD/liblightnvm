@@ -155,7 +155,7 @@ struct nvm_spec_idfy *nvm_be_ioctl_idfy(struct nvm_dev *dev,
 	}
 	memset(idfy, 0, sizeof(*idfy));
 
-	cmd.vadmin.opcode = NVM_OPC_IDFY;
+	cmd.vadmin.opcode = NVM_AOPC_IDFY;
 	cmd.vadmin.addr = (uint64_t)idfy;
 	cmd.vadmin.data_len = sizeof(*idfy);
 
@@ -175,10 +175,9 @@ int nvm_be_ioctl_gfeat(struct nvm_dev *dev, uint8_t id,
 {
 	struct nvme_passthru_cmd cmd = { 0 };
 
-	cmd.opcode = NVM_S20_OPC_GFEAT;
+	cmd.opcode = NVM_AOPC_GFEAT;
 	cmd.nsid = dev->nsid;
 	cmd.cdw10 = id;
-
 
 	if(ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, &cmd)) {
 		NVM_DEBUG("ioctl failed");
@@ -190,14 +189,13 @@ int nvm_be_ioctl_gfeat(struct nvm_dev *dev, uint8_t id,
 	return 0;
 }
 
-
 int nvm_be_ioctl_sfeat(struct nvm_dev *dev, uint8_t id,
 		       const union nvm_spec_feat *feat,
 		       struct nvm_ret *NVM_UNUSED(ret))
 {
 	struct nvme_passthru_cmd cmd = { 0 };
 
-	cmd.opcode = NVM_S20_OPC_SFEAT;
+	cmd.opcode = NVM_AOPC_SFEAT;
 	cmd.nsid = dev->nsid;
 	cmd.cdw10 = id;
 	cmd.cdw11 = *((uint32_t *) feat);
@@ -251,7 +249,7 @@ struct nvm_spec_rprt *nvm_be_ioctl_rprt(struct nvm_dev *dev,
 
 		struct nvme_passthru_cmd cmd = { 0 };
 
-		cmd.opcode = NVM_OPC_RPRT;
+		cmd.opcode = NVM_AOPC_RPRT;
 		cmd.nsid = dev->nsid;
 		cmd.addr = (uint64_t) (uintptr_t) &rprt->descr[i];
 		cmd.data_len = data_len;
@@ -295,7 +293,7 @@ struct nvm_spec_bbt *nvm_be_ioctl_gbbt(struct nvm_dev *dev,
 		return NULL;
 	}
 
-	cmd.vadmin.opcode = NVM_S12_OPC_GET_BBT;
+	cmd.vadmin.opcode = NVM_AOPC_GBBT;
 	cmd.vadmin.addr = (uint64_t)spec_bbt;
 	cmd.vadmin.data_len = spec_bbt_sz;
 	cmd.vadmin.ppa_list = nvm_addr_gen2dev(dev, addr);
@@ -354,7 +352,7 @@ int nvm_be_ioctl_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs, int naddrs,
 		dev_addrs[i] = nvm_addr_gen2dev(dev, addrs[i]);
 	}
 
-	cmd.vadmin.opcode = NVM_S12_OPC_SET_BBT; // Construct command
+	cmd.vadmin.opcode = NVM_AOPC_SBBT; // Construct command
 	cmd.vadmin.control = flags;
 	cmd.vadmin.nppas = naddrs - 1; // Unnatural numbers: counting from zero
 	cmd.vadmin.ppa_list = naddrs == 1 ? dev_addrs[0] : (uint64_t)dev_addrs;
