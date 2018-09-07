@@ -524,7 +524,7 @@ struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags)
 	struct nvm_dev *dev = NULL;
 	char nvme_name[NVM_DEV_PATH_LEN];
 	int err;
-	
+
 	if (strlen(dev_path) > NVM_DEV_PATH_LEN) {
 		NVM_DEBUG("FAILED: Device path too long\n");
 		errno = EINVAL;
@@ -539,6 +539,7 @@ struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags)
 
 	strncpy(dev->path, dev_path, NVM_DEV_PATH_LEN);
 	strncpy(dev->name, dev_path+5, NVM_DEV_NAME_LEN);
+
 
 	// HACK: use naming conventions to determine nsid, fallback to hardcode
 	if (nvm_be_split_dpath(dev_path, nvme_name, &dev->nsid))
