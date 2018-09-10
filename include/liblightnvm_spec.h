@@ -76,43 +76,30 @@ struct nvm_spec_ppaf_nand {
 };
 
 /**
- * Opcodes, enums, and data structures representing definitions in
- *
- * - Open-Channel Solid State Drives NVMe Specification Revision 1.2
- * - Open-Channel Solid State Drives NVMe Specification Revision 2.0
+ * OCSSD 1.2/2.0 admin command opcodes
  */
-enum nvm_spec_12_opcodes {
-	NVM_S12_OPC_IDF = 0xE2,
-	NVM_S12_OPC_SET_BBT = 0xF1,
-	NVM_S12_OPC_GET_BBT = 0xF2,
-	NVM_S12_OPC_ERASE = 0x90,
-	NVM_S12_OPC_WRITE = 0x91,
-	NVM_S12_OPC_READ = 0x92,
+enum nvm_adm_opcodes {
+	NVM_AOPC_IDFY = 0xE2,
+	NVM_AOPC_RPRT = 0x02,
+	NVM_AOPC_SFEAT = 0x09,
+	NVM_AOPC_GFEAT = 0x0A,
+
+	NVM_AOPC_SBBT = 0xF1,
+	NVM_AOPC_GBBT = 0xF2,
 };
 
-enum nvm_spec_20_opcodes {
-	NVM_S20_OPC_IDF = 0xE2,
-	NVM_S20_OPC_RPRT = 0x02,
-	NVM_S20_OPC_SFEAT = 0x09,
-	NVM_S20_OPC_GFEAT = 0x0A,
-	NVM_S20_OPC_ERASE = 0x90,
-	NVM_S20_OPC_WRITE = 0x91,
-	NVM_S20_OPC_READ = 0x92,
-	NVM_S20_OPC_COPY = 0x93,
-};
+/**
+ * OCSSD 1.2/2.0 data-set management and IO command opcodes
+ */
+enum nvm_dio_opcodes {
+	NVM_DOPC_SCALAR_ERASE = 0x09,
+	NVM_DOPC_SCALAR_WRITE = 0x01,
+	NVM_DOPC_SCALAR_READ = 0x02,
 
-enum nvm_spec_opcodes {
-	NVM_OPC_IDFY = 0xE2,
-
-	NVM_OPC_RPRT = 0x02,
-
-	NVM_OPC_SFEAT = 0x09,
-	NVM_OPC_GFEAT = 0x0A,
-
-	NVM_OPC_ERASE = 0x90,
-	NVM_OPC_WRITE = 0x91,
-	NVM_OPC_READ = 0x92,
-	NVM_OPC_COPY = 0x93
+	NVM_DOPC_VECTOR_ERASE = 0x90,
+	NVM_DOPC_VECTOR_WRITE = 0x91,
+	NVM_DOPC_VECTOR_READ = 0x92,
+	NVM_DOPC_VECTOR_COPY = 0x93
 };
 
 /**
