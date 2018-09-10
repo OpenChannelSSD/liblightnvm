@@ -341,6 +341,21 @@ struct nvm_spec_rprt *nvm_cmd_rprt(struct nvm_dev *dev, struct nvm_addr *addr,
 int nvm_cmd_rprt_arbs(struct nvm_dev *dev, int cs, int naddrs,
 		      struct nvm_addr addrs[]);
 
+
+/**
+ * Execute an Open-Channel 2.0 Get Feature command
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @param id Feature identifier (see NVMe 1.3; Figure 84)
+ * @param feat Structure defining feature attributes
+ * @param ret Pointer to structure in which to store lower-level status and
+ *            result
+ *
+ * @returns 0 on success, -1 on error and errno set to indicate the error.
+ */
+int nvm_cmd_gfeat(struct nvm_dev *dev, uint8_t id, union nvm_spec_feat *feat,
+		  struct nvm_ret *ret);
+
 /**
  * Execute an Open-Channel 1.2 get bad-block-table command
  *
