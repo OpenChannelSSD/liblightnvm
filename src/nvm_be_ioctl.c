@@ -72,10 +72,6 @@ struct nvm_be nvm_be_ioctl = {
 
 static void *erase_meta_hack;
 
-static inline int NVM_MIN(int x, int y) {
-	return x < y ? x : y;
-}
-
 static inline int ioctl_vio(struct nvm_dev *dev, struct nvm_cmd *cmd,
 			    struct nvm_ret *ret)
 {
