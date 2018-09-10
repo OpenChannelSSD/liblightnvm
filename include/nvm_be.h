@@ -92,38 +92,39 @@ struct nvm_be {
 	/**
 	 * Execute erase command
 	 */
-	int (*scalar_erase)(struct nvm_dev *, struct nvm_addr *, int, uint16_t,
+	int (*scalar_erase)(struct nvm_dev *, struct nvm_addr [], int, uint16_t,
 			    struct nvm_ret *);
 
 	/**
 	 * Execute write command
 	 */
-	int (*scalar_write)(struct nvm_dev *dev, struct nvm_addr *, int naddrs,
-			    void *, void *, uint16_t, struct nvm_ret *);
+	int (*scalar_write)(struct nvm_dev *, struct nvm_addr, int,
+			    const void *, const void *, uint16_t,
+			    struct nvm_ret *);
 
 	/**
 	 * Execute read command
 	 */
-	int (*scalar_read)(struct nvm_dev *dev, struct nvm_addr *, int naddrs,
+	int (*scalar_read)(struct nvm_dev *, struct nvm_addr, int,
 			   void *, void *, uint16_t, struct nvm_ret *);
 
 	/**
 	 * Execute vector-erase command
 	 */
-	int (*vector_erase)(struct nvm_dev *, struct nvm_addr *, int, void *,
+	int (*vector_erase)(struct nvm_dev *, struct nvm_addr [], int, void *,
 			    uint16_t, struct nvm_ret *);
 
 	/**
 	 * Execute vector-write command
 	 */
 	int (*vector_write)(struct nvm_dev *dev, struct nvm_addr *,
-			    int, void *, void *, uint16_t,
+			    int, const void *, const void *, uint16_t,
 			    struct nvm_ret *);
 
 	/**
 	 * Execute vector-read command
 	 */
-	int (*vector_read)(struct nvm_dev *dev, struct nvm_addr *, int naddrs,
+	int (*vector_read)(struct nvm_dev *, struct nvm_addr *, int,
 			   void *, void *, uint16_t, struct nvm_ret *);
 
 	/**
@@ -164,20 +165,20 @@ int nvm_be_nosys_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs, int naddrs,
 int nvm_be_nosys_scalar_erase(struct nvm_dev *dev, struct nvm_addr addrs[],
 			      int naddrs, uint16_t flags, struct nvm_ret *ret);
 
-int nvm_be_nosys_scalar_write(struct nvm_dev *dev, struct nvm_addr addrs[],
-			      int naddrs, void *data, void *meta,
+int nvm_be_nosys_scalar_write(struct nvm_dev *dev, struct nvm_addr addr,
+			      int naddrs, const void *data, const void *meta,
 			      uint16_t flags, struct nvm_ret *ret);
 
-int nvm_be_nosys_scalar_read(struct nvm_dev *dev, struct nvm_addr addrs[],
-			     int naddrs, void *data, void *meta, uint16_t flags,
-			     struct nvm_ret *ret);
+int nvm_be_nosys_scalar_read(struct nvm_dev *dev, struct nvm_addr addr,
+			     int naddrs, void *data, void *meta,
+			     uint16_t flags, struct nvm_ret *ret);
 
 int nvm_be_nosys_vector_erase(struct nvm_dev *dev, struct nvm_addr addrs[],
 			      int naddrs, void *meta, uint16_t flags,
 			      struct nvm_ret *ret);
 
 int nvm_be_nosys_vector_write(struct nvm_dev *dev, struct nvm_addr addrs[],
-			      int naddrs, void *data, void *meta,
+			      int naddrs, const void *data, const void *meta,
 			      uint16_t flags, struct nvm_ret *ret);
 
 int nvm_be_nosys_vector_read(struct nvm_dev *dev, struct nvm_addr addrs[],
