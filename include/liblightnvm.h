@@ -62,6 +62,25 @@ enum nvm_be_id {
 };
 #define NVM_BE_ALL (NVM_BE_IOCTL | NVM_BE_LBD | NVM_BE_SPDK)
 
+/**
+ * Enumeration of nvm_cmd options
+ */
+enum nvm_cmd_opts {
+	NVM_CMD_SYNC	= 0x1 << 3,
+	NVM_CMD_ASYNC	= 0x1 << 4,
+	NVM_CMD_SCALAR	= 0x1 << 5,
+	NVM_CMD_VECTOR	= 0x1 << 6,
+	NVM_CMD_PRP	= 0x1 << 7,
+	NVM_CMD_SGL	= 0x1 << 8,
+};
+
+#define NVM_CMD_MASK_IOMD (NVM_CMD_SYNC | NVM_CMD_ASYNC)
+#define NVM_CMD_MASK_ADDR (NVM_CMD_SCALAR | NVM_CMD_VECTOR)
+#define NVM_CMD_MASK_PLOD (NVM_CMD_PRP | NVM_CMD_SGL)
+
+#define NVM_CMD_DEF_IOMD NVM_CMD_SYNC
+#define NVM_CMD_DEF_ADDR NVM_CMD_VECTOR
+#define NVM_CMD_DEF_PLOD NVM_CMD_PRP
 
 /**
  * Plane-mode access for IO
