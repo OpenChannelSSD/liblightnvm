@@ -369,6 +369,25 @@ void nvm_spec_ppaf_nand_mask_pr(const struct nvm_spec_ppaf_nand_mask *mask);
  */
 void nvm_spec_bbt_pr(const struct nvm_spec_bbt *bbt);
 
+/**
+ * Enumeration of NVMe flags
+ */
+enum nvm_nvme_flag {
+	// Limited Retry (LR)
+	NVM_NVME_FLAG_LIMITED_RETRY		= 0x1 << 15,
+
+	// Force Unit Access (FUA)
+	NVM_NVME_FLAG_FORCE_UNIT_ACCESS		= 0x1 << 14,
+
+	// Protection Information Check (PRCK)
+	NVM_NVME_FLAG_PRINFO_PRCHK_REF		= 0x1 << 10,
+	NVM_NVME_FLAG_PRINFO_PRCHK_APP		= 0x1 << 11,
+	NVM_NVME_FLAG_PRINFO_PRCHK_GUARD	= 0x1 << 12,
+
+	// Protection Information Action (PRACT)
+	NVM_NVME_FLAG_PRINFO_PRACT		= 0x1 << 13,
+};
+
 struct nvm_nvme_cmd {
 	/* cdw 00 */
 	uint16_t opcode	:  8;			///< opcode
