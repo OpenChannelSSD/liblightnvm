@@ -979,78 +979,6 @@ void nvm_buf_set_fill(struct nvm_buf_set *bufs);
 void nvm_buf_set_free(struct nvm_buf_set *bufs);
 
 /**
- * Erase nvm at given addresses
- *
- * @note
- * The addresses given to this function are interpreted as block addresses, in
- * contrast to `nvm_addr_mark`, `nvm_addr_write`, and `nvm_addr_read` for which
- * the address is interpreted as a sector address.
- *
- * @param dev Device handle obtained with `nvm_dev_open`
- * @param addrs Array of memory address
- * @param naddrs Length of array of memory addresses
- * @param flags Access mode
- * @param ret Pointer to structure in which to store lower-level status and
- *            result.
- * @returns 0 on success. On error: returns -1, sets `errno` accordingly, and
- *          fills `ret` with lower-level result and status codes
- */
-ssize_t nvm_addr_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		       uint16_t flags, struct nvm_ret *ret);
-
-/**
- * Write content of buf to nvm at address(es)
- *
- * @note
- * The addresses given to this function are interpreted as sector addresses, in
- * contrast to nvm_addr_mark and nvm_addr_erase for which the address is
- * interpreted as a block address.
- *
- * @param dev Device handle obtained with `nvm_dev_open`
- * @param addrs Array of memory address
- * @param naddrs Length of array of memory addresses
- * @param buf The buffer which content to write, must be aligned to device
- *            geometry of minimal write granularity and size equal to
- *            `naddrs * geo.nbytes`
- * @param meta Buffer containing metadata, must be of size equal to device
- *             `naddrs * geo.meta_nbytes`
- * @param flags Access mode
- * @param ret Pointer to structure in which to store lower-level status and
- *            result.
- * @returns 0 on success. On error: returns -1, sets `errno` accordingly, and
- *          fills `ret` with lower-level result and status codes
- */
-ssize_t nvm_addr_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		       const void *buf, const void *meta, uint16_t flags,
-		       struct nvm_ret *ret);
-
-/**
- * Read content of nvm at addresses into buf
- *
- * @note
- * The addresses given to this function are interpreted as sector addresses, in
- * contrast to `nvm_addr_mark` and `nvm_addr_erase` for which the address is
- * interpreted as a block address.
- *
- * @param dev Device handle obtained with `nvm_dev_open`
- * @param addrs List of memory address
- * @param naddrs Length of array of memory addresses
- * @param buf Buffer to store result of read into, must be aligned to device
- *            granularity min read and size equal to `naddrs *
- *            geo.sector_nbytes`
- * @param meta Buffer to store content of metadata, must be of size equal to
- *             device `naddrs * geo.meta_nbytes`
- * @param flags Access mode
- * @param ret Pointer to structure in which to store lower-level status and
- *            result.
- * @returns 0 on success. On error: returns -1, sets `errno` accordingly, and
- *          fills `ret` with lower-level result and status codes
- */
-ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		      void *buf, void *meta, uint16_t flags,
-		      struct nvm_ret *ret);
-
-/**
  * Checks whether the given address exceeds bounds of the geometry of the given
  * device
  *
@@ -1061,9 +989,14 @@ ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 int nvm_addr_check(struct nvm_addr addr, const struct nvm_dev *dev);
 
 /**
- * Compute log page offset (lpo) for the chunk-information log page
+ * Compute log-page-offset (lpo) in the NVMe chunk-information get-log-page
  *
- * That is, the chunk-descriptor address for the given address in the log page
+ * That is, the location of the chunk-descriptor in the log-page, for the chunk
+ * at the given address in generic-format
+ *
+ * @note
+ * This is a helper for function for `nvm_cmd_rprt`, as a library user you will
+ * most likely not have a use for it
  *
  * @returns the log page offset (lpo) for the given addr
  */
@@ -1072,39 +1005,64 @@ uint64_t nvm_addr_gen2lpo(struct nvm_dev *dev, struct nvm_addr addr);
 /**
  * Inverse function of `nvm_addr_gen2lpo`
  *
+ * @note
+ * This is a helper for function for `nvm_cmd_rprt`, as a library user you will
+ * most likely not have a use for it
+ *
  * @returns the page offset (lpo) for the given addr
  */
 struct nvm_addr nvm_addr_lpo2gen(struct nvm_dev *dev, uint64_t lpo);
 
 /**
- * Converts a given physical address generic-format to device-format
+ * Converts an address, in generic-format, to device-format
  *
  * @param dev Device handle obtained with `nvm_dev_open`
- * @param addr The physical address on generic-format to convert
- * @return Physical address on device-format
+ * @param addr The address, in generic-format, to convert
+ * @return Address in device-format
  */
 uint64_t nvm_addr_gen2dev(struct nvm_dev *dev, struct nvm_addr addr);
 
 /**
- * Converts a given physical address on device-format to generic-format
+ * Converts an address, in device-format, to generic-format
  *
  * @param dev Device handle obtained with `nvm_dev_open`
- * @param addr The physical address on device-format to convert
- * @return Physical address on generic-format
+ * @param addr The address, in device-format, to convert
+ * @return Address in generic-format
  */
 struct nvm_addr nvm_addr_dev2gen(struct nvm_dev *dev, uint64_t addr);
 
 /**
- * Converts a given physical address on device-format to lba-format
+ * Converts an address, in generic-format, to Linux Block Device offset
+ *
+ * @note
+ * This is a helper for function for the LBD backend, as a library user you will
+ * most likely not have a use for it
  *
  * @param dev Device handle obtained with `nvm_dev_open`
- * @param addr The physical address on device-format to convert
- * @return Physical address on lba-format
+ * @param addr The address, in generic-format, to convert
+ * @return LBD offset
  */
-uint64_t nvm_addr_dev2lba(struct nvm_dev *dev, uint64_t addr);
+uint64_t nvm_addr_gen2off(struct nvm_dev *dev, struct nvm_addr addr);
 
 /**
- * Converts a given physical address on device-format to lba-offset-format
+ * Converts a Linux Block Device offset to an address in generic-format
+ *
+ * @note
+ * This is a helper for function for the LBD backend, as a library user you will
+ * most likely not have a use for it
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @param off LBD offset
+ * @return Address in generic-format
+ */
+struct nvm_addr nvm_addr_off2gen(struct nvm_dev *dev, uint64_t off);
+
+/**
+ * Converts an address, in device-format, to Linux Block Device offset
+ *
+ * @note
+ * This is a helper for function for the LBD backend, as a library user you will
+ * most likely not have a use for it
  *
  * @param dev Device handle obtained with `nvm_dev_open`
  * @param addr The physical address on device-format to convert
@@ -1113,40 +1071,17 @@ uint64_t nvm_addr_dev2lba(struct nvm_dev *dev, uint64_t addr);
 uint64_t nvm_addr_dev2off(struct nvm_dev *dev, uint64_t addr);
 
 /**
- * Converts a given physical address on generic-format to byte offset
+ * Converts a Linux Block Device offset to an address in device-format
+ *
+ * @note
+ * This is a helper for function for the LBD backend, as a library user you will
+ * most likely not have a use for it
  *
  * @param dev Device handle obtained with `nvm_dev_open`
- * @param addr The physical address on generic-format to convert
- * @return Logical address as byte offset
+ * @param addr The physical address on device-format to convert
+ * @return Physical address on lba-offset-format
  */
-uint64_t nvm_addr_gen2off(struct nvm_dev *dev, struct nvm_addr addr);
-
-/**
- * Converts a given byte offset to physical address on generic-format
- *
- * @param dev Device handle obtained with `nvm_dev_open`
- * @param off Logical address as byte offset to convert
- * @return Physical address on generic-format
- */
-struct nvm_addr nvm_addr_off2gen(struct nvm_dev *dev, uint64_t off);
-
-/**
- * Converts a given physical address on generic-format to LBA offset
- *
- * @param dev Device handle obtained with `nvm_dev_open`
- * @param addr The physical address on generic-format to convert
- * @return Logical address as LBA offset
- */
-uint64_t nvm_addr_gen2lba(struct nvm_dev *dev, struct nvm_addr addr);
-
-/**
- * Converts a given LBA offset to physical address on generic-format
- *
- * @param dev Device handle obtained with `nvm_dev_open`
- * @param off Logical address as LBA offset to convert
- * @return Physical address on generic-format
- */
-struct nvm_addr nvm_addr_lba2gen(struct nvm_dev *dev, uint64_t off);
+uint64_t nvm_addr_off2dev(struct nvm_dev *dev, uint64_t addr);
 
 /**
  * Prints a hexidecimal representation of the given address value
