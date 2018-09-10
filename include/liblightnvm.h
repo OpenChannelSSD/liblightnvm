@@ -153,10 +153,19 @@ enum nvm_bounds {
 
 /**
  * Encapsulation and representation of lower-level error conditions
+ *
+ * @struct struct nvm_ret
  */
 struct nvm_ret {
-	uint64_t status;	///< NVMe command status / completion bits
-	uint32_t result;	///< NVMe command error codes
+	union {
+		struct {
+			uint64_t cs;	///< NVM completion status (CS)
+		} vio;			///< Vector I/O result
+
+		uint32_t cdw0;		///< NVMe command specific result
+	} result;
+
+	uint16_t status;		///< NVMe command status
 };
 
 /**
