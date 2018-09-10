@@ -232,7 +232,7 @@ static inline ssize_t vblk_erase_s20(struct nvm_vblk *vblk)
 		for (int i = 0; i < naddrs; ++i)
 			addrs[i].ppa = vblk->blks[off + i].ppa;
 
-		if (nvm_addr_erase(vblk->dev, addrs, naddrs, 0, &ret))
+		if (nvm_cmd_erase(vblk->dev, addrs, naddrs, NULL, 0x0, &ret))
 			++nerr;
 	}
 
@@ -367,7 +367,7 @@ static inline ssize_t vblk_pwrite_s12(struct nvm_vblk *vblk, const void *buf,
 			addrs[i].g.sec = i % geo->nsectors;
 		}
 
-		const ssize_t err = nvm_addr_write(vblk->dev, addrs, naddrs,
+		const ssize_t err = nvm_cmd_write(vblk->dev, addrs, naddrs,
 						   buf_off, meta, PMODE, &ret);
 		if (err)
 			++nerr;
@@ -591,8 +591,8 @@ static inline ssize_t vblk_pread_s12(struct nvm_vblk *vblk, void *buf,
 			addrs[i].g.sec = i % geo->nsectors;
 		}
 
-		const ssize_t err = nvm_addr_read(vblk->dev, addrs, naddrs,
-						  buf_off, NULL, PMODE, &ret);
+		const ssize_t err = nvm_cmd_read(vblk->dev, addrs, naddrs,
+						 buf_off, NULL, PMODE, &ret);
 		if (err)
 			++nerr;
 
