@@ -57,6 +57,21 @@ const char *nvm_pmode_str(int pmode) {
 	}
 }
 
+static inline void nvm_dev_vblk_opts_pr(const struct nvm_dev *dev)
+{
+	if (!dev) {
+		printf("vblk_opts: ~\n");
+		return;
+	}
+
+	printf("vblk_opts:\n");
+	printf("  pmode: '%s'\n", nvm_pmode_str(nvm_dev_get_pmode(dev)));
+	printf("  erase_naddrs_max: %d\n", nvm_dev_get_erase_naddrs_max(dev));
+	printf("  read_naddrs_max: %d\n", nvm_dev_get_read_naddrs_max(dev));
+	printf("  write_naddrs_max: %d\n", nvm_dev_get_write_naddrs_max(dev));
+	printf("  meta_mode: %d\n", nvm_dev_get_meta_mode(dev));
+}
+
 static inline void nvm_dev_cmd_opts_pr(const struct nvm_dev *dev)
 {
 	if (!dev) {
