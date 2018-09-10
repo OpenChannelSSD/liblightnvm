@@ -1260,7 +1260,7 @@ size_t nvm_vblk_get_pos_write(struct nvm_vblk *vblk);
 /**
  * Set the read cursor position for the given virtual block
  *
- * @param vblk The vblk to change 
+ * @param vblk The vblk to change
  * @param pos The new read cursor
  *
  * @returns On success, 0 is returned. On error, -1 is returned and `errno` set
