@@ -201,11 +201,11 @@ int nvm_be_ioctl_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs, int naddrs,
 int nvm_be_ioctl_scalar_erase(struct nvm_dev *dev, struct nvm_addr addrs[],
 			      int naddrs, uint16_t flags, struct nvm_ret *ret);
 
-int nvm_be_ioctl_scalar_write(struct nvm_dev *dev, struct nvm_addr addrs[],
-			      int naddrs, void *data, void *meta,
+int nvm_be_ioctl_scalar_write(struct nvm_dev *dev, struct nvm_addr addr,
+			      int naddrs, const void *data, const void *meta,
 			      uint16_t flags, struct nvm_ret *ret);
 
-int nvm_be_ioctl_scalar_read(struct nvm_dev *dev, struct nvm_addr addrs[],
+int nvm_be_ioctl_scalar_read(struct nvm_dev *dev, struct nvm_addr addr,
 			     int naddrs, void *data, void *meta, uint16_t flags,
 			     struct nvm_ret *ret);
 
@@ -214,7 +214,7 @@ int nvm_be_ioctl_vector_erase(struct nvm_dev *dev, struct nvm_addr addrs[],
 			      struct nvm_ret *ret);
 
 int nvm_be_ioctl_vector_write(struct nvm_dev *dev, struct nvm_addr addrs[],
-			      int naddrs, void *data, void *meta,
+			      int naddrs, const void *data, const void *meta,
 			      uint16_t flags, struct nvm_ret *ret);
 
 int nvm_be_ioctl_vector_read(struct nvm_dev *dev, struct nvm_addr addrs[],
