@@ -357,6 +357,20 @@ int nvm_cmd_gfeat(struct nvm_dev *dev, uint8_t id, union nvm_spec_feat *feat,
 		  struct nvm_ret *ret);
 
 /**
+ * Execute an Open-Channel 2.0 Set Feature command
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`
+ * @param id Feature identifier (see NVMe 1.3; Figure 84)
+ * @param feat Structure defining feature attributes
+ * @param ret Pointer to structure in which to store lower-level status and
+ *            result
+ *
+ * @returns 0 on success, -1 on error and errno set to indicate the error.
+ */
+int nvm_cmd_sfeat(struct nvm_dev *dev, uint8_t id,
+		  const union nvm_spec_feat *feat, struct nvm_ret *ret);
+
+/**
  * Execute an Open-Channel 1.2 get bad-block-table command
  *
  * @return On success, pointer to bad block table is returned. On error, NULL is
