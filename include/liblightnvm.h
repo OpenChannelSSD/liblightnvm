@@ -179,7 +179,7 @@ struct nvm_ret {
 const char *nvm_pmode_str(int pmode);
 
 /**
- * Encapsulation of generic physical nvm addressing
+ * Encapsulation of physical/hierarchical/geometric addressing in generic format
  *
  * Although the user need not worry about device specific address formats the
  * user has to know and respect addressing within device specific geometric
