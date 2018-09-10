@@ -313,13 +313,17 @@ struct nvm_bbt {
 struct nvm_spec_idfy *nvm_cmd_idfy(struct nvm_dev *dev, struct nvm_ret *ret);
 
 /**
- * Execute an Open-Channel 2.0 report chunk command
+ * Executes one or multiple Open-Channel 2.0 get-log-page for chunk-information
  *
- * NOTE: Caller is responsible for de-allocating the returned structure
+ * @note
+ * Caller is responsible for de-allocating the returned structure
  *
  * @param dev Device handle obtained with `nvm_dev_open`
- * report for
- * @param opts Reporting options, see `enum nvm_spec_chunk_state`
+ * @param addr Pointer to a `struct nvm_addr` containing the address of a chunk
+ *             to report about
+ * @param opt Reporting options, see `enum nvm_spec_chunk_state`
+ * @param ret Pointer to structure in which to store lower-level status and
+ *            result
  *
  * @return On success, pointer report chunk structure is returned. On error,
  * NULL is returned and `errno` set to indicate the error and ret filled with
