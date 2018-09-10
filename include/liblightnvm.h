@@ -243,7 +243,7 @@ struct nvm_geo {
 			size_t nchannels;	///< # of channels on device
 			size_t nluns;		///< # of LUNs per channel
 			size_t nblocks;		///< # of blocks per plane
-			
+
 			size_t nsectors;	///< # of sectors per page
 			size_t sector_nbytes;	///< # of bytes per sector
 			size_t meta_nbytes;	///< # of bytes for OOB
@@ -257,7 +257,7 @@ struct nvm_geo {
 			size_t nchannels;	///< # of channels on device
 			size_t nluns;		///< # of LUNs per channel
 			size_t nblocks;		///< # of blocks per plane
-			
+
 			size_t nsectors;	///< # of sectors per page
 			size_t sector_nbytes;	///< # of bytes per sector
 			size_t meta_nbytes;	///< # of bytes for OOB
@@ -267,7 +267,7 @@ struct nvm_geo {
 			size_t page_nbytes;	///< # of bytes per page
 		};
 	};
-	
+
 	size_t tbytes;				///< Total # bytes in geometry
 	int verid;				///< Associated dev verid
 };
