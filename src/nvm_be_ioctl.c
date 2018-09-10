@@ -475,7 +475,7 @@ static inline int cmd_scalar_wr(struct nvm_dev *dev, struct nvm_addr addr,
 	cmd.metadata_len = meta ? dev->geo.meta_nbytes * naddrs : 0;
 	cmd.data_len = dev->geo.sector_nbytes * naddrs;
 
-	uint64_t slba = nvm_addr_gen2dev(dev, *addrs);
+	uint64_t slba = nvm_addr_gen2dev(dev, addr);
 
 	cmd.cdw10 = slba;
 	cmd.cdw11 = slba >> 32;
@@ -492,19 +492,22 @@ static inline int cmd_scalar_wr(struct nvm_dev *dev, struct nvm_addr addr,
 	return 0;
 }
 
-int nvm_be_ioctl_scalar_write(struct nvm_dev *dev, struct nvm_addr addrs[],
-			      int naddrs, void *data, void *meta,
+int nvm_be_ioctl_scalar_write(struct nvm_dev *dev, struct nvm_addr addr,
+			      int naddrs, const void *data, const void *meta,
 			      uint16_t flags, struct nvm_ret *ret)
 {
-	return cmd_scalar_wr(dev, addrs, naddrs, data, meta, flags,
+	char *cdata = (char *)data;
+	char *cmeta = (char *)meta;
+
+	return cmd_scalar_wr(dev, addr, naddrs, cdata, cmeta, flags,
 			     NVM_DOPC_SCALAR_WRITE, ret);
 }
 
-int nvm_be_ioctl_scalar_read(struct nvm_dev *dev, struct nvm_addr addrs[],
+int nvm_be_ioctl_scalar_read(struct nvm_dev *dev, struct nvm_addr addr,
 			     int naddrs, void *data, void *meta, uint16_t flags,
 			     struct nvm_ret *ret)
 {
-	return cmd_scalar_wr(dev, addrs, naddrs, data, meta, flags,
+	return cmd_scalar_wr(dev, addr, naddrs, data, meta, flags,
 			     NVM_DOPC_SCALAR_READ, ret);
 }
 
@@ -576,10 +579,13 @@ int nvm_be_ioctl_vector_erase(struct nvm_dev *dev, struct nvm_addr addrs[],
 }
 
 int nvm_be_ioctl_vector_write(struct nvm_dev *dev, struct nvm_addr addrs[],
-			      int naddrs, void *data, void *meta,
+			      int naddrs, const void *data, const void *meta,
 			      uint16_t flags, struct nvm_ret *ret)
 {
-	return cmd_vector_ewr(dev, addrs, naddrs, data, meta, flags,
+	char *cdata = (char *)data;
+	char *cmeta = (char *)meta;
+
+	return cmd_vector_ewr(dev, addrs, naddrs, cdata, cmeta, flags,
 			      NVM_DOPC_VECTOR_WRITE, ret);
 }
 
