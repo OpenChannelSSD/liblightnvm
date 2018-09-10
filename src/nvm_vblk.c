@@ -38,14 +38,6 @@
 
 #define NVM_VBLK_CMD_OPTS (NVM_CMD_SYNC | NVM_CMD_VECTOR | NVM_CMD_PRP)
 
-static inline int NVM_MIN(int x, int y) {
-	return x < y ? x : y;
-}
-
-static inline int NVM_MAX(int x, int y) {
-	return x > y ? x : y;
-}
-
 struct nvm_vblk* nvm_vblk_alloc(struct nvm_dev *dev, struct nvm_addr addrs[],
 				int naddrs)
 {
