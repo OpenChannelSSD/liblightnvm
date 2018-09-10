@@ -119,10 +119,12 @@ void nvm_dev_pr(const struct nvm_dev *dev)
 	}
 
 	printf("dev_"); nvm_dev_attr_pr(dev);
-
+	printf("dev_"); nvm_geo_pr(&dev->geo);
+	printf("dev_"); nvm_dev_cmd_opts_pr(dev);
+	printf("dev_"); nvm_dev_vblk_opts_pr(dev);
+	
 	switch(nvm_dev_get_verid(dev)) {
 	case NVM_SPEC_VERID_12:
-		printf("dev_"); nvm_geo_pr(&dev->geo);
 		printf("dev_"); nvm_spec_ppaf_nand_pr(&dev->ppaf);
 		printf("dev_"); nvm_spec_ppaf_nand_mask_pr(&dev->mask);
 		printf("dev_"); nvm_spec_lbaf_pr(NULL);
@@ -131,7 +133,6 @@ void nvm_dev_pr(const struct nvm_dev *dev)
 		break;
 
 	case NVM_SPEC_VERID_20:
-		printf("dev_"); nvm_geo_pr(&dev->geo);
 		printf("dev_"); nvm_spec_ppaf_nand_pr(NULL);
 		printf("dev_"); nvm_spec_ppaf_nand_mask_pr(NULL);
 		printf("dev_"); nvm_spec_lbaf_pr(&dev->lbaf);
