@@ -226,7 +226,7 @@ int nvm_dev_set_quirks(struct nvm_dev *dev, int quirks)
 
 int nvm_dev_get_pmode(const struct nvm_dev *dev)
 {
-	return dev->pmode;
+	return dev->vblk_opts.pmode;
 }
 
 int nvm_dev_set_pmode(struct nvm_dev *dev, int pmode)
@@ -245,7 +245,7 @@ int nvm_dev_set_pmode(struct nvm_dev *dev, int pmode)
 		}
 		/* FALLTHRU */
 	case NVM_FLAG_PMODE_SNGL:
-		dev->pmode = pmode;
+		dev->vblk_opts.pmode = pmode;
 		return 0;
 
 	default:
@@ -256,20 +256,20 @@ int nvm_dev_set_pmode(struct nvm_dev *dev, int pmode)
 
 int nvm_dev_get_meta_mode(const struct nvm_dev *dev)
 {
-	return dev->meta_mode;
+	return dev->vblk_opts.meta_mode;
 }
 
 int nvm_dev_set_meta_mode(struct nvm_dev *dev, int meta_mode)
 {
 	switch (meta_mode) {
 	case NVM_META_MODE_NONE:
-		dev->meta_mode = NVM_META_MODE_NONE;
+		dev->vblk_opts.meta_mode = NVM_META_MODE_NONE;
 		return 0;
 	case NVM_META_MODE_ALPHA:
-		dev->meta_mode = NVM_META_MODE_ALPHA;
+		dev->vblk_opts.meta_mode = NVM_META_MODE_ALPHA;
 		return 0;
 	case NVM_META_MODE_CONST:
-		dev->meta_mode = NVM_META_MODE_CONST;
+		dev->vblk_opts.meta_mode = NVM_META_MODE_CONST;
 		return 0;
 
 	default:
@@ -300,7 +300,7 @@ int nvm_dev_get_nsid(const struct nvm_dev *dev)
 
 int nvm_dev_get_erase_naddrs_max(const struct nvm_dev *dev)
 {
-	return dev->erase_naddrs_max;
+	return dev->vblk_opts.erase_naddrs_max;
 }
 
 int nvm_dev_set_erase_naddrs_max(struct nvm_dev *dev, int naddrs)
@@ -314,14 +314,14 @@ int nvm_dev_set_erase_naddrs_max(struct nvm_dev *dev, int naddrs)
 		return -1;
 	}
 
-	dev->erase_naddrs_max = naddrs;
+	dev->vblk_opts.erase_naddrs_max = naddrs;
 
 	return 0;
 }
 
 int nvm_dev_get_read_naddrs_max(const struct nvm_dev *dev)
 {
-	return dev->read_naddrs_max;
+	return dev->vblk_opts.read_naddrs_max;
 }
 
 int nvm_dev_set_read_naddrs_max(struct nvm_dev *dev, int naddrs)
@@ -334,19 +334,19 @@ int nvm_dev_set_read_naddrs_max(struct nvm_dev *dev, int naddrs)
 		errno = EINVAL;
 		return -1;
 	}
-	if (dev->pmode && (naddrs % (dev->geo.nplanes))) {
+	if (dev->vblk_opts.pmode && (naddrs % (dev->geo.nplanes))) {
 		errno = EINVAL;
 		return -1;
 	}
 
-	dev->read_naddrs_max = naddrs;
+	dev->vblk_opts.read_naddrs_max = naddrs;
 
 	return 0;
 }
 
 int nvm_dev_get_write_naddrs_max(const struct nvm_dev *dev)
 {
-	return dev->write_naddrs_max;
+	return dev->vblk_opts.write_naddrs_max;
 }
 
 int nvm_dev_set_write_naddrs_max(struct nvm_dev *dev, int naddrs)
@@ -359,9 +359,9 @@ int nvm_dev_set_write_naddrs_max(struct nvm_dev *dev, int naddrs)
 		errno = EINVAL;
 		return -1;
 	}
-	
+
 	if (dev->verid != NVM_SPEC_VERID_20) {
-		if (dev->pmode && (naddrs % (dev->geo.nplanes * dev->geo.nsectors))) {
+		if (dev->vblk_opts.pmode && (naddrs % (dev->geo.nplanes * dev->geo.nsectors))) {
 			errno = EINVAL;
 			return -1;
 		}
@@ -371,7 +371,7 @@ int nvm_dev_set_write_naddrs_max(struct nvm_dev *dev, int naddrs)
 		}
 	}
 
-	dev->write_naddrs_max = naddrs;
+	dev->vblk_opts.write_naddrs_max = naddrs;
 
 	return 0;
 }
@@ -398,9 +398,10 @@ int nvm_dev_set_bbts_cached(struct nvm_dev *dev, int bbts_cached)
 }
 
 struct nvm_dev * nvm_dev_openf(const char *dev_path, int flags) {
+	int be = flags & NVM_BE_ALL;
 	struct nvm_dev *dev = NULL;
 
-	int be = flags & NVM_BE_ALL;
+	NVM_DEBUG("dev_path: %s, flags: 0x%x", dev_path, flags);
 
 	for (int i = 0; nvm_backends[i]; ++i) {
 		if (be && !(nvm_backends[i]->id & be))
@@ -415,6 +416,7 @@ struct nvm_dev * nvm_dev_openf(const char *dev_path, int flags) {
 
 	if (!dev) {
 		errno = errno ? errno : EIO;
+		NVM_DEBUG("FAILED: no backend can open, ident: %s", dev_path);
 		return NULL;
 	}
 
@@ -429,6 +431,34 @@ struct nvm_dev * nvm_dev_openf(const char *dev_path, int flags) {
 
 	for (size_t i = 0; i < dev->nbbts; ++i)
 		dev->bbts[i] = NULL;
+
+	dev->cmd_opts = 0;	// Setup CMD options
+	
+	if (flags & NVM_CMD_MASK_IOMD) {
+		NVM_DEBUG("setting IOMD using flags");
+		dev->cmd_opts |= flags & NVM_CMD_MASK_IOMD;
+	} else {
+		NVM_DEBUG("setting IOMD using def: 0x%x", NVM_CMD_DEF_IOMD);
+		dev->cmd_opts |= NVM_CMD_DEF_IOMD;
+	}
+
+	if (flags & NVM_CMD_MASK_ADDR) {
+		NVM_DEBUG("setting ADDR using flags");
+		dev->cmd_opts |= flags & NVM_CMD_MASK_ADDR;
+	} else {
+		NVM_DEBUG("setting ADDR using def: 0x%x", NVM_CMD_DEF_ADDR);
+		dev->cmd_opts |= NVM_CMD_DEF_ADDR;
+	}
+
+	if (flags & NVM_CMD_MASK_PLOD) {
+		NVM_DEBUG("setting PLOD using flags");
+		dev->cmd_opts |= flags & NVM_CMD_MASK_PLOD;
+	} else {
+		NVM_DEBUG("setting PLOD using def: 0x%x", NVM_CMD_DEF_PLOD);
+		dev->cmd_opts |= NVM_CMD_DEF_PLOD;
+	}
+
+	NVM_DEBUG("cmd_opts: 0x%x", dev->cmd_opts);
 
 	return dev;
 }
@@ -451,4 +481,3 @@ void nvm_dev_close(struct nvm_dev *dev)
 	free(dev->bbts);
 	free(dev);
 }
-
