@@ -917,7 +917,6 @@ void nvm_buf_fill(char *buf, size_t nbytes);
  * Free the given buffer, calling regular "free" on the buffer might fail
  *
  * @param buf Pointer to the buffer to fill
- * @param nbytes Amount of bytes to fill in buf
  */
 void nvm_buf_free(void *buf);
 
