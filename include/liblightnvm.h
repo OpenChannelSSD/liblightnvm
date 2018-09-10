@@ -415,7 +415,8 @@ int nvm_cmd_erase(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
  * to indicate the error and ret filled with lower-level result codes
  */
 int nvm_cmd_write(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
-		  void *data, void *meta, uint16_t flags, struct nvm_ret *ret);
+		  const void *data, const void *meta, uint16_t flags,
+		  struct nvm_ret *ret);
 
 /**
  * Execute an Open-Channel 1.2 / 2.0 vector-read command
