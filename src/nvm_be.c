@@ -140,9 +140,10 @@ int nvm_be_nosys_scalar_erase(struct nvm_dev *NVM_UNUSED(dev),
 }
 
 int nvm_be_nosys_scalar_write(struct nvm_dev *NVM_UNUSED(dev),
-			      struct nvm_addr *NVM_UNUSED(addrs),
+			      struct nvm_addr NVM_UNUSED(addrs),
 			      int NVM_UNUSED(naddrs),
-			      void *NVM_UNUSED(data), void *NVM_UNUSED(meta),
+			      const void *NVM_UNUSED(data),
+			      const void *NVM_UNUSED(meta),
 			      uint16_t NVM_UNUSED(flags),
 			      struct nvm_ret *NVM_UNUSED(ret))
 {
@@ -152,7 +153,7 @@ int nvm_be_nosys_scalar_write(struct nvm_dev *NVM_UNUSED(dev),
 }
 
 int nvm_be_nosys_scalar_read(struct nvm_dev *NVM_UNUSED(dev),
-			     struct nvm_addr *NVM_UNUSED(addrs),
+			     struct nvm_addr NVM_UNUSED(addrs),
 			     int NVM_UNUSED(naddrs), void *NVM_UNUSED(data),
 			     void *NVM_UNUSED(meta), uint16_t NVM_UNUSED(flags),
 			     struct nvm_ret *NVM_UNUSED(ret))
@@ -177,7 +178,8 @@ int nvm_be_nosys_vector_erase(struct nvm_dev *NVM_UNUSED(dev),
 int nvm_be_nosys_vector_write(struct nvm_dev *NVM_UNUSED(dev),
 			      struct nvm_addr *NVM_UNUSED(addrs),
 			      int NVM_UNUSED(naddrs),
-			      void *NVM_UNUSED(data), void *NVM_UNUSED(meta),
+			      const void *NVM_UNUSED(data),
+			      const void *NVM_UNUSED(meta),
 			      uint16_t NVM_UNUSED(flags),
 			      struct nvm_ret *NVM_UNUSED(ret))
 {
@@ -188,8 +190,10 @@ int nvm_be_nosys_vector_write(struct nvm_dev *NVM_UNUSED(dev),
 
 int nvm_be_nosys_vector_read(struct nvm_dev *NVM_UNUSED(dev),
 			     struct nvm_addr *NVM_UNUSED(addrs),
-			     int NVM_UNUSED(naddrs), void *NVM_UNUSED(data),
-			     void *NVM_UNUSED(meta), uint16_t NVM_UNUSED(flags),
+			     int NVM_UNUSED(naddrs),
+			     void *NVM_UNUSED(data),
+			     void *NVM_UNUSED(meta),
+			     uint16_t NVM_UNUSED(flags),
 			     struct nvm_ret *NVM_UNUSED(ret))
 {
 	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
