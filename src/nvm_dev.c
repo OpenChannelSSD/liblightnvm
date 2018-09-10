@@ -99,24 +99,15 @@ void nvm_dev_attr_pr(const struct nvm_dev *dev)
 	printf("attr:\n");
 	printf("  verid: 0x%02x\n", nvm_dev_get_verid(dev));
 	printf("  be_id: 0x%02x\n", nvm_dev_get_be_id(dev));
+	printf("  be_name: '%s'\n", dev->be->name);
 	printf("  name: '%s'\n", nvm_dev_get_name(dev));
 	printf("  path: '%s'\n", nvm_dev_get_path(dev));
 	printf("  fd: %d\n", nvm_dev_get_fd(dev));
 	printf("  ssw: %"PRIu64"\n", dev->ssw);
-	printf("  mccap: "NVM_I32_FMT"\n",
+	printf("  mccap: '"NVM_I32_FMT"'\n",
 	       NVM_I32_TO_STR(nvm_dev_get_mccap(dev)));
-	printf("  pmode: '%s'\n", nvm_pmode_str(nvm_dev_get_pmode(dev)));
-
-	printf("  erase_naddrs_max: %d\n", dev->erase_naddrs_max);
-	printf("  read_naddrs_max: %d\n", dev->read_naddrs_max);
-	printf("  write_naddrs_max: %d\n",dev->write_naddrs_max);
-
-	printf("  meta_mode: %d\n", nvm_dev_get_meta_mode(dev));
 	printf("  bbts_cached: %d\n", nvm_dev_get_bbts_cached(dev));
-	
-	printf("  bbts_cached: %08x\n", nvm_dev_get_bbts_cached(dev));
-
-	printf("  quirks: "NVM_I8_FMT"\n",
+	printf("  quirks: '"NVM_I8_FMT"'\n",
 	       NVM_I8_TO_STR(nvm_dev_get_quirks(dev)));
 }
 
