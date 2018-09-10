@@ -57,6 +57,23 @@ const char *nvm_pmode_str(int pmode) {
 	}
 }
 
+static inline void nvm_dev_cmd_opts_pr(const struct nvm_dev *dev)
+{
+	if (!dev) {
+		printf("cmd_opts: ~\n");
+		return;
+	}
+
+	printf("cmd_opts:\n");
+	printf("  mask: '"NVM_I32_FMT"'\n", NVM_I32_TO_STR(dev->cmd_opts));
+	printf("  iomd: '%s'\n",
+	       (dev->cmd_opts & NVM_CMD_SYNC) ? "SYNC" : "ASYNC");
+	printf("  addr: '%s'\n",
+	       (dev->cmd_opts & NVM_CMD_SCALAR) ? "SCALAR" : "VECTOR");
+	printf("  plod: '%s'\n",
+	       (dev->cmd_opts & NVM_CMD_PRP) ? "PRP" : "SGL");
+}
+
 void nvm_dev_attr_pr(const struct nvm_dev *dev)
 {
 	if (!dev) {
