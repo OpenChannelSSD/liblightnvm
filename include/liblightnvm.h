@@ -90,7 +90,7 @@ enum nvm_pmode {
 	NVM_FLAG_PMODE_DUAL	= 0x1,		///< Dual-plane
 	NVM_FLAG_PMODE_QUAD	= 0x1 << 1	///< Quad-plane
 };
-#define NVM_FLAG_DEFAULT (NVM_FLAG_PMODE_SNGL | NVM_FLAG_SCRBL);
+#define NVM_FLAG_DEFAULT (NVM_FLAG_PMODE_SNGL | NVM_FLAG_SCRBL)
 
 /**
  * Flags for device quirks
