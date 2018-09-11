@@ -27,15 +27,15 @@ support this class of applications.
 Contact and Contributions
 =========================
 
-liblightnvm is in active development and pull requests are very welcome.
+liblightnvm is in active development and maintained by Simon A. F. Lund
+<slund@cnexlabs.com>, pull requests are very welcome.
 
 References
 ==========
 
-1.  [Open-channel SSDs](http://openchannelssd.readthedocs.org/en/latest/>)
-2.  [Getting Started](http://openchannelssd.readthedocs.org/en/latest/gettingstarted/#configure-qemu)
-3.  [nvme-cli](https://github.com/linux-nvme/nvme-cli)
-4.  [qemu-nvme](<https://github.com/OpenChannelSSD/qemu-nvme)
-5.  [lightnvm-hw](<https://github.com/OpenChannelSSD/lightnvm-hw)
-6.  [rocksdb support](https://github.com/OpenChannelSSD/rocksdb)
+* [Open-channel SSDs](http://openchannelssd.readthedocs.org/en/latest/>)
+* [Quick Start](http://lightnvm.io/liblightnvm/quick_start/index.html)
+* [nvme-cli](https://github.com/linux-nvme/nvme-cli)
+* [qemu-nvme](<https://github.com/OpenChannelSSD/qemu-nvme)
+* [rocksdb support](https://github.com/OpenChannelSSD/rocksdb)
 
