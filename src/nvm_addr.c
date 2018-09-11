@@ -263,4 +263,3 @@ ssize_t nvm_addr_read(struct nvm_dev *dev, struct nvm_addr addrs[], int naddrs,
 {
 	return nvm_cmd_read(dev, addrs, naddrs, data, meta, flags, ret);
 }
-
