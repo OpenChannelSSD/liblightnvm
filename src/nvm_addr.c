@@ -34,14 +34,6 @@
 #include <nvm_debug.h>
 #include <nvm_utils.h>
 
-void nvm_ret_pr(const struct nvm_ret *ret)
-{
-	printf("nvm_ret: {");
-	printf("result: 0x%x, ", ret->result);
-	printf("status: %"PRIu64"",ret->status);
-	printf("}\n");
-}
-
 void nvm_addr_pr(const struct nvm_addr addr)
 {
 	printf("0x%016"PRIx64, addr.val);
