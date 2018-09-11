@@ -207,7 +207,7 @@ uint64_t nvm_addr_gen2lpo(struct nvm_dev *dev, struct nvm_addr addr)
 	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
 
 	uint64_t idx = 0;
-	
+
 	idx += addr.l.pugrp * geo->l.npunit * geo->l.nchunk;
 	idx += addr.l.punit * geo->l.nchunk;
 	idx += addr.l.chunk;
