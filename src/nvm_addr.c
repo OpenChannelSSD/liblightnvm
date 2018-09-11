@@ -186,7 +186,7 @@ inline struct nvm_addr nvm_addr_dev2gen(struct nvm_dev *dev, uint64_t addr)
 		gen.l.punit = (addr & dev->lbam.punit) >> dev->lbaz.punit;
 		gen.l.chunk = (addr & dev->lbam.chunk) >> dev->lbaz.chunk;
 		gen.l.sectr = (addr & dev->lbam.sectr) >> dev->lbaz.sectr;
-		
+
 		return gen;
 	} else {
 		struct nvm_addr gen = { .val = 0 };
