@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nvm_cmd - Raw Commands &mdash; liblightnvm 0.1.2 documentation</title>
+  <title>nvm_cmd - Raw Commands &mdash; liblightnvm 0.1.4 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.2
+                0.1.4
               </div>
             
           
@@ -95,11 +95,13 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">nvm_cmd - Raw Commands</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-idfy">nvm_cmd_idfy</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-erase">nvm_cmd_erase</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-gbbt-arbs">nvm_cmd_gbbt_arbs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-sbbt">nvm_cmd_sbbt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-gbbt">nvm_cmd_gbbt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-gbbt-arbs">nvm_cmd_gbbt_arbs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-rprt">nvm_cmd_rprt</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-rprt-arbs">nvm_cmd_rprt_arbs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-gbbt">nvm_cmd_gbbt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-sfeat">nvm_cmd_sfeat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-gfeat">nvm_cmd_gfeat</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-copy">nvm_cmd_copy</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-write">nvm_cmd_write</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-cmd-read">nvm_cmd_read</a></li>
@@ -186,7 +188,7 @@
 <h2>nvm_cmd_idfy<a class="headerlink" href="#nvm-cmd-idfy" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_cmd_idfy">
-<span class="target" id="liblightnvm_8h_1a3e362fda83e44aa702386eec542c4387"></span>struct nvm_spec_idfy* <code class="descname">nvm_cmd_idfy</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_idfy" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a3e362fda83e44aa702386eec542c4387"></span>struct nvm_spec_idfy* <code class="descname">nvm_cmd_idfy</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct   <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_idfy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute an Open-Channel 1.2 identify / Open-Channel 2.0 geometry command. </p>
 <p>NOTE: Caller is responsible for de-allocating the returned structure</p>
 <p><dl class="docutils">
@@ -201,7 +203,7 @@
 <h2>nvm_cmd_erase<a class="headerlink" href="#nvm-cmd-erase" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_cmd_erase">
-<span class="target" id="liblightnvm_8h_1ac469286a1add51f412e199707826113f"></span>int <code class="descname">nvm_cmd_erase</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addrs[]</em>, int<em>&nbsp;naddrs</em>, uint16_t<em>&nbsp;flags</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_erase" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1ab13af806fbbfd925c3b9d59bc33fceb9"></span>int <code class="descname">nvm_cmd_erase</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct   <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addrs[]</em>, int<em>&nbsp;naddrs</em>, void *<em>&nbsp;meta</em>, uint16_t<em>&nbsp;flags</em>, struct   <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_erase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute an Open-Channel 1.2 erase / Open-Channel 2.0 reset command. </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
@@ -211,12 +213,12 @@
 </dd></dl>
 
 </div>
-<div class="section" id="nvm-cmd-gbbt-arbs">
-<h2>nvm_cmd_gbbt_arbs<a class="headerlink" href="#nvm-cmd-gbbt-arbs" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="nvm-cmd-sbbt">
+<h2>nvm_cmd_sbbt<a class="headerlink" href="#nvm-cmd-sbbt" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="c.nvm_cmd_gbbt_arbs">
-<span class="target" id="liblightnvm_8h_1abbdd671f18944bf7327f12de3a46e3f6"></span>int <code class="descname">nvm_cmd_gbbt_arbs</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, int<em>&nbsp;bs</em>, int<em>&nbsp;naddrs</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addrs[]</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_gbbt_arbs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find an arbitrary set of ‘naddrs’ block-addresses on the given ‘dev’, in the given block state ‘bs’ and store them in the provided ‘addrs’ array. </p>
+<dt id="c.nvm_cmd_sbbt">
+<span class="target" id="liblightnvm_8h_1ab5cd49eff1aa6d48fe57a3f3b266f8c8"></span>int <code class="descname">nvm_cmd_sbbt</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct   <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a>  *<em>&nbsp;addrs</em>, int<em>&nbsp;naddrs</em>, uint16_t<em>&nbsp;flags</em>, struct   <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_sbbt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute an Open-Channel 1.2 set bad block table command. </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
 <dd>On success, 0 is returned. On error, -1 is returned and errno set to indicate the error. </dd>
@@ -225,12 +227,26 @@
 </dd></dl>
 
 </div>
-<div class="section" id="nvm-cmd-sbbt">
-<h2>nvm_cmd_sbbt<a class="headerlink" href="#nvm-cmd-sbbt" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="nvm-cmd-gbbt">
+<h2>nvm_cmd_gbbt<a class="headerlink" href="#nvm-cmd-gbbt" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="c.nvm_cmd_sbbt">
-<span class="target" id="liblightnvm_8h_1ab5cd49eff1aa6d48fe57a3f3b266f8c8"></span>int <code class="descname">nvm_cmd_sbbt</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a>  *<em>&nbsp;addrs</em>, int<em>&nbsp;naddrs</em>, uint16_t<em>&nbsp;flags</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_sbbt" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute an Open-Channel 1.2 set bad block table command. </p>
+<dt id="c.nvm_cmd_gbbt">
+<span class="target" id="liblightnvm_8h_1a611b8c7024c31fe3405daef6506c7ce7"></span>struct nvm_spec_bbt* <code class="descname">nvm_cmd_gbbt</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct   <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addr</em>, struct   <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_gbbt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute an Open-Channel 1.2 get bad-block-table command. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>On success, pointer to bad block table is returned. On error, NULL is returned and <code class="docutils literal notranslate"><span class="pre">errno</span></code> set to indicate the error and ret filled with lower-level result codes </dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-cmd-gbbt-arbs">
+<h2>nvm_cmd_gbbt_arbs<a class="headerlink" href="#nvm-cmd-gbbt-arbs" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_cmd_gbbt_arbs">
+<span class="target" id="liblightnvm_8h_1abbdd671f18944bf7327f12de3a46e3f6"></span>int <code class="descname">nvm_cmd_gbbt_arbs</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, int<em>&nbsp;bs</em>, int<em>&nbsp;naddrs</em>, struct   <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addrs[]</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_gbbt_arbs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find an arbitrary set of ‘naddrs’ block-addresses on the given ‘dev’, in the given block state ‘bs’ and store them in the provided ‘addrs’ array. </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
 <dd>On success, 0 is returned. On error, -1 is returned and errno set to indicate the error. </dd>
@@ -243,16 +259,19 @@
 <h2>nvm_cmd_rprt<a class="headerlink" href="#nvm-cmd-rprt" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_cmd_rprt">
-<span class="target" id="liblightnvm_8h_1a785e8abb02468f10d3da659c627e8676"></span>struct nvm_spec_rprt* <code class="descname">nvm_cmd_rprt</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a>  *<em>&nbsp;addr</em>, int<em>&nbsp;opt</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_rprt" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute an Open-Channel 2.0 report chunk command. </p>
-<p>NOTE: Caller is responsible for de-allocating the returned structure</p>
+<span class="target" id="liblightnvm_8h_1a785e8abb02468f10d3da659c627e8676"></span>struct nvm_spec_rprt* <code class="descname">nvm_cmd_rprt</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct   <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a>  *<em>&nbsp;addr</em>, int<em>&nbsp;opt</em>, struct   <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_rprt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes one or multiple Open-Channel 2.0 get-log-page for chunk-information. </p>
 <p><dl class="docutils">
+<dt><strong>Note</strong></dt>
+<dd>Caller is responsible for de-allocating the returned structure</dd>
 <dt><strong>Return</strong></dt>
 <dd>On success, pointer report chunk structure is returned. On error, NULL is returned and <code class="docutils literal notranslate"><span class="pre">errno</span></code> set to indicate the error and ret filled with lower-level result codes </dd>
 <dt><strong>Parameters</strong></dt>
 <dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">dev</span></code>: Device handle obtained with <code class="docutils literal notranslate"><span class="pre">nvm_dev_open</span></code> report for </li>
-<li><code class="docutils literal notranslate"><span class="pre">opts</span></code>: Reporting options, see <code class="docutils literal notranslate"><span class="pre">enum</span> <span class="pre">nvm_spec_chunk_state</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">dev</span></code>: Device handle obtained with <code class="docutils literal notranslate"><span class="pre">nvm_dev_open</span></code> </li>
+<li><code class="docutils literal notranslate"><span class="pre">addr</span></code>: Pointer to a <code class="docutils literal notranslate"><span class="pre">struct</span> <a class="reference internal" href="nvm_addr.html#structnvm__addr"><span class="std std-ref"><span class="pre">nvm_addr</span></span></a></code> containing the address of a chunk to report about </li>
+<li><code class="docutils literal notranslate"><span class="pre">opt</span></code>: Reporting options, see <code class="docutils literal notranslate"><span class="pre">enum</span> <span class="pre">nvm_spec_chunk_state</span></code> </li>
+<li><code class="docutils literal notranslate"><span class="pre">ret</span></code>: Pointer to structure in which to store lower-level status and result</li>
 </ul>
 </dd>
 </dl>
@@ -264,7 +283,7 @@
 <h2>nvm_cmd_rprt_arbs<a class="headerlink" href="#nvm-cmd-rprt-arbs" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_cmd_rprt_arbs">
-<span class="target" id="liblightnvm_8h_1a789c06d0d8cfc079814affb15d73471d"></span>int <code class="descname">nvm_cmd_rprt_arbs</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, int<em>&nbsp;cs</em>, int<em>&nbsp;naddrs</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addrs[]</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_rprt_arbs" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a789c06d0d8cfc079814affb15d73471d"></span>int <code class="descname">nvm_cmd_rprt_arbs</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, int<em>&nbsp;cs</em>, int<em>&nbsp;naddrs</em>, struct   <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addrs[]</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_rprt_arbs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find an arbitrary set of ‘naddrs’ chunk-addresses on the given ‘dev’, in the given chunk state ‘cs’ and store them in the provided ‘addrs’ array. </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
@@ -274,15 +293,45 @@
 </dd></dl>
 
 </div>
-<div class="section" id="nvm-cmd-gbbt">
-<h2>nvm_cmd_gbbt<a class="headerlink" href="#nvm-cmd-gbbt" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="nvm-cmd-sfeat">
+<h2>nvm_cmd_sfeat<a class="headerlink" href="#nvm-cmd-sfeat" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="c.nvm_cmd_gbbt">
-<span class="target" id="liblightnvm_8h_1a611b8c7024c31fe3405daef6506c7ce7"></span>struct nvm_spec_bbt* <code class="descname">nvm_cmd_gbbt</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addr</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_gbbt" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute an Open-Channel 1.2 get bad-block-table command. </p>
+<dt id="c.nvm_cmd_sfeat">
+<span class="target" id="liblightnvm_8h_1ac1e2e87361822838a8be9018bd54f253"></span>int <code class="descname">nvm_cmd_sfeat</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, uint8_t<em>&nbsp;id</em>, const union nvm_spec_feat *<em>&nbsp;feat</em>, struct   <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_sfeat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute an Open-Channel 2.0 Set Feature command. </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
-<dd>On success, pointer to bad block table is returned. On error, NULL is returned and <code class="docutils literal notranslate"><span class="pre">errno</span></code> set to indicate the error and ret filled with lower-level result codes </dd>
+<dd>0 on success, -1 on error and errno set to indicate the error. </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">dev</span></code>: Device handle obtained with <code class="docutils literal notranslate"><span class="pre">nvm_dev_open</span></code> </li>
+<li><code class="docutils literal notranslate"><span class="pre">id</span></code>: Feature identifier (see NVMe 1.3; Figure 84) </li>
+<li><code class="docutils literal notranslate"><span class="pre">feat</span></code>: Structure defining feature attributes </li>
+<li><code class="docutils literal notranslate"><span class="pre">ret</span></code>: Pointer to structure in which to store lower-level status and result</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-cmd-gfeat">
+<h2>nvm_cmd_gfeat<a class="headerlink" href="#nvm-cmd-gfeat" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_cmd_gfeat">
+<span class="target" id="liblightnvm_8h_1a2bf343e784dcbc29a79396fde924a472"></span>int <code class="descname">nvm_cmd_gfeat</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, uint8_t<em>&nbsp;id</em>, union nvm_spec_feat *<em>&nbsp;feat</em>, struct   <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_gfeat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute an Open-Channel 2.0 Get Feature command. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>0 on success, -1 on error and errno set to indicate the error. </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">dev</span></code>: Device handle obtained with <code class="docutils literal notranslate"><span class="pre">nvm_dev_open</span></code> </li>
+<li><code class="docutils literal notranslate"><span class="pre">id</span></code>: Feature identifier (see NVMe 1.3; Figure 84) </li>
+<li><code class="docutils literal notranslate"><span class="pre">feat</span></code>: Structure defining feature attributes </li>
+<li><code class="docutils literal notranslate"><span class="pre">ret</span></code>: Pointer to structure in which to store lower-level status and result</li>
+</ul>
+</dd>
 </dl>
 </p>
 </dd></dl>
@@ -292,7 +341,7 @@
 <h2>nvm_cmd_copy<a class="headerlink" href="#nvm-cmd-copy" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_cmd_copy">
-<span class="target" id="liblightnvm_8h_1a07c7760376683a3885b60c6a9c638756"></span>int <code class="descname">nvm_cmd_copy</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;src[]</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;dst[]</em>, int<em>&nbsp;naddrs</em>, uint16_t<em>&nbsp;flags</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_copy" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a07c7760376683a3885b60c6a9c638756"></span>int <code class="descname">nvm_cmd_copy</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct   <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;src[]</em>, struct   <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;dst[]</em>, int<em>&nbsp;naddrs</em>, uint16_t<em>&nbsp;flags</em>, struct   <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute an Open-Channel 2.0 vector-copy command. </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
@@ -306,7 +355,7 @@
 <h2>nvm_cmd_write<a class="headerlink" href="#nvm-cmd-write" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_cmd_write">
-<span class="target" id="liblightnvm_8h_1a650e17fd338f7fdd845a51311078de98"></span>int <code class="descname">nvm_cmd_write</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addrs[]</em>, int<em>&nbsp;naddrs</em>, void *<em>&nbsp;data</em>, void *<em>&nbsp;meta</em>, uint16_t<em>&nbsp;flags</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_write" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1ad5022b34aa1bd2a7a566bcf20263be47"></span>int <code class="descname">nvm_cmd_write</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct   <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addrs[]</em>, int<em>&nbsp;naddrs</em>, const void *<em>&nbsp;data</em>, const void *<em>&nbsp;meta</em>, uint16_t<em>&nbsp;flags</em>, struct   <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute an Open-Channel 1.2 / 2.0 vector-write command. </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
@@ -320,7 +369,7 @@
 <h2>nvm_cmd_read<a class="headerlink" href="#nvm-cmd-read" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_cmd_read">
-<span class="target" id="liblightnvm_8h_1aad4aa76beb44eaeeb3a5da7fb237f2d3"></span>int <code class="descname">nvm_cmd_read</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addrs[]</em>, int<em>&nbsp;naddrs</em>, void *<em>&nbsp;data</em>, void *<em>&nbsp;meta</em>, uint16_t<em>&nbsp;flags</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_read" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1aad4aa76beb44eaeeb3a5da7fb237f2d3"></span>int <code class="descname">nvm_cmd_read</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct   <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addrs[]</em>, int<em>&nbsp;naddrs</em>, void *<em>&nbsp;data</em>, void *<em>&nbsp;meta</em>, uint16_t<em>&nbsp;flags</em>, struct   <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_cmd_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute an Open-Channel 1.2 / 2.0 vector-read command. </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
@@ -374,7 +423,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.2',
+            VERSION:'0.1.4',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

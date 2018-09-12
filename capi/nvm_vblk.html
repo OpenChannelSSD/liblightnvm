@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nvm_vblk - Virtual Block &mdash; liblightnvm 0.1.2 documentation</title>
+  <title>nvm_vblk - Virtual Block &mdash; liblightnvm 0.1.4 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.2
+                0.1.4
               </div>
             
           
@@ -214,7 +214,7 @@
 <h2>nvm_vblk_copy<a class="headerlink" href="#nvm-vblk-copy" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_vblk_copy">
-<span class="target" id="liblightnvm_8h_1a8878d2bad6814bd70bad15785873b08c"></span>ssize_t <code class="descname">nvm_vblk_copy</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;src</em>, struct  <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;dst</em>, int<em>&nbsp;flags</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_copy" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a8878d2bad6814bd70bad15785873b08c"></span>ssize_t <code class="descname">nvm_vblk_copy</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;src</em>, struct   <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;dst</em>, int<em>&nbsp;flags</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Copy the virtual block ‘src’ to the virtual block ‘dst’. </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
@@ -228,7 +228,7 @@
 <h2>nvm_vblk_erase<a class="headerlink" href="#nvm-vblk-erase" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_vblk_erase">
-<span class="target" id="liblightnvm_8h_1ad61923687309e99e0999344fcdab71c8"></span>ssize_t <code class="descname">nvm_vblk_erase</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_erase" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1ad61923687309e99e0999344fcdab71c8"></span>ssize_t <code class="descname">nvm_vblk_erase</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_erase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Erase a virtual block. </p>
 <p><dl class="docutils">
 <dt><strong>Note</strong></dt>
@@ -249,7 +249,7 @@
 <h2>nvm_vblk_pread<a class="headerlink" href="#nvm-vblk-pread" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_vblk_pread">
-<span class="target" id="liblightnvm_8h_1a57c35c8050d0593ff26053958b5a8adf"></span>ssize_t <code class="descname">nvm_vblk_pread</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em>, void *<em>&nbsp;buf</em>, size_t<em>&nbsp;count</em>, size_t<em>&nbsp;offset</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_pread" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a57c35c8050d0593ff26053958b5a8adf"></span>ssize_t <code class="descname">nvm_vblk_pread</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em>, void *<em>&nbsp;buf</em>, size_t<em>&nbsp;count</em>, size_t<em>&nbsp;offset</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_pread" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read from a virtual block at given offset. </p>
 </dd></dl>
 
@@ -258,7 +258,7 @@
 <h2>nvm_vblk_read<a class="headerlink" href="#nvm-vblk-read" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_vblk_read">
-<span class="target" id="liblightnvm_8h_1a7c6feddfd061158168de5ca63ac44275"></span>ssize_t <code class="descname">nvm_vblk_read</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em>, void *<em>&nbsp;buf</em>, size_t<em>&nbsp;count</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_read" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a7c6feddfd061158168de5ca63ac44275"></span>ssize_t <code class="descname">nvm_vblk_read</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em>, void *<em>&nbsp;buf</em>, size_t<em>&nbsp;count</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read from a virtual block. </p>
 </dd></dl>
 
@@ -267,7 +267,7 @@
 <h2>nvm_vblk_pwrite<a class="headerlink" href="#nvm-vblk-pwrite" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_vblk_pwrite">
-<span class="target" id="liblightnvm_8h_1a97d743b3a7a4c3db4b359c74dbf8237c"></span>ssize_t <code class="descname">nvm_vblk_pwrite</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em>, const void *<em>&nbsp;buf</em>, size_t<em>&nbsp;count</em>, size_t<em>&nbsp;offset</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_pwrite" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a97d743b3a7a4c3db4b359c74dbf8237c"></span>ssize_t <code class="descname">nvm_vblk_pwrite</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em>, const void *<em>&nbsp;buf</em>, size_t<em>&nbsp;count</em>, size_t<em>&nbsp;offset</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_pwrite" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write to a virtual block at a given offset. </p>
 <p><dl class="docutils">
 <dt><strong>Note</strong></dt>
@@ -291,7 +291,7 @@
 <h2>nvm_vblk_write<a class="headerlink" href="#nvm-vblk-write" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_vblk_write">
-<span class="target" id="liblightnvm_8h_1a85d3d7291444aec42241baa5ced95a39"></span>ssize_t <code class="descname">nvm_vblk_write</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em>, const void *<em>&nbsp;buf</em>, size_t<em>&nbsp;count</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_write" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a85d3d7291444aec42241baa5ced95a39"></span>ssize_t <code class="descname">nvm_vblk_write</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em>, const void *<em>&nbsp;buf</em>, size_t<em>&nbsp;count</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write to a virtual block. </p>
 <p><dl class="docutils">
 <dt><strong>Note</strong></dt>
@@ -314,7 +314,7 @@
 <h2>nvm_vblk_pad<a class="headerlink" href="#nvm-vblk-pad" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_vblk_pad">
-<span class="target" id="liblightnvm_8h_1afb47188711a2ec1dd1fa7b2754b4a57c"></span>ssize_t <code class="descname">nvm_vblk_pad</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_pad" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1afb47188711a2ec1dd1fa7b2754b4a57c"></span>ssize_t <code class="descname">nvm_vblk_pad</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_pad" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pad the virtual block with synthetic data. </p>
 <p><dl class="docutils">
 <dt><strong>Note</strong></dt>
@@ -335,7 +335,7 @@
 <h2>nvm_vblk_alloc<a class="headerlink" href="#nvm-vblk-alloc" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_vblk_alloc">
-<span class="target" id="liblightnvm_8h_1aa63a092d2f015a4645dab88c70ec6f10"></span>struct <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>* <code class="descname">nvm_vblk_alloc</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addrs[]</em>, int<em>&nbsp;naddrs</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_alloc" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1aa63a092d2f015a4645dab88c70ec6f10"></span>struct <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>* <code class="descname">nvm_vblk_alloc</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct   <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addrs[]</em>, int<em>&nbsp;naddrs</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_alloc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allocate a virtual block, spanning a given set of physical blocks. </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
@@ -356,7 +356,7 @@
 <h2>nvm_vblk_alloc_line<a class="headerlink" href="#nvm-vblk-alloc-line" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_vblk_alloc_line">
-<span class="target" id="liblightnvm_8h_1a2fe8c7aced82ea70540457c9ee725d69"></span>struct <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>* <code class="descname">nvm_vblk_alloc_line</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, int<em>&nbsp;ch_bgn</em>, int<em>&nbsp;ch_end</em>, int<em>&nbsp;lun_bgn</em>, int<em>&nbsp;lun_end</em>, int<em>&nbsp;blk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_alloc_line" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a2fe8c7aced82ea70540457c9ee725d69"></span>struct <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>* <code class="descname">nvm_vblk_alloc_line</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, int<em>&nbsp;ch_bgn</em>, int<em>&nbsp;ch_end</em>, int<em>&nbsp;lun_bgn</em>, int<em>&nbsp;lun_end</em>, int<em>&nbsp;blk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_alloc_line" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allocate a virtual block (spanning planes, channels, and LUNs) </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
@@ -380,7 +380,7 @@
 <h2>nvm_vblk_free<a class="headerlink" href="#nvm-vblk-free" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_vblk_free">
-<span class="target" id="liblightnvm_8h_1ac3376a44e79e1fc321edfc483f17e9b5"></span>void <code class="descname">nvm_vblk_free</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_free" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1ac3376a44e79e1fc321edfc483f17e9b5"></span>void <code class="descname">nvm_vblk_free</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_free" title="Permalink to this definition">¶</a></dt>
 <dd><p>Destroy a virtual block. </p>
 <p><dl class="docutils">
 <dt><strong>Parameters</strong></dt>
@@ -397,7 +397,7 @@
 <h2>nvm_vblk_pr<a class="headerlink" href="#nvm-vblk-pr" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_vblk_pr">
-<span class="target" id="liblightnvm_8h_1af7a10ed9f4afdf308e43901a3cf3c1ae"></span>void <code class="descname">nvm_vblk_pr</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_pr" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1af7a10ed9f4afdf308e43901a3cf3c1ae"></span>void <code class="descname">nvm_vblk_pr</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_pr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print the virtual block in a humanly readable form. </p>
 <p><dl class="docutils">
 <dt><strong>Parameters</strong></dt>
@@ -414,7 +414,7 @@
 <h2>nvm_vblk_get_addrs<a class="headerlink" href="#nvm-vblk-get-addrs" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_vblk_get_addrs">
-<span class="target" id="liblightnvm_8h_1a2c95349b0051549491330735c67aa3eb"></span>struct <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a>* <code class="descname">nvm_vblk_get_addrs</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_get_addrs" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a2c95349b0051549491330735c67aa3eb"></span>struct <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a>* <code class="descname">nvm_vblk_get_addrs</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_get_addrs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieve the set of addresses defining the virtual block. </p>
 <p><dl class="docutils">
 <dt><strong>Parameters</strong></dt>
@@ -431,7 +431,7 @@
 <h2>nvm_vblk_get_dev<a class="headerlink" href="#nvm-vblk-get-dev" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_vblk_get_dev">
-<span class="target" id="liblightnvm_8h_1aac922386d32a0a3b8c2f995babb3fbb6"></span>struct <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>* <code class="descname">nvm_vblk_get_dev</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_get_dev" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1aac922386d32a0a3b8c2f995babb3fbb6"></span>struct <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>* <code class="descname">nvm_vblk_get_dev</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_get_dev" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieve the device associated with the given virtual block. </p>
 <p><dl class="docutils">
 <dt><strong>Parameters</strong></dt>
@@ -448,7 +448,7 @@
 <h2>nvm_vblk_get_naddrs<a class="headerlink" href="#nvm-vblk-get-naddrs" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_vblk_get_naddrs">
-<span class="target" id="liblightnvm_8h_1a69ae36e185cc948d3934f565dd98a5ac"></span>int <code class="descname">nvm_vblk_get_naddrs</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_get_naddrs" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a69ae36e185cc948d3934f565dd98a5ac"></span>int <code class="descname">nvm_vblk_get_naddrs</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_get_naddrs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieve the number of addresses in the address set of the virtual block. </p>
 <p><dl class="docutils">
 <dt><strong>Parameters</strong></dt>
@@ -465,7 +465,7 @@
 <h2>nvm_vblk_get_nbytes<a class="headerlink" href="#nvm-vblk-get-nbytes" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_vblk_get_nbytes">
-<span class="target" id="liblightnvm_8h_1a664c068485c41bca75058937cb29252e"></span>size_t <code class="descname">nvm_vblk_get_nbytes</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_get_nbytes" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a664c068485c41bca75058937cb29252e"></span>size_t <code class="descname">nvm_vblk_get_nbytes</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_get_nbytes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieve the size, in bytes, of a given virtual block. </p>
 <p><dl class="docutils">
 <dt><strong>Parameters</strong></dt>
@@ -482,7 +482,7 @@
 <h2>nvm_vblk_get_pos_read<a class="headerlink" href="#nvm-vblk-get-pos-read" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_vblk_get_pos_read">
-<span class="target" id="liblightnvm_8h_1a6dcb07267d60e69380b3cb688e119379"></span>size_t <code class="descname">nvm_vblk_get_pos_read</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_get_pos_read" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a6dcb07267d60e69380b3cb688e119379"></span>size_t <code class="descname">nvm_vblk_get_pos_read</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_get_pos_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieve the read cursor position for the given virtual block. </p>
 <p><dl class="docutils">
 <dt><strong>Parameters</strong></dt>
@@ -499,7 +499,7 @@
 <h2>nvm_vblk_get_pos_write<a class="headerlink" href="#nvm-vblk-get-pos-write" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_vblk_get_pos_write">
-<span class="target" id="liblightnvm_8h_1abc6d07b42f6115393c2764c1fb4a97a1"></span>size_t <code class="descname">nvm_vblk_get_pos_write</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_get_pos_write" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1abc6d07b42f6115393c2764c1fb4a97a1"></span>size_t <code class="descname">nvm_vblk_get_pos_write</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_get_pos_write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieve the write cursor position for the given virtual block. </p>
 <p><dl class="docutils">
 <dt><strong>Parameters</strong></dt>
@@ -516,7 +516,7 @@
 <h2>nvm_vblk_set_pos_read<a class="headerlink" href="#nvm-vblk-set-pos-read" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_vblk_set_pos_read">
-<span class="target" id="liblightnvm_8h_1a3da89ae4e65a37e9186d26a5cd5ce7ff"></span>int <code class="descname">nvm_vblk_set_pos_read</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em>, size_t<em>&nbsp;pos</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_set_pos_read" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a3da89ae4e65a37e9186d26a5cd5ce7ff"></span>int <code class="descname">nvm_vblk_set_pos_read</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em>, size_t<em>&nbsp;pos</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_set_pos_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the read cursor position for the given virtual block. </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
@@ -536,7 +536,7 @@
 <h2>nvm_vblk_set_pos_write<a class="headerlink" href="#nvm-vblk-set-pos-write" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_vblk_set_pos_write">
-<span class="target" id="liblightnvm_8h_1a21d24d5190b579ef1fa6c368aa23b470"></span>int <code class="descname">nvm_vblk_set_pos_write</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em>, size_t<em>&nbsp;pos</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_set_pos_write" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a21d24d5190b579ef1fa6c368aa23b470"></span>int <code class="descname">nvm_vblk_set_pos_write</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>  *<em>&nbsp;vblk</em>, size_t<em>&nbsp;pos</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_vblk_set_pos_write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the write cursor position for the given virtual block. </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
@@ -596,7 +596,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.2',
+            VERSION:'0.1.4',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

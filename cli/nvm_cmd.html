@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nvm_cmd &mdash; liblightnvm 0.1.2 documentation</title>
+  <title>nvm_cmd &mdash; liblightnvm 0.1.4 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.2
+                0.1.4
               </div>
             
           
@@ -172,7 +172,7 @@
             
   <div class="section" id="nvm-cmd">
 <span id="sec-cli-nvm-cmd"></span><h1>nvm_cmd<a class="headerlink" href="#nvm-cmd" title="Permalink to this headline">¶</a></h1>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>NVM <span class="nb">command</span> <span class="o">(</span>nvm_cmd_*<span class="o">)</span> -- Ver <span class="o">{</span> major<span class="o">(</span><span class="m">0</span><span class="o">)</span>, minor<span class="o">(</span><span class="m">1</span><span class="o">)</span>, patch<span class="o">(</span><span class="m">2</span><span class="o">)</span> <span class="o">}</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>NVM <span class="nb">command</span> <span class="o">(</span>nvm_cmd_*<span class="o">)</span> -- Ver <span class="o">{</span> major<span class="o">(</span><span class="m">0</span><span class="o">)</span>, minor<span class="o">(</span><span class="m">1</span><span class="o">)</span>, patch<span class="o">(</span><span class="m">4</span><span class="o">)</span> <span class="o">}</span>
 
 Construct and execute NVM commands
 
@@ -258,7 +258,7 @@ rprt:
   ndescr: <span class="m">47168</span>
 rprt_descr:
   - <span class="o">{</span> slba: 0x0000000000000000, cnlb: 0x1800, wp: 0x000000000000ffff, cs: 0x08, ct: 0x01, wli: 0x00 <span class="o">}</span>
-  - <span class="o">{</span> slba: 0x0000000000002000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x02 <span class="o">}</span>
+  - <span class="o">{</span> slba: 0x0000000000002000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x0000000000004000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x0000000000006000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x0000000000008000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
@@ -266,7 +266,7 @@ rprt_descr:
   - <span class="o">{</span> slba: 0x000000000000C000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x000000000000E000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x0000000000010000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
-  - <span class="o">{</span> slba: 0x0000000000012000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
+  - <span class="o">{</span> slba: 0x0000000000012000, cnlb: 0x1800, wp: 0x0000000000001800, cs: 0x02, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x0000000000014000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x0000000000016000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x0000000000018000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
@@ -279,14 +279,14 @@ rprt_descr:
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_cmd rprt_lun /dev/nvme0n1 <span class="m">4</span> <span class="m">2</span> <span class="p">|</span> head -n <span class="m">20</span>
 </pre></div>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># nvm_cmd_rprt: 0x5565f293c770</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># nvm_cmd_rprt: 0x5577a06a44d0</span>
 naddrs: <span class="m">1</span>
 addrs:
   - <span class="o">{</span>val: 0x0402000000000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0000</span>, sectr: <span class="m">0000</span><span class="o">}</span>
 rprt:
   ndescr: <span class="m">1474</span>
 rprt_descr:
-  - <span class="o">{</span> slba: 0x0000000012000000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x02 <span class="o">}</span>
+  - <span class="o">{</span> slba: 0x0000000012000000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x0000000012002000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x0000000012004000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x0000000012006000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
@@ -345,14 +345,14 @@ addrs:
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>hexdump /tmp/nvm_dump.bin -C -n <span class="m">128</span>
 </pre></div>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="m">00000000</span>  <span class="m">59</span> 5a <span class="m">41</span> <span class="m">42</span> <span class="m">43</span> <span class="m">44</span> <span class="m">45</span> <span class="m">46</span>  <span class="m">47</span> <span class="m">48</span> <span class="m">49</span> 4a 4b 4c 4d 4e  <span class="p">|</span>YZABCDEFGHIJKLMN<span class="p">|</span>
-<span class="m">00000010</span>  4f <span class="m">50</span> <span class="m">51</span> <span class="m">52</span> <span class="m">53</span> <span class="m">54</span> <span class="m">55</span> <span class="m">56</span>  <span class="m">57</span> <span class="m">58</span> <span class="m">59</span> 5a <span class="m">41</span> <span class="m">42</span> <span class="m">43</span> <span class="m">44</span>  <span class="p">|</span>OPQRSTUVWXYZABCD<span class="p">|</span>
-<span class="m">00000020</span>  <span class="m">45</span> <span class="m">46</span> <span class="m">47</span> <span class="m">48</span> <span class="m">49</span> 4a 4b 4c  4d 4e 4f <span class="m">50</span> <span class="m">51</span> <span class="m">52</span> <span class="m">53</span> <span class="m">54</span>  <span class="p">|</span>EFGHIJKLMNOPQRST<span class="p">|</span>
-<span class="m">00000030</span>  <span class="m">55</span> <span class="m">56</span> <span class="m">57</span> <span class="m">58</span> <span class="m">59</span> 5a <span class="m">41</span> <span class="m">42</span>  <span class="m">43</span> <span class="m">44</span> <span class="m">45</span> <span class="m">46</span> <span class="m">47</span> <span class="m">48</span> <span class="m">49</span> 4a  <span class="p">|</span>UVWXYZABCDEFGHIJ<span class="p">|</span>
-<span class="m">00000040</span>  4b 4c 4d 4e 4f <span class="m">50</span> <span class="m">51</span> <span class="m">52</span>  <span class="m">53</span> <span class="m">54</span> <span class="m">55</span> <span class="m">56</span> <span class="m">57</span> <span class="m">58</span> <span class="m">59</span> 5a  <span class="p">|</span>KLMNOPQRSTUVWXYZ<span class="p">|</span>
-<span class="m">00000050</span>  <span class="m">41</span> <span class="m">42</span> <span class="m">43</span> <span class="m">44</span> <span class="m">45</span> <span class="m">46</span> <span class="m">47</span> <span class="m">48</span>  <span class="m">49</span> 4a 4b 4c 4d 4e 4f <span class="m">50</span>  <span class="p">|</span>ABCDEFGHIJKLMNOP<span class="p">|</span>
-<span class="m">00000060</span>  <span class="m">51</span> <span class="m">52</span> <span class="m">53</span> <span class="m">54</span> <span class="m">55</span> <span class="m">56</span> <span class="m">57</span> <span class="m">58</span>  <span class="m">59</span> 5a <span class="m">41</span> <span class="m">42</span> <span class="m">43</span> <span class="m">44</span> <span class="m">45</span> <span class="m">46</span>  <span class="p">|</span>QRSTUVWXYZABCDEF<span class="p">|</span>
-<span class="m">00000070</span>  <span class="m">47</span> <span class="m">48</span> <span class="m">49</span> 4a 4b 4c 4d 4e  4f <span class="m">50</span> <span class="m">51</span> <span class="m">52</span> <span class="m">53</span> <span class="m">54</span> <span class="m">55</span> <span class="m">56</span>  <span class="p">|</span>GHIJKLMNOPQRSTUV<span class="p">|</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="m">00000000</span>  4d 4e 4f <span class="m">50</span> <span class="m">51</span> <span class="m">52</span> <span class="m">53</span> <span class="m">54</span>  <span class="m">55</span> <span class="m">56</span> <span class="m">57</span> <span class="m">58</span> <span class="m">59</span> 5a <span class="m">41</span> <span class="m">42</span>  <span class="p">|</span>MNOPQRSTUVWXYZAB<span class="p">|</span>
+<span class="m">00000010</span>  <span class="m">43</span> <span class="m">44</span> <span class="m">45</span> <span class="m">46</span> <span class="m">47</span> <span class="m">48</span> <span class="m">49</span> 4a  4b 4c 4d 4e 4f <span class="m">50</span> <span class="m">51</span> <span class="m">52</span>  <span class="p">|</span>CDEFGHIJKLMNOPQR<span class="p">|</span>
+<span class="m">00000020</span>  <span class="m">53</span> <span class="m">54</span> <span class="m">55</span> <span class="m">56</span> <span class="m">57</span> <span class="m">58</span> <span class="m">59</span> 5a  <span class="m">41</span> <span class="m">42</span> <span class="m">43</span> <span class="m">44</span> <span class="m">45</span> <span class="m">46</span> <span class="m">47</span> <span class="m">48</span>  <span class="p">|</span>STUVWXYZABCDEFGH<span class="p">|</span>
+<span class="m">00000030</span>  <span class="m">49</span> 4a 4b 4c 4d 4e 4f <span class="m">50</span>  <span class="m">51</span> <span class="m">52</span> <span class="m">53</span> <span class="m">54</span> <span class="m">55</span> <span class="m">56</span> <span class="m">57</span> <span class="m">58</span>  <span class="p">|</span>IJKLMNOPQRSTUVWX<span class="p">|</span>
+<span class="m">00000040</span>  <span class="m">59</span> 5a <span class="m">41</span> <span class="m">42</span> <span class="m">43</span> <span class="m">44</span> <span class="m">45</span> <span class="m">46</span>  <span class="m">47</span> <span class="m">48</span> <span class="m">49</span> 4a 4b 4c 4d 4e  <span class="p">|</span>YZABCDEFGHIJKLMN<span class="p">|</span>
+<span class="m">00000050</span>  4f <span class="m">50</span> <span class="m">51</span> <span class="m">52</span> <span class="m">53</span> <span class="m">54</span> <span class="m">55</span> <span class="m">56</span>  <span class="m">57</span> <span class="m">58</span> <span class="m">59</span> 5a <span class="m">41</span> <span class="m">42</span> <span class="m">43</span> <span class="m">44</span>  <span class="p">|</span>OPQRSTUVWXYZABCD<span class="p">|</span>
+<span class="m">00000060</span>  <span class="m">45</span> <span class="m">46</span> <span class="m">47</span> <span class="m">48</span> <span class="m">49</span> 4a 4b 4c  4d 4e 4f <span class="m">50</span> <span class="m">51</span> <span class="m">52</span> <span class="m">53</span> <span class="m">54</span>  <span class="p">|</span>EFGHIJKLMNOPQRST<span class="p">|</span>
+<span class="m">00000070</span>  <span class="m">55</span> <span class="m">56</span> <span class="m">57</span> <span class="m">58</span> <span class="m">59</span> 5a <span class="m">41</span> <span class="m">42</span>  <span class="m">43</span> <span class="m">44</span> <span class="m">45</span> <span class="m">46</span> <span class="m">47</span> <span class="m">48</span> <span class="m">49</span> 4a  <span class="p">|</span>UVWXYZABCDEFGHIJ<span class="p">|</span>
 <span class="m">00000080</span>
 </pre></div>
 </div>
@@ -401,7 +401,7 @@ addrs:
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.2',
+            VERSION:'0.1.4',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

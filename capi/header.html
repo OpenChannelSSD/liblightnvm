@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Public Header &mdash; liblightnvm 0.1.2 documentation</title>
+  <title>Public Header &mdash; liblightnvm 0.1.4 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.2
+                0.1.4
               </div>
             
           
@@ -222,17 +222,37 @@
 
 <span class="cp">#define NVM_FLAG_SCRBL 0x200	</span><span class="c1">///&lt; Scrambler ON/OFF: Context sensitive</span>
 
+
 <span class="cm">/**</span>
-<span class="cm"> * Enumeration of cmd back-ends used by liblightnvm</span>
+<span class="cm"> * Enumeration of nvm_cmd backends</span>
 <span class="cm"> */</span>
 <span class="k">enum</span> <span class="n">nvm_be_id</span> <span class="p">{</span>
 	<span class="n">NVM_BE_ANY</span>	<span class="o">=</span> <span class="mh">0x0</span><span class="p">,</span>		<span class="c1">///&lt; ANY backend</span>
 	<span class="n">NVM_BE_IOCTL</span>	<span class="o">=</span> <span class="mh">0x1</span><span class="p">,</span>		<span class="c1">///&lt; IOCTL backend</span>
-	<span class="n">NVM_BE_SYSFS</span>	<span class="o">=</span> <span class="mh">0x1</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="p">,</span>	<span class="c1">///&lt; IOCTL + sysfs backend</span>
-	<span class="n">NVM_BE_LBA</span>	<span class="o">=</span> <span class="mh">0x1</span> <span class="o">&lt;&lt;</span> <span class="mi">2</span><span class="p">,</span>	<span class="c1">///&lt; IOCTL + sysfs + LBA backend</span>
-	<span class="n">NVM_BE_SPDK</span>	<span class="o">=</span> <span class="mh">0x1</span> <span class="o">&lt;&lt;</span> <span class="mi">3</span><span class="p">,</span>	<span class="c1">///&lt; SPDK backend</span>
+	<span class="n">NVM_BE_LBD</span>	<span class="o">=</span> <span class="mh">0x1</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="p">,</span>	<span class="c1">///&lt; IOCTL + LBD backend</span>
+	<span class="n">NVM_BE_SPDK</span>	<span class="o">=</span> <span class="mh">0x1</span> <span class="o">&lt;&lt;</span> <span class="mi">2</span><span class="p">,</span>	<span class="c1">///&lt; SPDK backend</span>
 <span class="p">};</span>
-<span class="cp">#define NVM_BE_ALL (NVM_BE_IOCTL | NVM_BE_SYSFS | NVM_BE_LBA | NVM_BE_SPDK)</span>
+<span class="cp">#define NVM_BE_ALL (NVM_BE_IOCTL | NVM_BE_LBD | NVM_BE_SPDK)</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Enumeration of nvm_cmd options</span>
+<span class="cm"> */</span>
+<span class="k">enum</span> <span class="n">nvm_cmd_opts</span> <span class="p">{</span>
+	<span class="n">NVM_CMD_SYNC</span>	<span class="o">=</span> <span class="mh">0x1</span> <span class="o">&lt;&lt;</span> <span class="mi">3</span><span class="p">,</span>
+	<span class="n">NVM_CMD_ASYNC</span>	<span class="o">=</span> <span class="mh">0x1</span> <span class="o">&lt;&lt;</span> <span class="mi">4</span><span class="p">,</span>
+	<span class="n">NVM_CMD_SCALAR</span>	<span class="o">=</span> <span class="mh">0x1</span> <span class="o">&lt;&lt;</span> <span class="mi">5</span><span class="p">,</span>
+	<span class="n">NVM_CMD_VECTOR</span>	<span class="o">=</span> <span class="mh">0x1</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span><span class="p">,</span>
+	<span class="n">NVM_CMD_PRP</span>	<span class="o">=</span> <span class="mh">0x1</span> <span class="o">&lt;&lt;</span> <span class="mi">7</span><span class="p">,</span>
+	<span class="n">NVM_CMD_SGL</span>	<span class="o">=</span> <span class="mh">0x1</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="cp">#define NVM_CMD_MASK_IOMD (NVM_CMD_SYNC | NVM_CMD_ASYNC)</span>
+<span class="cp">#define NVM_CMD_MASK_ADDR (NVM_CMD_SCALAR | NVM_CMD_VECTOR)</span>
+<span class="cp">#define NVM_CMD_MASK_PLOD (NVM_CMD_PRP | NVM_CMD_SGL)</span>
+
+<span class="cp">#define NVM_CMD_DEF_IOMD NVM_CMD_SYNC</span>
+<span class="cp">#define NVM_CMD_DEF_ADDR NVM_CMD_VECTOR</span>
+<span class="cp">#define NVM_CMD_DEF_PLOD NVM_CMD_PRP</span>
 
 <span class="cm">/**</span>
 <span class="cm"> * Plane-mode access for IO</span>
@@ -242,7 +262,7 @@
 	<span class="n">NVM_FLAG_PMODE_DUAL</span>	<span class="o">=</span> <span class="mh">0x1</span><span class="p">,</span>		<span class="c1">///&lt; Dual-plane</span>
 	<span class="n">NVM_FLAG_PMODE_QUAD</span>	<span class="o">=</span> <span class="mh">0x1</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span>	<span class="c1">///&lt; Quad-plane</span>
 <span class="p">};</span>
-<span class="cp">#define NVM_FLAG_DEFAULT (NVM_FLAG_PMODE_SNGL | NVM_FLAG_SCRBL);</span>
+<span class="cp">#define NVM_FLAG_DEFAULT (NVM_FLAG_PMODE_SNGL | NVM_FLAG_SCRBL)</span>
 
 <span class="cm">/**</span>
 <span class="cm"> * Flags for device quirks</span>
@@ -305,10 +325,19 @@
 
 <span class="cm">/**</span>
 <span class="cm"> * Encapsulation and representation of lower-level error conditions</span>
+<span class="cm"> *</span>
+<span class="cm"> * @struct struct nvm_ret</span>
 <span class="cm"> */</span>
 <span class="k">struct</span> <span class="n">nvm_ret</span> <span class="p">{</span>
-	<span class="kt">uint64_t</span> <span class="n">status</span><span class="p">;</span>	<span class="c1">///&lt; NVMe command status / completion bits</span>
-	<span class="kt">uint32_t</span> <span class="n">result</span><span class="p">;</span>	<span class="c1">///&lt; NVMe command error codes</span>
+	<span class="k">union</span> <span class="p">{</span>
+		<span class="k">struct</span> <span class="p">{</span>
+			<span class="kt">uint64_t</span> <span class="n">cs</span><span class="p">;</span>	<span class="c1">///&lt; NVM completion status (CS)</span>
+		<span class="p">}</span> <span class="n">vio</span><span class="p">;</span>			<span class="c1">///&lt; Vector I/O result</span>
+
+		<span class="kt">uint32_t</span> <span class="n">cdw0</span><span class="p">;</span>		<span class="c1">///&lt; NVMe command specific result</span>
+	<span class="p">}</span> <span class="n">result</span><span class="p">;</span>
+
+	<span class="kt">uint16_t</span> <span class="n">status</span><span class="p">;</span>		<span class="c1">///&lt; NVMe command status</span>
 <span class="p">};</span>
 
 <span class="cm">/**</span>
@@ -322,7 +351,7 @@
 <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="nf">nvm_pmode_str</span><span class="p">(</span><span class="kt">int</span> <span class="n">pmode</span><span class="p">);</span>
 
 <span class="cm">/**</span>
-<span class="cm"> * Encapsulation of generic physical nvm addressing</span>
+<span class="cm"> * Encapsulation of physical/hierarchical/geometric addressing in generic format</span>
 <span class="cm"> *</span>
 <span class="cm"> * Although the user need not worry about device specific address formats the</span>
 <span class="cm"> * user has to know and respect addressing within device specific geometric</span>
@@ -386,7 +415,7 @@
 			<span class="kt">size_t</span> <span class="n">nchannels</span><span class="p">;</span>	<span class="c1">///&lt; # of channels on device</span>
 			<span class="kt">size_t</span> <span class="n">nluns</span><span class="p">;</span>		<span class="c1">///&lt; # of LUNs per channel</span>
 			<span class="kt">size_t</span> <span class="n">nblocks</span><span class="p">;</span>		<span class="c1">///&lt; # of blocks per plane</span>
-			
+
 			<span class="kt">size_t</span> <span class="n">nsectors</span><span class="p">;</span>	<span class="c1">///&lt; # of sectors per page</span>
 			<span class="kt">size_t</span> <span class="n">sector_nbytes</span><span class="p">;</span>	<span class="c1">///&lt; # of bytes per sector</span>
 			<span class="kt">size_t</span> <span class="n">meta_nbytes</span><span class="p">;</span>	<span class="c1">///&lt; # of bytes for OOB</span>
@@ -400,7 +429,7 @@
 			<span class="kt">size_t</span> <span class="n">nchannels</span><span class="p">;</span>	<span class="c1">///&lt; # of channels on device</span>
 			<span class="kt">size_t</span> <span class="n">nluns</span><span class="p">;</span>		<span class="c1">///&lt; # of LUNs per channel</span>
 			<span class="kt">size_t</span> <span class="n">nblocks</span><span class="p">;</span>		<span class="c1">///&lt; # of blocks per plane</span>
-			
+
 			<span class="kt">size_t</span> <span class="n">nsectors</span><span class="p">;</span>	<span class="c1">///&lt; # of sectors per page</span>
 			<span class="kt">size_t</span> <span class="n">sector_nbytes</span><span class="p">;</span>	<span class="c1">///&lt; # of bytes per sector</span>
 			<span class="kt">size_t</span> <span class="n">meta_nbytes</span><span class="p">;</span>	<span class="c1">///&lt; # of bytes for OOB</span>
@@ -410,7 +439,7 @@
 			<span class="kt">size_t</span> <span class="n">page_nbytes</span><span class="p">;</span>	<span class="c1">///&lt; # of bytes per page</span>
 		<span class="p">};</span>
 	<span class="p">};</span>
-	
+
 	<span class="kt">size_t</span> <span class="n">tbytes</span><span class="p">;</span>				<span class="c1">///&lt; Total # bytes in geometry</span>
 	<span class="kt">int</span> <span class="n">verid</span><span class="p">;</span>				<span class="c1">///&lt; Associated dev verid</span>
 <span class="p">};</span>
@@ -456,13 +485,17 @@
 <span class="k">struct</span> <span class="n">nvm_spec_idfy</span> <span class="o">*</span><span class="nf">nvm_cmd_idfy</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="k">struct</span> <span class="n">nvm_ret</span> <span class="o">*</span><span class="n">ret</span><span class="p">);</span>
 
 <span class="cm">/**</span>
-<span class="cm"> * Execute an Open-Channel 2.0 report chunk command</span>
+<span class="cm"> * Executes one or multiple Open-Channel 2.0 get-log-page for chunk-information</span>
 <span class="cm"> *</span>
-<span class="cm"> * NOTE: Caller is responsible for de-allocating the returned structure</span>
+<span class="cm"> * @note</span>
+<span class="cm"> * Caller is responsible for de-allocating the returned structure</span>
 <span class="cm"> *</span>
 <span class="cm"> * @param dev Device handle obtained with `nvm_dev_open`</span>
-<span class="cm"> * report for</span>
-<span class="cm"> * @param opts Reporting options, see `enum nvm_spec_chunk_state`</span>
+<span class="cm"> * @param addr Pointer to a `struct nvm_addr` containing the address of a chunk</span>
+<span class="cm"> *             to report about</span>
+<span class="cm"> * @param opt Reporting options, see `enum nvm_spec_chunk_state`</span>
+<span class="cm"> * @param ret Pointer to structure in which to store lower-level status and</span>
+<span class="cm"> *            result</span>
 <span class="cm"> *</span>
 <span class="cm"> * @return On success, pointer report chunk structure is returned. On error,</span>
 <span class="cm"> * NULL is returned and `errno` set to indicate the error and ret filled with</span>
@@ -479,6 +512,35 @@
 <span class="cm"> */</span>
 <span class="kt">int</span> <span class="nf">nvm_cmd_rprt_arbs</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="kt">int</span> <span class="n">cs</span><span class="p">,</span> <span class="kt">int</span> <span class="n">naddrs</span><span class="p">,</span>
 		      <span class="k">struct</span> <span class="n">nvm_addr</span> <span class="n">addrs</span><span class="p">[]);</span>
+
+
+<span class="cm">/**</span>
+<span class="cm"> * Execute an Open-Channel 2.0 Get Feature command</span>
+<span class="cm"> *</span>
+<span class="cm"> * @param dev Device handle obtained with `nvm_dev_open`</span>
+<span class="cm"> * @param id Feature identifier (see NVMe 1.3; Figure 84)</span>
+<span class="cm"> * @param feat Structure defining feature attributes</span>
+<span class="cm"> * @param ret Pointer to structure in which to store lower-level status and</span>
+<span class="cm"> *            result</span>
+<span class="cm"> *</span>
+<span class="cm"> * @returns 0 on success, -1 on error and errno set to indicate the error.</span>
+<span class="cm"> */</span>
+<span class="kt">int</span> <span class="nf">nvm_cmd_gfeat</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="kt">uint8_t</span> <span class="n">id</span><span class="p">,</span> <span class="k">union</span> <span class="n">nvm_spec_feat</span> <span class="o">*</span><span class="n">feat</span><span class="p">,</span>
+		  <span class="k">struct</span> <span class="n">nvm_ret</span> <span class="o">*</span><span class="n">ret</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Execute an Open-Channel 2.0 Set Feature command</span>
+<span class="cm"> *</span>
+<span class="cm"> * @param dev Device handle obtained with `nvm_dev_open`</span>
+<span class="cm"> * @param id Feature identifier (see NVMe 1.3; Figure 84)</span>
+<span class="cm"> * @param feat Structure defining feature attributes</span>
+<span class="cm"> * @param ret Pointer to structure in which to store lower-level status and</span>
+<span class="cm"> *            result</span>
+<span class="cm"> *</span>
+<span class="cm"> * @returns 0 on success, -1 on error and errno set to indicate the error.</span>
+<span class="cm"> */</span>
+<span class="kt">int</span> <span class="nf">nvm_cmd_sfeat</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="kt">uint8_t</span> <span class="n">id</span><span class="p">,</span>
+		  <span class="k">const</span> <span class="k">union</span> <span class="n">nvm_spec_feat</span> <span class="o">*</span><span class="n">feat</span><span class="p">,</span> <span class="k">struct</span> <span class="n">nvm_ret</span> <span class="o">*</span><span class="n">ret</span><span class="p">);</span>
 
 <span class="cm">/**</span>
 <span class="cm"> * Execute an Open-Channel 1.2 get bad-block-table command</span>
@@ -516,7 +578,7 @@
 <span class="cm"> * to indicate the error and ret filled with lower-level result codes</span>
 <span class="cm"> */</span>
 <span class="kt">int</span> <span class="nf">nvm_cmd_erase</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="k">struct</span> <span class="n">nvm_addr</span> <span class="n">addrs</span><span class="p">[],</span> <span class="kt">int</span> <span class="n">naddrs</span><span class="p">,</span>
-		  <span class="kt">uint16_t</span> <span class="n">flags</span><span class="p">,</span> <span class="k">struct</span> <span class="n">nvm_ret</span> <span class="o">*</span><span class="n">ret</span><span class="p">);</span>
+		  <span class="kt">void</span> <span class="o">*</span><span class="n">meta</span><span class="p">,</span> <span class="kt">uint16_t</span> <span class="n">flags</span><span class="p">,</span> <span class="k">struct</span> <span class="n">nvm_ret</span> <span class="o">*</span><span class="n">ret</span><span class="p">);</span>
 
 <span class="cm">/**</span>
 <span class="cm"> * Execute an Open-Channel 1.2 / 2.0 vector-write command</span>
@@ -525,7 +587,8 @@
 <span class="cm"> * to indicate the error and ret filled with lower-level result codes</span>
 <span class="cm"> */</span>
 <span class="kt">int</span> <span class="nf">nvm_cmd_write</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="k">struct</span> <span class="n">nvm_addr</span> <span class="n">addrs</span><span class="p">[],</span> <span class="kt">int</span> <span class="n">naddrs</span><span class="p">,</span>
-		  <span class="kt">void</span> <span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">meta</span><span class="p">,</span> <span class="kt">uint16_t</span> <span class="n">flags</span><span class="p">,</span> <span class="k">struct</span> <span class="n">nvm_ret</span> <span class="o">*</span><span class="n">ret</span><span class="p">);</span>
+		  <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">meta</span><span class="p">,</span> <span class="kt">uint16_t</span> <span class="n">flags</span><span class="p">,</span>
+		  <span class="k">struct</span> <span class="n">nvm_ret</span> <span class="o">*</span><span class="n">ret</span><span class="p">);</span>
 
 <span class="cm">/**</span>
 <span class="cm"> * Execute an Open-Channel 1.2 / 2.0 vector-read command</span>
@@ -1026,7 +1089,6 @@
 <span class="cm"> * Free the given buffer, calling regular &quot;free&quot; on the buffer might fail</span>
 <span class="cm"> *</span>
 <span class="cm"> * @param buf Pointer to the buffer to fill</span>
-<span class="cm"> * @param nbytes Amount of bytes to fill in buf</span>
 <span class="cm"> */</span>
 <span class="kt">void</span> <span class="nf">nvm_buf_free</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">buf</span><span class="p">);</span>
 
@@ -1089,78 +1151,6 @@
 <span class="kt">void</span> <span class="nf">nvm_buf_set_free</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_buf_set</span> <span class="o">*</span><span class="n">bufs</span><span class="p">);</span>
 
 <span class="cm">/**</span>
-<span class="cm"> * Erase nvm at given addresses</span>
-<span class="cm"> *</span>
-<span class="cm"> * @note</span>
-<span class="cm"> * The addresses given to this function are interpreted as block addresses, in</span>
-<span class="cm"> * contrast to `nvm_addr_mark`, `nvm_addr_write`, and `nvm_addr_read` for which</span>
-<span class="cm"> * the address is interpreted as a sector address.</span>
-<span class="cm"> *</span>
-<span class="cm"> * @param dev Device handle obtained with `nvm_dev_open`</span>
-<span class="cm"> * @param addrs Array of memory address</span>
-<span class="cm"> * @param naddrs Length of array of memory addresses</span>
-<span class="cm"> * @param flags Access mode</span>
-<span class="cm"> * @param ret Pointer to structure in which to store lower-level status and</span>
-<span class="cm"> *            result.</span>
-<span class="cm"> * @returns 0 on success. On error: returns -1, sets `errno` accordingly, and</span>
-<span class="cm"> *          fills `ret` with lower-level result and status codes</span>
-<span class="cm"> */</span>
-<span class="kt">ssize_t</span> <span class="nf">nvm_addr_erase</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="k">struct</span> <span class="n">nvm_addr</span> <span class="n">addrs</span><span class="p">[],</span> <span class="kt">int</span> <span class="n">naddrs</span><span class="p">,</span>
-		       <span class="kt">uint16_t</span> <span class="n">flags</span><span class="p">,</span> <span class="k">struct</span> <span class="n">nvm_ret</span> <span class="o">*</span><span class="n">ret</span><span class="p">);</span>
-
-<span class="cm">/**</span>
-<span class="cm"> * Write content of buf to nvm at address(es)</span>
-<span class="cm"> *</span>
-<span class="cm"> * @note</span>
-<span class="cm"> * The addresses given to this function are interpreted as sector addresses, in</span>
-<span class="cm"> * contrast to nvm_addr_mark and nvm_addr_erase for which the address is</span>
-<span class="cm"> * interpreted as a block address.</span>
-<span class="cm"> *</span>
-<span class="cm"> * @param dev Device handle obtained with `nvm_dev_open`</span>
-<span class="cm"> * @param addrs Array of memory address</span>
-<span class="cm"> * @param naddrs Length of array of memory addresses</span>
-<span class="cm"> * @param buf The buffer which content to write, must be aligned to device</span>
-<span class="cm"> *            geometry of minimal write granularity and size equal to</span>
-<span class="cm"> *            `naddrs * geo.nbytes`</span>
-<span class="cm"> * @param meta Buffer containing metadata, must be of size equal to device</span>
-<span class="cm"> *             `naddrs * geo.meta_nbytes`</span>
-<span class="cm"> * @param flags Access mode</span>
-<span class="cm"> * @param ret Pointer to structure in which to store lower-level status and</span>
-<span class="cm"> *            result.</span>
-<span class="cm"> * @returns 0 on success. On error: returns -1, sets `errno` accordingly, and</span>
-<span class="cm"> *          fills `ret` with lower-level result and status codes</span>
-<span class="cm"> */</span>
-<span class="kt">ssize_t</span> <span class="nf">nvm_addr_write</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="k">struct</span> <span class="n">nvm_addr</span> <span class="n">addrs</span><span class="p">[],</span> <span class="kt">int</span> <span class="n">naddrs</span><span class="p">,</span>
-		       <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">meta</span><span class="p">,</span> <span class="kt">uint16_t</span> <span class="n">flags</span><span class="p">,</span>
-		       <span class="k">struct</span> <span class="n">nvm_ret</span> <span class="o">*</span><span class="n">ret</span><span class="p">);</span>
-
-<span class="cm">/**</span>
-<span class="cm"> * Read content of nvm at addresses into buf</span>
-<span class="cm"> *</span>
-<span class="cm"> * @note</span>
-<span class="cm"> * The addresses given to this function are interpreted as sector addresses, in</span>
-<span class="cm"> * contrast to `nvm_addr_mark` and `nvm_addr_erase` for which the address is</span>
-<span class="cm"> * interpreted as a block address.</span>
-<span class="cm"> *</span>
-<span class="cm"> * @param dev Device handle obtained with `nvm_dev_open`</span>
-<span class="cm"> * @param addrs List of memory address</span>
-<span class="cm"> * @param naddrs Length of array of memory addresses</span>
-<span class="cm"> * @param buf Buffer to store result of read into, must be aligned to device</span>
-<span class="cm"> *            granularity min read and size equal to `naddrs *</span>
-<span class="cm"> *            geo.sector_nbytes`</span>
-<span class="cm"> * @param meta Buffer to store content of metadata, must be of size equal to</span>
-<span class="cm"> *             device `naddrs * geo.meta_nbytes`</span>
-<span class="cm"> * @param flags Access mode</span>
-<span class="cm"> * @param ret Pointer to structure in which to store lower-level status and</span>
-<span class="cm"> *            result.</span>
-<span class="cm"> * @returns 0 on success. On error: returns -1, sets `errno` accordingly, and</span>
-<span class="cm"> *          fills `ret` with lower-level result and status codes</span>
-<span class="cm"> */</span>
-<span class="kt">ssize_t</span> <span class="nf">nvm_addr_read</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="k">struct</span> <span class="n">nvm_addr</span> <span class="n">addrs</span><span class="p">[],</span> <span class="kt">int</span> <span class="n">naddrs</span><span class="p">,</span>
-		      <span class="kt">void</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">meta</span><span class="p">,</span> <span class="kt">uint16_t</span> <span class="n">flags</span><span class="p">,</span>
-		      <span class="k">struct</span> <span class="n">nvm_ret</span> <span class="o">*</span><span class="n">ret</span><span class="p">);</span>
-
-<span class="cm">/**</span>
 <span class="cm"> * Checks whether the given address exceeds bounds of the geometry of the given</span>
 <span class="cm"> * device</span>
 <span class="cm"> *</span>
@@ -1171,9 +1161,14 @@
 <span class="kt">int</span> <span class="nf">nvm_addr_check</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_addr</span> <span class="n">addr</span><span class="p">,</span> <span class="k">const</span> <span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">);</span>
 
 <span class="cm">/**</span>
-<span class="cm"> * Compute log page offset (lpo) for the chunk-information log page</span>
+<span class="cm"> * Compute log-page-offset (lpo) in the NVMe chunk-information get-log-page</span>
 <span class="cm"> *</span>
-<span class="cm"> * That is, the chunk-descriptor address for the given address in the log page</span>
+<span class="cm"> * That is, the location of the chunk-descriptor in the log-page, for the chunk</span>
+<span class="cm"> * at the given address in generic-format</span>
+<span class="cm"> *</span>
+<span class="cm"> * @note</span>
+<span class="cm"> * This is a helper for function for `nvm_cmd_rprt`, as a library user you will</span>
+<span class="cm"> * most likely not have a use for it</span>
 <span class="cm"> *</span>
 <span class="cm"> * @returns the log page offset (lpo) for the given addr</span>
 <span class="cm"> */</span>
@@ -1182,39 +1177,64 @@
 <span class="cm">/**</span>
 <span class="cm"> * Inverse function of `nvm_addr_gen2lpo`</span>
 <span class="cm"> *</span>
+<span class="cm"> * @note</span>
+<span class="cm"> * This is a helper for function for `nvm_cmd_rprt`, as a library user you will</span>
+<span class="cm"> * most likely not have a use for it</span>
+<span class="cm"> *</span>
 <span class="cm"> * @returns the page offset (lpo) for the given addr</span>
 <span class="cm"> */</span>
 <span class="k">struct</span> <span class="n">nvm_addr</span> <span class="nf">nvm_addr_lpo2gen</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="kt">uint64_t</span> <span class="n">lpo</span><span class="p">);</span>
 
 <span class="cm">/**</span>
-<span class="cm"> * Converts a given physical address generic-format to device-format</span>
+<span class="cm"> * Converts an address, in generic-format, to device-format</span>
 <span class="cm"> *</span>
 <span class="cm"> * @param dev Device handle obtained with `nvm_dev_open`</span>
-<span class="cm"> * @param addr The physical address on generic-format to convert</span>
-<span class="cm"> * @return Physical address on device-format</span>
+<span class="cm"> * @param addr The address, in generic-format, to convert</span>
+<span class="cm"> * @return Address in device-format</span>
 <span class="cm"> */</span>
 <span class="kt">uint64_t</span> <span class="nf">nvm_addr_gen2dev</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="k">struct</span> <span class="n">nvm_addr</span> <span class="n">addr</span><span class="p">);</span>
 
 <span class="cm">/**</span>
-<span class="cm"> * Converts a given physical address on device-format to generic-format</span>
+<span class="cm"> * Converts an address, in device-format, to generic-format</span>
 <span class="cm"> *</span>
 <span class="cm"> * @param dev Device handle obtained with `nvm_dev_open`</span>
-<span class="cm"> * @param addr The physical address on device-format to convert</span>
-<span class="cm"> * @return Physical address on generic-format</span>
+<span class="cm"> * @param addr The address, in device-format, to convert</span>
+<span class="cm"> * @return Address in generic-format</span>
 <span class="cm"> */</span>
 <span class="k">struct</span> <span class="n">nvm_addr</span> <span class="nf">nvm_addr_dev2gen</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="kt">uint64_t</span> <span class="n">addr</span><span class="p">);</span>
 
 <span class="cm">/**</span>
-<span class="cm"> * Converts a given physical address on device-format to lba-format</span>
+<span class="cm"> * Converts an address, in generic-format, to Linux Block Device offset</span>
+<span class="cm"> *</span>
+<span class="cm"> * @note</span>
+<span class="cm"> * This is a helper for function for the LBD backend, as a library user you will</span>
+<span class="cm"> * most likely not have a use for it</span>
 <span class="cm"> *</span>
 <span class="cm"> * @param dev Device handle obtained with `nvm_dev_open`</span>
-<span class="cm"> * @param addr The physical address on device-format to convert</span>
-<span class="cm"> * @return Physical address on lba-format</span>
+<span class="cm"> * @param addr The address, in generic-format, to convert</span>
+<span class="cm"> * @return LBD offset</span>
 <span class="cm"> */</span>
-<span class="kt">uint64_t</span> <span class="nf">nvm_addr_dev2lba</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="kt">uint64_t</span> <span class="n">addr</span><span class="p">);</span>
+<span class="kt">uint64_t</span> <span class="nf">nvm_addr_gen2off</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="k">struct</span> <span class="n">nvm_addr</span> <span class="n">addr</span><span class="p">);</span>
 
 <span class="cm">/**</span>
-<span class="cm"> * Converts a given physical address on device-format to lba-offset-format</span>
+<span class="cm"> * Converts a Linux Block Device offset to an address in generic-format</span>
+<span class="cm"> *</span>
+<span class="cm"> * @note</span>
+<span class="cm"> * This is a helper for function for the LBD backend, as a library user you will</span>
+<span class="cm"> * most likely not have a use for it</span>
+<span class="cm"> *</span>
+<span class="cm"> * @param dev Device handle obtained with `nvm_dev_open`</span>
+<span class="cm"> * @param off LBD offset</span>
+<span class="cm"> * @return Address in generic-format</span>
+<span class="cm"> */</span>
+<span class="k">struct</span> <span class="n">nvm_addr</span> <span class="nf">nvm_addr_off2gen</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="kt">uint64_t</span> <span class="n">off</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Converts an address, in device-format, to Linux Block Device offset</span>
+<span class="cm"> *</span>
+<span class="cm"> * @note</span>
+<span class="cm"> * This is a helper for function for the LBD backend, as a library user you will</span>
+<span class="cm"> * most likely not have a use for it</span>
 <span class="cm"> *</span>
 <span class="cm"> * @param dev Device handle obtained with `nvm_dev_open`</span>
 <span class="cm"> * @param addr The physical address on device-format to convert</span>
@@ -1223,40 +1243,17 @@
 <span class="kt">uint64_t</span> <span class="nf">nvm_addr_dev2off</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="kt">uint64_t</span> <span class="n">addr</span><span class="p">);</span>
 
 <span class="cm">/**</span>
-<span class="cm"> * Converts a given physical address on generic-format to byte offset</span>
+<span class="cm"> * Converts a Linux Block Device offset to an address in device-format</span>
+<span class="cm"> *</span>
+<span class="cm"> * @note</span>
+<span class="cm"> * This is a helper for function for the LBD backend, as a library user you will</span>
+<span class="cm"> * most likely not have a use for it</span>
 <span class="cm"> *</span>
 <span class="cm"> * @param dev Device handle obtained with `nvm_dev_open`</span>
-<span class="cm"> * @param addr The physical address on generic-format to convert</span>
-<span class="cm"> * @return Logical address as byte offset</span>
+<span class="cm"> * @param addr The physical address on device-format to convert</span>
+<span class="cm"> * @return Physical address on lba-offset-format</span>
 <span class="cm"> */</span>
-<span class="kt">uint64_t</span> <span class="nf">nvm_addr_gen2off</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="k">struct</span> <span class="n">nvm_addr</span> <span class="n">addr</span><span class="p">);</span>
-
-<span class="cm">/**</span>
-<span class="cm"> * Converts a given byte offset to physical address on generic-format</span>
-<span class="cm"> *</span>
-<span class="cm"> * @param dev Device handle obtained with `nvm_dev_open`</span>
-<span class="cm"> * @param off Logical address as byte offset to convert</span>
-<span class="cm"> * @return Physical address on generic-format</span>
-<span class="cm"> */</span>
-<span class="k">struct</span> <span class="n">nvm_addr</span> <span class="nf">nvm_addr_off2gen</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="kt">uint64_t</span> <span class="n">off</span><span class="p">);</span>
-
-<span class="cm">/**</span>
-<span class="cm"> * Converts a given physical address on generic-format to LBA offset</span>
-<span class="cm"> *</span>
-<span class="cm"> * @param dev Device handle obtained with `nvm_dev_open`</span>
-<span class="cm"> * @param addr The physical address on generic-format to convert</span>
-<span class="cm"> * @return Logical address as LBA offset</span>
-<span class="cm"> */</span>
-<span class="kt">uint64_t</span> <span class="nf">nvm_addr_gen2lba</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="k">struct</span> <span class="n">nvm_addr</span> <span class="n">addr</span><span class="p">);</span>
-
-<span class="cm">/**</span>
-<span class="cm"> * Converts a given LBA offset to physical address on generic-format</span>
-<span class="cm"> *</span>
-<span class="cm"> * @param dev Device handle obtained with `nvm_dev_open`</span>
-<span class="cm"> * @param off Logical address as LBA offset to convert</span>
-<span class="cm"> * @return Physical address on generic-format</span>
-<span class="cm"> */</span>
-<span class="k">struct</span> <span class="n">nvm_addr</span> <span class="nf">nvm_addr_lba2gen</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="kt">uint64_t</span> <span class="n">off</span><span class="p">);</span>
+<span class="kt">uint64_t</span> <span class="nf">nvm_addr_off2dev</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="kt">uint64_t</span> <span class="n">addr</span><span class="p">);</span>
 
 <span class="cm">/**</span>
 <span class="cm"> * Prints a hexidecimal representation of the given address value</span>
@@ -1435,7 +1432,7 @@
 <span class="cm">/**</span>
 <span class="cm"> * Set the read cursor position for the given virtual block</span>
 <span class="cm"> *</span>
-<span class="cm"> * @param vblk The vblk to change </span>
+<span class="cm"> * @param vblk The vblk to change</span>
 <span class="cm"> * @param pos The new read cursor</span>
 <span class="cm"> *</span>
 <span class="cm"> * @returns On success, 0 is returned. On error, -1 is returned and `errno` set</span>
@@ -1512,7 +1509,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.2',
+            VERSION:'0.1.4',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

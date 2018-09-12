@@ -14,11 +14,9 @@ implementation.
 +===============+============+
 | NVM_BE_IOCTL  | 0x1        |
 +---------------+------------+
-| NVM_BE_SYSFS  | 0x2        |
+| NVM_BE_LBD    | 0x2        |
 +---------------+------------+
-| NVM_BE_LBA    | 0x4        |
-+---------------+------------+
-| NVM_BE_SPDK   | 0x8        |
+| NVM_BE_SPDK   | 0x4        |
 +---------------+------------+
 
 By default liblightnvm goes through the available backends in the order as
@@ -42,6 +40,5 @@ Or when using the ``C API``, by providing the backend identifier to function
    :hidden:
 
    nvm_be_ioctl
-   nvm_be_lba
-   nvm_be_sysfs
+   nvm_be_lbd
    nvm_be_spdk

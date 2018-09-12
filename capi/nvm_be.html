@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nvm_be &mdash; liblightnvm 0.1.2 documentation</title>
+  <title>nvm_be &mdash; liblightnvm 0.1.4 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.2
+                0.1.4
               </div>
             
           
@@ -190,7 +190,7 @@
 <dl class="enum">
 <dt id="c.nvm_be_id">
 <span class="target" id="liblightnvm_8h_1ab1504ed920c76be203d8f49281484549"></span><em class="property">enum </em><code class="descname">nvm_be_id</code><a class="headerlink" href="#c.nvm_be_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Enumeration of cmd back-ends used by liblightnvm. </p>
+<dd><p>Enumeration of nvm_cmd backends. </p>
 <p><em>Values:</em></p>
 <dl class="enumvalue">
 <dt id="c.NVM_BE_ANY">
@@ -205,20 +205,14 @@
 </dd></dl>
 
 <dl class="enumvalue">
-<dt id="c.NVM_BE_SYSFS">
-<span class="target" id="liblightnvm_8h_1ab1504ed920c76be203d8f49281484549a702ae1cf2e9c91bf60ebc00c8122db48"></span><code class="descname">NVM_BE_SYSFS</code> = 0x1 &lt;&lt; 1<a class="headerlink" href="#c.NVM_BE_SYSFS" title="Permalink to this definition">¶</a></dt>
-<dd><p>IOCTL + sysfs backend. </p>
-</dd></dl>
-
-<dl class="enumvalue">
-<dt id="c.NVM_BE_LBA">
-<span class="target" id="liblightnvm_8h_1ab1504ed920c76be203d8f49281484549a67641cd8ad7eda97736036bec9e1a12e"></span><code class="descname">NVM_BE_LBA</code> = 0x1 &lt;&lt; 2<a class="headerlink" href="#c.NVM_BE_LBA" title="Permalink to this definition">¶</a></dt>
-<dd><p>IOCTL + sysfs + LBA backend. </p>
+<dt id="c.NVM_BE_LBD">
+<span class="target" id="liblightnvm_8h_1ab1504ed920c76be203d8f49281484549a068c2d879ed121bdfea5832b28b17580"></span><code class="descname">NVM_BE_LBD</code> = 0x1 &lt;&lt; 1<a class="headerlink" href="#c.NVM_BE_LBD" title="Permalink to this definition">¶</a></dt>
+<dd><p>IOCTL + LBD backend. </p>
 </dd></dl>
 
 <dl class="enumvalue">
 <dt id="c.NVM_BE_SPDK">
-<span class="target" id="liblightnvm_8h_1ab1504ed920c76be203d8f49281484549ab80cdcfa43c3b22fedba61bb59a5f0ba"></span><code class="descname">NVM_BE_SPDK</code> = 0x1 &lt;&lt; 3<a class="headerlink" href="#c.NVM_BE_SPDK" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1ab1504ed920c76be203d8f49281484549ab80cdcfa43c3b22fedba61bb59a5f0ba"></span><code class="descname">NVM_BE_SPDK</code> = 0x1 &lt;&lt; 2<a class="headerlink" href="#c.NVM_BE_SPDK" title="Permalink to this definition">¶</a></dt>
 <dd><p>SPDK backend. </p>
 </dd></dl>
 
@@ -269,7 +263,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.2',
+            VERSION:'0.1.4',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

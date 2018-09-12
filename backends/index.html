@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Backends &mdash; liblightnvm 0.1.2 documentation</title>
+  <title>Backends &mdash; liblightnvm 0.1.4 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.2
+                0.1.4
               </div>
             
           
@@ -91,8 +91,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorial Introduction</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Backends</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="nvm_be_ioctl.html">IOCTL</a></li>
-<li class="toctree-l2"><a class="reference internal" href="nvm_be_lba.html">IOCTL - LBA</a></li>
-<li class="toctree-l2"><a class="reference internal" href="nvm_be_sysfs.html">IOCTL - SYSFS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_be_lbd.html">IOCTL - LBD</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_be_spdk.html">SPDK</a></li>
 </ul>
 </li>
@@ -181,14 +180,11 @@ implementation.</p>
 <tr class="row-even"><td>NVM_BE_IOCTL</td>
 <td>0x1</td>
 </tr>
-<tr class="row-odd"><td>NVM_BE_SYSFS</td>
+<tr class="row-odd"><td>NVM_BE_LBD</td>
 <td>0x2</td>
 </tr>
-<tr class="row-even"><td>NVM_BE_LBA</td>
+<tr class="row-even"><td>NVM_BE_SPDK</td>
 <td>0x4</td>
-</tr>
-<tr class="row-odd"><td>NVM_BE_SPDK</td>
-<td>0x8</td>
 </tr>
 </tbody>
 </table>
@@ -295,7 +291,7 @@ dev_lbam:
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.2',
+            VERSION:'0.1.4',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

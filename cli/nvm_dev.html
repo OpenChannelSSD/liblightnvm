@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nvm_dev &mdash; liblightnvm 0.1.2 documentation</title>
+  <title>nvm_dev &mdash; liblightnvm 0.1.4 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.2
+                0.1.4
               </div>
             
           
@@ -170,7 +170,7 @@
             
   <div class="section" id="nvm-dev">
 <span id="sec-cli-nvm-dev"></span><h1>nvm_dev<a class="headerlink" href="#nvm-dev" title="Permalink to this headline">¶</a></h1>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>NVM Device (nvm_dev_*) -- Ver { major(0), minor(1), patch(2) }
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>NVM Device (nvm_dev_*) -- Ver { major(0), minor(1), patch(4) }
 
 Retrieve device information
 
@@ -201,19 +201,14 @@ variables modifying command behavior</p>
 dev_attr:
   verid: 0x02
   be_id: 0x01
+  be_name: <span class="s1">&#39;NVM_BE_IOCTL&#39;</span>
   name: <span class="s1">&#39;nvme0n1&#39;</span>
   path: <span class="s1">&#39;/dev/nvme0n1&#39;</span>
   fd: <span class="m">3</span>
   ssw: <span class="m">12</span>
-  mccap: <span class="m">00000000000000000000000000000001</span>
-  pmode: <span class="s1">&#39;SNGL&#39;</span>
-  erase_naddrs_max: <span class="m">64</span>
-  read_naddrs_max: <span class="m">64</span>
-  write_naddrs_max: <span class="m">64</span>
-  meta_mode: <span class="m">0</span>
+  mccap: <span class="s1">&#39;00000000000000000000000000000001&#39;</span>
   bbts_cached: <span class="m">0</span>
-  bbts_cached: <span class="m">00000000</span>
-  quirks: <span class="m">00000000</span>
+  quirks: <span class="s1">&#39;00000000&#39;</span>
 dev_geo:
   verid: 0x02
   npugrp: <span class="m">8</span>
@@ -224,6 +219,17 @@ dev_geo:
   nbytes_oob: <span class="m">16</span>
   tbytes: <span class="m">1187021586432</span>
   tmbytes: <span class="m">1132032</span>
+dev_cmd_opts:
+  mask: <span class="s1">&#39;00000000000000000000000011001000&#39;</span>
+  iomd: <span class="s1">&#39;SYNC&#39;</span>
+  addr: <span class="s1">&#39;VECTOR&#39;</span>
+  plod: <span class="s1">&#39;PRP&#39;</span>
+dev_vblk_opts:
+  pmode: <span class="s1">&#39;SNGL&#39;</span>
+  erase_naddrs_max: <span class="m">64</span>
+  read_naddrs_max: <span class="m">64</span>
+  write_naddrs_max: <span class="m">64</span>
+  meta_mode: <span class="m">0</span>
 dev_ppaf: ~
 dev_ppaf_mask: ~
 dev_lbaf:
@@ -288,7 +294,7 @@ dev_lbam:
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.2',
+            VERSION:'0.1.4',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

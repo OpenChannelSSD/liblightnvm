@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nvm_ret &mdash; liblightnvm 0.1.2 documentation</title>
+  <title>nvm_ret &mdash; liblightnvm 0.1.4 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.2
+                0.1.4
               </div>
             
           
@@ -191,19 +191,35 @@
 <dl class="struct">
 <dt id="c.nvm_ret">
 <span class="target" id="structnvm__ret"></span><em class="property">struct </em><code class="descname">nvm_ret</code><a class="headerlink" href="#c.nvm_ret" title="Permalink to this definition">¶</a></dt>
-<dd><p>Encapsulation and representation of lower-level error conditions. </p>
-<div class="breathe-sectiondef docutils container">
+<dd><div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Members</p>
 <dl class="variable">
-<dt id="c.nvm_ret::status">
-<span class="target" id="structnvm__ret_1ab31dcc186ef5c43f1d272feefd655358"></span>uint64_t <code class="descname">status</code><a class="headerlink" href="#c.nvm_ret::status" title="Permalink to this definition">¶</a></dt>
-<dd><p>NVMe command status / completion bits. </p>
+<dt id="c.nvm_ret::cs">
+<span class="target" id="structnvm__ret_1a92e6591a4d0e1c2af818e2cddbbc5b38"></span>uint64_t <code class="descname">cs</code><a class="headerlink" href="#c.nvm_ret::cs" title="Permalink to this definition">¶</a></dt>
+<dd><p>NVM completion status (CS) </p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_ret::vio">
+<span class="target" id="structnvm__ret_1aa7fccb9da5e534fa6119f62d62fdfff9"></span>struct <a class="reference internal" href="#c.nvm_ret" title="nvm_ret">nvm_ret</a>::&#64;0::&#64;1  <code class="descname">vio</code><a class="headerlink" href="#c.nvm_ret::vio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Vector I/O result. </p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_ret::cdw0">
+<span class="target" id="structnvm__ret_1ae606c9c4e4482189bdac8683939bda67"></span>uint32_t <code class="descname">cdw0</code><a class="headerlink" href="#c.nvm_ret::cdw0" title="Permalink to this definition">¶</a></dt>
+<dd><p>NVMe command specific result. </p>
 </dd></dl>
 
 <dl class="variable">
 <dt id="c.nvm_ret::result">
-<span class="target" id="structnvm__ret_1a7e8d58562b49876088f0ce77494fac46"></span>uint32_t <code class="descname">result</code><a class="headerlink" href="#c.nvm_ret::result" title="Permalink to this definition">¶</a></dt>
-<dd><p>NVMe command error codes. </p>
+<span class="target" id="structnvm__ret_1af34cb62f5e2ab6adb224cf2cde7b02f8"></span>union <a class="reference internal" href="#c.nvm_ret" title="nvm_ret">nvm_ret</a>::&#64;0  <code class="descname">result</code><a class="headerlink" href="#c.nvm_ret::result" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_ret::status">
+<span class="target" id="structnvm__ret_1a45343393ff1fcde9265565909436097d"></span>uint16_t <code class="descname">status</code><a class="headerlink" href="#c.nvm_ret::status" title="Permalink to this definition">¶</a></dt>
+<dd><p>NVMe command status. </p>
 </dd></dl>
 
 </div>
@@ -214,7 +230,7 @@
 <h2>nvm_ret_pr<a class="headerlink" href="#nvm-ret-pr" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_ret_pr">
-<span class="target" id="liblightnvm_8h_1a6e2c1c4c000426c56906dee5d06a619f"></span>void <code class="descname">nvm_ret_pr</code><span class="sig-paren">(</span>const struct  <a class="reference internal" href="#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_ret_pr" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a6e2c1c4c000426c56906dee5d06a619f"></span>void <code class="descname">nvm_ret_pr</code><span class="sig-paren">(</span>const  struct   <a class="reference internal" href="#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_ret_pr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prints a humanly readable representation the given <code class="docutils literal notranslate"><span class="pre">struct</span> <a class="reference internal" href="#structnvm__ret"><span class="std std-ref"><span class="pre">nvm_ret</span></span></a></code> </p>
 <p><dl class="docutils">
 <dt><strong>Parameters</strong></dt>
@@ -271,7 +287,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.2',
+            VERSION:'0.1.4',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
