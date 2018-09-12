@@ -175,6 +175,18 @@ dev: clean cli_on tests_on ioctl_on lbd_on spdk_off debug_on deb_on configure bu
 	sudo make clean-sys
 	sudo make install-deb
 
+.PHONY: dev-spdk
+rel-spdk: clean cli_on tests_on ioctl_on lbd_on spdk_on debug_off deb_on configure build
+	sudo make clean-sys
+	sudo make clean-sys
+	sudo make install-deb
+
+.PHONY: dev
+rel: clean cli_on tests_on ioctl_on lbd_on spdk_off debug_off deb_on configure build
+	sudo make clean-sys
+	sudo make clean-sys
+	sudo make install-deb
+
 #
 # DOC: This target generated API documentation based on source code
 #
@@ -216,7 +228,7 @@ doc-gen-cli-s12:
 doc-gen-cli-s20:
 	python doc/gen/cli.py doc/src/cli/ --spec s20
 
-# All of them
+# All of them -- you should most likely run this with sudo...
 .PHONY: doc-gen-cmds
 doc-gen-cmds: doc-gen-qs doc-gen-cli-s20 doc-gen-tut-s20
 
