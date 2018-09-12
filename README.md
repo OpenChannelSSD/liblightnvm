@@ -33,9 +33,9 @@ liblightnvm is in active development and maintained by Simon A. F. Lund
 References
 ==========
 
-* [Open-channel SSDs](http://openchannelssd.readthedocs.org/en/latest/>)
+* [Open-channel SSDs](http://openchannelssd.readthedocs.org/en/latest/)
 * [Quick Start](http://lightnvm.io/liblightnvm/quick_start/index.html)
 * [nvme-cli](https://github.com/linux-nvme/nvme-cli)
-* [qemu-nvme](<https://github.com/OpenChannelSSD/qemu-nvme)
+* [qemu-nvme](https://github.com/OpenChannelSSD/qemu-nvme)
 * [rocksdb support](https://github.com/OpenChannelSSD/rocksdb)
 
