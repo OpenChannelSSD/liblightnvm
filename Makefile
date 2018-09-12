@@ -165,10 +165,14 @@ tags:
 
 .PHONY: dev-spdk
 dev-spdk: clean cli_on tests_on ioctl_on lbd_on spdk_on debug_on deb_on configure build
+	sudo make clean-sys
+	sudo make clean-sys
 	sudo make install-deb
 
 .PHONY: dev
 dev: clean cli_on tests_on ioctl_on lbd_on spdk_off debug_on deb_on configure build
+	sudo make clean-sys
+	sudo make clean-sys
 	sudo make install-deb
 
 #
