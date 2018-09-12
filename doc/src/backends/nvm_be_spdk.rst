@@ -1,9 +1,13 @@
 SPDK
 ====
 
-liblightnvm provides a kernel-bypassing backend implemented using `Intel SPDK
-<http://www.spdk.io/>`_. On a recent Ubuntu LTS, run the following to install
-SPDK from sources::
+**liblightnvm** provides a kernel-bypassing backend implemented using `Intel SPDK
+<http://www.spdk.io/>`_.
+
+Installing **SPDK**
+-------------------
+
+On a recent Ubuntu LTS, run the following to install **SPDK** from sources::
 
   # Make sure system is up to date
   sudo apt-get update && sudo apt-get upgrade && sudo apt-get dist-upgrade
@@ -14,6 +18,9 @@ SPDK from sources::
 
   # Go to the repository
   cd /opt/spdk
+
+  # Checkout the v18.07 release
+  git checkout v18.07
   git submodule update --init
 
   # Install dependencies
@@ -35,21 +42,76 @@ SPDK from sources::
   cd /opt/spdk
   sudo make install
 
-Output from the last `unittest.sh` command should yield::
+Output from the last ``unittest.sh`` command should yield::
 
   =====================
   All unit tests passed
   =====================
 
-Compiling liblightnvm
----------------------
+Unbinding devices
+~~~~~~~~~~~~~~~~~
 
-With `SPDK` in place, configure the liblightnvm build with::
+Run the following::
 
-  make spdk_on configure
+  sudo /opt/spdk/scripts/setup.sh
 
-Linking with `liblightnvm` and `SPDK`
--------------------------------------
+This should output similar to::
+
+  0000:01:00.0 (1d1d 2807): nvme -> vfio-pci
+
+If anything else that the above is output from ``setup.sh``, for example::
+
+  0000:01:00.0 (1d1d 2807): nvme -> uio_generic
+
+Or::
+
+  Current user memlock limit: 16 MB
+
+  This is the maximum amount of memory you will be
+  able to use with DPDK and VFIO if run as current user.
+  To change this, please adjust limits.conf memlock limit for current user.
+
+  ## WARNING: memlock limit is less than 64MB
+  ## DPDK with VFIO may not be able to initialize if run as current user.
+
+Then consult the notes on **Enabling ``VFIO`` without Limits**.
+
+Re-binding devices
+~~~~~~~~~~~~~~~~~~
+
+Run the following::
+
+  sudo /opt/spdk/scripts/setup.sh reset
+
+Should output similar to::
+
+  0000:01:00.0 (1d1d 2807): vfio-pci -> nvme
+
+Device Identifiers
+~~~~~~~~~~~~~~~~~~
+
+Since devices are no longer available in ``/dev``, then the PCI ids are used
+using **SPDK** notation, such as ``traddr:0000:01:00.0``, e.g. using the CLI::
+
+  sudo nvm_dev info traddr:0000:01:00.0
+
+And using the API it would be similar to::
+
+  ...
+  struct nvm_dev *dev = nvm_dev_open("traddr:0000:01:00.0");
+  ...
+
+Build **liblightnvm** with **SPDK** support
+-------------------------------------------
+
+With **SPDK** in place, configure the **liblightnvm** build with::
+
+  make spdk_on configure build
+
+Linking your source with **liblightnvm** and **SPDK**
+-----------------------------------------------------
+
+Invoke like so::
 
   gcc hello.c -o hello \
     -fopenmp \
@@ -70,34 +132,66 @@ Linking with `liblightnvm` and `SPDK`
     -luuid
 
 The above compiles the example from the quick-start guide, note that the code
-has a hardcoded device identifier, you must change this to match the `SPDK`
+has a hardcoded device identifier, you must change this to match the **SPDK**
 identifier.
 
-Device Identifiers
-~~~~~~~~~~~~~~~~~~
+Enabling ``VFIO`` without limits
+--------------------------------
 
-Since devices are no longer available in `/dev`, then the PCI ids are used
-using SPDK notation, such as `traddr:0000:01:00.0`, e.g. using the CLI::
+If ``nvme`` is rebound to ``uio_generic``, and not ``vfio``, then VT-d is
+probably not supported or disabled. In either case try these two steps:
 
-  sudo nvm_dev info traddr:0000:01:00.0
+1) Verify that your CPU supports VT-d and that it is enabled in BIOS.
 
-And using the API it would be similar to::
+2) Enable your kernel by providing the kernel option `intel_iommu=on`.  If you
+   have a non-Intel CPU then consult documentation on enabling VT-d / IOMMU for
+   your CPU.
 
-  ...
-  struct nvm_dev *dev = nvm_dev_open("traddr:0000:01:00.0");
-  ...
+3) Increase limits, open ``/etc/security/limits.conf`` and add:
 
-Unbinding devices
-~~~~~~~~~~~~~~~~~
+::
 
-Run the following::
+  *    soft memlock unlimited
+  *    hard memlock unlimited
+  root soft memlock unlimited
+  root hard memlock unlimited
+
+Once you have gone through these steps, then this command::
+
+  dmesg | grep -e DMAR -e IOMMU
+
+Should contain::
+
+  [    0.000000] DMAR: IOMMU enabled
+
+And this this command::
+
+  find /sys/kernel/iommu_groups/ -type l
+
+Should have output similar to::
+
+  /sys/kernel/iommu_groups/7/devices/0000:00:1c.5
+  /sys/kernel/iommu_groups/5/devices/0000:00:17.0
+  /sys/kernel/iommu_groups/3/devices/0000:00:14.2
+  /sys/kernel/iommu_groups/3/devices/0000:00:14.0
+  /sys/kernel/iommu_groups/11/devices/0000:03:00.0
+  /sys/kernel/iommu_groups/1/devices/0000:00:01.0
+  /sys/kernel/iommu_groups/1/devices/0000:01:00.0
+  /sys/kernel/iommu_groups/8/devices/0000:00:1d.0
+  /sys/kernel/iommu_groups/6/devices/0000:00:1c.0
+  /sys/kernel/iommu_groups/4/devices/0000:00:16.0
+  /sys/kernel/iommu_groups/2/devices/0000:00:02.0
+  /sys/kernel/iommu_groups/10/devices/0000:00:1f.6
+  /sys/kernel/iommu_groups/0/devices/0000:00:00.0
+  /sys/kernel/iommu_groups/9/devices/0000:00:1f.2
+  /sys/kernel/iommu_groups/9/devices/0000:00:1f.0
+  /sys/kernel/iommu_groups/9/devices/0000:00:1f.4
+
+And **SPDK** setup::
 
   sudo /opt/spdk/scripts/setup.sh
 
-Re-binding devices
-~~~~~~~~~~~~~~~~~~
+Should rebind the device to ``vfio-pci``, eg.::
 
-Run the following::
-
-  sudo /opt/spdk/scripts/setup.sh reset
+  0000:01:00.0 (1d1d 2807): nvme -> vfio-pci
 
