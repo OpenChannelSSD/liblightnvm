@@ -52,6 +52,11 @@ struct nvm_be nvm_be_lbd = {
 	.vector_write = nvm_be_nosys_vector_write,
 	.vector_read = nvm_be_nosys_vector_read,
 	.vector_copy = nvm_be_nosys_vector_copy,
+
+	.async_init = nvm_be_nosys_async_init,
+	.async_term = nvm_be_nosys_async_term,
+	.async_poke = nvm_be_nosys_async_poke,
+	.async_wait = nvm_be_nosys_async_wait,
 };
 #else
 #include <stdlib.h>
@@ -174,5 +179,10 @@ struct nvm_be nvm_be_lbd = {
 	.vector_write = nvm_be_ioctl_vector_write,
 	.vector_read = nvm_be_ioctl_vector_read,
 	.vector_copy = nvm_be_ioctl_vector_copy,
+
+	.async_init = nvm_be_nosys_async_init,
+	.async_term = nvm_be_nosys_async_term,
+	.async_poke = nvm_be_nosys_async_poke,
+	.async_wait = nvm_be_nosys_async_wait,
 };
 #endif
