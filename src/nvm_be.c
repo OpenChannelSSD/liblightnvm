@@ -211,6 +211,40 @@ int nvm_be_nosys_vector_copy(struct nvm_dev *NVM_UNUSED(dev),
 	return -1;
 }
 
+struct nvm_async_ctx *nvm_be_nosys_async_init(struct nvm_dev *NVM_UNUSED(dev),
+					      uint32_t NVM_UNUSED(depth),
+					      uint16_t NVM_UNUSED(flags))
+{
+	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
+	errno = ENOSYS;
+	return NULL;
+}
+
+int nvm_be_nosys_async_term(struct nvm_dev *NVM_UNUSED(dev),
+			    struct nvm_async_ctx *NVM_UNUSED(ctx))
+{
+	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
+	errno = ENOSYS;
+	return -1;
+}
+
+int nvm_be_nosys_async_poke(struct nvm_dev *NVM_UNUSED(dev),
+			    struct nvm_async_ctx *NVM_UNUSED(ctx),
+			    uint32_t NVM_UNUSED(max))
+{
+	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
+	errno = ENOSYS;
+	return -1;
+}
+
+int nvm_be_nosys_async_wait(struct nvm_dev *NVM_UNUSED(dev),
+			    struct nvm_async_ctx *NVM_UNUSED(ctx))
+{
+	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
+	errno = ENOSYS;
+	return -1;
+}
+
 int nvm_be_split_dpath(const char *dev_path, char *nvme_name, int *nsid)
 {
 	const char prefix[] = "/dev/nvme";
