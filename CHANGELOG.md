@@ -17,6 +17,32 @@
    - Setup `nvm_ctx` using e.g. `nvm_async_prep(cb_fnc, cb_arg)` returning `nvm_ctx`
    - Call `nvm_cmd_*` using command-opts `NVM_CMD_ASYNC` and `nvm_ctx`
 
+### CLI
+
+Added `gen_as_geo` and `dev_as_geo` sub-commands to `nvm_addr` CLI. These are
+useful for examining the hierarchical components of a given address.
+
+Example:
+
+```
+# Create gen address using geometric components
+nvm_addr s20_to_gen /dev/nvme0n1 0 2 10 42
+
+# Show the geometric components of the gen-fmt-address
+nvm_addr gen_as_geo /dev/nvme0n1 0x0002000a0000002a
+
+# Convert gen-fmt-address to dev-fmt-address
+nvm_addr gen2dev /dev/nvme0n1 0x0002000a0000002a
+
+# Show the geometric components of the dev-fmt-address
+# NOTICE: the dev-fmt-address is converted to gen-fmt before printing
+nvm_addr dev_as_geo /dev/nvme0n1 0x000000000201402a
+```
+
+### Backends
+
+* Fixed a regression introduced in v0.1.4 of the LBD backend.
+
 ## v0.1.4
 
 ### struct nvm_ret
