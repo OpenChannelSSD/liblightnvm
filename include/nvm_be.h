@@ -132,6 +132,27 @@ struct nvm_be {
 	 */
 	int (*vector_copy)(struct nvm_dev *, struct nvm_addr *,
 			   struct nvm_addr *, int, uint16_t, struct nvm_ret *);
+
+	/**
+	 * Initialize an asynchronous command context with
+	 */
+	struct nvm_async_ctx *(*async_init)(struct nvm_dev *, uint32_t,
+					    uint16_t);
+
+	/**
+	 * Terminate an asynchronous command context
+	 */
+	int (*async_term)(struct nvm_dev *, struct nvm_async_ctx *);
+
+	/**
+	 * Attempt to read all asynchronous events from a given context
+	 */
+	int (*async_poke)(struct nvm_dev *, struct nvm_async_ctx *, uint32_t);
+
+	/**
+	 * Wait for completion of all asynchronous events on a given context
+	 */
+	int (*async_wait)(struct nvm_dev *, struct nvm_async_ctx *);
 };
 
 /**
@@ -188,6 +209,16 @@ int nvm_be_nosys_vector_read(struct nvm_dev *dev, struct nvm_addr addrs[],
 int nvm_be_nosys_vector_copy(struct nvm_dev *dev, struct nvm_addr src[],
 			     struct nvm_addr dst[], int naddrs, uint16_t flags,
 			     struct nvm_ret *ret);
+
+struct nvm_async_ctx *nvm_be_nosys_async_init(struct nvm_dev *dev,
+					      uint32_t depth, uint16_t flags);
+
+int nvm_be_nosys_async_term(struct nvm_dev *dev, struct nvm_async_ctx *ctx);
+
+int nvm_be_nosys_async_poke(struct nvm_dev *dev, struct nvm_async_ctx *ctx,
+			    uint32_t max);
+
+int nvm_be_nosys_async_wait(struct nvm_dev *dev, struct nvm_async_ctx *ctx);
 
 /**
  * Auxilary helpers
