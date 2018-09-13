@@ -84,7 +84,10 @@ static inline int ioctl_vio(struct nvm_dev *dev, struct nvm_cmd *cmd,
 
 	if (err) {
 		// Propagate errno from IOCTL error
-		NVM_DEBUG("FAILED: err: %d", err);
+		NVM_DEBUG("FAILED: cmd->vuser.status: 0x%lx", cmd->vuser.status);
+		NVM_DEBUG("FAILED: cmd->vuser.result: 0x%x", cmd->vuser.result);
+		NVM_DEBUG("FAILED: NVME_NVM_IOCTL_SUBMIT_VIO err: %d, errno: %s",
+			  err, strerror(errno));
 		return -1;
 	}
 
@@ -109,7 +112,8 @@ static inline int ioctl_vam(struct nvm_dev *dev, struct nvm_cmd *cmd,
 
 	if (err) {
 		// Propagate errno from IOCTL error
-		NVM_DEBUG("FAILED: err: %d", err);
+		NVM_DEBUG("FAILED: ioctl(NVME_NVM_IOCTL_ADMIN_VIO) err: %d, errno: %s",
+			  err, strerror(errno));
 		return -1;
 	}
 
@@ -165,7 +169,7 @@ struct nvm_spec_idfy *nvm_be_ioctl_idfy(struct nvm_dev *dev,
 
 	err = ioctl_vam(dev, &cmd, ret);
 	if (err) {
-		NVM_DEBUG("FAILED: ioctl_vam");
+		NVM_DEBUG("FAILED: ioctl_vam err: %d", err);
 		nvm_buf_free(idfy);
 		return NULL; // NOTE: Propagate errno
 	}
@@ -178,13 +182,17 @@ int nvm_be_ioctl_gfeat(struct nvm_dev *dev, uint8_t id,
 		       struct nvm_ret *NVM_UNUSED(ret))
 {
 	struct nvme_passthru_cmd cmd = { 0 };
+	int err;
 
 	cmd.opcode = NVM_AOPC_GFEAT;
 	cmd.nsid = dev->nsid;
 	cmd.cdw10 = id;
 
-	if(ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, &cmd)) {
-		NVM_DEBUG("ioctl failed");
+	err = ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, &cmd);
+	if (err) {
+		NVM_DEBUG("FAILED: ioctl(NVME_IOCTL_ADMIN_CMD) err: %d, errno: %s",
+			  err, strerror(errno));
+
 		return -1;
 	}
 
@@ -198,14 +206,17 @@ int nvm_be_ioctl_sfeat(struct nvm_dev *dev, uint8_t id,
 		       struct nvm_ret *NVM_UNUSED(ret))
 {
 	struct nvme_passthru_cmd cmd = { 0 };
+	int err;
 
 	cmd.opcode = NVM_AOPC_SFEAT;
 	cmd.nsid = dev->nsid;
 	cmd.cdw10 = id;
 	cmd.cdw11 = *((uint32_t *) feat);
 
-	if(ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, &cmd)) {
-		NVM_DEBUG("ioctl failed");
+	err = ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, &cmd);
+	if (err) {
+		NVM_DEBUG("FAILED: ioctl(NVME_IOCTL_ADMIN_CMD) err: %d, errno: %s",
+			  err, strerror(errno));
 		return -1;
 	}
 
@@ -271,7 +282,8 @@ struct nvm_spec_rprt *nvm_be_ioctl_rprt(struct nvm_dev *dev,
 		cmd.cdw13 = (lpo >> 32);
 
 		if(ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, &cmd)) {
-			NVM_DEBUG("ioctl failed");
+			NVM_DEBUG("FAILED: ioctl(NVME_IOCTL_ADMIN_CMD), errno: %s",
+				  strerror(errno));
 			free(rprt);
 			return NULL;
 		}
@@ -306,7 +318,7 @@ struct nvm_spec_bbt *nvm_be_ioctl_gbbt(struct nvm_dev *dev,
 
 	err = ioctl_vam(dev, &cmd, ret);
 	if (err || (spec_bbt->tblks != nblks)) {
-		NVM_DEBUG("FAILED: be execution failed");
+		NVM_DEBUG("FAILED: be execution failed err: %d", err);
 		errno = EIO;
 		nvm_buf_free(spec_bbt);
 		return NULL;
@@ -364,7 +376,7 @@ int nvm_be_ioctl_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs, int naddrs,
 
 	err = ioctl_vam(dev, &cmd, ret);
 	if (err) {
-		NVM_DEBUG("FAILED: be execution failed");
+		NVM_DEBUG("FAILED: ioctl_vam err: %d", err);
 		errno = EIO;
 		return -1;
 	}
@@ -409,7 +421,7 @@ int nvm_be_ioctl_scalar_erase(struct nvm_dev *dev, struct nvm_addr *addrs,
 
 	err = ioctl(dev->fd, NVME_IOCTL_IO_CMD, &cmd);
 	if (err) {
-		NVM_DEBUG("FAILED: ioctl-scalar failed");
+		NVM_DEBUG("FAILED: ioctl(NVME_IOCTL_IO_CMD) err: %d", err);
 		nvm_buf_free(dsmr);
 		return -1;
 	}
@@ -446,7 +458,8 @@ static inline int cmd_scalar_wr_dep_ioc(struct nvm_dev *dev,
 
 	err = ioctl(dev->fd, NVME_IOCTL_SUBMIT_IO, &cmd);
 	if (err) {
-		NVM_DEBUG("FAILED: ioctl-scalar failed: %s", strerror(errno));
+		NVM_DEBUG("FAILED: NVME_IOCTL_SUBMIT_IO err: %d, errno: %s",
+			  err, strerror(errno));
 		return -1;
 	}
 
@@ -709,7 +722,8 @@ struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags)
 	cmd.data_len = 0x1000;
 
 	if(ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, &cmd)) {
-		NVM_DEBUG("ioctl failed");
+		NVM_DEBUG("FAILED: ioctl(NVME_IOCTL_ADMIN_CMD), errno: %s",
+			  strerror(errno));
 		return NULL;
 	}
 
