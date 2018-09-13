@@ -105,7 +105,7 @@ int nvm_be_lbd_scalar_read(struct nvm_dev *dev, struct nvm_addr addr,
 	}
 
 	res = pread(dev->fd, data, dev->geo.l.nbytes * naddrs, offset);
-	if (res) {
+	if (res < 0) {
 		NVM_DEBUG("FAILED: res: %zu", res);
 		return -1;
 	}
@@ -128,7 +128,7 @@ int nvm_be_lbd_scalar_write(struct nvm_dev *dev, struct nvm_addr addr,
 	}
 
 	res = pwrite(dev->fd, data, dev->geo.l.nbytes * naddrs, offset);
-	if (res) {
+	if (res < 0) {
 		NVM_DEBUG("FAILED: res: %zu", res);
 		// Propagate errno
 		return -1;
