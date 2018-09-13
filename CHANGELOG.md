@@ -1,21 +1,80 @@
 # Changelog
 
+The repository is tagged using semantic versioning, e.g. `v0.1.3`. The `master`
+branch consist of the latest state of liblightnvm with possible hot-fixes since
+the last version tag, consider `master` as a preview of the next version.
+
+Changes are described in this file in a section named matching the version tag.
+Sections with "(Upcoming)" describe changes on the roadmap for liblightnvm.
+
+Changes on the `master` branch, from the latest version tag up to and including
+HEAD can be subject to a git rebase.
+
+## v0.1.7 (Upcoming)
+
+* API / header cleanup
+ - Adopt negative errno calling convention?
+ - Update function descriptions
+ - Replace `dev_path`/`dev_name` with `dev_ident`
+ - Weed out redundant headers
+ - Unify `nvm_bp`, `test_intf` and CLI ENV, args, setup and sub-commands
+
 ## v0.1.6 (Upcoming)
 
- * Support for use of SGL via the `nvm_cmd` interface
-   - Call `nvm_cmd_*` using command-opt `NVM_CMD_SGL`
-   - data-ptr points to SGL/iovec compatible structure
-   - meta-ptr points to SGL/iovec compatible structure
+* Zero-copy support for SPDK backend
+ - Expand `nvm_buf` allocators
+
+* Support for use of SGL via the `nvm_cmd` interface
+ - Call `nvm_cmd_*` using command option `NVM_CMD_SGL`
+ - data-ptr points to SGL/iovec compatible structure
+ - meta-ptr points to SGL/iovec compatible structure
 
 ## v0.1.5 (Upcoming)
 
- * Rename `nvm_ret` to `nvm_ctx`
- * Expand backend interfaces
-   - Add functions for ASYNC control: `init`, `prep`, `poke` and `wait`
-   - Mediate via public API under prefix as `nvm_async` or `nvm_cmd_async`
- * Support for asynchronous command via the `nvm_cmd` interface
-   - Setup `nvm_ctx` using e.g. `nvm_async_prep(cb_fnc, cb_arg)` returning `nvm_ctx`
-   - Call `nvm_cmd_*` using command-opts `NVM_CMD_ASYNC` and `nvm_ctx`
+### CLI
+
+* Fixed meta-data issue on `nvm_cmd` CLI
+
+Added `gen_as_geo` and `dev_as_geo` sub-commands to `nvm_addr` CLI. These are
+useful for examining the hierarchical components of a given address.
+
+Example:
+
+```
+# Create gen address using geometric components
+nvm_addr s20_to_gen /dev/nvme0n1 0 2 10 42
+
+# Show the geometric components of the gen-fmt-address
+nvm_addr gen_as_geo /dev/nvme0n1 0x0002000a0000002a
+
+# Convert gen-fmt-address to dev-fmt-address
+nvm_addr gen2dev /dev/nvme0n1 0x0002000a0000002a
+
+# Show the geometric components of the dev-fmt-address
+# NOTICE: the dev-fmt-address is converted to gen-fmt before printing
+nvm_addr dev_as_geo /dev/nvme0n1 0x000000000201402a
+```
+
+### API
+
+* Added ASYNC CMD support
+ - Usage examples provided in `REPOS/examples/`
+* Added data-structure and helper functions for common "boiler-plate" code under
+  `nvm_bp` prefix
+* Added control on VBLK command options
+
+### Backends
+
+* Added initial support for ASYNC data commands
+ - Added ASYNC support in SPDK backend for erase, write, read, and copy
+ - Added ASYNC support in LBD backend for read and write commands
+ - NOTE: Admin commands are NOT ASYNC
+ - NOTE: IOCTL backend is NOT ASYNC
+* Re-implemented SPDK backend for ASYNC support
+* Added internal header for `NVM_BE_SPDK` facilitating derivative backends based
+  on `NVM_BE_SPDK` in a style similar to how `NVM_BE_LBD` utilizes
+  `NVM_BE_IOCTL` for most of the setup and command executions
+* Fixed a regression introduced in v0.1.4 of the LBD backend
 
 ## v0.1.4
 
