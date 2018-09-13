@@ -31,6 +31,11 @@
 
 void nvm_ret_pr(const struct nvm_ret *ret)
 {
+	if (!ret) {
+		printf("nvm_ret: ~\n");
+		return;
+	}
+
 	printf("nvm_ret: {");
 	printf("result: 0x%lx, ", ret->result.vio.cs);
 	printf("status: 0x%x", ret->status);
