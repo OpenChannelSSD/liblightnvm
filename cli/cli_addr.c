@@ -19,6 +19,22 @@ static int cmd_fmt(struct nvm_cli *cli)
 	return 0;
 }
 
+static int cmd_dfmt(struct nvm_cli *cli)
+{
+	struct nvm_cli_cmd_args *args = &cli->args;
+	
+	nvm_cli_info_pr("NOTICE: addresses are converted to gen to print geo");
+
+	for (int i = 0; i < args->nhex_vals; ++i) {
+		args->addrs[i] = nvm_addr_dev2gen(args->dev, args->hex_vals[i]);
+	}
+	args->naddrs = args->nhex_vals;
+
+	nvm_addr_prn(args->addrs, args->naddrs, args->dev);
+
+	return 0;
+}
+
 static int cmd_gen2dev(struct nvm_cli *cli)
 {
 	struct nvm_cli_cmd_args *args = &cli->args;
@@ -181,8 +197,6 @@ static struct nvm_cli_cmd cmds[] = {
 	{"s12_to_gen",	cmd_fmt,	NVM_CLI_ARG_ADDR_S12, NVM_CLI_OPT_DEFAULT|NVM_CLI_OPT_TERSE},
 	{"s20_to_gen",	cmd_fmt,	NVM_CLI_ARG_ADDR_S20, NVM_CLI_OPT_DEFAULT|NVM_CLI_OPT_TERSE},
 
-	//{"from_hex",		cmd_fmt,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
-
 	{"gen2dev",	cmd_gen2dev,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT|NVM_CLI_OPT_TERSE},
 	{"dev2gen",	cmd_dev2gen,	NVM_CLI_ARG_HEXVAL_LIST, NVM_CLI_OPT_DEFAULT|NVM_CLI_OPT_TERSE},
 
@@ -191,6 +205,9 @@ static struct nvm_cli_cmd cmds[] = {
 
 	{"gen2lpo",	cmd_gen2lpo,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT|NVM_CLI_OPT_TERSE},
 	{"lpo2gen",	cmd_lpo2gen,	NVM_CLI_ARG_DECVAL_LIST, NVM_CLI_OPT_DEFAULT|NVM_CLI_OPT_TERSE},
+
+	{"gen_as_geo",	cmd_fmt,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
+	{"dev_as_geo",	cmd_dfmt,	NVM_CLI_ARG_HEXVAL_LIST, NVM_CLI_OPT_DEFAULT},
 };
 
 /* Define the CLI */
