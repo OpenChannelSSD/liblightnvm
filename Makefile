@@ -52,14 +52,11 @@ clean:
 
 .PHONY: clean-sys
 clean-sys:
-	@rm /usr/include/liblightnvm_cli.h || true
-	@rm /usr/include/liblightnvm.h || true
-	@rm /usr/lib/liblightnvm.a || true
-	@rm /usr/lib/liblightnvm_cli.a || true
+	@rm /usr/include/liblightnv* || true
+	@rm /usr/lib/liblightnvm* || true
 	@rm /usr/bin/nvm_* || true
-	@rm /usr/local/include/liblightnvm_cli.h || true
-	@rm /usr/local/include/liblightnvm.h || true
-	@rm /usr/local/lib/liblightnvm_cli.a || true
+	@rm /usr/local/include/liblightnvm* || true
+	@rm /usr/local/lib/liblightnvm* || true
 	@rm /usr/local/bin/nvm_* || true
 
 #
