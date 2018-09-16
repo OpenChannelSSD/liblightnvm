@@ -1287,6 +1287,40 @@ int nvm_vblk_set_pos_write(struct nvm_vblk *vblk, size_t pos);
  */
 void nvm_vblk_pr(struct nvm_vblk *vblk);
 
+/**
+ * Boilerplate for working with the API
+ *
+ * Encapsulated in a struct such that example code can focus on the interesting
+ * parts and the usual boiler-plate code needed to get things going.
+ */
+struct nvm_bp {
+	struct nvm_dev *dev;
+	const struct nvm_geo *geo;
+	struct nvm_buf_set *bufs;
+	struct nvm_vblk *vblk;
+	size_t ws_opt;
+	size_t naddrs;
+	struct nvm_addr addrs[];
+};
+
+void nvm_bp_pr(const struct nvm_bp *bp);
+
+/**
+ * Use argv as 'nvm_bp_init(argv[1], argv[2], argv[3])'
+ *
+ * @returns On success, a initialized boiler-plate
+ */
+struct nvm_bp *nvm_bp_init_from_args(int argc, char **argv);
+
+/**
+ * argv[3]: naddrs
+ * argv[2]: Backend Identifier as hex, eg. NVM_BE_IOCTL(0x1), NVM_BE_SPDK(0x4)
+ * argv[1]: Device identifier, eg. "/dev/nvme0n1" or "traddrs:0000:00:01.0"
+ */
+struct nvm_bp *nvm_bp_init(const char *dev_ident, int flags, int naddrs);
+
+void nvm_bp_term(struct nvm_bp *bp);
+
 #ifdef __cplusplus
 }
 #endif
