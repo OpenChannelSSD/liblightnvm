@@ -971,6 +971,11 @@ struct nvm_buf_set {
 	size_t nbytes_meta;
 };
 
+/**
+ * Prints the given nvm_buf_set
+ */
+void nvm_buf_set_pr(struct nvm_buf_set *bufs);
+
 struct nvm_buf_set *nvm_buf_set_alloc(struct nvm_dev *dev, size_t nbytes,
 				      size_t nbytes_meta);
 
