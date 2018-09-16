@@ -1286,6 +1286,30 @@ int nvm_vblk_set_pos_write(struct nvm_vblk *vblk, size_t pos);
  */
 void nvm_vblk_pr(struct nvm_vblk *vblk);
 
+/**
+ * Boilerplate for working with the API
+ *
+ * Encapsulated in a struct such that example code can focus on the interesting
+ * parts and the usual boiler-plate code needed to get things going.
+ */
+struct nvm_bp {
+	struct nvm_dev *dev;
+	const struct nvm_geo *geo;
+	struct nvm_buf_set *bufs;
+	struct nvm_vblk *vblk;
+	size_t ws_opt;
+	size_t naddrs;
+	struct nvm_addr addrs[];
+};
+
+void nvm_bp_pr(const struct nvm_bp *bp);
+
+struct nvm_bp *nvm_bp_init_from_args(int argc, char **argv);
+
+struct nvm_bp *nvm_bp_init(const char *dev_ident, int flags, int naddrs);
+
+void nvm_bp_term(struct nvm_bp *bp);
+
 #ifdef __cplusplus
 }
 #endif
