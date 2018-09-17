@@ -128,13 +128,15 @@ static int cmd_write(struct nvm_cli *cli)
 		nvm_buf_fill(buf, buf_nbytes);	// Fill with synthetic payload
 	}
 
-	meta = nvm_buf_alloc(args->geo, meta_tbytes);
-	if (!meta) {
-		nvm_cli_perror("nvm_buf_alloc");
-		nvm_buf_free(buf);
-		return -1;
+	if (meta_tbytes) {
+		meta = nvm_buf_alloc(args->geo, meta_tbytes);
+		if (!meta) {
+			nvm_cli_perror("nvm_buf_alloc");
+			nvm_buf_free(buf);
+			return -1;
+		}
+		memset(meta, 0, meta_tbytes);
 	}
-	memset(meta, 0, meta_tbytes);
 
 	nvm_cli_info_pr("nvm_cmd_write: {pmode: %s}", nvm_pmode_str(pmode));
 	nvm_addr_prn(args->addrs, args->naddrs, args->dev);
@@ -170,13 +172,15 @@ static int cmd_read(struct nvm_cli *cli)
 		return -1;
 	}
 
-	meta = nvm_buf_alloc(args->geo, meta_tbytes);
-	if (!meta) {
-		nvm_cli_perror("nvm_buf_alloc");
-		nvm_buf_free(buf);
-		return -1;
+	if (meta_tbytes) {
+		meta = nvm_buf_alloc(args->geo, meta_tbytes);
+		if (!meta) {
+			nvm_cli_perror("nvm_buf_alloc");
+			nvm_buf_free(buf);
+			return -1;
+		}
+		memset(meta, 0, meta_tbytes);
 	}
-	memset(meta, 0, meta_tbytes);
 
 	nvm_cli_info_pr("nvm_cmd_read: {pmode: %s}", nvm_pmode_str(pmode));
 	nvm_addr_prn(args->addrs, args->naddrs, args->dev);
