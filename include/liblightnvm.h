@@ -153,6 +153,77 @@ enum nvm_bounds {
 };
 
 /**
+ * Per thread context. Asynchronous calls against this context must be from the
+ * same threads.
+ */
+struct nvm_async_ctx;
+
+/**
+ * Forward declaration, see nvm_ret further down
+ */
+struct nvm_ret;
+
+/**
+ * Signature of function used with asynchronous callbacks.
+ */
+typedef void (*nvm_async_cb)(struct nvm_ret *ret, void *opaque);
+
+/**
+ * IO ASYNC command context per IO, setup this struct inside nvm_ret per call to
+ * the nvm_cmd IO functions and set the CMD option NVM_CMD_ASYNC.
+ *
+ * @see nvm_async_cb
+ * @see nvm_async_init
+ */
+struct nvm_async_cmd_ctx {
+	struct nvm_async_ctx *ctx;	///< from nvm_async_init
+	nvm_async_cb cb;		///< User provided callback function
+	void *cb_arg;			///< User provided callback arguments
+};
+
+/**
+ * Allocate an asynchronous context for command submission of the given depth
+ * for submission of commands to the given device
+ *
+ * @param dev Associated device
+ * @param depth Maximum iodepth / qdepth, maximum number of outstanding commands
+ * of the returned context
+ * @param flags TBD
+ */
+struct nvm_async_ctx *nvm_async_init(struct nvm_dev *dev, uint32_t depth,
+				     uint16_t flags);
+
+/**
+ * Get the I/O depth of the context.
+ *
+ * @param ctx Asynchronous context
+ */
+uint32_t nvm_async_get_depth(struct nvm_async_ctx *ctx);
+
+/**
+ * Tear down the given ASYNC context
+ */
+int nvm_async_term(struct nvm_dev *dev, struct nvm_async_ctx *ctx);
+
+/**
+ * Process completions from the given ASYNC context.
+ *
+ * Set process 'max' to limit number of completions, 0 means no max.
+ *
+ * @return On success, number of completions processed, may be 0. On error, -1
+ * is returned and errno set to indicate the error.
+ */
+int nvm_async_poke(struct nvm_dev *dev, struct nvm_async_ctx *ctx, uint32_t max);
+
+/**
+ * Wait for completion of all outstanding IO on the given 'ctx'
+ *
+ * @return On success, number of completions processed, may be 0. On error, -1
+ * is returned and errno set to indicate the error.
+ */
+int nvm_async_wait(struct nvm_dev *dev, struct nvm_async_ctx *ctx);
+
+/**
  * Encapsulation and representation of lower-level error conditions
  *
  * @struct struct nvm_ret
