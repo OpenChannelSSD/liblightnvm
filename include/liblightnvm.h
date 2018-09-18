@@ -230,6 +230,8 @@ struct nvm_ret {
 	} result;
 
 	uint16_t status;		///< NVMe command status
+
+	struct nvm_async_cmd_ctx async;	///< ASYNC command context
 };
 
 /**
