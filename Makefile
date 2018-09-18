@@ -48,6 +48,7 @@ install:
 .PHONY: clean
 clean:
 	rm -fr $(BUILD_DIR) || true
+	rm -f cscope.out || true
 	rm -f tags || true
 
 .PHONY: clean-sys
