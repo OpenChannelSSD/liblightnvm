@@ -114,9 +114,17 @@ int main(int argc, char **argv)
 	if (!CU_add_test(pSuite, "ERASE_VECTOR_S20_META0", test_ERASE_VECTOR_S20_META0))
 		goto out;
 
+	/**
+	 * TODO: expand with tests checking state transitions, currently only
+	 * FREE state is used which is actually not a great choice for obvious
+	 * reasons
+	 */
+
 	if (!CU_add_test(pSuite, "ERASE_SCALAR_S20_NADDRS1", test_ERASE_SCALAR_S20_NADDRS1))
 		goto out;
 	/*
+	 TODO expand with these tests varying the naddrs parameter
+
 	// Some arbitrary size in the range [1,MAX]
 	if (!CU_add_test(pSuite, "ERASE_SCALAR_S20_NADDRS_ARB", test_ERASE_SCALAR_S20_NADDRS_ARB))
 		goto out;
