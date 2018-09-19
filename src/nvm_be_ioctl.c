@@ -390,9 +390,15 @@ int nvm_be_ioctl_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs, int naddrs,
 }
 
 int nvm_be_ioctl_scalar_erase(struct nvm_dev *dev, struct nvm_addr *addrs,
-			      int naddrs, uint16_t NVM_UNUSED(flags),
+			      int naddrs, uint16_t flags,
 			      struct nvm_ret *NVM_UNUSED(ret))
 {
+	if (flags & NVM_CMD_ASYNC) {
+		NVM_DEBUG("FAILED: NVM_BE_IOCTL does not support NVM_CMD_ASYNC");
+		errno = EINVAL;
+		return -1;
+	}
+
 	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
 	struct nvm_nvme_dsm_range *dsmr = NULL;
 	size_t dsmr_len = sizeof(*dsmr) * naddrs;
@@ -479,6 +485,12 @@ static inline int cmd_scalar_wr(struct nvm_dev *dev, struct nvm_addr addr,
 				uint16_t flags, uint16_t opcode,
 				struct nvm_ret *ret)
 {
+	if (flags & NVM_CMD_ASYNC) {
+		NVM_DEBUG("FAILED: NVM_BE_IOCTL does not support NVM_CMD_ASYNC");
+		errno = EINVAL;
+		return -1;
+	}
+
 	if (meta) {
 		return cmd_scalar_wr_dep_ioc(dev, addr, naddrs, data, meta,
 					     flags, opcode, ret);
@@ -537,6 +549,12 @@ static inline int cmd_vector_ewr(struct nvm_dev *dev, struct nvm_addr addrs[],
 			  uint16_t flags, uint16_t opcode,
 			  struct nvm_ret *ret)
 {
+	if (flags & NVM_CMD_ASYNC) {
+		NVM_DEBUG("FAILED: NVM_BE_IOCTL does not support NVM_CMD_ASYNC");
+		errno = EINVAL;
+		return -1;
+	}
+
 	struct nvm_cmd cmd = {.cdw={0}};
 	uint64_t dev_addrs[naddrs];
 	int i, err;
@@ -619,6 +637,12 @@ int nvm_be_ioctl_vector_copy(struct nvm_dev *dev, struct nvm_addr src[],
 			     struct nvm_addr dst[], int naddrs, uint16_t flags,
 			     struct nvm_ret *ret)
 {
+	if (flags & NVM_CMD_ASYNC) {
+		NVM_DEBUG("FAILED: NVM_BE_IOCTL does not support NVM_CMD_ASYNC");
+		errno = EINVAL;
+		return -1;
+	}
+
 	struct nvm_cmd cmd = {.cdw={0}};
 	uint64_t src_dev[naddrs];
 	uint64_t dst_dev[naddrs];
