@@ -28,6 +28,10 @@ endif()
 set(NVM_BE_LBD_ENABLED ${UNIX} CACHE BOOL "be_lbd: Linux IOCTL/LBD backend")
 if (NVM_BE_LBD_ENABLED)
 	add_definitions(-DNVM_BE_LBD_ENABLED)
+	find_library(HAVE_LIBAIO NAMES aio)
+	if(HAVE_LIBAIO)
+		add_definitions(-DHAVE_LIBAIO)
+	endif()
 endif()
 
 # SPDK is disabled by default
@@ -35,6 +39,12 @@ set(NVM_BE_SPDK_ENABLED FALSE CACHE BOOL "be_spdk: SPDK backend")
 if(NVM_BE_SPDK_ENABLED)
 	add_definitions(-DNVM_BE_SPDK_ENABLED)
 endif()
+
+# check if async is enabled
+if(${NVM_BE_SPDK_ENABLED} OR (${NVM_BE_LBD_ENABLED} AND HAVE_LIBAIO))
+	add_definitions(-DNVM_ASYNC_ENABLED)
+endif()
+
 #
 # BACKENDS -- end
 #
@@ -77,32 +87,35 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DNVM_DEBUG_ENABLED")
 
 set(HEADER_FILES
 	${PROJECT_SOURCE_DIR}/include/liblightnvm.h
+	${PROJECT_SOURCE_DIR}/include/liblightnvm_spec.h
+	${PROJECT_SOURCE_DIR}/include/nvm_async.h
 	${PROJECT_SOURCE_DIR}/include/nvm_be.h
 	${PROJECT_SOURCE_DIR}/include/nvm_debug.h
-	${PROJECT_SOURCE_DIR}/include/nvm_timer.h
 	${PROJECT_SOURCE_DIR}/include/nvm_dev.h
+	${PROJECT_SOURCE_DIR}/include/nvm_nvme.h
 	${PROJECT_SOURCE_DIR}/include/nvm_omp.h
-	${PROJECT_SOURCE_DIR}/include/liblightnvm_spec.h
+	${PROJECT_SOURCE_DIR}/include/nvm_timer.h
 	${PROJECT_SOURCE_DIR}/include/nvm_utils.h
-	${PROJECT_SOURCE_DIR}/include/nvm_vblk.h
-	${PROJECT_SOURCE_DIR}/include/nvm_nvme.h)
+	${PROJECT_SOURCE_DIR}/include/nvm_vblk.h)
 
 set(SOURCE_FILES
-	${PROJECT_SOURCE_DIR}/src/nvm_spec.c
+	${PROJECT_SOURCE_DIR}/src/nvm_addr.c
+	${PROJECT_SOURCE_DIR}/src/nvm_async.c
+	${PROJECT_SOURCE_DIR}/src/nvm_bbt.c
 	${PROJECT_SOURCE_DIR}/src/nvm_be.c
 	${PROJECT_SOURCE_DIR}/src/nvm_be_ioctl.c
-	${PROJECT_SOURCE_DIR}/src/nvm_be_spdk.c
 	${PROJECT_SOURCE_DIR}/src/nvm_be_lbd.c
-	${PROJECT_SOURCE_DIR}/src/nvm_dev.c
-	${PROJECT_SOURCE_DIR}/src/nvm_buf.c
-	${PROJECT_SOURCE_DIR}/src/nvm_bbt.c
-	${PROJECT_SOURCE_DIR}/src/nvm_geo.c
-	${PROJECT_SOURCE_DIR}/src/nvm_ver.c
-	${PROJECT_SOURCE_DIR}/src/nvm_cmd.c
-	${PROJECT_SOURCE_DIR}/src/nvm_addr.c
-	${PROJECT_SOURCE_DIR}/src/nvm_vblk.c
+	${PROJECT_SOURCE_DIR}/src/nvm_be_spdk.c
 	${PROJECT_SOURCE_DIR}/src/nvm_bounds.c
+	${PROJECT_SOURCE_DIR}/src/nvm_bp.c
+	${PROJECT_SOURCE_DIR}/src/nvm_buf.c
+	${PROJECT_SOURCE_DIR}/src/nvm_cmd.c
+	${PROJECT_SOURCE_DIR}/src/nvm_dev.c
+	${PROJECT_SOURCE_DIR}/src/nvm_geo.c
 	${PROJECT_SOURCE_DIR}/src/nvm_ret.c
+	${PROJECT_SOURCE_DIR}/src/nvm_spec.c
+	${PROJECT_SOURCE_DIR}/src/nvm_vblk.c
+	${PROJECT_SOURCE_DIR}/src/nvm_ver.c
 )
 
 include_directories("${PROJECT_SOURCE_DIR}/include")
@@ -128,6 +141,10 @@ if(${NVM_BE_SPDK_ENABLED})
 	target_link_libraries(${LNAME} dl)
 	target_link_libraries(${LNAME} numa)
 	target_link_libraries(${LNAME} uuid)
+endif()
+
+if(${NVM_BE_LBD_ENABLED} AND HAVE_LIBAIO)
+	target_link_libraries(${LNAME} aio)
 endif()
 
 install(TARGETS ${LNAME} DESTINATION lib COMPONENT lib)
