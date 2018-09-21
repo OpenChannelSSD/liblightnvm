@@ -4,10 +4,22 @@
 #include <errno.h>
 #include <liblightnvm_cli.h>
 
+static inline void _vblk_cmd_mode(struct nvm_vblk *vblk)
+{
+	if (getenv("NVM_CLI_VBLK_ASYNC")) {
+		nvm_vblk_set_async(vblk);
+	}
+
+	if (getenv("NVM_CLI_VBLK_SCALAR")) {
+		nvm_vblk_set_scalar(vblk);
+	}
+}
+
 static ssize_t _vblk_erase(struct nvm_cli *NVM_UNUSED(cli), struct nvm_vblk *vblk)
 {
 	ssize_t res = 0;
 
+	_vblk_cmd_mode(vblk);
 	nvm_vblk_pr(vblk);
 
 	nvm_cli_timer_start();
@@ -15,8 +27,9 @@ static ssize_t _vblk_erase(struct nvm_cli *NVM_UNUSED(cli), struct nvm_vblk *vbl
 	nvm_cli_timer_stop();
 	nvm_cli_timer_bw_pr("nvm_vblk_erase", nvm_vblk_get_nbytes(vblk));
 
-	if (res < 0)
+	if (res < 0) {
 		nvm_cli_perror("nvm_vblk_erase");
+	}
 
 	return res;
 }
@@ -28,6 +41,7 @@ static ssize_t _vblk_write(struct nvm_cli *cli, struct nvm_vblk *vblk)
 	char *buf = NULL;
 	ssize_t res = 0;
 
+	_vblk_cmd_mode(vblk);
 	nvm_vblk_pr(vblk);
 
 	nvm_cli_timer_start();		// Allocate write buffer
@@ -73,6 +87,7 @@ static ssize_t _vblk_read(struct nvm_cli *cli, struct nvm_vblk *vblk)
 	char *buf = NULL;
 	ssize_t res = 0;
 
+	_vblk_cmd_mode(vblk);
 	nvm_vblk_pr(vblk);
 
 	nvm_cli_timer_start();		// Allocate read buffer
@@ -116,6 +131,7 @@ static ssize_t _vblk_pread(struct nvm_cli *cli, struct nvm_vblk *vblk)
 	size_t nbytes = cli->args.dec_vals[0];
 	size_t offset = cli->args.dec_vals[1];
 
+	_vblk_cmd_mode(vblk);
 	nvm_vblk_pr(vblk);
 
 	nvm_cli_timer_start();		// Allocate read buffer
@@ -150,6 +166,7 @@ static ssize_t _vblk_pad(struct nvm_cli *NVM_UNUSED(cli), struct nvm_vblk *vblk)
 {
 	ssize_t res = 0;
 
+	_vblk_cmd_mode(vblk);
 	nvm_vblk_pr(vblk);
 
 	nvm_cli_timer_start();		// Read from device into buffer
