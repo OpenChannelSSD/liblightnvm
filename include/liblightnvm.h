@@ -1209,6 +1209,16 @@ struct nvm_vblk *nvm_vblk_alloc_line(struct nvm_dev *dev, int ch_bgn,
 				     int blk);
 
 /**
+ * Set the command mode for the virtual block to async.
+ */
+int nvm_vblk_set_async(struct nvm_vblk *vblk, uint32_t depth);
+
+/**
+ * Set the command mode for the virtual block to scalar.
+ */
+int nvm_vblk_set_scalar(struct nvm_vblk *vblk);
+
+/**
  * Destroy a virtual block
  *
  * @param vblk The virtual block to destroy
