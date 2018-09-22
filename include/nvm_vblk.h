@@ -39,6 +39,15 @@ struct nvm_vblk {
 	size_t pos_write;
 	size_t pos_read;
 	int32_t nthreads;
+	uint32_t flags;
+	struct nvm_async_ctx *async_ctx;
+	struct nvm_ret **rets;
+	uint32_t retsp;
+};
+
+struct nvm_vblk_async_cb_state {
+	uint64_t *nerr;
+	struct nvm_vblk *vblk;
 };
 
 #endif /* __INTERNAL_NVM_VBLK_H */
