@@ -1,6 +1,6 @@
 #include "test_intf.c"
 
-int vblk_ewr(struct nvm_addr *addrs, int naddrs)
+int vblk_ewr(struct nvm_addr *addrs, int naddrs, int mode)
 {
 	struct nvm_buf_set *bufs = NULL;
 	struct nvm_vblk *vblk = NULL;
@@ -22,6 +22,20 @@ int vblk_ewr(struct nvm_addr *addrs, int naddrs)
 		goto out;
 	}
 	nvm_buf_set_fill(bufs);
+
+	if (mode & NVM_CMD_ASYNC) {
+		if (nvm_vblk_set_async(vblk, 0)) {
+			CU_FAIL("FAILED: nvm_vblk_set_async");
+			goto out;
+		}
+	}
+
+	if (mode & NVM_CMD_SCALAR) {
+		if (nvm_vblk_set_scalar(vblk)) {
+			CU_FAIL("FAILED: nvm_vblk_set_scalar");
+			goto out;
+		}
+	}
 
 	if (nvm_vblk_erase(vblk) < 0) {
 		CU_FAIL("FAILED: nvm_vblk_erase");
@@ -50,7 +64,7 @@ out:
 	return 0;
 }
 
-void test_VBLK_EWR(void)
+void test_VBLK_EWR_VECTOR_SYNC(void)
 {
 	struct nvm_addr addrs[0x1000] = { 0 };
 	size_t naddrs = 0;
@@ -69,7 +83,73 @@ void test_VBLK_EWR(void)
 		break;
 	}
 
-	CU_ASSERT(!vblk_ewr(addrs, naddrs));
+	CU_ASSERT(!vblk_ewr(addrs, naddrs, NVM_CMD_VECTOR | NVM_CMD_SYNC));
+}
+
+void test_VBLK_EWR_VECTOR_ASYNC(void)
+{
+	struct nvm_addr addrs[0x1000] = { 0 };
+	size_t naddrs = 0;
+
+	switch(nvm_dev_get_verid(dev)) {
+	case NVM_SPEC_VERID_12:
+		naddrs = geo->g.nchannels * geo->g.nluns;
+		if (nvm_cmd_gbbt_arbs(dev, NVM_BBT_FREE, naddrs, addrs))
+			CU_FAIL("FAILED: nvm_cmd_gbbt_arbs");
+		break;
+
+	case NVM_SPEC_VERID_20:
+		naddrs = geo->l.npugrp * geo->l.npunit;
+		if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, naddrs, addrs))
+			CU_FAIL("FAILED: nvm_cmd_rprt_arbs");
+		break;
+	}
+
+	CU_ASSERT(!vblk_ewr(addrs, naddrs, NVM_CMD_VECTOR | NVM_CMD_ASYNC));
+}
+
+void test_VBLK_EWR_SCALAR_SYNC(void)
+{
+	struct nvm_addr addrs[0x1000] = { 0 };
+	size_t naddrs = 0;
+
+	switch(nvm_dev_get_verid(dev)) {
+	case NVM_SPEC_VERID_12:
+		naddrs = geo->g.nchannels * geo->g.nluns;
+		if (nvm_cmd_gbbt_arbs(dev, NVM_BBT_FREE, naddrs, addrs))
+			CU_FAIL("FAILED: nvm_cmd_gbbt_arbs");
+		break;
+
+	case NVM_SPEC_VERID_20:
+		naddrs = geo->l.npugrp * geo->l.npunit;
+		if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, naddrs, addrs))
+			CU_FAIL("FAILED: nvm_cmd_rprt_arbs");
+		break;
+	}
+
+	CU_ASSERT(!vblk_ewr(addrs, naddrs, NVM_CMD_SCALAR | NVM_CMD_SYNC));
+}
+
+void test_VBLK_EWR_SCALAR_ASYNC(void)
+{
+	struct nvm_addr addrs[0x1000] = { 0 };
+	size_t naddrs = 0;
+
+	switch(nvm_dev_get_verid(dev)) {
+	case NVM_SPEC_VERID_12:
+		naddrs = geo->g.nchannels * geo->g.nluns;
+		if (nvm_cmd_gbbt_arbs(dev, NVM_BBT_FREE, naddrs, addrs))
+			CU_FAIL("FAILED: nvm_cmd_gbbt_arbs");
+		break;
+
+	case NVM_SPEC_VERID_20:
+		naddrs = geo->l.npugrp * geo->l.npunit;
+		if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, naddrs, addrs))
+			CU_FAIL("FAILED: nvm_cmd_rprt_arbs");
+		break;
+	}
+
+	CU_ASSERT(!vblk_ewr(addrs, naddrs, NVM_CMD_SCALAR | NVM_CMD_ASYNC));
 }
 
 int main(int argc, char **argv)
@@ -81,8 +161,21 @@ int main(int argc, char **argv)
 	if (!pSuite)
 		goto out;
 
-	if (!CU_add_test(pSuite, "VBLK EWR S20", test_VBLK_EWR))
-		goto out;
+	switch (be_id) {
+		case NVM_BE_SPDK:
+			if (!CU_add_test(pSuite, "VBLK EWR S20 VECTOR/ASYNC", test_VBLK_EWR_VECTOR_ASYNC))
+				goto out;
+			/* fallthrough */
+		case NVM_BE_LBD:
+			if (!CU_add_test(pSuite, "VBLK EWR S20 SCALAR/ASYNC", test_VBLK_EWR_SCALAR_ASYNC))
+				goto out;
+			/* fallthrough */
+		case NVM_BE_IOCTL:
+			if (!CU_add_test(pSuite, "VBLK EWR S20 VECTOR/SYNC", test_VBLK_EWR_VECTOR_SYNC))
+				goto out;
+			if (!CU_add_test(pSuite, "VBLK EWR S20 SCALAR/SYNC", test_VBLK_EWR_SCALAR_SYNC))
+				goto out;
+	}
 
 	switch(rmode) {
 	case NVM_TEST_RMODE_AUTO:
