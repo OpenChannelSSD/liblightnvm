@@ -31,7 +31,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include <liblightnvm.h>
-#include <nvm_debug.h>
 
 void *nvm_buf_alloc(const struct nvm_geo *geo, size_t nbytes)
 {
@@ -272,4 +271,3 @@ struct nvm_buf_set *nvm_buf_set_alloc(struct nvm_dev *dev, size_t nbytes,
 
 	return bufs;
 }
-

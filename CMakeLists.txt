@@ -77,13 +77,12 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DNVM_DEBUG_ENABLED")
 
 set(HEADER_FILES
 	${PROJECT_SOURCE_DIR}/include/liblightnvm.h
+	${PROJECT_SOURCE_DIR}/include/liblightnvm_util.h
 	${PROJECT_SOURCE_DIR}/include/nvm_be.h
-	${PROJECT_SOURCE_DIR}/include/nvm_debug.h
 	${PROJECT_SOURCE_DIR}/include/nvm_timer.h
 	${PROJECT_SOURCE_DIR}/include/nvm_dev.h
 	${PROJECT_SOURCE_DIR}/include/nvm_omp.h
 	${PROJECT_SOURCE_DIR}/include/liblightnvm_spec.h
-	${PROJECT_SOURCE_DIR}/include/nvm_utils.h
 	${PROJECT_SOURCE_DIR}/include/nvm_vblk.h
 	${PROJECT_SOURCE_DIR}/include/nvm_nvme.h)
 
@@ -135,6 +134,8 @@ install(TARGETS ${LNAME} DESTINATION lib COMPONENT lib)
 install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm_cli.h"
 	DESTINATION include COMPONENT dev)
 install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm_spec.h"
+	DESTINATION include COMPONENT dev)
+install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm_util.h"
 	DESTINATION include COMPONENT dev)
 install(FILES "${PROJECT_SOURCE_DIR}/include/liblightnvm.h"
 	DESTINATION include COMPONENT dev)

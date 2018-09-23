@@ -1,9 +1,7 @@
 /*
- * nvm_util - Internal utilities
+ * liblightnvm utils - Misc. utilities used internally, examples, tests, etc.
  *
- * Copyright (C) 2015-2017 Javier Gonzáles <javier@cnexlabs.com>
- * Copyright (C) 2015-2017 Matias Bjørling <matias@cnexlabs.com>
- * Copyright (C) 2015-2017 Simon A. F. Lund <slund@cnexlabs.com>
+ * Copyright (C) Simon A. F. Lund <slund@cnexlabs.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,13 +24,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef __INTERNAL_NVM_UTILS_H
-#define __INTERNAL_NVM_UTILS_H
+#ifndef __LIBLIGHTNVM_UTIL_H
+#define __LIBLIGHTNVM_UTIL_H
+#include <string.h>
+#include <stdio.h>
 
 #define NVM_UNIVERSAL_SECT_SH 9
 
 /**
- * Macro to suppress warnings on unused arguments.
+ * Macro to suppress warnings on unused arguments, thanks to stackoverflow.
  */
 #ifdef __GNUC__
 #  define NVM_UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
@@ -188,4 +188,31 @@ static inline int NVM_MAX(int x, int y) {
 	return x > y ? x : y;
 }
 
-#endif /* __INTERNAL_NVM_UTILS_H */
+#ifdef NVM_DEBUG_ENABLED
+
+#define NVM_DEBUG_FCALL(x) x
+
+#define __FILENAME__ strrchr("/" __FILE__, '/') + 1
+
+#define NVM_DEBUG(...) printf("# %s:%s-%d: " FIRST(__VA_ARGS__) "\n" , \
+	__FILENAME__, __func__, __LINE__ REST(__VA_ARGS__)); fflush(stdout);
+
+#define FIRST(...) FIRST_HELPER(__VA_ARGS__, throwaway)
+#define FIRST_HELPER(first, ...) first
+
+#define REST(...) REST_HELPER(NUM(__VA_ARGS__), __VA_ARGS__)
+#define REST_HELPER(qty, ...) REST_HELPER2(qty, __VA_ARGS__)
+#define REST_HELPER2(qty, ...) REST_HELPER_##qty(__VA_ARGS__)
+#define REST_HELPER_ONE(first)
+#define REST_HELPER_TWOORMORE(first, ...) , __VA_ARGS__
+#define NUM(...) \
+	SELECT_10TH(__VA_ARGS__, TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE,\
+		TWOORMORE, TWOORMORE, TWOORMORE, TWOORMORE, ONE, throwaway)
+#define SELECT_10TH(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, ...) a10
+
+#else
+	#define NVM_DEBUG(...)
+	#define NVM_DEBUG_FCALL(x)
+#endif
+
+#endif /* __LIBLIGHTNVM_UTIL_H */

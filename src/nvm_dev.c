@@ -33,8 +33,6 @@
 #include <liblightnvm.h>
 #include <nvm_be.h>
 #include <nvm_dev.h>
-#include <nvm_debug.h>
-#include <nvm_utils.h>
 
 static struct nvm_be *nvm_backends[] = {
 	&nvm_be_ioctl,
@@ -121,7 +119,7 @@ void nvm_dev_pr(const struct nvm_dev *dev)
 	printf("dev_"); nvm_geo_pr(&dev->geo);
 	printf("dev_"); nvm_dev_cmd_opts_pr(dev);
 	printf("dev_"); nvm_dev_vblk_opts_pr(dev);
-	
+
 	switch(nvm_dev_get_verid(dev)) {
 	case NVM_SPEC_VERID_12:
 		printf("dev_"); nvm_spec_ppaf_nand_pr(&dev->ppaf);
@@ -433,7 +431,7 @@ struct nvm_dev * nvm_dev_openf(const char *dev_path, int flags) {
 		dev->bbts[i] = NULL;
 
 	dev->cmd_opts = 0;	// Setup CMD options
-	
+
 	if (flags & NVM_CMD_MASK_IOMD) {
 		NVM_DEBUG("setting IOMD using flags");
 		dev->cmd_opts |= flags & NVM_CMD_MASK_IOMD;

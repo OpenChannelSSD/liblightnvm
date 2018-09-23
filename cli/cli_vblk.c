@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include <liblightnvm_cli.h>
-#include <nvm_utils.h>
 
 static ssize_t _vblk_erase(struct nvm_cli *NVM_UNUSED(cli), struct nvm_vblk *vblk)
 {

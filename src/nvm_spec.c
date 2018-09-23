@@ -30,11 +30,9 @@
 #include <stdio.h>
 #include <errno.h>
 #include <liblightnvm.h>
+#include <liblightnvm_spec.h>
 #include <nvm_be.h>
 #include <nvm_dev.h>
-#include <liblightnvm_spec.h>
-#include <nvm_utils.h>
-#include <nvm_debug.h>
 
 void nvm_spec_lgeo_pr(const struct nvm_spec_lgeo *lgeo)
 {

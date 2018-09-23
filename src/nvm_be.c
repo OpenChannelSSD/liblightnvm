@@ -32,8 +32,6 @@
 #include <liblightnvm.h>
 #include <nvm_be.h>
 #include <nvm_dev.h>
-#include <nvm_utils.h>
-#include <nvm_debug.h>
 
 static inline uint64_t _ilog2(uint64_t x)
 {

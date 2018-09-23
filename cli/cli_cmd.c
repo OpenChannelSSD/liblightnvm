@@ -4,10 +4,6 @@
 #include <errno.h>
 #include <liblightnvm_cli.h>
 
-static inline int NVM_MIN(int x, int y) {
-	return x < y ? x : y;
-}
-
 static int cmd_idfy(struct nvm_cli *cli)
 {
 	struct nvm_dev *dev = cli->args.dev;

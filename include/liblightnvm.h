@@ -41,6 +41,7 @@ extern "C" {
 #include <stdlib.h>
 
 #include <sys/types.h>
+#include <liblightnvm_util.h>
 #include <liblightnvm_spec.h>
 
 #define NVM_NADDR_MAX 64

@@ -67,8 +67,6 @@ struct nvm_be nvm_be_ioctl = {
 #include <nvm_be.h>
 #include <nvm_be_ioctl.h>
 #include <nvm_dev.h>
-#include <nvm_utils.h>
-#include <nvm_debug.h>
 
 static void *erase_meta_hack;
 

@@ -31,8 +31,6 @@
 #include <liblightnvm.h>
 #include <nvm_be.h>
 #include <nvm_dev.h>
-#include <nvm_debug.h>
-#include <nvm_utils.h>
 
 void nvm_addr_pr(const struct nvm_addr addr)
 {

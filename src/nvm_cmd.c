@@ -33,8 +33,6 @@
 #include <liblightnvm.h>
 #include <nvm_be.h>
 #include <nvm_dev.h>
-#include <nvm_utils.h>
-#include <nvm_debug.h>
 
 struct nvm_spec_idfy *nvm_cmd_idfy(struct nvm_dev *dev, struct nvm_ret *ret)
 {

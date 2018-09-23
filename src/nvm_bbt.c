@@ -34,7 +34,6 @@
 #include <nvm_be.h>
 #include <nvm_dev.h>
 #include <nvm_spec.h>
-#include <nvm_debug.h>
 
 static inline int _bbt_idx(const struct nvm_dev *dev,
 			   const struct nvm_addr addr)

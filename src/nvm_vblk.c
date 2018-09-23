@@ -33,8 +33,6 @@
 #include <nvm_dev.h>
 #include <nvm_vblk.h>
 #include <nvm_omp.h>
-#include <nvm_utils.h>
-#include <nvm_debug.h>
 
 #define NVM_VBLK_CMD_OPTS (NVM_CMD_SYNC | NVM_CMD_VECTOR | NVM_CMD_PRP)
 

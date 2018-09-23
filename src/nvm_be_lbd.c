@@ -64,8 +64,6 @@ struct nvm_be nvm_be_lbd = {
 #include <sys/ioctl.h>
 #include <nvm_be_ioctl.h>
 #include <nvm_dev.h>
-#include <nvm_utils.h>
-#include <nvm_debug.h>
 
 static int nvm_be_lbd_scalar_erase(struct nvm_dev *dev, struct nvm_addr addrs[],
 				   int naddrs, uint16_t NVM_UNUSED(flags),
