@@ -7,7 +7,14 @@
 static inline void _vblk_cmd_mode(struct nvm_vblk *vblk)
 {
 	if (getenv("NVM_CLI_VBLK_ASYNC")) {
-		nvm_vblk_set_async(vblk);
+		char *str;
+		uint32_t depth = 0;
+
+		if (NULL != (str = getenv("NVM_CLI_VBLK_ASYNC_DEPTH"))) {
+			sscanf(str, "%"SCNu32, &depth);
+		}
+
+		nvm_vblk_set_async(vblk, depth);
 	}
 
 	if (getenv("NVM_CLI_VBLK_SCALAR")) {
@@ -187,7 +194,7 @@ static int cmd_vblk_erase(struct nvm_cli *cli)
 {
 	struct nvm_vblk *vblk = NULL;
 	ssize_t res = 0;
-	
+
 	vblk = nvm_vblk_alloc(cli->args.dev, &cli->args.addrs[0], 1);
 	if (!vblk) {
 		nvm_cli_perror("nvm_vblk_alloc");
@@ -288,7 +295,7 @@ static int cmd_vblk_line_erase(struct nvm_cli *cli)
 			end = cli->args.addrs[1];
 	struct nvm_vblk *vblk = NULL;
 	ssize_t res = 0;
-	
+
 	vblk = nvm_vblk_alloc_line(cli->args.dev, bgn.g.ch, end.g.ch, bgn.g.lun,
 				   end.g.lun, bgn.g.blk);
 	if (!vblk) {
@@ -297,7 +304,7 @@ static int cmd_vblk_line_erase(struct nvm_cli *cli)
 	}
 
 	res = _vblk_erase(cli, vblk);
-	
+
 	nvm_vblk_free(vblk);
 
 	return res < 0 ? -1 : 0;
@@ -309,7 +316,7 @@ static int cmd_vblk_line_write(struct nvm_cli *cli)
 			end = cli->args.addrs[1];
 	struct nvm_vblk *vblk = NULL;
 	ssize_t res = 0;
-	
+
 	vblk = nvm_vblk_alloc_line(cli->args.dev, bgn.g.ch, end.g.ch, bgn.g.lun,
 				   end.g.lun, bgn.g.blk);
 	if (!vblk) {
@@ -318,7 +325,7 @@ static int cmd_vblk_line_write(struct nvm_cli *cli)
 	}
 
 	res = _vblk_write(cli, vblk);
-	
+
 	nvm_vblk_free(vblk);
 
 	return res < 0 ? -1 : 0;
@@ -330,7 +337,7 @@ static int cmd_vblk_line_read(struct nvm_cli *cli)
 			end = cli->args.addrs[1];
 	struct nvm_vblk *vblk = NULL;
 	ssize_t res = 0;
-	
+
 	vblk = nvm_vblk_alloc_line(cli->args.dev, bgn.g.ch, end.g.ch, bgn.g.lun,
 				   end.g.lun, bgn.g.blk);
 	if (!vblk) {
@@ -339,7 +346,7 @@ static int cmd_vblk_line_read(struct nvm_cli *cli)
 	}
 
 	res = _vblk_read(cli, vblk);
-	
+
 	nvm_vblk_free(vblk);
 
 	return res < 0 ? -1 : 0;
@@ -351,7 +358,7 @@ static int cmd_vblk_line_pread(struct nvm_cli *cli)
 			end = cli->args.addrs[1];
 	struct nvm_vblk *vblk = NULL;
 	ssize_t res = 0;
-	
+
 	vblk = nvm_vblk_alloc_line(cli->args.dev, bgn.g.ch, end.g.ch, bgn.g.lun,
 				   end.g.lun, bgn.g.blk);
 	if (!vblk) {
@@ -360,7 +367,7 @@ static int cmd_vblk_line_pread(struct nvm_cli *cli)
 	}
 
 	res = _vblk_pread(cli, vblk);
-	
+
 	nvm_vblk_free(vblk);
 
 	return res < 0 ? -1 : 0;
@@ -372,7 +379,7 @@ static int cmd_vblk_line_pad(struct nvm_cli *cli)
 			end = cli->args.addrs[1];
 	struct nvm_vblk *vblk = NULL;
 	ssize_t res = 0;
-	
+
 	vblk = nvm_vblk_alloc_line(cli->args.dev, bgn.g.ch, end.g.ch, bgn.g.lun,
 				   end.g.lun, bgn.g.blk);
 	if (!vblk) {
@@ -381,7 +388,7 @@ static int cmd_vblk_line_pad(struct nvm_cli *cli)
 	}
 
 	res = _vblk_pad(cli, vblk);
-	
+
 	nvm_vblk_free(vblk);
 
 	return res < 0 ? -1 : 0;
@@ -391,7 +398,7 @@ static int cmd_vblk_set_erase(struct nvm_cli *cli)
 {
 	struct nvm_vblk *vblk = NULL;
 	ssize_t res = 0;
-	
+
 	vblk = nvm_vblk_alloc(cli->args.dev, cli->args.addrs, cli->args.naddrs);
 	if (!vblk) {
 		nvm_cli_perror("nvm_vblk_alloc");
@@ -409,7 +416,7 @@ static int cmd_vblk_set_write(struct nvm_cli *cli)
 {
 	struct nvm_vblk *vblk = NULL;
 	ssize_t res = 0;
-	
+
 	vblk = nvm_vblk_alloc(cli->args.dev, cli->args.addrs, cli->args.naddrs);
 	if (!vblk) {
 		nvm_cli_perror("nvm_vblk_alloc");
@@ -427,7 +434,7 @@ static int cmd_vblk_set_read(struct nvm_cli *cli)
 {
 	struct nvm_vblk *vblk = NULL;
 	ssize_t res = 0;
-	
+
 	vblk = nvm_vblk_alloc(cli->args.dev, cli->args.addrs, cli->args.naddrs);
 	if (!vblk) {
 		nvm_cli_perror("nvm_vblk_alloc");
@@ -445,7 +452,7 @@ static int cmd_vblk_set_pad(struct nvm_cli *cli)
 {
 	struct nvm_vblk *vblk = NULL;
 	ssize_t res = 0;
-	
+
 	vblk = nvm_vblk_alloc(cli->args.dev, cli->args.addrs, cli->args.naddrs);
 	if (!vblk) {
 		nvm_cli_perror("nvm_vblk_alloc");
@@ -479,7 +486,7 @@ static struct nvm_cli_cmd cmds[] = {
 	{"line_read",	cmd_vblk_line_read,	NVM_CLI_ARG_VBLK_LINE,	NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
 	{"line_pread",	cmd_vblk_line_pread,	NVM_CLI_ARG_VBLK_LINE_POS,	NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
 	{"line_pad",	cmd_vblk_line_pad,	NVM_CLI_ARG_VBLK_LINE,	NVM_CLI_OPT_DEFAULT},
-	
+
 };
 
 /* Define the CLI */
