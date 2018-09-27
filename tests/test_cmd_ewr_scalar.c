@@ -97,7 +97,7 @@ failure:
 	nvm_buf_set_free(bufs);
 }
 
-void test_EWR_SSS_META0(void)
+void test_EWR_SSS(void)
 {
 	switch(nvm_dev_get_verid(dev)) {
 	case NVM_SPEC_VERID_12:
@@ -129,7 +129,7 @@ void test_EWR_SSS_META1(void)
 	}
 }
 
-void test_EWR_VSS_META0(void)
+void test_EWR_VSS(void)
 {
 	switch(nvm_dev_get_verid(dev)) {
 	case NVM_SPEC_VERID_12:
@@ -170,15 +170,20 @@ int main(int argc, char **argv)
 	if (!pSuite)
 		goto out;
 
-	if (!CU_add_test(pSuite, "EWR_SSS_META0", test_EWR_SSS_META0))
-		goto out;
-	if (!CU_add_test(pSuite, "EWR_SSS_META1", test_EWR_SSS_META1))
-		goto out;
-
-	if (!CU_add_test(pSuite, "EWR_VSS_META0", test_EWR_VSS_META0))
-		goto out;
-	if (!CU_add_test(pSuite, "EWR_VSS_META1", test_EWR_VSS_META1))
-		goto out;
+	switch (be_id) {
+		case NVM_BE_IOCTL:
+		case NVM_BE_SPDK:
+			if (!CU_add_test(pSuite, "EWR_SSS_META", test_EWR_SSS_META1))
+				goto out;
+			if (!CU_add_test(pSuite, "EWR_VSS_META", test_EWR_VSS_META1))
+				goto out;
+			/* fallthrough */
+		case NVM_BE_LBD:
+			if (!CU_add_test(pSuite, "EWR_SSS", test_EWR_SSS))
+				goto out;
+			if (!CU_add_test(pSuite, "EWR_VSS", test_EWR_VSS))
+				goto out;
+	}
 
 	switch(rmode) {
 	case NVM_TEST_RMODE_AUTO:
