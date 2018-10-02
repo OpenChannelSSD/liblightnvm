@@ -205,6 +205,13 @@ struct nvm_async_ctx *nvm_async_init(struct nvm_dev *dev, uint32_t depth,
 uint32_t nvm_async_get_depth(struct nvm_async_ctx *ctx);
 
 /**
+ * Get the number of outstanding I/O.
+ *
+ * @param ctx Asynchronous context
+ */
+uint32_t nvm_async_get_outstanding(struct nvm_async_ctx *ctx);
+
+/**
  * Tear down the given ASYNC context
  */
 int nvm_async_term(struct nvm_dev *dev, struct nvm_async_ctx *ctx);

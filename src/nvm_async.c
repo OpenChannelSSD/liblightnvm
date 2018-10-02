@@ -57,3 +57,7 @@ int nvm_async_poke(struct nvm_dev *dev, struct nvm_async_ctx *ctx, uint32_t max)
 uint32_t nvm_async_get_depth(struct nvm_async_ctx *ctx) {
 	return ctx->depth;
 }
+
+uint32_t nvm_async_get_outstanding(struct nvm_async_ctx *ctx) {
+	return ctx->outstanding;
+}
