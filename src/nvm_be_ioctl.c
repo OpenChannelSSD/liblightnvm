@@ -631,58 +631,6 @@ int nvm_be_ioctl_vector_read(struct nvm_dev *dev, struct nvm_addr addrs[],
 			      NVM_DOPC_VECTOR_READ, ret);
 }
 
-int nvm_be_ioctl_vector_copy(struct nvm_dev *dev, struct nvm_addr src[],
-			     struct nvm_addr dst[], int naddrs, uint16_t flags,
-			     struct nvm_ret *ret)
-{
-	if (flags & NVM_CMD_ASYNC) {
-		NVM_DEBUG("FAILED: NVM_BE_IOCTL does not support NVM_CMD_ASYNC");
-		errno = EINVAL;
-		return -1;
-	}
-
-	struct nvm_cmd cmd = {.cdw={0}};
-	uint64_t src_dev[naddrs];
-	uint64_t dst_dev[naddrs];
-	int i, err;
-
-	if (naddrs > NVM_NADDR_MAX) {
-		errno = EINVAL;
-		return -1;
-	}
-
-	cmd.vuser.opcode = NVM_DOPC_VECTOR_COPY;
-	cmd.vuser.control = flags | NVM_FLAG_DEFAULT;
-
-	// Setup PPAs: Convert address format from generic to device specific
-	for (i = 0; i < naddrs; ++i) {
-		src_dev[i] = nvm_addr_gen2dev(dev, src[i]);
-		dst_dev[i] = nvm_addr_gen2dev(dev, dst[i]);
-	}
-
-	// Unnatural numbers: counting from zero
-	cmd.vuser.nppas = naddrs - 1;
-	cmd.vuser.ppa_list = naddrs == 1 ? src_dev[0] : (uint64_t)src_dev;
-
-	// TODO: Set the dst addrs correctly
-	cmd.vuser.rsvd3[0] = dst_dev[i];
-
-	err = ioctl_vio(dev, &cmd, ret);
-	if (!err)
-		return 0;		// No errors, we can return
-
-	switch (cmd.vuser.result) {
-	case 0x700:			// Ignore: Acceptable error
-	case 0x4700:			// Ignore: Acceptable error
-		return 0;
-
-	default:
-		return -1;		// Propagate errno from backend
-	}
-
-	return 0;
-}
-
 struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags)
 {
 	struct nvm_dev *dev = NULL;
@@ -808,7 +756,7 @@ struct nvm_be nvm_be_ioctl = {
 	.vector_erase = nvm_be_ioctl_vector_erase,
 	.vector_write = nvm_be_ioctl_vector_write,
 	.vector_read = nvm_be_ioctl_vector_read,
-	.vector_copy = nvm_be_ioctl_vector_copy,
+	.vector_copy = nvm_be_nosys_vector_copy,
 
 	.async_init = nvm_be_nosys_async_init,
 	.async_term = nvm_be_nosys_async_term,
