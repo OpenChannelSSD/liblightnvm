@@ -456,6 +456,15 @@ struct nvm_nvme_cmd {
 		uint64_t addrs;			///< PPA / LBA list
 
 		struct {
+			uint32_t nr	: 8;
+			uint32_t rsvd10	: 24;
+			uint32_t idr	: 1;
+			uint32_t idw	: 1;
+			uint32_t ad	: 1;
+			uint32_t rsvd11	: 29;
+		} dsm;
+
+		struct {
 			uint32_t lid	: 8;	///< Log Page Identifier
 			uint32_t lsp	: 4;	///< Log Specific Field
 			uint32_t rsvd10	: 3;
