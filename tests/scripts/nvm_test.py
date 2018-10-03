@@ -4,29 +4,31 @@
 
  The manual invocation of the libcunit based tests are fine, however, by
  wrapping these in this runner-script allows for simpler reporting and
- instrumention when interfacing various CI environments
+ instrumentation when interfacing various CI environments
 
  Usage:
 
  # This will run nvm_test_vblk binaries, produce xml-output, basic console reporting
- py.test runner.py -k "vblk"  --junitxml /tmp/test_results.xml -r f --tb=line
+ py.test nvm_test.py -k "vblk"  --junitxml /tmp/test_results.xml -r f --tb=line
 
  # Run it with the framework build into Python (not useful for CI integration)
- ./runner.py
+ ./nvm_test.py
 
-    NVM_TEST_DEV
-    NVM_TEST_LOG
-    NVM_TEST_SEED
-    NVM_TEST_BIN_PREFIX
+ NVM_TEST_DEV_IDENT
+ NVM_TEST_BE_ID
+ NVM_TEST_LOG
+ NVM_TEST_SEED
+ NVM_TEST_BIN_PREFIX
 
-TODO: log output should be configurable/parameterizable
+TODO: log output should be configurable / parameterizable
 
 """
 from subprocess import Popen, STDOUT
 import unittest
 import os
 
-NVM_TEST_DEV = os.getenv("NVM_TEST_DEV", "/dev/nvme0n1")
+NVM_TEST_DEV_IDENT = os.getenv("NVM_TEST_DEV_IDENT", "/dev/nvme0n1")
+NVM_TEST_BE_ID = os.getenv("NVM_TEST_BE_ID", "1")
 NVM_TEST_LOG = os.getenv("NVM_TEST_LOG", os.sep + "tmp")
 NVM_TEST_SEED = os.getenv("NVM_TEST_SEED", "0")
 NVM_TEST_BIN_PREFIX = os.getenv("NVM_TEST_BIN_PREFIX", "nvm_test_")
@@ -59,7 +61,7 @@ class MetaTest(unittest.TestCase):
 
         with open(log, "w+") as log_fd:
 
-            cmd = [bname, NVM_TEST_DEV, NVM_TEST_SEED]
+            cmd = [bname, NVM_TEST_DEV_IDENT, NVM_TEST_SEED, "0", NVM_TEST_BE_ID]
             process = Popen(cmd, stdout=log_fd, stderr=STDOUT)
             returncode = process.wait()
 
