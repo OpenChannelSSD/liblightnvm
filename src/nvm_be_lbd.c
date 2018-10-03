@@ -170,6 +170,6 @@ struct nvm_be nvm_be_lbd = {
 	.vector_erase = nvm_be_ioctl_vector_erase,
 	.vector_write = nvm_be_ioctl_vector_write,
 	.vector_read = nvm_be_ioctl_vector_read,
-	.vector_copy = nvm_be_ioctl_vector_copy,
+	.vector_copy = nvm_be_nosys_vector_copy,
 };
 #endif
