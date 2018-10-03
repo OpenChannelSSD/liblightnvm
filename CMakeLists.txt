@@ -94,6 +94,7 @@ set(HEADER_FILES
 	${PROJECT_SOURCE_DIR}/include/nvm_dev.h
 	${PROJECT_SOURCE_DIR}/include/nvm_nvme.h
 	${PROJECT_SOURCE_DIR}/include/nvm_omp.h
+	${PROJECT_SOURCE_DIR}/include/nvm_sgl.h
 	${PROJECT_SOURCE_DIR}/include/nvm_timer.h
 	${PROJECT_SOURCE_DIR}/include/nvm_vblk.h)
 
@@ -112,6 +113,7 @@ set(SOURCE_FILES
 	${PROJECT_SOURCE_DIR}/src/nvm_dev.c
 	${PROJECT_SOURCE_DIR}/src/nvm_geo.c
 	${PROJECT_SOURCE_DIR}/src/nvm_ret.c
+	${PROJECT_SOURCE_DIR}/src/nvm_sgl.c
 	${PROJECT_SOURCE_DIR}/src/nvm_spec.c
 	${PROJECT_SOURCE_DIR}/src/nvm_vblk.c
 	${PROJECT_SOURCE_DIR}/src/nvm_ver.c

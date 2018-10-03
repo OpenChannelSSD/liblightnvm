@@ -111,6 +111,44 @@ enum nvm_quirks {
 struct nvm_dev;
 
 /**
+ * Opaque handle for a Scatter Gather List (SGL).
+ *
+ * @struct nvm_sgl
+ */
+struct nvm_sgl;
+
+/**
+ * De-allocate an SGL
+ *
+ * @see nvm_sgl_alloc
+ *
+ * @param sgl Pointer to sgl as allocated by `nvm_sgl_alloc`
+ */
+void nvm_sgl_free(struct nvm_sgl *sgl);
+
+/**
+ * Allocate a SGL
+ *
+ * @see nvm_sgl_add
+ * @see nvm_sgl_free
+ *
+ * @returns An initialized (empty) SGL.
+ */
+struct nvm_sgl *nvm_sgl_alloc(void);
+
+/**
+ * Add an entry to the SGL
+ *
+ * @see nvm_sgl_alloc
+ * @see nvm_buf_alloc
+ *
+ * @param sgl Pointer to sgl as allocated by `nvm_sgl_alloc`
+ * @param buf Pointer to buffer as allocated with `nvm_buf_alloc`
+ * @param nbytes Size of the given buffer in bytes
+ */
+void nvm_sgl_add(struct nvm_sgl *sgl, void *buf, size_t nbytes);
+
+/**
  * Virtual block abstraction
  *
  * Facilitates a libc-like read/write and a system-like `pread`/`pwrite`

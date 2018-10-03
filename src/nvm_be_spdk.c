@@ -61,8 +61,21 @@ struct nvm_be nvm_be_spdk = {
 #include <nvm_async.h>
 #include <nvm_dev.h>
 #include <nvm_cmd.h>
+#include <nvm_sgl.h>
 #include <nvm_be.h>
 #include <nvm_be_spdk.h>
+
+static void sgl_reset_cb(void *cb_arg, uint32_t NVM_UNUSED(offset))
+{
+	struct nvm_sgl *sgl = ((struct nvm_cmd_wrap *) cb_arg)->data;
+	nvm_sgl_reset(sgl);
+}
+
+static int sgl_next_sge_cb(void *cb_arg, void **address, uint32_t *length)
+{
+	struct nvm_sgl *sgl = ((struct nvm_cmd_wrap *) cb_arg)->data;
+	return nvm_sgl_next_sge(sgl, address, length);
+}
 
 /**
  * Attaches only to the device matching the traddr
@@ -674,7 +687,17 @@ static inline int cmd_async_ewrc(struct nvm_dev *dev, struct nvm_addr addrs[],
 	// Submit command
 	ret->async.ctx->outstanding += 1;
 
-	err = spdk_nvme_ctrlr_cmd_io_raw_with_md(state->ctrlr,
+	if (flags & NVM_CMD_SGL) {
+		err = spdk_nvme_ctrlr_cmd_iov_raw_with_md(state->ctrlr,
+						 qpair,
+						 (struct spdk_nvme_cmd *)&wrap->cmd,
+						 cmd_async_cb,
+						 wrap,
+						 sgl_reset_cb,
+						 sgl_next_sge_cb,
+						 wrap->meta);
+	} else {
+		err = spdk_nvme_ctrlr_cmd_io_raw_with_md(state->ctrlr,
 						 qpair,
 						 (struct spdk_nvme_cmd *)&wrap->cmd,
 						 wrap->data,
@@ -682,6 +705,8 @@ static inline int cmd_async_ewrc(struct nvm_dev *dev, struct nvm_addr addrs[],
 						 wrap->meta,
 						 cmd_async_cb,
 						 wrap);
+	}
+
 	if (err) {
 		ret->async.ctx->outstanding -= 1;
 		NVM_DEBUG("FAILED: submission failed");
@@ -720,7 +745,17 @@ static inline int cmd_sync_ewrc(struct nvm_dev *dev,
 
 	// Submit command
 	omp_set_lock(qpair_lock);
-	err = spdk_nvme_ctrlr_cmd_io_raw_with_md(state->ctrlr,
+	if (flags & NVM_CMD_SGL) {
+		err = spdk_nvme_ctrlr_cmd_iov_raw_with_md(state->ctrlr,
+						 qpair,
+						 (struct spdk_nvme_cmd *)&wrap->cmd,
+						 cmd_sync_cb,
+						 wrap,
+						 sgl_reset_cb,
+						 sgl_next_sge_cb,
+						 wrap->meta);
+	} else {
+		err = spdk_nvme_ctrlr_cmd_io_raw_with_md(state->ctrlr,
 						 qpair,
 						 (struct spdk_nvme_cmd *)&wrap->cmd,
 						 wrap->data,
@@ -728,6 +763,7 @@ static inline int cmd_sync_ewrc(struct nvm_dev *dev,
 						 wrap->meta,
 						 cmd_sync_cb,
 						 wrap);
+	}
 	omp_unset_lock(qpair_lock);
 
 	if (err) {
