@@ -4,12 +4,13 @@ vblk:
   nmbytes: 96
   pos_write: 0
   pos_read: 0
+  flags: 0x08c8
 naddrs: 4
 addrs:
   - {val: 0x0000008e00000000, pugrp: 00, punit: 00, chunk: 0142, sectr: 0000}
   - {val: 0x0100008e00000000, pugrp: 01, punit: 00, chunk: 0142, sectr: 0000}
   - {val: 0x0200008e00000000, pugrp: 02, punit: 00, chunk: 0142, sectr: 0000}
   - {val: 0x0300008e00000000, pugrp: 03, punit: 00, chunk: 0142, sectr: 0000}
-nvm_buf_alloc: {elapsed: 0.000009}
-nvm_buf_fill: {elapsed: 0.057175}
-nvm_vblk_write: {elapsed: 0.8395, mb: 96.00, mbsec: 114.36}
+nvm_buf_alloc: {elapsed: 0.000011}
+nvm_buf_fill: {elapsed: 0.062939}
+nvm_vblk_write: {elapsed: 0.8687, mb: 96.00, mbsec: 110.52}

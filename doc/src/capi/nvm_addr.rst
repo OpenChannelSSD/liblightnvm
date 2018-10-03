@@ -14,45 +14,45 @@ nvm_addr_check
 
 .. doxygenfunction:: nvm_addr_check
 
-nvm_addr_gen2dev
-----------------
-
-.. doxygenfunction:: nvm_addr_gen2dev
-
 nvm_addr_dev2gen
 ----------------
 
 .. doxygenfunction:: nvm_addr_dev2gen
-
-nvm_addr_gen2off
-----------------
-
-.. doxygenfunction:: nvm_addr_gen2off
-
-nvm_addr_off2gen
-----------------
-
-.. doxygenfunction:: nvm_addr_off2gen
 
 nvm_addr_dev2off
 ----------------
 
 .. doxygenfunction:: nvm_addr_dev2off
 
-nvm_addr_off2dev
+nvm_addr_gen2dev
 ----------------
 
-.. doxygenfunction:: nvm_addr_off2dev
+.. doxygenfunction:: nvm_addr_gen2dev
 
 nvm_addr_gen2lpo
 ----------------
 
 .. doxygenfunction:: nvm_addr_gen2lpo
 
+nvm_addr_gen2off
+----------------
+
+.. doxygenfunction:: nvm_addr_gen2off
+
 nvm_addr_lpo2gen
 ----------------
 
 .. doxygenfunction:: nvm_addr_lpo2gen
+
+nvm_addr_off2dev
+----------------
+
+.. doxygenfunction:: nvm_addr_off2dev
+
+nvm_addr_off2gen
+----------------
+
+.. doxygenfunction:: nvm_addr_off2gen
 
 nvm_addr_pr
 -----------

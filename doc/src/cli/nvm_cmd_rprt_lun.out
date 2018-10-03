@@ -1,4 +1,4 @@
-# nvm_cmd_rprt: 0x5577a06a44d0
+# nvm_cmd_rprt: 0x55a52c7c64d0
 naddrs: 1
 addrs:
   - {val: 0x0402000000000000, pugrp: 04, punit: 02, chunk: 0000, sectr: 0000}

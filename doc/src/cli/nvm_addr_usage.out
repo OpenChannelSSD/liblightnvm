@@ -1,4 +1,4 @@
-NVM address (nvm_addr_*) -- Ver { major(0), minor(1), patch(4) }
+NVM address (nvm_addr_*) -- Ver { major(0), minor(1), patch(5) }
 
 Construct and convert addresses
 
@@ -11,6 +11,8 @@ Usage:
  nvm_addr      off2gen dev_path val [val...] [-h] [-v] [-t]
  nvm_addr      gen2lpo dev_path 0xADDR [0xADDR...] [-h] [-v] [-t]
  nvm_addr      lpo2gen dev_path val [val...] [-h] [-v] [-t]
+ nvm_addr   gen_as_geo dev_path 0xADDR [0xADDR...] [-h] [-v]
+ nvm_addr   dev_as_geo dev_path 0xVAL [0xVAL...] [-h] [-v]
 
 Options:
  -h       Print usage

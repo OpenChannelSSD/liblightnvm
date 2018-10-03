@@ -18,7 +18,9 @@ The :ref:`sec-capi-header` is available for inspection in its raw form.
    nvm_buf
    nvm_addr
    nvm_cmd
+   nvm_async
    nvm_vblk
    nvm_bbt
+   nvm_bp
    misc
    header

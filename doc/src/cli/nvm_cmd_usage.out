@@ -1,4 +1,4 @@
-NVM command (nvm_cmd_*) -- Ver { major(0), minor(1), patch(4) }
+NVM command (nvm_cmd_*) -- Ver { major(0), minor(1), patch(5) }
 
 Construct and execute NVM commands
 

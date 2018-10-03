@@ -4,7 +4,8 @@ vblk:
   nmbytes: 24
   pos_write: 0
   pos_read: 0
+  flags: 0x08c8
 naddrs: 1
 addrs:
   - {val: 0x0402008e00000000, pugrp: 04, punit: 02, chunk: 0142, sectr: 0000}
-nvm_vblk_erase: {elapsed: 0.0049, mb: 24.00, mbsec: 4869.68}
+nvm_vblk_erase: {elapsed: 0.0050, mb: 24.00, mbsec: 4795.30}
