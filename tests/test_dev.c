@@ -29,18 +29,6 @@ void test_DEV_OPEN_CLOSE_N(void)
 	}
 }
 
-void test_DEV_OPENF_IOCTL_CLOSE(void)
-{
-	struct nvm_dev *dev;
-
-	dev = nvm_dev_openf(nvm_dev_path, NVM_BE_IOCTL);
-	CU_ASSERT_PTR_NOT_NULL_FATAL(dev);
-
-	CU_ASSERT_EQUAL(nvm_dev_get_be_id(dev), NVM_BE_IOCTL);
-
-	nvm_dev_close(dev);
-}
-
 int main(int argc, char **argv)
 {
 	int err = 0;
@@ -53,8 +41,6 @@ int main(int argc, char **argv)
 	if (!CU_add_test(pSuite, "nvm_dev_[open|close]", test_DEV_OPEN_CLOSE))
 		goto out;
 	if (!CU_add_test(pSuite, "nvm_dev_[open|close] n", test_DEV_OPEN_CLOSE_N))
-		goto out;
-	if (!CU_add_test(pSuite, "nvm_dev_[openf(ioctl)|close] ", test_DEV_OPENF_IOCTL_CLOSE))
 		goto out;
 
 	switch(rmode) {
