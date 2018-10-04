@@ -153,8 +153,12 @@ enum nvm_bounds {
 };
 
 /**
- * Per thread context. Asynchronous calls against this context must be from the
- * same threads.
+ * Opaque asynchronous context as returned by 'nvm_async_init'
+ *
+ * @see nvm_async_init
+ * @see nvm_async_term
+ *
+ * @struct nvm_async_ctx
  */
 struct nvm_async_ctx;
 
@@ -216,7 +220,7 @@ int nvm_async_term(struct nvm_dev *dev, struct nvm_async_ctx *ctx);
 int nvm_async_poke(struct nvm_dev *dev, struct nvm_async_ctx *ctx, uint32_t max);
 
 /**
- * Wait for completion of all outstanding IO on the given 'ctx'
+ * Wait for completion of all outstanding commands in the given 'ctx'
  *
  * @return On success, number of completions processed, may be 0. On error, -1
  * is returned and errno set to indicate the error.
@@ -226,7 +230,7 @@ int nvm_async_wait(struct nvm_dev *dev, struct nvm_async_ctx *ctx);
 /**
  * Encapsulation and representation of lower-level error conditions
  *
- * @struct struct nvm_ret
+ * @struct nvm_ret
  */
 struct nvm_ret {
 	union {
