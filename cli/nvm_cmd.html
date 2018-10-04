@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nvm_cmd &mdash; liblightnvm 0.1.4 documentation</title>
+  <title>nvm_cmd &mdash; liblightnvm 0.1.5 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.4
+                0.1.5
               </div>
             
           
@@ -172,7 +172,7 @@
             
   <div class="section" id="nvm-cmd">
 <span id="sec-cli-nvm-cmd"></span><h1>nvm_cmd<a class="headerlink" href="#nvm-cmd" title="Permalink to this headline">¶</a></h1>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>NVM <span class="nb">command</span> <span class="o">(</span>nvm_cmd_*<span class="o">)</span> -- Ver <span class="o">{</span> major<span class="o">(</span><span class="m">0</span><span class="o">)</span>, minor<span class="o">(</span><span class="m">1</span><span class="o">)</span>, patch<span class="o">(</span><span class="m">4</span><span class="o">)</span> <span class="o">}</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>NVM <span class="nb">command</span> <span class="o">(</span>nvm_cmd_*<span class="o">)</span> -- Ver <span class="o">{</span> major<span class="o">(</span><span class="m">0</span><span class="o">)</span>, minor<span class="o">(</span><span class="m">1</span><span class="o">)</span>, patch<span class="o">(</span><span class="m">5</span><span class="o">)</span> <span class="o">}</span>
 
 Construct and execute NVM commands
 
@@ -257,16 +257,16 @@ following <cite>nvm_cmd_rprt</cite>.</p>
 rprt:
   ndescr: <span class="m">47168</span>
 rprt_descr:
-  - <span class="o">{</span> slba: 0x0000000000000000, cnlb: 0x1800, wp: 0x000000000000ffff, cs: 0x08, ct: 0x01, wli: 0x00 <span class="o">}</span>
+  - <span class="o">{</span> slba: 0x0000000000000000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x0000000000002000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x0000000000004000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x0000000000006000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
-  - <span class="o">{</span> slba: 0x0000000000008000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
+  - <span class="o">{</span> slba: 0x0000000000008000, cnlb: 0x1800, wp: 0x0000000000001800, cs: 0x02, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x000000000000A000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x000000000000C000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x000000000000E000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x0000000000010000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
-  - <span class="o">{</span> slba: 0x0000000000012000, cnlb: 0x1800, wp: 0x0000000000001800, cs: 0x02, ct: 0x01, wli: 0x00 <span class="o">}</span>
+  - <span class="o">{</span> slba: 0x0000000000012000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x0000000000014000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x0000000000016000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
   - <span class="o">{</span> slba: 0x0000000000018000, cnlb: 0x1800, wp: 0x0000000000000000, cs: 0x01, ct: 0x01, wli: 0x00 <span class="o">}</span>
@@ -279,7 +279,7 @@ rprt_descr:
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvm_cmd rprt_lun /dev/nvme0n1 <span class="m">4</span> <span class="m">2</span> <span class="p">|</span> head -n <span class="m">20</span>
 </pre></div>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># nvm_cmd_rprt: 0x5577a06a44d0</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># nvm_cmd_rprt: 0x55a52c7c64d0</span>
 naddrs: <span class="m">1</span>
 addrs:
   - <span class="o">{</span>val: 0x0402000000000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0000</span>, sectr: <span class="m">0000</span><span class="o">}</span>
@@ -401,7 +401,7 @@ addrs:
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.4',
+            VERSION:'0.1.5',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Vectorized IO to NAND media &mdash; liblightnvm 0.1.4 documentation</title>
+  <title>Vectorized IO to NAND media &mdash; liblightnvm 0.1.5 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.4
+                0.1.5
               </div>
             
           
@@ -387,10 +387,11 @@ nvm_vblk write /dev/nvme0n1 0x0402008e00000000
   nmbytes: <span class="m">24</span>
   pos_write: <span class="m">0</span>
   pos_read: <span class="m">0</span>
+  flags: 0x08c8
 naddrs: <span class="m">1</span>
 addrs:
   - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
-nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0050, mb: <span class="m">24</span>.00, mbsec: <span class="m">4811</span>.13<span class="o">}</span>
+nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0050, mb: <span class="m">24</span>.00, mbsec: <span class="m">4759</span>.59<span class="o">}</span>
 
 vblk:
   dev: <span class="o">{</span>pmode: <span class="s1">&#39;SNGL&#39;</span><span class="o">}</span>
@@ -398,12 +399,13 @@ vblk:
   nmbytes: <span class="m">24</span>
   pos_write: <span class="m">0</span>
   pos_read: <span class="m">0</span>
+  flags: 0x08c8
 naddrs: <span class="m">1</span>
 addrs:
   - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
-nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000003<span class="o">}</span>
-nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.010750<span class="o">}</span>
-nvm_vblk_write: <span class="o">{</span>elapsed: <span class="m">0</span>.8363, mb: <span class="m">24</span>.00, mbsec: <span class="m">28</span>.70<span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000004<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.013511<span class="o">}</span>
+nvm_vblk_write: <span class="o">{</span>elapsed: <span class="m">0</span>.8329, mb: <span class="m">24</span>.00, mbsec: <span class="m">28</span>.81<span class="o">}</span>
 </pre></div>
 </div>
 <p>What these two commands actually do will be described in the following section
@@ -693,7 +695,7 @@ within a chunk but also scattered across chunks, in different PUNIT, and PUGRP.<
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.1.4',
+            VERSION:'0.1.5',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

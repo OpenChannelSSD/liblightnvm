@@ -1,0 +1,396 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>nvm_async - Asynchronous cmd &mdash; liblightnvm 0.1.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="nvm_vblk - Virtual Block" href="nvm_vblk.html" />
+    <link rel="prev" title="nvm_cmd - Raw Commands" href="nvm_cmd.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> liblightnvm
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prereqs/index.html">Prerequisites</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../background/index.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli/index.html">Command-Line Interface</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">C API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="nvm_dev.html">nvm_dev - Device Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_geo.html">nvm_geo - Geometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_buf.html">nvm_buf - Buffer Allocation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_addr.html">nvm_addr - Addressing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_cmd.html">nvm_cmd - Raw Commands</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">nvm_async - Asynchronous cmd</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-async-cmd-ctx">nvm_async_cmd_ctx</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-async-ctx">nvm_async_ctx</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-async-poke">nvm_async_poke</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-async-term">nvm_async_term</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-async-wait">nvm_async_wait</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-async-init">nvm_async_init</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-async-get-depth">nvm_async_get_depth</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-async-get-outstanding">nvm_async_get_outstanding</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_vblk.html">nvm_vblk - Virtual Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_bbt.html">nvm_bbt - Bad-Block-Table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_bp.html">nvm_bp - Boilerplate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="misc.html">Miscellaneous</a></li>
+<li class="toctree-l2"><a class="reference internal" href="header.html">Public Header</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../backends/index.html">Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../refs/index.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">liblightnvm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">C API</a> &raquo;</li>
+        
+      <li>nvm_async - Asynchronous cmd</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/capi/nvm_async.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="nvm-async-asynchronous-cmd">
+<span id="sec-capi-nvm-async"></span><h1>nvm_async - Asynchronous cmd<a class="headerlink" href="#nvm-async-asynchronous-cmd" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="nvm-async-cmd-ctx">
+<h2>nvm_async_cmd_ctx<a class="headerlink" href="#nvm-async-cmd-ctx" title="Permalink to this headline">¶</a></h2>
+<dl class="struct">
+<dt id="c.nvm_async_cmd_ctx">
+<span class="target" id="structnvm__async__cmd__ctx"></span><em class="property">struct </em><code class="descname">nvm_async_cmd_ctx</code><a class="headerlink" href="#c.nvm_async_cmd_ctx" title="Permalink to this definition">¶</a></dt>
+<dd><p>IO ASYNC command context per IO, setup this struct inside <a class="reference internal" href="nvm_ret.html#structnvm__ret"><span class="std std-ref">nvm_ret</span></a> per call to the nvm_cmd IO functions and set the CMD option NVM_CMD_ASYNC. </p>
+<p><dl class="docutils">
+<dt><strong>See</strong></dt>
+<dd>nvm_async_cb </dd>
+<dt><strong>See</strong></dt>
+<dd><a class="reference internal" href="#liblightnvm_8h_1a3a059180a11fb60b8d05b415f7f94002"><span class="std std-ref">nvm_async_init</span></a> </dd>
+</dl>
+</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Members</p>
+<dl class="variable">
+<dt id="c.nvm_async_cmd_ctx::ctx">
+<span class="target" id="structnvm__async__cmd__ctx_1aaf5907a9e69c80498cbb0cb4d826622f"></span>struct <a class="reference internal" href="#c.nvm_async_ctx" title="nvm_async_ctx">nvm_async_ctx</a>* <code class="descname">ctx</code><a class="headerlink" href="#c.nvm_async_cmd_ctx::ctx" title="Permalink to this definition">¶</a></dt>
+<dd><p>from nvm_async_init </p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_async_cmd_ctx::cb">
+<span class="target" id="structnvm__async__cmd__ctx_1acce95ae407861731fae07bd4226b3c48"></span>nvm_async_cb <code class="descname">cb</code><a class="headerlink" href="#c.nvm_async_cmd_ctx::cb" title="Permalink to this definition">¶</a></dt>
+<dd><p>User provided callback function. </p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_async_cmd_ctx::cb_arg">
+<span class="target" id="structnvm__async__cmd__ctx_1aa2bba60de54814fd94b73c7bc362d0b4"></span>void* <code class="descname">cb_arg</code><a class="headerlink" href="#c.nvm_async_cmd_ctx::cb_arg" title="Permalink to this definition">¶</a></dt>
+<dd><p>User provided callback arguments. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-async-ctx">
+<h2>nvm_async_ctx<a class="headerlink" href="#nvm-async-ctx" title="Permalink to this headline">¶</a></h2>
+<dl class="struct">
+<dt id="c.nvm_async_ctx">
+<span class="target" id="structnvm__async__ctx"></span><em class="property">struct </em><code class="descname">nvm_async_ctx</code><a class="headerlink" href="#c.nvm_async_ctx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Opaque asynchronous context as returned by ‘nvm_async_init’. </p>
+<p><dl class="docutils">
+<dt><strong>See</strong></dt>
+<dd><a class="reference internal" href="#liblightnvm_8h_1a3a059180a11fb60b8d05b415f7f94002"><span class="std std-ref">nvm_async_init</span></a> </dd>
+<dt><strong>See</strong></dt>
+<dd><a class="reference internal" href="#liblightnvm_8h_1a9414537481f9bcaa0d756ffaacaa9621"><span class="std std-ref">nvm_async_term</span></a> </dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-async-poke">
+<h2>nvm_async_poke<a class="headerlink" href="#nvm-async-poke" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_async_poke">
+<span class="target" id="liblightnvm_8h_1ac34f48957917ee313007be915327c477"></span>int <code class="descname">nvm_async_poke</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="#c.nvm_async_ctx" title="nvm_async_ctx">nvm_async_ctx</a>  *<em>&nbsp;ctx</em>, uint32_t<em>&nbsp;max</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_async_poke" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process completions from the given ASYNC context. </p>
+<p>Set process ‘max’ to limit number of completions, 0 means no max.</p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>On success, number of completions processed, may be 0. On error, -1 is returned and errno set to indicate the error. </dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-async-term">
+<h2>nvm_async_term<a class="headerlink" href="#nvm-async-term" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_async_term">
+<span class="target" id="liblightnvm_8h_1a9414537481f9bcaa0d756ffaacaa9621"></span>int <code class="descname">nvm_async_term</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="#c.nvm_async_ctx" title="nvm_async_ctx">nvm_async_ctx</a>  *<em>&nbsp;ctx</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_async_term" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tear down the given ASYNC context. </p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-async-wait">
+<h2>nvm_async_wait<a class="headerlink" href="#nvm-async-wait" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_async_wait">
+<span class="target" id="liblightnvm_8h_1a505b95d2ab5cd4a6dc15bc6f278ee0bd"></span>int <code class="descname">nvm_async_wait</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="#c.nvm_async_ctx" title="nvm_async_ctx">nvm_async_ctx</a>  *<em>&nbsp;ctx</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_async_wait" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wait for completion of all outstanding commands in the given ‘ctx’. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>On success, number of completions processed, may be 0. On error, -1 is returned and errno set to indicate the error. </dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-async-init">
+<h2>nvm_async_init<a class="headerlink" href="#nvm-async-init" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_async_init">
+<span class="target" id="liblightnvm_8h_1a3a059180a11fb60b8d05b415f7f94002"></span>struct <a class="reference internal" href="#c.nvm_async_ctx" title="nvm_async_ctx">nvm_async_ctx</a>* <code class="descname">nvm_async_init</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, uint32_t<em>&nbsp;depth</em>, uint16_t<em>&nbsp;flags</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_async_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allocate an asynchronous context for command submission of the given depth for submission of commands to the given device. </p>
+<p><dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">dev</span></code>: Associated device </li>
+<li><code class="docutils literal notranslate"><span class="pre">depth</span></code>: Maximum iodepth / qdepth, maximum number of outstanding commands of the returned context </li>
+<li><code class="docutils literal notranslate"><span class="pre">flags</span></code>: TBD </li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-async-get-depth">
+<h2>nvm_async_get_depth<a class="headerlink" href="#nvm-async-get-depth" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_async_get_depth">
+<span class="target" id="liblightnvm_8h_1a924b7fb49c17ff62a42dc68f68552041"></span>uint32_t <code class="descname">nvm_async_get_depth</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_async_ctx" title="nvm_async_ctx">nvm_async_ctx</a>  *<em>&nbsp;ctx</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_async_get_depth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the I/O depth of the context. </p>
+<p><dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">ctx</span></code>: Asynchronous context </li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-async-get-outstanding">
+<h2>nvm_async_get_outstanding<a class="headerlink" href="#nvm-async-get-outstanding" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_async_get_outstanding">
+<span class="target" id="liblightnvm_8h_1a544d79c56c0eda42cb8ac3d254421eb6"></span>uint32_t <code class="descname">nvm_async_get_outstanding</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_async_ctx" title="nvm_async_ctx">nvm_async_ctx</a>  *<em>&nbsp;ctx</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_async_get_outstanding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of outstanding I/O. </p>
+<p><dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">ctx</span></code>: Asynchronous context </li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="nvm_vblk.html" class="btn btn-neutral float-right" title="nvm_vblk - Virtual Block" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="nvm_cmd.html" class="btn btn-neutral" title="nvm_cmd - Raw Commands" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, LightNVM.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.5',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

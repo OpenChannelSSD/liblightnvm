@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nvm_bbt - Bad-Block-Table &mdash; liblightnvm 0.1.4 documentation</title>
+  <title>nvm_bbt - Bad-Block-Table &mdash; liblightnvm 0.1.5 documentation</title>
   
 
   
@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Miscellaneous" href="misc.html" />
+    <link rel="next" title="nvm_bp - Boilerplate" href="nvm_bp.html" />
     <link rel="prev" title="nvm_vblk - Virtual Block" href="nvm_vblk.html" /> 
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.4
+                0.1.5
               </div>
             
           
@@ -93,6 +93,7 @@
 <li class="toctree-l2"><a class="reference internal" href="nvm_buf.html">nvm_buf - Buffer Allocation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_addr.html">nvm_addr - Addressing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_cmd.html">nvm_cmd - Raw Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_async.html">nvm_async - Asynchronous cmd</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_vblk.html">nvm_vblk - Virtual Block</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">nvm_bbt - Bad-Block-Table</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-bbt">nvm_bbt</a></li>
@@ -108,6 +109,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#nvm-bbt-state-pr">nvm_bbt_state_pr</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_bp.html">nvm_bp - Boilerplate</a></li>
 <li class="toctree-l2"><a class="reference internal" href="misc.html">Miscellaneous</a></li>
 <li class="toctree-l2"><a class="reference internal" href="header.html">Public Header</a></li>
 </ul>
@@ -293,7 +295,7 @@
 <h2>nvm_bbt_get<a class="headerlink" href="#nvm-bbt-get" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_bbt_get">
-<span class="target" id="liblightnvm_8h_1a05c54e4b51615586cf909a24122f3e35"></span>const struct <a class="reference internal" href="#c.nvm_bbt" title="nvm_bbt">nvm_bbt</a>* <code class="descname">nvm_bbt_get</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct   <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addr</em>, struct   <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bbt_get" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a05c54e4b51615586cf909a24122f3e35"></span>const struct <a class="reference internal" href="#c.nvm_bbt" title="nvm_bbt">nvm_bbt</a>* <code class="descname">nvm_bbt_get</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addr</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bbt_get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieves a bad block table from device. </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
@@ -314,7 +316,7 @@
 <h2>nvm_bbt_set<a class="headerlink" href="#nvm-bbt-set" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_bbt_set">
-<span class="target" id="liblightnvm_8h_1a6931a3845f299650c4de5a152a2c875d"></span>int <code class="descname">nvm_bbt_set</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, const  struct   <a class="reference internal" href="#c.nvm_bbt" title="nvm_bbt">nvm_bbt</a>  *<em>&nbsp;bbt</em>, struct   <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bbt_set" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a6931a3845f299650c4de5a152a2c875d"></span>int <code class="descname">nvm_bbt_set</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, const struct  <a class="reference internal" href="#c.nvm_bbt" title="nvm_bbt">nvm_bbt</a>  *<em>&nbsp;bbt</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bbt_set" title="Permalink to this definition">¶</a></dt>
 <dd><p>Updates the bad-block-table on given device using the provided bbt. </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
@@ -335,7 +337,7 @@
 <h2>nvm_bbt_mark<a class="headerlink" href="#nvm-bbt-mark" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_bbt_mark">
-<span class="target" id="liblightnvm_8h_1a2dbbb2e922bdca909354da7f2ecba9a3"></span>int <code class="descname">nvm_bbt_mark</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct   <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addrs[]</em>, int<em>&nbsp;naddrs</em>, uint16_t<em>&nbsp;flags</em>, struct   <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bbt_mark" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a2dbbb2e922bdca909354da7f2ecba9a3"></span>int <code class="descname">nvm_bbt_mark</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addrs[]</em>, int<em>&nbsp;naddrs</em>, uint16_t<em>&nbsp;flags</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bbt_mark" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mark addresses good, bad, or host-bad. </p>
 <p><dl class="docutils">
 <dt><strong>Note</strong></dt>
@@ -362,7 +364,7 @@
 <h2>nvm_bbt_flush<a class="headerlink" href="#nvm-bbt-flush" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_bbt_flush">
-<span class="target" id="liblightnvm_8h_1a8b9b1792eefc95cd2933799e6057b0b2"></span>int <code class="descname">nvm_bbt_flush</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct   <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addr</em>, struct   <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bbt_flush" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a8b9b1792eefc95cd2933799e6057b0b2"></span>int <code class="descname">nvm_bbt_flush</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_addr.html#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addr</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bbt_flush" title="Permalink to this definition">¶</a></dt>
 <dd><p>Persist the bad-block-table at <code class="docutils literal notranslate"><span class="pre">addr</span></code> on device and deallocate managed memory for the given bad-block-table describing the LUN at <code class="docutils literal notranslate"><span class="pre">addr</span></code>. </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
@@ -383,7 +385,7 @@
 <h2>nvm_bbt_flush_all<a class="headerlink" href="#nvm-bbt-flush-all" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_bbt_flush_all">
-<span class="target" id="liblightnvm_8h_1a11f997960939bcad35c78c497702d0c8"></span>int <code class="descname">nvm_bbt_flush_all</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct   <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bbt_flush_all" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a11f997960939bcad35c78c497702d0c8"></span>int <code class="descname">nvm_bbt_flush_all</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="nvm_ret.html#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bbt_flush_all" title="Permalink to this definition">¶</a></dt>
 <dd><p>Persist all bad-block-tables associated with the given <code class="docutils literal notranslate"><span class="pre">dev</span></code> </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
@@ -403,7 +405,7 @@
 <h2>nvm_bbt_alloc_cp<a class="headerlink" href="#nvm-bbt-alloc-cp" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_bbt_alloc_cp">
-<span class="target" id="liblightnvm_8h_1a341957842cd30286e6933aefc93884b5"></span>struct <a class="reference internal" href="#c.nvm_bbt" title="nvm_bbt">nvm_bbt</a>* <code class="descname">nvm_bbt_alloc_cp</code><span class="sig-paren">(</span>const  struct   <a class="reference internal" href="#c.nvm_bbt" title="nvm_bbt">nvm_bbt</a>  *<em>&nbsp;bbt</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bbt_alloc_cp" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a341957842cd30286e6933aefc93884b5"></span>struct <a class="reference internal" href="#c.nvm_bbt" title="nvm_bbt">nvm_bbt</a>* <code class="descname">nvm_bbt_alloc_cp</code><span class="sig-paren">(</span>const struct  <a class="reference internal" href="#c.nvm_bbt" title="nvm_bbt">nvm_bbt</a>  *<em>&nbsp;bbt</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bbt_alloc_cp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allocate a copy of the given bad-block-table. </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
@@ -422,7 +424,7 @@
 <h2>nvm_bbt_free<a class="headerlink" href="#nvm-bbt-free" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_bbt_free">
-<span class="target" id="liblightnvm_8h_1aeeef11a1285a6fa2695a3367afdb3770"></span>void <code class="descname">nvm_bbt_free</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_bbt" title="nvm_bbt">nvm_bbt</a>  *<em>&nbsp;bbt</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bbt_free" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1aeeef11a1285a6fa2695a3367afdb3770"></span>void <code class="descname">nvm_bbt_free</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_bbt" title="nvm_bbt">nvm_bbt</a>  *<em>&nbsp;bbt</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bbt_free" title="Permalink to this definition">¶</a></dt>
 <dd><p>Destroys a given bad-block-table. </p>
 <p><dl class="docutils">
 <dt><strong>Parameters</strong></dt>
@@ -439,7 +441,7 @@
 <h2>nvm_bbt_pr<a class="headerlink" href="#nvm-bbt-pr" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_bbt_pr">
-<span class="target" id="liblightnvm_8h_1ac5f107f6aba4ae9aa97b154938f02dd1"></span>void <code class="descname">nvm_bbt_pr</code><span class="sig-paren">(</span>const  struct   <a class="reference internal" href="#c.nvm_bbt" title="nvm_bbt">nvm_bbt</a>  *<em>&nbsp;bbt</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bbt_pr" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1ac5f107f6aba4ae9aa97b154938f02dd1"></span>void <code class="descname">nvm_bbt_pr</code><span class="sig-paren">(</span>const struct  <a class="reference internal" href="#c.nvm_bbt" title="nvm_bbt">nvm_bbt</a>  *<em>&nbsp;bbt</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bbt_pr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prints a humanly readable representation of the given bad-block-table. </p>
 <p><dl class="docutils">
 <dt><strong>Parameters</strong></dt>
@@ -471,7 +473,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="misc.html" class="btn btn-neutral float-right" title="Miscellaneous" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="nvm_bp.html" class="btn btn-neutral float-right" title="nvm_bp - Boilerplate" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="nvm_vblk.html" class="btn btn-neutral" title="nvm_vblk - Virtual Block" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -505,7 +507,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.4',
+            VERSION:'0.1.5',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nvm_addr - Addressing &mdash; liblightnvm 0.1.4 documentation</title>
+  <title>nvm_addr - Addressing &mdash; liblightnvm 0.1.5 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.4
+                0.1.5
               </div>
             
           
@@ -94,21 +94,23 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">nvm_addr - Addressing</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-addr">nvm_addr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-addr-check">nvm_addr_check</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#nvm-addr-gen2dev">nvm_addr_gen2dev</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-addr-dev2gen">nvm_addr_dev2gen</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#nvm-addr-gen2off">nvm_addr_gen2off</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#nvm-addr-off2gen">nvm_addr_off2gen</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-addr-dev2off">nvm_addr_dev2off</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#nvm-addr-off2dev">nvm_addr_off2dev</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-addr-gen2dev">nvm_addr_gen2dev</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-addr-gen2lpo">nvm_addr_gen2lpo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-addr-gen2off">nvm_addr_gen2off</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-addr-lpo2gen">nvm_addr_lpo2gen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-addr-off2dev">nvm_addr_off2dev</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-addr-off2gen">nvm_addr_off2gen</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-addr-pr">nvm_addr_pr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-addr-prn">nvm_addr_prn</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_cmd.html">nvm_cmd - Raw Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_async.html">nvm_async - Asynchronous cmd</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_vblk.html">nvm_vblk - Virtual Block</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_bbt.html">nvm_bbt - Bad-Block-Table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_bp.html">nvm_bp - Boilerplate</a></li>
 <li class="toctree-l2"><a class="reference internal" href="misc.html">Miscellaneous</a></li>
 <li class="toctree-l2"><a class="reference internal" href="header.html">Public Header</a></li>
 </ul>
@@ -290,7 +292,7 @@
 <h2>nvm_addr_check<a class="headerlink" href="#nvm-addr-check" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_addr_check">
-<span class="target" id="liblightnvm_8h_1a45218aab034f28b4e5a28eafabff7a7f"></span>int <code class="descname">nvm_addr_check</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addr</em>, const  struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_check" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a45218aab034f28b4e5a28eafabff7a7f"></span>int <code class="descname">nvm_addr_check</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addr</em>, const struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_check" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks whether the given address exceeds bounds of the geometry of the given device. </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
@@ -306,31 +308,11 @@
 </dd></dl>
 
 </div>
-<div class="section" id="nvm-addr-gen2dev">
-<h2>nvm_addr_gen2dev<a class="headerlink" href="#nvm-addr-gen2dev" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="c.nvm_addr_gen2dev">
-<span class="target" id="liblightnvm_8h_1add18460eeec07ae8ce6b9f471ca83a9e"></span>uint64_t <code class="descname">nvm_addr_gen2dev</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct   <a class="reference internal" href="#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addr</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_gen2dev" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts an address, in generic-format, to device-format. </p>
-<p><dl class="docutils">
-<dt><strong>Return</strong></dt>
-<dd>Address in device-format </dd>
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">dev</span></code>: Device handle obtained with <code class="docutils literal notranslate"><span class="pre">nvm_dev_open</span></code> </li>
-<li><code class="docutils literal notranslate"><span class="pre">addr</span></code>: The address, in generic-format, to convert </li>
-</ul>
-</dd>
-</dl>
-</p>
-</dd></dl>
-
-</div>
 <div class="section" id="nvm-addr-dev2gen">
 <h2>nvm_addr_dev2gen<a class="headerlink" href="#nvm-addr-dev2gen" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_addr_dev2gen">
-<span class="target" id="liblightnvm_8h_1a7dd099dc686dac92081bd7c4c37a5895"></span>struct <a class="reference internal" href="#c.nvm_addr" title="nvm_addr">nvm_addr</a> <code class="descname">nvm_addr_dev2gen</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, uint64_t<em>&nbsp;addr</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_dev2gen" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a7dd099dc686dac92081bd7c4c37a5895"></span>struct <a class="reference internal" href="#c.nvm_addr" title="nvm_addr">nvm_addr</a> <code class="descname">nvm_addr_dev2gen</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, uint64_t<em>&nbsp;addr</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_dev2gen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts an address, in device-format, to generic-format. </p>
 <p><dl class="docutils">
 <dt><strong>Return</strong></dt>
@@ -346,55 +328,11 @@
 </dd></dl>
 
 </div>
-<div class="section" id="nvm-addr-gen2off">
-<h2>nvm_addr_gen2off<a class="headerlink" href="#nvm-addr-gen2off" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="c.nvm_addr_gen2off">
-<span class="target" id="liblightnvm_8h_1a480ec1815404e58f793ea59794fa912f"></span>uint64_t <code class="descname">nvm_addr_gen2off</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct   <a class="reference internal" href="#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addr</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_gen2off" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts an address, in generic-format, to Linux Block Device offset. </p>
-<p><dl class="docutils">
-<dt><strong>Note</strong></dt>
-<dd>This is a helper for function for the LBD backend, as a library user you will most likely not have a use for it</dd>
-<dt><strong>Return</strong></dt>
-<dd>LBD offset </dd>
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">dev</span></code>: Device handle obtained with <code class="docutils literal notranslate"><span class="pre">nvm_dev_open</span></code> </li>
-<li><code class="docutils literal notranslate"><span class="pre">addr</span></code>: The address, in generic-format, to convert </li>
-</ul>
-</dd>
-</dl>
-</p>
-</dd></dl>
-
-</div>
-<div class="section" id="nvm-addr-off2gen">
-<h2>nvm_addr_off2gen<a class="headerlink" href="#nvm-addr-off2gen" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="c.nvm_addr_off2gen">
-<span class="target" id="liblightnvm_8h_1aee7bdce116af860a64aaea40c99152eb"></span>struct <a class="reference internal" href="#c.nvm_addr" title="nvm_addr">nvm_addr</a> <code class="descname">nvm_addr_off2gen</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, uint64_t<em>&nbsp;off</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_off2gen" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts a Linux Block Device offset to an address in generic-format. </p>
-<p><dl class="docutils">
-<dt><strong>Note</strong></dt>
-<dd>This is a helper for function for the LBD backend, as a library user you will most likely not have a use for it</dd>
-<dt><strong>Return</strong></dt>
-<dd>Address in generic-format </dd>
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">dev</span></code>: Device handle obtained with <code class="docutils literal notranslate"><span class="pre">nvm_dev_open</span></code> </li>
-<li><code class="docutils literal notranslate"><span class="pre">off</span></code>: LBD offset </li>
-</ul>
-</dd>
-</dl>
-</p>
-</dd></dl>
-
-</div>
 <div class="section" id="nvm-addr-dev2off">
 <h2>nvm_addr_dev2off<a class="headerlink" href="#nvm-addr-dev2off" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_addr_dev2off">
-<span class="target" id="liblightnvm_8h_1a72f0d9b320d381ec8032a7b7ccf887b6"></span>uint64_t <code class="descname">nvm_addr_dev2off</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, uint64_t<em>&nbsp;addr</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_dev2off" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a72f0d9b320d381ec8032a7b7ccf887b6"></span>uint64_t <code class="descname">nvm_addr_dev2off</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, uint64_t<em>&nbsp;addr</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_dev2off" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts an address, in device-format, to Linux Block Device offset. </p>
 <p><dl class="docutils">
 <dt><strong>Note</strong></dt>
@@ -412,11 +350,86 @@
 </dd></dl>
 
 </div>
+<div class="section" id="nvm-addr-gen2dev">
+<h2>nvm_addr_gen2dev<a class="headerlink" href="#nvm-addr-gen2dev" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_addr_gen2dev">
+<span class="target" id="liblightnvm_8h_1add18460eeec07ae8ce6b9f471ca83a9e"></span>uint64_t <code class="descname">nvm_addr_gen2dev</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addr</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_gen2dev" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts an address, in generic-format, to device-format. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>Address in device-format </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">dev</span></code>: Device handle obtained with <code class="docutils literal notranslate"><span class="pre">nvm_dev_open</span></code> </li>
+<li><code class="docutils literal notranslate"><span class="pre">addr</span></code>: The address, in generic-format, to convert </li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-addr-gen2lpo">
+<h2>nvm_addr_gen2lpo<a class="headerlink" href="#nvm-addr-gen2lpo" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_addr_gen2lpo">
+<span class="target" id="liblightnvm_8h_1a75d1d065f672f985c33db2b913e1610c"></span>uint64_t <code class="descname">nvm_addr_gen2lpo</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addr</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_gen2lpo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute log-page-offset (lpo) in the NVMe chunk-information get-log-page. </p>
+<p>That is, the location of the chunk-descriptor in the log-page, for the chunk at the given address in generic-format</p>
+<p><dl class="docutils">
+<dt><strong>Note</strong></dt>
+<dd>This is a helper for function for <code class="docutils literal notranslate"><span class="pre">nvm_cmd_rprt</span></code>, as a library user you will most likely not have a use for it</dd>
+<dt><strong>Return</strong></dt>
+<dd>the log page offset (lpo) for the given addr </dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-addr-gen2off">
+<h2>nvm_addr_gen2off<a class="headerlink" href="#nvm-addr-gen2off" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_addr_gen2off">
+<span class="target" id="liblightnvm_8h_1a480ec1815404e58f793ea59794fa912f"></span>uint64_t <code class="descname">nvm_addr_gen2off</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct  <a class="reference internal" href="#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addr</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_gen2off" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts an address, in generic-format, to Linux Block Device offset. </p>
+<p><dl class="docutils">
+<dt><strong>Note</strong></dt>
+<dd>This is a helper for function for the LBD backend, as a library user you will most likely not have a use for it</dd>
+<dt><strong>Return</strong></dt>
+<dd>LBD offset </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">dev</span></code>: Device handle obtained with <code class="docutils literal notranslate"><span class="pre">nvm_dev_open</span></code> </li>
+<li><code class="docutils literal notranslate"><span class="pre">addr</span></code>: The address, in generic-format, to convert </li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-addr-lpo2gen">
+<h2>nvm_addr_lpo2gen<a class="headerlink" href="#nvm-addr-lpo2gen" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_addr_lpo2gen">
+<span class="target" id="liblightnvm_8h_1a60ed15d8e6d9df3d0f181305dfdab30c"></span>struct <a class="reference internal" href="#c.nvm_addr" title="nvm_addr">nvm_addr</a> <code class="descname">nvm_addr_lpo2gen</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, uint64_t<em>&nbsp;lpo</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_lpo2gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverse function of <code class="docutils literal notranslate"><span class="pre">nvm_addr_gen2lpo</span></code> </p>
+<p><dl class="docutils">
+<dt><strong>Note</strong></dt>
+<dd>This is a helper for function for <code class="docutils literal notranslate"><span class="pre">nvm_cmd_rprt</span></code>, as a library user you will most likely not have a use for it</dd>
+<dt><strong>Return</strong></dt>
+<dd>the page offset (lpo) for the given addr </dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
 <div class="section" id="nvm-addr-off2dev">
 <h2>nvm_addr_off2dev<a class="headerlink" href="#nvm-addr-off2dev" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_addr_off2dev">
-<span class="target" id="liblightnvm_8h_1a9a7b9773ab9f5b1457866b3ed1849099"></span>uint64_t <code class="descname">nvm_addr_off2dev</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, uint64_t<em>&nbsp;addr</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_off2dev" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a9a7b9773ab9f5b1457866b3ed1849099"></span>uint64_t <code class="descname">nvm_addr_off2dev</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, uint64_t<em>&nbsp;addr</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_off2dev" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts a Linux Block Device offset to an address in device-format. </p>
 <p><dl class="docutils">
 <dt><strong>Note</strong></dt>
@@ -434,34 +447,23 @@
 </dd></dl>
 
 </div>
-<div class="section" id="nvm-addr-gen2lpo">
-<h2>nvm_addr_gen2lpo<a class="headerlink" href="#nvm-addr-gen2lpo" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="nvm-addr-off2gen">
+<h2>nvm_addr_off2gen<a class="headerlink" href="#nvm-addr-off2gen" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="c.nvm_addr_gen2lpo">
-<span class="target" id="liblightnvm_8h_1a75d1d065f672f985c33db2b913e1610c"></span>uint64_t <code class="descname">nvm_addr_gen2lpo</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, struct   <a class="reference internal" href="#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addr</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_gen2lpo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute log-page-offset (lpo) in the NVMe chunk-information get-log-page. </p>
-<p>That is, the location of the chunk-descriptor in the log-page, for the chunk at the given address in generic-format</p>
+<dt id="c.nvm_addr_off2gen">
+<span class="target" id="liblightnvm_8h_1aee7bdce116af860a64aaea40c99152eb"></span>struct <a class="reference internal" href="#c.nvm_addr" title="nvm_addr">nvm_addr</a> <code class="descname">nvm_addr_off2gen</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, uint64_t<em>&nbsp;off</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_off2gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a Linux Block Device offset to an address in generic-format. </p>
 <p><dl class="docutils">
 <dt><strong>Note</strong></dt>
-<dd>This is a helper for function for <code class="docutils literal notranslate"><span class="pre">nvm_cmd_rprt</span></code>, as a library user you will most likely not have a use for it</dd>
+<dd>This is a helper for function for the LBD backend, as a library user you will most likely not have a use for it</dd>
 <dt><strong>Return</strong></dt>
-<dd>the log page offset (lpo) for the given addr </dd>
-</dl>
-</p>
-</dd></dl>
-
-</div>
-<div class="section" id="nvm-addr-lpo2gen">
-<h2>nvm_addr_lpo2gen<a class="headerlink" href="#nvm-addr-lpo2gen" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="c.nvm_addr_lpo2gen">
-<span class="target" id="liblightnvm_8h_1a60ed15d8e6d9df3d0f181305dfdab30c"></span>struct <a class="reference internal" href="#c.nvm_addr" title="nvm_addr">nvm_addr</a> <code class="descname">nvm_addr_lpo2gen</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, uint64_t<em>&nbsp;lpo</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_lpo2gen" title="Permalink to this definition">¶</a></dt>
-<dd><p>Inverse function of <code class="docutils literal notranslate"><span class="pre">nvm_addr_gen2lpo</span></code> </p>
-<p><dl class="docutils">
-<dt><strong>Note</strong></dt>
-<dd>This is a helper for function for <code class="docutils literal notranslate"><span class="pre">nvm_cmd_rprt</span></code>, as a library user you will most likely not have a use for it</dd>
-<dt><strong>Return</strong></dt>
-<dd>the page offset (lpo) for the given addr </dd>
+<dd>Address in generic-format </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">dev</span></code>: Device handle obtained with <code class="docutils literal notranslate"><span class="pre">nvm_dev_open</span></code> </li>
+<li><code class="docutils literal notranslate"><span class="pre">off</span></code>: LBD offset </li>
+</ul>
+</dd>
 </dl>
 </p>
 </dd></dl>
@@ -471,7 +473,7 @@
 <h2>nvm_addr_pr<a class="headerlink" href="#nvm-addr-pr" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_addr_pr">
-<span class="target" id="liblightnvm_8h_1afb194f1313ade76a229f299d53425608"></span>void <code class="descname">nvm_addr_pr</code><span class="sig-paren">(</span>const  struct   <a class="reference internal" href="#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addr</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_pr" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1afb194f1313ade76a229f299d53425608"></span>void <code class="descname">nvm_addr_pr</code><span class="sig-paren">(</span>const struct  <a class="reference internal" href="#c.nvm_addr" title="nvm_addr">nvm_addr</a><em>&nbsp;addr</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_pr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prints a hexidecimal representation of the given address value. </p>
 </dd></dl>
 
@@ -480,7 +482,7 @@
 <h2>nvm_addr_prn<a class="headerlink" href="#nvm-addr-prn" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_addr_prn">
-<span class="target" id="liblightnvm_8h_1a1b770e52ad4dedcfb3aa9669250ff21c"></span>void <code class="descname">nvm_addr_prn</code><span class="sig-paren">(</span>const  struct   <a class="reference internal" href="#c.nvm_addr" title="nvm_addr">nvm_addr</a>  *<em>&nbsp;addr</em>, unsigned int<em>&nbsp;naddrs</em>, const  struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_prn" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a1b770e52ad4dedcfb3aa9669250ff21c"></span>void <code class="descname">nvm_addr_prn</code><span class="sig-paren">(</span>const struct  <a class="reference internal" href="#c.nvm_addr" title="nvm_addr">nvm_addr</a>  *<em>&nbsp;addr</em>, unsigned int<em>&nbsp;naddrs</em>, const struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_addr_prn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prints a humanly readable representation of the given list of addresses according to the geometry of the given device (spec 1.2 or 2.0) </p>
 </dd></dl>
 
@@ -529,7 +531,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.4',
+            VERSION:'0.1.5',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

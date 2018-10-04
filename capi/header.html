@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Public Header &mdash; liblightnvm 0.1.4 documentation</title>
+  <title>Public Header &mdash; liblightnvm 0.1.5 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.4
+                0.1.5
               </div>
             
           
@@ -93,8 +93,10 @@
 <li class="toctree-l2"><a class="reference internal" href="nvm_buf.html">nvm_buf - Buffer Allocation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_addr.html">nvm_addr - Addressing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_cmd.html">nvm_cmd - Raw Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_async.html">nvm_async - Asynchronous cmd</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_vblk.html">nvm_vblk - Virtual Block</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_bbt.html">nvm_bbt - Bad-Block-Table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_bp.html">nvm_bp - Boilerplate</a></li>
 <li class="toctree-l2"><a class="reference internal" href="misc.html">Miscellaneous</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Public Header</a></li>
 </ul>
@@ -213,6 +215,7 @@
 <span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp"></span>
 
 <span class="cp">#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;liblightnvm_util.h&gt;</span><span class="cp"></span>
 <span class="cp">#include</span> <span class="cpf">&lt;liblightnvm_spec.h&gt;</span><span class="cp"></span>
 
 <span class="cp">#define NVM_NADDR_MAX 64</span>
@@ -324,9 +327,91 @@
 <span class="p">};</span>
 
 <span class="cm">/**</span>
+<span class="cm"> * Opaque asynchronous context as returned by &#39;nvm_async_init&#39;</span>
+<span class="cm"> *</span>
+<span class="cm"> * @see nvm_async_init</span>
+<span class="cm"> * @see nvm_async_term</span>
+<span class="cm"> *</span>
+<span class="cm"> * @struct nvm_async_ctx</span>
+<span class="cm"> */</span>
+<span class="k">struct</span> <span class="n">nvm_async_ctx</span><span class="p">;</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Forward declaration, see nvm_ret further down</span>
+<span class="cm"> */</span>
+<span class="k">struct</span> <span class="n">nvm_ret</span><span class="p">;</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Signature of function used with asynchronous callbacks.</span>
+<span class="cm"> */</span>
+<span class="k">typedef</span> <span class="nf">void</span> <span class="p">(</span><span class="o">*</span><span class="n">nvm_async_cb</span><span class="p">)(</span><span class="k">struct</span> <span class="n">nvm_ret</span> <span class="o">*</span><span class="n">ret</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">opaque</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * IO ASYNC command context per IO, setup this struct inside nvm_ret per call to</span>
+<span class="cm"> * the nvm_cmd IO functions and set the CMD option NVM_CMD_ASYNC.</span>
+<span class="cm"> *</span>
+<span class="cm"> * @see nvm_async_cb</span>
+<span class="cm"> * @see nvm_async_init</span>
+<span class="cm"> */</span>
+<span class="k">struct</span> <span class="n">nvm_async_cmd_ctx</span> <span class="p">{</span>
+	<span class="k">struct</span> <span class="n">nvm_async_ctx</span> <span class="o">*</span><span class="n">ctx</span><span class="p">;</span>	<span class="c1">///&lt; from nvm_async_init</span>
+	<span class="n">nvm_async_cb</span> <span class="n">cb</span><span class="p">;</span>		<span class="c1">///&lt; User provided callback function</span>
+	<span class="kt">void</span> <span class="o">*</span><span class="n">cb_arg</span><span class="p">;</span>			<span class="c1">///&lt; User provided callback arguments</span>
+<span class="p">};</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Allocate an asynchronous context for command submission of the given depth</span>
+<span class="cm"> * for submission of commands to the given device</span>
+<span class="cm"> *</span>
+<span class="cm"> * @param dev Associated device</span>
+<span class="cm"> * @param depth Maximum iodepth / qdepth, maximum number of outstanding commands</span>
+<span class="cm"> * of the returned context</span>
+<span class="cm"> * @param flags TBD</span>
+<span class="cm"> */</span>
+<span class="k">struct</span> <span class="n">nvm_async_ctx</span> <span class="o">*</span><span class="nf">nvm_async_init</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="kt">uint32_t</span> <span class="n">depth</span><span class="p">,</span>
+				     <span class="kt">uint16_t</span> <span class="n">flags</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Get the I/O depth of the context.</span>
+<span class="cm"> *</span>
+<span class="cm"> * @param ctx Asynchronous context</span>
+<span class="cm"> */</span>
+<span class="kt">uint32_t</span> <span class="nf">nvm_async_get_depth</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_async_ctx</span> <span class="o">*</span><span class="n">ctx</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Get the number of outstanding I/O.</span>
+<span class="cm"> *</span>
+<span class="cm"> * @param ctx Asynchronous context</span>
+<span class="cm"> */</span>
+<span class="kt">uint32_t</span> <span class="nf">nvm_async_get_outstanding</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_async_ctx</span> <span class="o">*</span><span class="n">ctx</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Tear down the given ASYNC context</span>
+<span class="cm"> */</span>
+<span class="kt">int</span> <span class="nf">nvm_async_term</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="k">struct</span> <span class="n">nvm_async_ctx</span> <span class="o">*</span><span class="n">ctx</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Process completions from the given ASYNC context.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Set process &#39;max&#39; to limit number of completions, 0 means no max.</span>
+<span class="cm"> *</span>
+<span class="cm"> * @return On success, number of completions processed, may be 0. On error, -1</span>
+<span class="cm"> * is returned and errno set to indicate the error.</span>
+<span class="cm"> */</span>
+<span class="kt">int</span> <span class="nf">nvm_async_poke</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="k">struct</span> <span class="n">nvm_async_ctx</span> <span class="o">*</span><span class="n">ctx</span><span class="p">,</span> <span class="kt">uint32_t</span> <span class="n">max</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Wait for completion of all outstanding commands in the given &#39;ctx&#39;</span>
+<span class="cm"> *</span>
+<span class="cm"> * @return On success, number of completions processed, may be 0. On error, -1</span>
+<span class="cm"> * is returned and errno set to indicate the error.</span>
+<span class="cm"> */</span>
+<span class="kt">int</span> <span class="nf">nvm_async_wait</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="k">struct</span> <span class="n">nvm_async_ctx</span> <span class="o">*</span><span class="n">ctx</span><span class="p">);</span>
+
+<span class="cm">/**</span>
 <span class="cm"> * Encapsulation and representation of lower-level error conditions</span>
 <span class="cm"> *</span>
-<span class="cm"> * @struct struct nvm_ret</span>
+<span class="cm"> * @struct nvm_ret</span>
 <span class="cm"> */</span>
 <span class="k">struct</span> <span class="n">nvm_ret</span> <span class="p">{</span>
 	<span class="k">union</span> <span class="p">{</span>
@@ -338,6 +423,8 @@
 	<span class="p">}</span> <span class="n">result</span><span class="p">;</span>
 
 	<span class="kt">uint16_t</span> <span class="n">status</span><span class="p">;</span>		<span class="c1">///&lt; NVMe command status</span>
+
+	<span class="k">struct</span> <span class="n">nvm_async_cmd_ctx</span> <span class="n">async</span><span class="p">;</span>	<span class="c1">///&lt; ASYNC command context</span>
 <span class="p">};</span>
 
 <span class="cm">/**</span>
@@ -1143,6 +1230,11 @@
 	<span class="kt">size_t</span> <span class="n">nbytes_meta</span><span class="p">;</span>
 <span class="p">};</span>
 
+<span class="cm">/**</span>
+<span class="cm"> * Prints the given nvm_buf_set</span>
+<span class="cm"> */</span>
+<span class="kt">void</span> <span class="nf">nvm_buf_set_pr</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_buf_set</span> <span class="o">*</span><span class="n">bufs</span><span class="p">);</span>
+
 <span class="k">struct</span> <span class="n">nvm_buf_set</span> <span class="o">*</span><span class="nf">nvm_buf_set_alloc</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">nbytes</span><span class="p">,</span>
 				      <span class="kt">size_t</span> <span class="n">nbytes_meta</span><span class="p">);</span>
 
@@ -1296,6 +1388,16 @@
 <span class="k">struct</span> <span class="n">nvm_vblk</span> <span class="o">*</span><span class="nf">nvm_vblk_alloc_line</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="kt">int</span> <span class="n">ch_bgn</span><span class="p">,</span>
 				     <span class="kt">int</span> <span class="n">ch_end</span><span class="p">,</span> <span class="kt">int</span> <span class="n">lun_bgn</span><span class="p">,</span> <span class="kt">int</span> <span class="n">lun_end</span><span class="p">,</span>
 				     <span class="kt">int</span> <span class="n">blk</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Set the command mode for the virtual block to async.</span>
+<span class="cm"> */</span>
+<span class="kt">int</span> <span class="nf">nvm_vblk_set_async</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_vblk</span> <span class="o">*</span><span class="n">vblk</span><span class="p">,</span> <span class="kt">uint32_t</span> <span class="n">depth</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Set the command mode for the virtual block to scalar.</span>
+<span class="cm"> */</span>
+<span class="kt">int</span> <span class="nf">nvm_vblk_set_scalar</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_vblk</span> <span class="o">*</span><span class="n">vblk</span><span class="p">);</span>
 
 <span class="cm">/**</span>
 <span class="cm"> * Destroy a virtual block</span>
@@ -1458,6 +1560,40 @@
 <span class="cm"> */</span>
 <span class="kt">void</span> <span class="nf">nvm_vblk_pr</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_vblk</span> <span class="o">*</span><span class="n">vblk</span><span class="p">);</span>
 
+<span class="cm">/**</span>
+<span class="cm"> * Boilerplate for working with the API</span>
+<span class="cm"> *</span>
+<span class="cm"> * Encapsulated in a struct such that example code can focus on the interesting</span>
+<span class="cm"> * parts and the usual boiler-plate code needed to get things going.</span>
+<span class="cm"> */</span>
+<span class="k">struct</span> <span class="n">nvm_bp</span> <span class="p">{</span>
+	<span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">;</span>
+	<span class="k">const</span> <span class="k">struct</span> <span class="n">nvm_geo</span> <span class="o">*</span><span class="n">geo</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">nvm_buf_set</span> <span class="o">*</span><span class="n">bufs</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">nvm_vblk</span> <span class="o">*</span><span class="n">vblk</span><span class="p">;</span>
+	<span class="kt">size_t</span> <span class="n">ws_opt</span><span class="p">;</span>
+	<span class="kt">size_t</span> <span class="n">naddrs</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">nvm_addr</span> <span class="n">addrs</span><span class="p">[];</span>
+<span class="p">};</span>
+
+<span class="kt">void</span> <span class="nf">nvm_bp_pr</span><span class="p">(</span><span class="k">const</span> <span class="k">struct</span> <span class="n">nvm_bp</span> <span class="o">*</span><span class="n">bp</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Use argv as &#39;nvm_bp_init(argv[1], argv[2], argv[3])&#39;</span>
+<span class="cm"> *</span>
+<span class="cm"> * @returns On success, a initialized boiler-plate</span>
+<span class="cm"> */</span>
+<span class="k">struct</span> <span class="n">nvm_bp</span> <span class="o">*</span><span class="nf">nvm_bp_init_from_args</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">argv</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * argv[3]: naddrs</span>
+<span class="cm"> * argv[2]: Backend Identifier as hex, eg. NVM_BE_IOCTL(0x1), NVM_BE_SPDK(0x4)</span>
+<span class="cm"> * argv[1]: Device identifier, eg. &quot;/dev/nvme0n1&quot; or &quot;traddrs:0000:00:01.0&quot;</span>
+<span class="cm"> */</span>
+<span class="k">struct</span> <span class="n">nvm_bp</span> <span class="o">*</span><span class="nf">nvm_bp_init</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">dev_ident</span><span class="p">,</span> <span class="kt">int</span> <span class="n">flags</span><span class="p">,</span> <span class="kt">int</span> <span class="n">naddrs</span><span class="p">);</span>
+
+<span class="kt">void</span> <span class="nf">nvm_bp_term</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_bp</span> <span class="o">*</span><span class="n">bp</span><span class="p">);</span>
+
 <span class="cp">#ifdef __cplusplus</span>
 <span class="p">}</span>
 <span class="cp">#endif</span>
@@ -1509,7 +1645,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.4',
+            VERSION:'0.1.5',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

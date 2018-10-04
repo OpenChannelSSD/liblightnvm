@@ -69,3 +69,8 @@ nvm_buf_pr
 
 .. doxygenfunction:: nvm_buf_pr
 
+nvm_buf_set_pr
+--------------
+
+.. doxygenfunction:: nvm_buf_set_pr
+

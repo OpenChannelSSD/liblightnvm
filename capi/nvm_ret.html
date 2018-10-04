@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nvm_ret &mdash; liblightnvm 0.1.4 documentation</title>
+  <title>nvm_ret &mdash; liblightnvm 0.1.5 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.4
+                0.1.5
               </div>
             
           
@@ -93,8 +93,10 @@
 <li class="toctree-l2"><a class="reference internal" href="nvm_buf.html">nvm_buf - Buffer Allocation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_addr.html">nvm_addr - Addressing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_cmd.html">nvm_cmd - Raw Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_async.html">nvm_async - Asynchronous cmd</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_vblk.html">nvm_vblk - Virtual Block</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_bbt.html">nvm_bbt - Bad-Block-Table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_bp.html">nvm_bp - Boilerplate</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="misc.html">Miscellaneous</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="nvm_be.html">nvm_be</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">nvm_ret</a><ul>
@@ -191,7 +193,8 @@
 <dl class="struct">
 <dt id="c.nvm_ret">
 <span class="target" id="structnvm__ret"></span><em class="property">struct </em><code class="descname">nvm_ret</code><a class="headerlink" href="#c.nvm_ret" title="Permalink to this definition">¶</a></dt>
-<dd><div class="breathe-sectiondef docutils container">
+<dd><p>Encapsulation and representation of lower-level error conditions. </p>
+<div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Members</p>
 <dl class="variable">
 <dt id="c.nvm_ret::cs">
@@ -222,6 +225,12 @@
 <dd><p>NVMe command status. </p>
 </dd></dl>
 
+<dl class="variable">
+<dt id="c.nvm_ret::async">
+<span class="target" id="structnvm__ret_1a4c49b1696521144142369744c179c77a"></span>struct <a class="reference internal" href="nvm_async.html#c.nvm_async_cmd_ctx" title="nvm_async_cmd_ctx">nvm_async_cmd_ctx</a> <code class="descname">async</code><a class="headerlink" href="#c.nvm_ret::async" title="Permalink to this definition">¶</a></dt>
+<dd><p>ASYNC command context. </p>
+</dd></dl>
+
 </div>
 </dd></dl>
 
@@ -230,7 +239,7 @@
 <h2>nvm_ret_pr<a class="headerlink" href="#nvm-ret-pr" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_ret_pr">
-<span class="target" id="liblightnvm_8h_1a6e2c1c4c000426c56906dee5d06a619f"></span>void <code class="descname">nvm_ret_pr</code><span class="sig-paren">(</span>const  struct   <a class="reference internal" href="#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_ret_pr" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a6e2c1c4c000426c56906dee5d06a619f"></span>void <code class="descname">nvm_ret_pr</code><span class="sig-paren">(</span>const struct  <a class="reference internal" href="#c.nvm_ret" title="nvm_ret">nvm_ret</a>  *<em>&nbsp;ret</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_ret_pr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prints a humanly readable representation the given <code class="docutils literal notranslate"><span class="pre">struct</span> <a class="reference internal" href="#structnvm__ret"><span class="std std-ref"><span class="pre">nvm_ret</span></span></a></code> </p>
 <p><dl class="docutils">
 <dt><strong>Parameters</strong></dt>
@@ -287,7 +296,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.4',
+            VERSION:'0.1.5',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nvm_addr &mdash; liblightnvm 0.1.4 documentation</title>
+  <title>nvm_addr &mdash; liblightnvm 0.1.5 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.4
+                0.1.5
               </div>
             
           
@@ -175,7 +175,7 @@
             
   <div class="section" id="nvm-addr">
 <span id="sec-cli-nvm-addr"></span><h1>nvm_addr<a class="headerlink" href="#nvm-addr" title="Permalink to this headline">¶</a></h1>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>NVM address <span class="o">(</span>nvm_addr_*<span class="o">)</span> -- Ver <span class="o">{</span> major<span class="o">(</span><span class="m">0</span><span class="o">)</span>, minor<span class="o">(</span><span class="m">1</span><span class="o">)</span>, patch<span class="o">(</span><span class="m">4</span><span class="o">)</span> <span class="o">}</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>NVM address <span class="o">(</span>nvm_addr_*<span class="o">)</span> -- Ver <span class="o">{</span> major<span class="o">(</span><span class="m">0</span><span class="o">)</span>, minor<span class="o">(</span><span class="m">1</span><span class="o">)</span>, patch<span class="o">(</span><span class="m">5</span><span class="o">)</span> <span class="o">}</span>
 
 Construct and convert addresses
 
@@ -188,6 +188,8 @@ Usage:
  nvm_addr      off2gen dev_path val <span class="o">[</span>val...<span class="o">]</span> <span class="o">[</span>-h<span class="o">]</span> <span class="o">[</span>-v<span class="o">]</span> <span class="o">[</span>-t<span class="o">]</span>
  nvm_addr      gen2lpo dev_path 0xADDR <span class="o">[</span>0xADDR...<span class="o">]</span> <span class="o">[</span>-h<span class="o">]</span> <span class="o">[</span>-v<span class="o">]</span> <span class="o">[</span>-t<span class="o">]</span>
  nvm_addr      lpo2gen dev_path val <span class="o">[</span>val...<span class="o">]</span> <span class="o">[</span>-h<span class="o">]</span> <span class="o">[</span>-v<span class="o">]</span> <span class="o">[</span>-t<span class="o">]</span>
+ nvm_addr   gen_as_geo dev_path 0xADDR <span class="o">[</span>0xADDR...<span class="o">]</span> <span class="o">[</span>-h<span class="o">]</span> <span class="o">[</span>-v<span class="o">]</span>
+ nvm_addr   dev_as_geo dev_path 0xVAL <span class="o">[</span>0xVAL...<span class="o">]</span> <span class="o">[</span>-h<span class="o">]</span> <span class="o">[</span>-v<span class="o">]</span>
 
 Options:
  -h       Print usage
@@ -248,10 +250,11 @@ in generic format:</p>
   nmbytes: <span class="m">24</span>
   pos_write: <span class="m">0</span>
   pos_read: <span class="m">0</span>
+  flags: 0x08c8
 naddrs: <span class="m">1</span>
 addrs:
   - <span class="o">{</span>val: 0x0000000300000004, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0003</span>, sectr: <span class="m">0004</span><span class="o">}</span>
-nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0049, mb: <span class="m">24</span>.00, mbsec: <span class="m">4900</span>.59<span class="o">}</span>
+nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0054, mb: <span class="m">24</span>.00, mbsec: <span class="m">4483</span>.72<span class="o">}</span>
 </pre></div>
 </div>
 </div>
@@ -300,7 +303,7 @@ nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0049, 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.4',
+            VERSION:'0.1.5',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

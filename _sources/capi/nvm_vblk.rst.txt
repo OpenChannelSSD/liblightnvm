@@ -94,6 +94,11 @@ nvm_vblk_get_pos_write
 
 .. doxygenfunction:: nvm_vblk_get_pos_write
 
+nvm_vblk_set_async
+------------------
+
+.. doxygenfunction:: nvm_vblk_set_async
+
 nvm_vblk_set_pos_read
 ---------------------
 
@@ -103,4 +108,9 @@ nvm_vblk_set_pos_write
 ----------------------
 
 .. doxygenfunction:: nvm_vblk_set_pos_write
+
+nvm_vblk_set_scalar
+-------------------
+
+.. doxygenfunction:: nvm_vblk_set_scalar
 

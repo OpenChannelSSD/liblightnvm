@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; liblightnvm 0.1.4 documentation</title>
+  <title>Index &mdash; liblightnvm 0.1.5 documentation</title>
   
 
   
@@ -57,7 +57,7 @@
             
             
               <div class="version">
-                0.1.4
+                0.1.5
               </div>
             
           
@@ -184,6 +184,18 @@
 </li>
       <li><a href="capi/nvm_addr.html#c.nvm_addr_prn">nvm_addr_prn (C function)</a>
 </li>
+      <li><a href="capi/nvm_async.html#c.nvm_async_get_depth">nvm_async_get_depth (C function)</a>
+</li>
+      <li><a href="capi/nvm_async.html#c.nvm_async_get_outstanding">nvm_async_get_outstanding (C function)</a>
+</li>
+      <li><a href="capi/nvm_async.html#c.nvm_async_init">nvm_async_init (C function)</a>
+</li>
+      <li><a href="capi/nvm_async.html#c.nvm_async_poke">nvm_async_poke (C function)</a>
+</li>
+      <li><a href="capi/nvm_async.html#c.nvm_async_term">nvm_async_term (C function)</a>
+</li>
+      <li><a href="capi/nvm_async.html#c.nvm_async_wait">nvm_async_wait (C function)</a>
+</li>
       <li><a href="capi/nvm_bbt.html#c.nvm_bbt_alloc_cp">nvm_bbt_alloc_cp (C function)</a>
 </li>
       <li><a href="capi/nvm_bbt.html#c.nvm_bbt_flush">nvm_bbt_flush (C function)</a>
@@ -203,6 +215,14 @@
       <li><a href="capi/nvm_bbt.html#c.nvm_bbt_state_pr">nvm_bbt_state_pr (C function)</a>
 </li>
       <li><a href="capi/nvm_bounds.html#c.nvm_bounds_pr">nvm_bounds_pr (C function)</a>
+</li>
+      <li><a href="capi/nvm_bp.html#c.nvm_bp_init">nvm_bp_init (C function)</a>
+</li>
+      <li><a href="capi/nvm_bp.html#c.nvm_bp_init_from_args">nvm_bp_init_from_args (C function)</a>
+</li>
+      <li><a href="capi/nvm_bp.html#c.nvm_bp_pr">nvm_bp_pr (C function)</a>
+</li>
+      <li><a href="capi/nvm_bp.html#c.nvm_bp_term">nvm_bp_term (C function)</a>
 </li>
       <li><a href="capi/nvm_buf.html#c.nvm_buf_alloc">nvm_buf_alloc (C function)</a>
 </li>
@@ -225,6 +245,8 @@
       <li><a href="capi/nvm_buf.html#c.nvm_buf_set_fill">nvm_buf_set_fill (C function)</a>
 </li>
       <li><a href="capi/nvm_buf.html#c.nvm_buf_set_free">nvm_buf_set_free (C function)</a>
+</li>
+      <li><a href="capi/nvm_buf.html#c.nvm_buf_set_pr">nvm_buf_set_pr (C function)</a>
 </li>
       <li><a href="capi/nvm_buf.html#c.nvm_buf_to_file">nvm_buf_to_file (C function)</a>
 </li>
@@ -256,6 +278,8 @@
 </li>
       <li><a href="capi/nvm_dev.html#c.nvm_dev_close">nvm_dev_close (C function)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="capi/nvm_dev.html#c.nvm_dev_get_bbts_cached">nvm_dev_get_bbts_cached (C function)</a>
 </li>
       <li><a href="capi/nvm_dev.html#c.nvm_dev_get_be_id">nvm_dev_get_be_id (C function)</a>
@@ -266,8 +290,6 @@
 </li>
       <li><a href="capi/nvm_dev.html#c.nvm_dev_get_geo">nvm_dev_get_geo (C function)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="capi/nvm_dev.html#c.nvm_dev_get_lbaf">nvm_dev_get_lbaf (C function)</a>
 </li>
       <li><a href="capi/nvm_dev.html#c.nvm_dev_get_mccap">nvm_dev_get_mccap (C function)</a>
@@ -358,9 +380,13 @@
 </li>
       <li><a href="capi/nvm_vblk.html#c.nvm_vblk_read">nvm_vblk_read (C function)</a>
 </li>
+      <li><a href="capi/nvm_vblk.html#c.nvm_vblk_set_async">nvm_vblk_set_async (C function)</a>
+</li>
       <li><a href="capi/nvm_vblk.html#c.nvm_vblk_set_pos_read">nvm_vblk_set_pos_read (C function)</a>
 </li>
       <li><a href="capi/nvm_vblk.html#c.nvm_vblk_set_pos_write">nvm_vblk_set_pos_write (C function)</a>
+</li>
+      <li><a href="capi/nvm_vblk.html#c.nvm_vblk_set_scalar">nvm_vblk_set_scalar (C function)</a>
 </li>
       <li><a href="capi/nvm_vblk.html#c.nvm_vblk_write">nvm_vblk_write (C function)</a>
 </li>
@@ -409,7 +435,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.1.4',
+            VERSION:'0.1.5',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

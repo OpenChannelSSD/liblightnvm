@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nvm_buf - Buffer Allocation &mdash; liblightnvm 0.1.4 documentation</title>
+  <title>nvm_buf - Buffer Allocation &mdash; liblightnvm 0.1.5 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.4
+                0.1.5
               </div>
             
           
@@ -104,12 +104,15 @@
 <li class="toctree-l3"><a class="reference internal" href="#nvm-buf-set-free">nvm_buf_set_free</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-buf-diff-pr">nvm_buf_diff_pr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-buf-pr">nvm_buf_pr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-buf-set-pr">nvm_buf_set_pr</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_addr.html">nvm_addr - Addressing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_cmd.html">nvm_cmd - Raw Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_async.html">nvm_async - Asynchronous cmd</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_vblk.html">nvm_vblk - Virtual Block</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_bbt.html">nvm_bbt - Bad-Block-Table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_bp.html">nvm_bp - Boilerplate</a></li>
 <li class="toctree-l2"><a class="reference internal" href="misc.html">Miscellaneous</a></li>
 <li class="toctree-l2"><a class="reference internal" href="header.html">Public Header</a></li>
 </ul>
@@ -281,7 +284,7 @@
 <h2>nvm_buf_alloc<a class="headerlink" href="#nvm-buf-alloc" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_buf_alloc">
-<span class="target" id="liblightnvm_8h_1afc8ae47b17cfb871ea0abd60de7f521a"></span>void* <code class="descname">nvm_buf_alloc</code><span class="sig-paren">(</span>const  struct   <a class="reference internal" href="nvm_geo.html#c.nvm_geo" title="nvm_geo">nvm_geo</a>  *<em>&nbsp;geo</em>, size_t<em>&nbsp;nbytes</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_buf_alloc" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1afc8ae47b17cfb871ea0abd60de7f521a"></span>void* <code class="descname">nvm_buf_alloc</code><span class="sig-paren">(</span>const struct  <a class="reference internal" href="nvm_geo.html#c.nvm_geo" title="nvm_geo">nvm_geo</a>  *<em>&nbsp;geo</em>, size_t<em>&nbsp;nbytes</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_buf_alloc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allocate a buffer aligned to match the given geometry. </p>
 <p><dl class="docutils">
 <dt><strong>Note</strong></dt>
@@ -327,7 +330,7 @@
 <h2>nvm_buf_set_alloc<a class="headerlink" href="#nvm-buf-set-alloc" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_buf_set_alloc">
-<span class="target" id="liblightnvm_8h_1a5d0536d21cdde9c53dd7b02692d57af0"></span>struct <a class="reference internal" href="#c.nvm_buf_set" title="nvm_buf_set">nvm_buf_set</a>* <code class="descname">nvm_buf_set_alloc</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, size_t<em>&nbsp;nbytes</em>, size_t<em>&nbsp;nbytes_meta</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_buf_set_alloc" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a5d0536d21cdde9c53dd7b02692d57af0"></span>struct <a class="reference internal" href="#c.nvm_buf_set" title="nvm_buf_set">nvm_buf_set</a>* <code class="descname">nvm_buf_set_alloc</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, size_t<em>&nbsp;nbytes</em>, size_t<em>&nbsp;nbytes_meta</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_buf_set_alloc" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -353,7 +356,7 @@
 <h2>nvm_buf_set_fill<a class="headerlink" href="#nvm-buf-set-fill" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_buf_set_fill">
-<span class="target" id="liblightnvm_8h_1aa7a0e282ad2604305c7e3bc67903d12b"></span>void <code class="descname">nvm_buf_set_fill</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_buf_set" title="nvm_buf_set">nvm_buf_set</a>  *<em>&nbsp;bufs</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_buf_set_fill" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1aa7a0e282ad2604305c7e3bc67903d12b"></span>void <code class="descname">nvm_buf_set_fill</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_buf_set" title="nvm_buf_set">nvm_buf_set</a>  *<em>&nbsp;bufs</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_buf_set_fill" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -378,7 +381,7 @@
 <h2>nvm_buf_set_free<a class="headerlink" href="#nvm-buf-set-free" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_buf_set_free">
-<span class="target" id="liblightnvm_8h_1a3880a585fc9920c7ed7b488116212185"></span>void <code class="descname">nvm_buf_set_free</code><span class="sig-paren">(</span>struct   <a class="reference internal" href="#c.nvm_buf_set" title="nvm_buf_set">nvm_buf_set</a>  *<em>&nbsp;bufs</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_buf_set_free" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="liblightnvm_8h_1a3880a585fc9920c7ed7b488116212185"></span>void <code class="descname">nvm_buf_set_free</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_buf_set" title="nvm_buf_set">nvm_buf_set</a>  *<em>&nbsp;bufs</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_buf_set_free" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -406,6 +409,15 @@
 </dd>
 </dl>
 </p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-buf-set-pr">
+<h2>nvm_buf_set_pr<a class="headerlink" href="#nvm-buf-set-pr" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_buf_set_pr">
+<span class="target" id="liblightnvm_8h_1aa1528414aed63d85c92ec46729d8ead8"></span>void <code class="descname">nvm_buf_set_pr</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_buf_set" title="nvm_buf_set">nvm_buf_set</a>  *<em>&nbsp;bufs</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_buf_set_pr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints the given <a class="reference internal" href="#structnvm__buf__set"><span class="std std-ref">nvm_buf_set</span></a>. </p>
 </dd></dl>
 
 </div>
@@ -453,7 +465,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.4',
+            VERSION:'0.1.5',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

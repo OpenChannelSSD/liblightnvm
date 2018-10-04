@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nvm_vblk &mdash; liblightnvm 0.1.4 documentation</title>
+  <title>nvm_vblk &mdash; liblightnvm 0.1.5 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.4
+                0.1.5
               </div>
             
           
@@ -187,7 +187,7 @@
             
   <div class="section" id="nvm-vblk">
 <span id="sec-cli-vblk"></span><h1>nvm_vblk<a class="headerlink" href="#nvm-vblk" title="Permalink to this headline">¶</a></h1>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>NVM Virtual Block (nvm_vblk_*) -- Ver { major(0), minor(1), patch(4) }
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>NVM Virtual Block (nvm_vblk_*) -- Ver { major(0), minor(1), patch(5) }
 
 Erase, write, and read virtual blocks
 
@@ -258,10 +258,11 @@ addrs:
   nmbytes: <span class="m">24</span>
   pos_write: <span class="m">0</span>
   pos_read: <span class="m">0</span>
+  flags: 0x08c8
 naddrs: <span class="m">1</span>
 addrs:
   - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
-nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0049, mb: <span class="m">24</span>.00, mbsec: <span class="m">4869</span>.68<span class="o">}</span>
+nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0050, mb: <span class="m">24</span>.00, mbsec: <span class="m">4795</span>.30<span class="o">}</span>
 </pre></div>
 </div>
 </div>
@@ -276,12 +277,13 @@ nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0049, 
   nmbytes: <span class="m">24</span>
   pos_write: <span class="m">0</span>
   pos_read: <span class="m">0</span>
+  flags: 0x08c8
 naddrs: <span class="m">1</span>
 addrs:
   - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
-nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000017<span class="o">}</span>
-nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.018428<span class="o">}</span>
-nvm_vblk_write: <span class="o">{</span>elapsed: <span class="m">0</span>.8362, mb: <span class="m">24</span>.00, mbsec: <span class="m">28</span>.70<span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000004<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.023793<span class="o">}</span>
+nvm_vblk_write: <span class="o">{</span>elapsed: <span class="m">0</span>.8323, mb: <span class="m">24</span>.00, mbsec: <span class="m">28</span>.84<span class="o">}</span>
 </pre></div>
 </div>
 </div>
@@ -296,12 +298,13 @@ nvm_vblk_write: <span class="o">{</span>elapsed: <span class="m">0</span>.8362, 
   nmbytes: <span class="m">24</span>
   pos_write: <span class="m">0</span>
   pos_read: <span class="m">0</span>
+  flags: 0x08c8
 naddrs: <span class="m">1</span>
 addrs:
   - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
-nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000018<span class="o">}</span>
-nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.015288<span class="o">}</span>
-nvm_vblk_read: <span class="o">{</span>elapsed: <span class="m">0</span>.1991, mb: <span class="m">24</span>.00, mbsec: <span class="m">120</span>.51<span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000017<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.015120<span class="o">}</span>
+nvm_vblk_read: <span class="o">{</span>elapsed: <span class="m">0</span>.1971, mb: <span class="m">24</span>.00, mbsec: <span class="m">121</span>.79<span class="o">}</span>
 </pre></div>
 </div>
 </div>
@@ -327,13 +330,14 @@ E.g. construct a virtual block spanning the physical blocks:</p>
   nmbytes: <span class="m">96</span>
   pos_write: <span class="m">0</span>
   pos_read: <span class="m">0</span>
+  flags: 0x08c8
 naddrs: <span class="m">4</span>
 addrs:
   - <span class="o">{</span>val: 0x0000008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
   - <span class="o">{</span>val: 0x0100008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
   - <span class="o">{</span>val: 0x0200008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
   - <span class="o">{</span>val: 0x0300008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
-nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0050, mb: <span class="m">96</span>.00, mbsec: <span class="m">19140</span>.97<span class="o">}</span>
+nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0051, mb: <span class="m">96</span>.00, mbsec: <span class="m">18757</span>.74<span class="o">}</span>
 </pre></div>
 </div>
 </div>
@@ -348,15 +352,16 @@ nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0050, 
   nmbytes: <span class="m">96</span>
   pos_write: <span class="m">0</span>
   pos_read: <span class="m">0</span>
+  flags: 0x08c8
 naddrs: <span class="m">4</span>
 addrs:
   - <span class="o">{</span>val: 0x0000008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
   - <span class="o">{</span>val: 0x0100008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
   - <span class="o">{</span>val: 0x0200008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
   - <span class="o">{</span>val: 0x0300008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
-nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000009<span class="o">}</span>
-nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.057175<span class="o">}</span>
-nvm_vblk_write: <span class="o">{</span>elapsed: <span class="m">0</span>.8395, mb: <span class="m">96</span>.00, mbsec: <span class="m">114</span>.36<span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000011<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.062939<span class="o">}</span>
+nvm_vblk_write: <span class="o">{</span>elapsed: <span class="m">0</span>.8687, mb: <span class="m">96</span>.00, mbsec: <span class="m">110</span>.52<span class="o">}</span>
 </pre></div>
 </div>
 </div>
@@ -371,15 +376,16 @@ nvm_vblk_write: <span class="o">{</span>elapsed: <span class="m">0</span>.8395, 
   nmbytes: <span class="m">96</span>
   pos_write: <span class="m">0</span>
   pos_read: <span class="m">0</span>
+  flags: 0x08c8
 naddrs: <span class="m">4</span>
 addrs:
   - <span class="o">{</span>val: 0x0000008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
   - <span class="o">{</span>val: 0x0100008e00000000, pugrp: <span class="m">01</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
   - <span class="o">{</span>val: 0x0200008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
   - <span class="o">{</span>val: 0x0300008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
-nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000017<span class="o">}</span>
-nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.047017<span class="o">}</span>
-nvm_vblk_read: <span class="o">{</span>elapsed: <span class="m">0</span>.1775, mb: <span class="m">96</span>.00, mbsec: <span class="m">540</span>.81<span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000018<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.047538<span class="o">}</span>
+nvm_vblk_read: <span class="o">{</span>elapsed: <span class="m">0</span>.1788, mb: <span class="m">96</span>.00, mbsec: <span class="m">536</span>.84<span class="o">}</span>
 </pre></div>
 </div>
 </div>
@@ -399,6 +405,7 @@ LUN[0,3]. That is, Block ten in the first four LUNs of channel 0.</p>
   nmbytes: <span class="m">360</span>
   pos_write: <span class="m">0</span>
   pos_read: <span class="m">0</span>
+  flags: 0x08c8
 naddrs: <span class="m">15</span>
 addrs:
   - <span class="o">{</span>val: 0x0000008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
@@ -416,7 +423,7 @@ addrs:
   - <span class="o">{</span>val: 0x0202008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
   - <span class="o">{</span>val: 0x0302008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
   - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
-nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0051, mb: <span class="m">360</span>.00, mbsec: <span class="m">70375</span>.70<span class="o">}</span>
+nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0052, mb: <span class="m">360</span>.00, mbsec: <span class="m">69453</span>.86<span class="o">}</span>
 </pre></div>
 </div>
 </div>
@@ -431,6 +438,7 @@ nvm_vblk_erase: <span class="o">{</span>elapsed: <span class="m">0</span>.0051, 
   nmbytes: <span class="m">360</span>
   pos_write: <span class="m">0</span>
   pos_read: <span class="m">0</span>
+  flags: 0x08c8
 naddrs: <span class="m">15</span>
 addrs:
   - <span class="o">{</span>val: 0x0000008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
@@ -448,9 +456,9 @@ addrs:
   - <span class="o">{</span>val: 0x0202008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
   - <span class="o">{</span>val: 0x0302008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
   - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
-nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000019<span class="o">}</span>
-nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.196533<span class="o">}</span>
-nvm_vblk_write: <span class="o">{</span>elapsed: <span class="m">0</span>.8601, mb: <span class="m">360</span>.00, mbsec: <span class="m">418</span>.55<span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000015<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.200353<span class="o">}</span>
+nvm_vblk_write: <span class="o">{</span>elapsed: <span class="m">0</span>.8798, mb: <span class="m">360</span>.00, mbsec: <span class="m">409</span>.19<span class="o">}</span>
 </pre></div>
 </div>
 </div>
@@ -465,6 +473,7 @@ nvm_vblk_write: <span class="o">{</span>elapsed: <span class="m">0</span>.8601, 
   nmbytes: <span class="m">360</span>
   pos_write: <span class="m">0</span>
   pos_read: <span class="m">0</span>
+  flags: 0x08c8
 naddrs: <span class="m">15</span>
 addrs:
   - <span class="o">{</span>val: 0x0000008e00000000, pugrp: <span class="m">00</span>, punit: <span class="m">00</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
@@ -482,9 +491,9 @@ addrs:
   - <span class="o">{</span>val: 0x0202008e00000000, pugrp: <span class="m">02</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
   - <span class="o">{</span>val: 0x0302008e00000000, pugrp: <span class="m">03</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
   - <span class="o">{</span>val: 0x0402008e00000000, pugrp: <span class="m">04</span>, punit: <span class="m">02</span>, chunk: <span class="m">0142</span>, sectr: <span class="m">0000</span><span class="o">}</span>
-nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000004<span class="o">}</span>
-nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.160396<span class="o">}</span>
-nvm_vblk_read: <span class="o">{</span>elapsed: <span class="m">0</span>.2648, mb: <span class="m">360</span>.00, mbsec: <span class="m">1359</span>.34<span class="o">}</span>
+nvm_buf_alloc: <span class="o">{</span>elapsed: <span class="m">0</span>.000008<span class="o">}</span>
+nvm_buf_fill: <span class="o">{</span>elapsed: <span class="m">0</span>.162975<span class="o">}</span>
+nvm_vblk_read: <span class="o">{</span>elapsed: <span class="m">0</span>.2652, mb: <span class="m">360</span>.00, mbsec: <span class="m">1357</span>.63<span class="o">}</span>
 </pre></div>
 </div>
 </div>
@@ -533,7 +542,7 @@ nvm_vblk_read: <span class="o">{</span>elapsed: <span class="m">0</span>.2648, m
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.4',
+            VERSION:'0.1.5',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

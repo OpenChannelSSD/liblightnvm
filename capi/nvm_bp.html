@@ -1,0 +1,337 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>nvm_bp - Boilerplate &mdash; liblightnvm 0.1.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Miscellaneous" href="misc.html" />
+    <link rel="prev" title="nvm_bbt - Bad-Block-Table" href="nvm_bbt.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> liblightnvm
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prereqs/index.html">Prerequisites</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../background/index.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli/index.html">Command-Line Interface</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">C API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="nvm_dev.html">nvm_dev - Device Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_geo.html">nvm_geo - Geometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_buf.html">nvm_buf - Buffer Allocation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_addr.html">nvm_addr - Addressing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_cmd.html">nvm_cmd - Raw Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_async.html">nvm_async - Asynchronous cmd</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_vblk.html">nvm_vblk - Virtual Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_bbt.html">nvm_bbt - Bad-Block-Table</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">nvm_bp - Boilerplate</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-bp">nvm_bp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-bp-pr">nvm_bp_pr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-bp-term">nvm_bp_term</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-bp-init">nvm_bp_init</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-bp-init-from-args">nvm_bp_init_from_args</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="misc.html">Miscellaneous</a></li>
+<li class="toctree-l2"><a class="reference internal" href="header.html">Public Header</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../backends/index.html">Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../refs/index.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">liblightnvm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">C API</a> &raquo;</li>
+        
+      <li>nvm_bp - Boilerplate</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/capi/nvm_bp.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="nvm-bp-boilerplate">
+<span id="sec-capi-nvm-bp"></span><h1>nvm_bp - Boilerplate<a class="headerlink" href="#nvm-bp-boilerplate" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="nvm-bp">
+<h2>nvm_bp<a class="headerlink" href="#nvm-bp" title="Permalink to this headline">¶</a></h2>
+<dl class="struct">
+<dt id="c.nvm_bp">
+<span class="target" id="structnvm__bp"></span><em class="property">struct </em><code class="descname">nvm_bp</code><a class="headerlink" href="#c.nvm_bp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boilerplate for working with the API. </p>
+<p>Encapsulated in a struct such that example code can focus on the interesting parts and the usual boiler-plate code needed to get things going. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Members</p>
+<dl class="variable">
+<dt id="c.nvm_bp::dev">
+<span class="target" id="structnvm__bp_1a5785cd6b65e394919314f3a56813821a"></span>struct <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>* <code class="descname">dev</code><a class="headerlink" href="#c.nvm_bp::dev" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_bp::geo">
+<span class="target" id="structnvm__bp_1aebadf8c5b3a49eeceb2f55d2434d9ce7"></span>const struct <a class="reference internal" href="nvm_geo.html#c.nvm_geo" title="nvm_geo">nvm_geo</a>* <code class="descname">geo</code><a class="headerlink" href="#c.nvm_bp::geo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_bp::bufs">
+<span class="target" id="structnvm__bp_1a3a30405a8cd4eb50640b8fd22462aa00"></span>struct <a class="reference internal" href="nvm_buf.html#c.nvm_buf_set" title="nvm_buf_set">nvm_buf_set</a>* <code class="descname">bufs</code><a class="headerlink" href="#c.nvm_bp::bufs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_bp::vblk">
+<span class="target" id="structnvm__bp_1ad2e25da3218e24c3cbb1395feb686e0b"></span>struct <a class="reference internal" href="nvm_vblk.html#c.nvm_vblk" title="nvm_vblk">nvm_vblk</a>* <code class="descname">vblk</code><a class="headerlink" href="#c.nvm_bp::vblk" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_bp::ws_opt">
+<span class="target" id="structnvm__bp_1ac2cb63ed2aa144ac5b2f55824bd7a622"></span>size_t <code class="descname">ws_opt</code><a class="headerlink" href="#c.nvm_bp::ws_opt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="variable">
+<dt id="c.nvm_bp::naddrs">
+<span class="target" id="structnvm__bp_1a67aa762353c6cb015500a0ec9959d561"></span>size_t <code class="descname">naddrs</code><a class="headerlink" href="#c.nvm_bp::naddrs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="variable">
+<dt>
+<span class="target" id="structnvm__bp_1a93d88bb3fd9c3853f090761095178d39"></span><code class="descname">struct nvm_addr nvm_bp::addrs[]</code></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-bp-pr">
+<h2>nvm_bp_pr<a class="headerlink" href="#nvm-bp-pr" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_bp_pr">
+<span class="target" id="liblightnvm_8h_1a361e161127834ea8c855d882c26f1fec"></span>void <code class="descname">nvm_bp_pr</code><span class="sig-paren">(</span>const struct  <a class="reference internal" href="#c.nvm_bp" title="nvm_bp">nvm_bp</a>  *<em>&nbsp;bp</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bp_pr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="nvm-bp-term">
+<h2>nvm_bp_term<a class="headerlink" href="#nvm-bp-term" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_bp_term">
+<span class="target" id="liblightnvm_8h_1aab6327a125d54ecd4e9741f5d5147894"></span>void <code class="descname">nvm_bp_term</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_bp" title="nvm_bp">nvm_bp</a>  *<em>&nbsp;bp</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bp_term" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="nvm-bp-init">
+<h2>nvm_bp_init<a class="headerlink" href="#nvm-bp-init" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_bp_init">
+<span class="target" id="liblightnvm_8h_1a67b68cd0e80244b7e0063005398bc746"></span>struct <a class="reference internal" href="#c.nvm_bp" title="nvm_bp">nvm_bp</a>* <code class="descname">nvm_bp_init</code><span class="sig-paren">(</span>const char *<em>&nbsp;dev_ident</em>, int<em>&nbsp;flags</em>, int<em>&nbsp;naddrs</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bp_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>argv[3]: naddrs argv[2]: Backend Identifier as hex, eg. </p>
+<p>NVM_BE_IOCTL(0x1), NVM_BE_SPDK(0x4) argv[1]: Device identifier, eg. “/dev/nvme0n1” or “traddrs:0000:00:01.0” </p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-bp-init-from-args">
+<h2>nvm_bp_init_from_args<a class="headerlink" href="#nvm-bp-init-from-args" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_bp_init_from_args">
+<span class="target" id="liblightnvm_8h_1ab59eb61308412532a862696ddcabfa52"></span>struct <a class="reference internal" href="#c.nvm_bp" title="nvm_bp">nvm_bp</a>* <code class="descname">nvm_bp_init_from_args</code><span class="sig-paren">(</span>int<em>&nbsp;argc</em>, char **<em>&nbsp;argv</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bp_init_from_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use argv as ‘nvm_bp_init(argv[1], argv[2], argv[3])’. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>On success, a initialized boiler-plate </dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="misc.html" class="btn btn-neutral float-right" title="Miscellaneous" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="nvm_bbt.html" class="btn btn-neutral" title="nvm_bbt - Bad-Block-Table" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, LightNVM.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.5',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
