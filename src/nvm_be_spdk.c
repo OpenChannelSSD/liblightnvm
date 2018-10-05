@@ -400,7 +400,7 @@ static void cmd_sync_admin_cb(void *cb_arg, const struct spdk_nvme_cpl *cpl)
 	}
 
 	memcpy(&ctx->cpl, cpl, sizeof(*cpl));
-	ctx->completed = true;
+	ctx->completed = 1;
 }
 
 static inline int cmd_sync_admin(struct nvm_dev *dev, struct nvm_nvme_cmd *cmd,
@@ -730,7 +730,7 @@ static inline void wrap_cpl(struct cmd_wrap *wrap,
 		break;
 	}
 
-	wrap->completed = 1;
+	wrap->completed = spdk_nvme_cpl_is_error(cpl) ? -1 : 1;
 }
 
 static void cmd_sync_cb(void *cb_arg, const struct spdk_nvme_cpl *cpl)
@@ -1039,7 +1039,11 @@ static inline int cmd_sync_ewrc(struct nvm_dev *dev,
 		spdk_nvme_qpair_process_completions(qpair, 0);
 		omp_unset_lock(qpair_lock);
 	}
-	res = wrap->completed < 0 ? wrap->completed : 0;
+
+	if (wrap->completed < 0) {
+		res = -1;
+		errno = EIO;
+	}
 
 out:
 	wrap_term(wrap);
