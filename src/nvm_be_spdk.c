@@ -24,9 +24,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef NVM_BE_SPDK_ENABLED
 #include <liblightnvm.h>
 #include <nvm_be.h>
+
+#ifndef NVM_BE_SPDK_ENABLED
 
 struct nvm_be nvm_be_spdk = {
 	.id = NVM_BE_SPDK,
@@ -57,17 +58,11 @@ struct nvm_be nvm_be_spdk = {
 	.async_wait = nvm_be_nosys_async_wait,
 };
 #else
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include <errno.h>
-#include <unistd.h>
-#include <spdk/nvme_ocssd.h>
-#include <liblightnvm.h>
-#include <nvm_be.h>
 #include <nvm_async.h>
-#include <nvm_be_spdk.h>
 #include <nvm_dev.h>
+#include <nvm_cmd.h>
+#include <nvm_be.h>
+#include <nvm_be_spdk.h>
 
 /**
  * Attaches only to the device matching the traddr
@@ -150,14 +145,17 @@ struct nvm_dev *nvm_be_spdk_open(const char *dev_path, int NVM_UNUSED(flags))
 	struct nvm_be_spdk_state *state = NULL;
 
 	dev = malloc(sizeof(*dev));
-	if (!dev)
-		return NULL;	// Propagate `errno` from malloc
+	if (!dev) {
+		// Propagate `errno` from malloc
+		return NULL;
+	}
 	memset(dev, 0, sizeof(*dev));
 
 	state = malloc(sizeof(*state));
 	if (!state) {
 		nvm_be_spdk_close(dev);
-		return NULL;	// Propagate `errno` from malloc
+		// Propagate `errno` from malloc
+		return NULL;
 	}
 	memset(state, 0, sizeof(*state));
 
@@ -184,9 +182,9 @@ struct nvm_dev *nvm_be_spdk_open(const char *dev_path, int NVM_UNUSED(flags))
 
 	err = spdk_nvme_transport_id_parse(&state->trid, dev_path);
 	if (err) {
-		errno = -err;
+		NVM_DEBUG("FAILED: ..._id_parse(%s), err: %d", dev_path, err);
 
-		NVM_DEBUG("FAILED parsing dev_path: %s, err: %d", dev_path, err);
+		errno = -err;
 		nvm_be_spdk_close(dev);
 		return NULL;
 	}
@@ -235,6 +233,7 @@ struct nvm_dev *nvm_be_spdk_open(const char *dev_path, int NVM_UNUSED(flags))
 		return NULL;
 	}
 
+	dev->nsid = state->nsid;
 	dev->ns = *(struct nvm_nvme_ns *) nsdata;
 
 	err = nvm_be_populate(dev, &nvm_be_spdk);
@@ -283,20 +282,9 @@ struct nvm_async_ctx *nvm_be_spdk_async_init(struct nvm_dev *dev,
 						  sizeof(qpair_opts));
 
 	if (depth) {
-		NVM_DEBUG("depth: %d given, overwriting defaults", depth);
-		NVM_DEBUG("default_qpair_opts: { iqr: %u, iqs: %u, prio: %d }",
-			  qpair_opts.io_queue_requests,
-			  qpair_opts.io_queue_size,
-			  qpair_opts.qprio);
-
 		qpair_opts.io_queue_size = depth;
 		qpair_opts.io_queue_requests = depth * 2;
 	}
-
-	NVM_DEBUG("qpair_opts: { iqr: %u, iqs: %u, prio: %d }",
-		  qpair_opts.io_queue_requests,
-		  qpair_opts.io_queue_size,
-		  qpair_opts.qprio);
 
 	ctx = calloc(1, sizeof(*ctx));
 	if (!ctx) {
@@ -308,8 +296,7 @@ struct nvm_async_ctx *nvm_be_spdk_async_init(struct nvm_dev *dev,
 
 	ctx->depth = qpair_opts.io_queue_size;
 
-	ctx->be_ctx = spdk_nvme_ctrlr_alloc_io_qpair(state->ctrlr,
-						     &qpair_opts,
+	ctx->be_ctx = spdk_nvme_ctrlr_alloc_io_qpair(state->ctrlr, &qpair_opts,
 						     sizeof(qpair_opts));
 	if (!ctx->be_ctx) {
 		NVM_DEBUG("FAILED: alloc. qpair errno: %s", strerror(errno));
@@ -644,225 +631,20 @@ int nvm_be_spdk_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs,
 	return 0;
 }
 
-struct cmd_wrap {
-	struct nvm_ret *ret;
-
-	int opcode;
-	struct nvm_nvme_cmd cmd;
-	struct spdk_nvme_cmd *nvme_cmd;
-
-	void *meta;
-	size_t meta_len;
-
-	void *data;
-	size_t data_len;
-
-	struct spdk_nvme_dsm_range *dsmr_dma;
-	size_t dsmr_len;
-
-	int naddrs;
-	uint64_t addr_dfmt;	// Address on device-format for SCALAR CMDS
-
-	uint64_t *addrs_dma;	// DMA-allocated addresses
-	size_t addrs_len;	// # nbytes of DMA-allocated addresses
-
-	uint64_t *dst_dma;
-
-	int completed;		// When used in SYNC callbacks
-};
-
-static inline void wrap_term(struct cmd_wrap *wrap)
-{
-	spdk_dma_free(wrap->dsmr_dma);
-	spdk_dma_free(wrap->addrs_dma);
-	spdk_dma_free(wrap->dst_dma);
-	free(wrap);
-}
-
-static inline void wrap_cpl(struct cmd_wrap *wrap,
-			    const struct spdk_nvme_cpl *cpl)
-{
-	if (wrap->ret) {
-		wrap->ret->result.cdw0 = cpl->cdw0;
-		wrap->ret->status = cpl->status.sc
-					| (cpl->status.sct << 8)
-					| (cpl->status.m   << 13)
-					| (cpl->status.dnr << 14);
-	}
-
-	wrap->completed = spdk_nvme_cpl_is_error(cpl) ? -1 : 1;
-}
-
 static void cmd_sync_cb(void *cb_arg, const struct spdk_nvme_cpl *cpl)
 {
-	wrap_cpl(cb_arg, cpl);
+	nvm_cmd_wrap_cpl(cb_arg, (const struct nvm_nvme_cpl*)cpl);
 }
 
 static void cmd_async_cb(void *cb_arg, const struct spdk_nvme_cpl *cpl)
 {
-	struct cmd_wrap *wrap = cb_arg;
+	struct nvm_cmd_wrap *wrap = cb_arg;
 
 	wrap->ret->async.ctx->outstanding -= 1;
 
-	wrap_cpl(wrap, cpl);
+	nvm_cmd_wrap_cpl(wrap, (const struct nvm_nvme_cpl*)cpl);
 	wrap->ret->async.cb(wrap->ret, wrap->ret->async.cb_arg);
-	wrap_term(wrap);
-}
-
-/**
- * Setup submission entry and virt_allocate DMA memory for the given opcode
- */
-static inline struct cmd_wrap *wrap_setup(struct nvm_dev *dev, int opcode,
-					  void *data, void *meta,
-					  struct nvm_addr addrs[],
-					  struct nvm_addr dst[],
-					  int naddrs,
-					  int flags,
-					  struct nvm_ret *ret)
-{
-	struct nvm_be_spdk_state *state = dev->be_state;
-	const struct nvm_geo *geo = &dev->geo;
-	struct nvm_nvme_cmd *cmd = NULL;
-	struct cmd_wrap *wrap;
-
-	wrap = calloc(1, sizeof(*wrap));
-	if (!wrap) {
-		NVM_DEBUG("FAILED: allocating wrap");
-		// Propagate errno from calloc
-		return NULL;
-	}
-
-	wrap->nvme_cmd = (struct spdk_nvme_cmd *)&wrap->cmd;
-	cmd = &wrap->cmd;
-
-	cmd->opcode = opcode;
-	cmd->nsid = state->nsid;
-
-	// Forward all arguments to 'struct cmd_wrap'
-	wrap->completed = 0;
-	wrap->ret = ret;
-	wrap->opcode = opcode;
-	wrap->data = data;
-	wrap->meta = meta;
-	wrap->naddrs = naddrs;
-	wrap->addrs_len = naddrs * sizeof(uint64_t);
-
-	if (NVM_DOPC_SCALAR_ERASE == opcode) {
-		wrap->dsmr_len = sizeof(*wrap->dsmr_dma) * naddrs;
-		wrap->dsmr_dma = spdk_dma_malloc(wrap->dsmr_len,
-						 NVM_BE_SPDK_ALIGN, NULL);
-
-		if (!wrap->dsmr_dma) {
-			NVM_DEBUG("FAILED: nvm_buf_alloc of DSM range");
-			goto failed;
-		}
-
-		wrap->data = wrap->dsmr_dma;
-		wrap->data_len = wrap->dsmr_len;
-
-		for(int idx = 0; idx < naddrs; ++idx) {
-			const uint64_t slba = nvm_addr_gen2dev(dev, addrs[idx]);
-
-			wrap->dsmr_dma[idx].attributes.raw = 0;
-			wrap->dsmr_dma[idx].length = geo->l.nsectr;
-			wrap->dsmr_dma[idx].starting_lba = slba;
-		}
-
-		cmd->dsm.nr = naddrs - 1;
-		cmd->dsm.ad = 1;
-
-		return wrap;
-	}
-
-	switch (dev->verid) {
-	case NVM_SPEC_VERID_12:
-		cmd->s12.naddrs = naddrs - 1;
-		cmd->s12.control = flags;
-
-		wrap->data_len = data ? geo->g.sector_nbytes * naddrs : 0;
-		wrap->meta_len = geo->g.meta_nbytes * naddrs;
-		break;
-
-	case NVM_SPEC_VERID_20:
-		cmd->ewrc.naddrs = naddrs - 1;
-		wrap->data_len = data ? geo->l.nbytes * naddrs : 0;
-		wrap->meta_len = meta ? geo->l.nbytes_oob * naddrs : 0;
-		break;
-
-	default:
-		NVM_DEBUG("FAILED: dev->verid: %d", dev->verid);
-		errno = EINVAL;
-		goto failed;
-	}
-	if (opcode == NVM_DOPC_VECTOR_ERASE) {
-		wrap->meta_len = meta ? naddrs * sizeof(struct nvm_spec_rprt_descr) : 0;
-	}
-
-	wrap->nvme_cmd->mptr = meta ? spdk_vtophys(meta) : 0;
-
-	switch (opcode) {
-		break;
-
-	case NVM_DOPC_SCALAR_WRITE:
-	case NVM_DOPC_SCALAR_READ:
-		cmd->addrs = nvm_addr_gen2dev(dev, addrs[0]);
-		/* FALLTHRU */
-
-	case NVM_DOPC_SCALAR_ERASE:
-		return wrap;		// For SCALAR we are done preparing
-
-	default:			// For VECTOR we continue
-		break;
-	}
-
-	// DMA allocation and address translation for VECTOR commands
-	if (naddrs > 1) {
-		uint64_t addrs_phys = 0;
-
-		wrap->addrs_dma = spdk_dma_malloc(wrap->addrs_len,
-						  NVM_BE_SPDK_ALIGN,
-						  &addrs_phys);
-		if (!wrap->addrs_dma) {
-			NVM_DEBUG("FAILED: spdk_dma_malloc(addrs)");
-			goto failed;
-		}
-
-		for (int i = 0; i < naddrs; ++i) {
-			wrap->addrs_dma[i] = nvm_addr_gen2dev(dev, addrs[i]);
-		}
-
-		cmd->addrs = addrs_phys;
-	} else {
-		cmd->addrs = nvm_addr_gen2dev(dev, addrs[0]);
-	}
-
-	if (dst) {		// Addrs. for COPY(DST)
-		if (naddrs > 1) {
-			uint64_t dst_phys = 0;
-
-			wrap->dst_dma = spdk_dma_malloc(wrap->addrs_len,
-							NVM_BE_SPDK_ALIGN,
-							&dst_phys);
-			if (!wrap->dst_dma) {
-				NVM_DEBUG("FAILED: spdk_dma_malloc(dst)");
-				goto failed;
-			}
-
-			for (int i = 0; i < naddrs; ++i) {
-				wrap->dst_dma[i] = nvm_addr_gen2dev(dev, dst[i]);
-			}
-			cmd->addrs_dst = dst_phys;
-		} else {
-			cmd->addrs_dst = nvm_addr_gen2dev(dev, dst[0]);
-		}
-	}
-
-	return wrap;
-
-failed:
-	wrap_term(wrap);
-	// Propagate errno
-	return NULL;
+	nvm_cmd_wrap_term(wrap);
 }
 
 static inline int cmd_async_ewrc(struct nvm_dev *dev, struct nvm_addr addrs[],
@@ -872,7 +654,7 @@ static inline int cmd_async_ewrc(struct nvm_dev *dev, struct nvm_addr addrs[],
 {
 	struct nvm_be_spdk_state *state = dev->be_state;
 	struct spdk_nvme_qpair *qpair = ret->async.ctx->be_ctx;
-	struct cmd_wrap *wrap = NULL;
+	struct nvm_cmd_wrap *wrap = NULL;
 	int err = 0;
 
 	// Early exit when queue is full
@@ -881,11 +663,10 @@ static inline int cmd_async_ewrc(struct nvm_dev *dev, struct nvm_addr addrs[],
 		return -1;
 	}
 
-	// Setup CMD arguments
-	wrap = wrap_setup(dev, opcode, data, meta, addrs, dst, naddrs, flags,
-			  ret);
+	wrap = nvm_cmd_wrap_setup(dev, opcode, data, meta, addrs, dst, naddrs,
+				  flags, ret);
 	if (!wrap) {
-		NVM_DEBUG("FAILED: allocating cmd_wrap");
+		NVM_DEBUG("FAILED: allocating nvm_cmd_wrap");
 		// Propagate errno from calloc
 		return -1;
 	}
@@ -895,7 +676,7 @@ static inline int cmd_async_ewrc(struct nvm_dev *dev, struct nvm_addr addrs[],
 
 	err = spdk_nvme_ctrlr_cmd_io_raw_with_md(state->ctrlr,
 						 qpair,
-						 wrap->nvme_cmd,
+						 (struct spdk_nvme_cmd *)&wrap->cmd,
 						 wrap->data,
 						 wrap->data_len,
 						 wrap->meta,
@@ -910,7 +691,7 @@ static inline int cmd_async_ewrc(struct nvm_dev *dev, struct nvm_addr addrs[],
 	return 0;
 
 failed:
-	wrap_term(wrap);
+	nvm_cmd_wrap_term(wrap);
 	// Propagate errno
 	return -1;
 }
@@ -925,14 +706,14 @@ static inline int cmd_sync_ewrc(struct nvm_dev *dev,
 	struct spdk_nvme_qpair *qpair = state->qpair;
 	omp_lock_t *qpair_lock = &state->qpair_lock;
 
-	struct cmd_wrap *wrap = NULL;
+	struct nvm_cmd_wrap *wrap = NULL;
 	int res = 0;
 	int err;
 
-	wrap = wrap_setup(dev, opcode, data, meta, addrs, dst, naddrs, flags,
-			  ret);
+	wrap = nvm_cmd_wrap_setup(dev, opcode, data, meta, addrs, dst, naddrs,
+				  flags, ret);
 	if (!wrap) {
-		NVM_DEBUG("FAILED: allocating cmd_wrap");
+		NVM_DEBUG("FAILED: allocating nvm_cmd_wrap");
 		// Propagate errno from calloc
 		return -1;
 	}
@@ -941,7 +722,7 @@ static inline int cmd_sync_ewrc(struct nvm_dev *dev,
 	omp_set_lock(qpair_lock);
 	err = spdk_nvme_ctrlr_cmd_io_raw_with_md(state->ctrlr,
 						 qpair,
-						 wrap->nvme_cmd,
+						 (struct spdk_nvme_cmd *)&wrap->cmd,
 						 wrap->data,
 						 wrap->data_len,
 						 wrap->meta,
@@ -968,7 +749,7 @@ static inline int cmd_sync_ewrc(struct nvm_dev *dev,
 	}
 
 out:
-	wrap_term(wrap);
+	nvm_cmd_wrap_term(wrap);
 
 	return res;
 }
