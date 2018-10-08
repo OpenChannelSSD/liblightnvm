@@ -48,12 +48,13 @@ Output from the last ``unittest.sh`` command should yield::
   All unit tests passed
   =====================
 
-Unbinding devices
-~~~~~~~~~~~~~~~~~
+Unbinding devices and setting up memory
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Run the following::
+By running the command below `8GB` of hugepages will be configured and the
+device detached from the Kernel NVMe driver::
 
-  sudo /opt/spdk/scripts/setup.sh
+  sudo HUGEMEM=8192 /opt/spdk/scripts/setup.sh
 
 This should output similar to::
 
@@ -189,9 +190,46 @@ Should have output similar to::
 
 And **SPDK** setup::
 
-  sudo /opt/spdk/scripts/setup.sh
+  sudo HUGEMEM=8192 /opt/spdk/scripts/setup.sh
 
 Should rebind the device to ``vfio-pci``, eg.::
 
   0000:01:00.0 (1d1d 2807): nvme -> vfio-pci
 
+Inspecting and manually changing memory avaiable to `SPDK` aka `HUGEPAGES`
+--------------------------------------------------------------------------
+
+The `SPDK` setup script provides `HUGEMEM` and `NRHUGE` environment variables
+to control the amount of memory available via `HUGEPAGES`. However, if you want
+to manually change or just inspect the `HUGEPAGE` config the have a look below.
+
+Inspect the system configuration by running::
+
+  grep . /sys/devices/system/node/node0/hugepages/hugepages-2048kB/*
+
+If you have not yet run the setup script, then it will most likely output::
+
+  /sys/devices/system/node/node0/hugepages/hugepages-2048kB/free_hugepages:0
+  /sys/devices/system/node/node0/hugepages/hugepages-2048kB/nr_hugepages:0
+  /sys/devices/system/node/node0/hugepages/hugepages-2048kB/surplus_hugepages:0
+
+And after running the setup script it should output::
+
+  /sys/devices/system/node/node0/hugepages/hugepages-2048kB/free_hugepages:1024
+  /sys/devices/system/node/node0/hugepages/hugepages-2048kB/nr_hugepages:1024
+  /sys/devices/system/node/node0/hugepages/hugepages-2048kB/surplus_hugepages:0
+
+This tells that `1024` hugepages, each of size `2048kB` are available, that is,
+a total of two gigabytes can be used.
+
+One way of increasing memory available to `SPDK` is by increasing the number of
+`2048Kb` hugepages. E.g. increase from two to eight gigabytes by increasing
+`nr_hugespages` to `4096`::
+
+  echo "4096" > /sys/devices/system/node/node0/hugepages/hugepages-2048kB/nr_hugepages
+
+After doing this, then inspecting the configuration should output::
+
+  /sys/devices/system/node/node0/hugepages/hugepages-2048kB/free_hugepages:4096
+  /sys/devices/system/node/node0/hugepages/hugepages-2048kB/nr_hugepages:4096
+  /sys/devices/system/node/node0/hugepages/hugepages-2048kB/surplus_hugepages:0
