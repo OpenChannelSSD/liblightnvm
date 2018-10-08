@@ -1,9 +1,8 @@
 /*
- * cmd - Encapsulation of command construction and execution
+ * cmd - Encapsulation of command construction, submission, and completion
  *
- * Copyright (C) 2015-2017 Javier Gonzáles <javier@cnexlabs.com>
- * Copyright (C) 2015-2017 Matias Bjørling <matias@cnexlabs.com>
- * Copyright (C) 2015-2017 Simon A. F. Lund <slund@cnexlabs.com>
+ * Copyright (C) Simon A. F. Lund <slund@cnexlabs.com>
+ * Copyright (C) Klaus B. A. Jensen <klaus.jensen@cnexlabs.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,13 +25,186 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <inttypes.h>
-#include <string.h>
-#include <stdio.h>
-#include <errno.h>
 #include <liblightnvm.h>
 #include <nvm_be.h>
 #include <nvm_dev.h>
+#include <nvm_cmd.h>
+
+void nvm_cmd_wrap_term(struct nvm_cmd_wrap *wrap)
+{
+	nvm_buf_free(wrap->dev, wrap->dsmr_dma);
+	nvm_buf_free(wrap->dev, wrap->addrs_dma);
+	nvm_buf_free(wrap->dev, wrap->dst_dma);
+	free(wrap);
+}
+
+void nvm_cmd_wrap_cpl(struct nvm_cmd_wrap *wrap,
+		      const struct nvm_nvme_cpl *cpl)
+{
+	if (wrap->ret) {
+		wrap->ret->result.cdw0 = cpl->cdw0;
+		wrap->ret->status = cpl->status.sc
+					| (cpl->status.sct << 8)
+					| (cpl->status.m   << 13)
+					| (cpl->status.dnr << 14);
+	}
+
+	wrap->completed = 1;
+}
+
+/**
+ * Setup submission entry and virt_allocate DMA memory for the given opcode
+ */
+struct nvm_cmd_wrap *nvm_cmd_wrap_setup(struct nvm_dev *dev, int opcode,
+					void *data, void *meta,
+					struct nvm_addr addrs[],
+					struct nvm_addr dst[],
+					int naddrs,
+					int flags,
+					struct nvm_ret *ret)
+{
+	const struct nvm_geo *geo = &dev->geo;
+	struct nvm_cmd_wrap *wrap;
+
+	wrap = calloc(1, sizeof(*wrap));
+	if (!wrap) {
+		NVM_DEBUG("FAILED: allocating wrap");
+		// Propagate errno from calloc
+		return NULL;
+	}
+
+	wrap->dev = dev;
+	wrap->ret = ret;
+	wrap->completed = 0;
+
+	wrap->data = data;
+	wrap->meta = meta;
+	wrap->naddrs = naddrs;
+	wrap->addrs_len = naddrs * sizeof(uint64_t);
+
+	wrap->cmd.opcode = opcode;
+	wrap->cmd.nsid = nvm_dev_get_nsid(dev);
+
+	if (NVM_DOPC_SCALAR_ERASE == opcode) {
+		wrap->dsmr_len = sizeof(*wrap->dsmr_dma) * naddrs;
+		wrap->dsmr_dma = nvm_buf_alloc(dev, wrap->dsmr_len, NULL);
+		if (!wrap->dsmr_dma) {
+			NVM_DEBUG("FAILED: nvm_buf_alloc of DSM range");
+			goto failed;
+		}
+
+		wrap->data = wrap->dsmr_dma;
+		wrap->data_len = wrap->dsmr_len;
+
+		for(int idx = 0; idx < naddrs; ++idx) {
+			const uint64_t slba = nvm_addr_gen2dev(dev, addrs[idx]);
+
+			wrap->dsmr_dma[idx].cattr = 0;
+			wrap->dsmr_dma[idx].nlb = geo->l.nsectr;
+			wrap->dsmr_dma[idx].slba = slba;
+		}
+
+		wrap->cmd.dsm.nr = naddrs - 1;
+		wrap->cmd.dsm.ad = 1;
+
+		return wrap;
+	}
+
+	switch (dev->verid) {
+	case NVM_SPEC_VERID_12:
+		wrap->cmd.s12.naddrs = naddrs - 1;
+		wrap->cmd.s12.control = flags;
+
+		wrap->data_len = data ? geo->g.sector_nbytes * naddrs : 0;
+		wrap->meta_len = geo->g.meta_nbytes * naddrs;
+		break;
+
+	case NVM_SPEC_VERID_20:
+		wrap->cmd.ewrc.naddrs = naddrs - 1;
+		wrap->data_len = data ? geo->l.nbytes * naddrs : 0;
+		wrap->meta_len = meta ? geo->l.nbytes_oob * naddrs : 0;
+		break;
+
+	default:
+		NVM_DEBUG("FAILED: dev->verid: %d", dev->verid);
+		errno = EINVAL;
+		goto failed;
+	}
+
+	// Special-case handling of VECTOR_ERASE
+	//
+	// - overwrite meta_len
+	// - Assign mptr since it will most likely not be assigned by backend
+	if ((opcode == NVM_DOPC_VECTOR_ERASE) && meta) {
+		wrap->meta_len = naddrs * sizeof(struct nvm_spec_rprt_descr);
+		if (nvm_buf_vtophys(dev, meta, &wrap->cmd.mptr)) {
+			NVM_DEBUG("FAILED: nvm_buf_vtophys");
+			goto failed;
+		}
+	}
+
+	switch (opcode) {
+		break;
+
+	case NVM_DOPC_SCALAR_WRITE:
+	case NVM_DOPC_SCALAR_READ:
+		wrap->cmd.addrs = nvm_addr_gen2dev(dev, addrs[0]);
+		/* FALLTHRU */
+
+	case NVM_DOPC_SCALAR_ERASE:
+		return wrap;		// For SCALAR we are done preparing
+
+	default:			// For VECTOR we continue
+		break;
+	}
+
+	// DMA allocation and address translation for VECTOR commands
+	if (naddrs > 1) {
+		uint64_t addrs_phys = 0;
+
+		wrap->addrs_dma = nvm_buf_alloc(dev, wrap->addrs_len,
+						&addrs_phys);
+		if (!wrap->addrs_dma) {
+			NVM_DEBUG("FAILED: nvm_buf_alloc(addrs)");
+			goto failed;
+		}
+
+		for (int i = 0; i < naddrs; ++i) {
+			wrap->addrs_dma[i] = nvm_addr_gen2dev(dev, addrs[i]);
+		}
+
+		wrap->cmd.addrs = addrs_phys;
+	} else {
+		wrap->cmd.addrs = nvm_addr_gen2dev(dev, addrs[0]);
+	}
+
+	if (dst) {		// Addrs. for COPY(DST)
+		if (naddrs > 1) {
+			uint64_t dst_phys = 0;
+
+			wrap->dst_dma = nvm_buf_alloc(dev, wrap->addrs_len,
+							&dst_phys);
+			if (!wrap->dst_dma) {
+				NVM_DEBUG("FAILED: nvm_buf_alloc(dst)");
+				goto failed;
+			}
+
+			for (int i = 0; i < naddrs; ++i) {
+				wrap->dst_dma[i] = nvm_addr_gen2dev(dev, dst[i]);
+			}
+			wrap->cmd.addrs_dst = dst_phys;
+		} else {
+			wrap->cmd.addrs_dst = nvm_addr_gen2dev(dev, dst[0]);
+		}
+	}
+
+	return wrap;
+
+failed:
+	nvm_cmd_wrap_term(wrap);
+	// Propagate errno
+	return NULL;
+}
 
 struct nvm_spec_idfy *nvm_cmd_idfy(struct nvm_dev *dev, struct nvm_ret *ret)
 {
