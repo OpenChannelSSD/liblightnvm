@@ -153,6 +153,7 @@ int nvm_dev_get_ws_min(const struct nvm_dev *dev)
 		return dev->idfy.s20.wrt.ws_min;
 	}
 
+	errno = EINVAL;
 	return -1;
 }
 
@@ -165,6 +166,7 @@ int nvm_dev_get_ws_opt(const struct nvm_dev *dev)
 		return dev->idfy.s20.wrt.ws_opt;
 	}
 
+	errno = EINVAL;
 	return -1;
 }
 
@@ -176,7 +178,7 @@ int nvm_dev_get_mw_cunits(const struct nvm_dev *dev)
 
 	case NVM_SPEC_VERID_12:
 	default:
-		errno = ENOSYS;
+		errno = EINVAL;
 		return -1;
 	}
 }
