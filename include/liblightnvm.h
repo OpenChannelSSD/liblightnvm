@@ -593,6 +593,13 @@ void nvm_bounds_pr(int mask);
 void nvm_ret_pr(const struct nvm_ret *ret);
 
 /**
+ * Clears/resets the given `struct nvm_ret`.
+ *
+ * @param ret Pointer to `struct nvm_ret`.
+ */
+void nvm_ret_clear(struct nvm_ret *ret);
+
+/**
  * Retrieves a bad block table from device
  *
  * @param dev Device handle obtained with `nvm_dev_open`

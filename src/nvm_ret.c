@@ -41,3 +41,7 @@ void nvm_ret_pr(const struct nvm_ret *ret)
 	printf("status: 0x%x", ret->status);
 	printf("}\n");
 }
+
+void nvm_ret_clear(struct nvm_ret *ret) {
+	memset(ret, 0x0, sizeof(*ret));
+}
