@@ -68,13 +68,13 @@ struct nvm_be {
 	/**
 	 * Execute get feature command
 	 */
-	int (*gfeat)(struct nvm_dev *, uint8_t, union nvm_spec_feat *,
+	int (*gfeat)(struct nvm_dev *, uint8_t, union nvm_nvme_feat *,
 		     struct nvm_ret *);
 
 	/**
 	 * Execute set feature command
 	 */
-	int (*sfeat)(struct nvm_dev *, uint8_t, const union nvm_spec_feat *,
+	int (*sfeat)(struct nvm_dev *, uint8_t, const union nvm_nvme_feat *,
 		     struct nvm_ret *);
 
 	/**
@@ -170,10 +170,10 @@ struct nvm_spec_rprt *nvm_be_nosys_rprt(struct nvm_dev *dev,
 					struct nvm_addr *addr, int opt,
 					struct nvm_ret *ret);
 
-int nvm_be_nosys_gfeat(struct nvm_dev *, uint8_t, union nvm_spec_feat *,
+int nvm_be_nosys_gfeat(struct nvm_dev *, uint8_t, union nvm_nvme_feat *,
 		       struct nvm_ret *);
 
-int nvm_be_nosys_sfeat(struct nvm_dev *, uint8_t, const union nvm_spec_feat *,
+int nvm_be_nosys_sfeat(struct nvm_dev *, uint8_t, const union nvm_nvme_feat *,
 		       struct nvm_ret *);
 
 struct nvm_spec_bbt *nvm_be_nosys_gbbt(struct nvm_dev *dev,

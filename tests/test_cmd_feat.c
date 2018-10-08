@@ -2,7 +2,7 @@
 
 static void set_error_recovery(bool on)
 {
-	union nvm_spec_feat feat = { 0 };
+	union nvm_nvme_feat feat = { 0 };
 
 	if (on) {
 		feat.error_recovery.dulbe = 1;
@@ -16,7 +16,7 @@ static void set_error_recovery(bool on)
 
 static void test_GETSET_FEATURE()
 {
-	union nvm_spec_feat feat = { 0 };
+	union nvm_nvme_feat feat = { 0 };
 	if (nvm_cmd_gfeat(dev, NVM_FEAT_ERROR_RECOVERY, &feat, NULL)) {
 		CU_FAIL("nvm_cmd_gfeat");
 		return;

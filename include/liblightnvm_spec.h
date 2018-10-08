@@ -340,7 +340,7 @@ void nvm_spec_rprt_pr(const struct nvm_spec_rprt *rprt);
 /**
  * Representation of Spec. 2.0 feature types
  */
-enum nvm_spec_feat_id {
+enum nvm_nvme_feat_id {
 	NVM_FEAT_ERROR_RECOVERY = 0x5,
 	NVM_FEAT_MEDIA_FEEDBACK = 0xCA
 };
@@ -348,9 +348,9 @@ enum nvm_spec_feat_id {
 /**
  * Encapsulation of NVMe/NVM features.
  *
- * @union nvm_spec_feat
+ * @union nvm_nvme_feat
  */
-union nvm_spec_feat {
+union nvm_nvme_feat {
 	/**
 	 * This feature controls the error recovery attributes.
 	 */
@@ -374,7 +374,7 @@ union nvm_spec_feat {
 	*/
 	uint32_t a;
 };
-static_assert(sizeof(union nvm_spec_feat) == 4, "Incorrect size");
+static_assert(sizeof(union nvm_nvme_feat) == 4, "Incorrect size");
 
 /**
  * Prints a humanly readable representation of the give address format mask
@@ -510,7 +510,7 @@ struct nvm_nvme_cmd {
 			uint32_t rsvd10 : 23;
 			uint32_t save   : 1;	///< Save
 
-			union nvm_spec_feat feat;
+			union nvm_nvme_feat feat;
 		} sfeat;
 
 		struct {

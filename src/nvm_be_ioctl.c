@@ -181,7 +181,7 @@ struct nvm_spec_idfy *nvm_be_ioctl_idfy(struct nvm_dev *dev,
 }
 
 int nvm_be_ioctl_gfeat(struct nvm_dev *dev, uint8_t id,
-		       union nvm_spec_feat *feat,
+		       union nvm_nvme_feat *feat,
 		       struct nvm_ret *NVM_UNUSED(ret))
 {
 	struct nvme_passthru_cmd cmd = { 0 };
@@ -205,7 +205,7 @@ int nvm_be_ioctl_gfeat(struct nvm_dev *dev, uint8_t id,
 }
 
 int nvm_be_ioctl_sfeat(struct nvm_dev *dev, uint8_t id,
-		       const union nvm_spec_feat *feat,
+		       const union nvm_nvme_feat *feat,
 		       struct nvm_ret *NVM_UNUSED(ret))
 {
 	struct nvme_passthru_cmd cmd = { 0 };

@@ -503,7 +503,7 @@ struct nvm_spec_idfy *nvm_be_spdk_idfy(struct nvm_dev *dev, struct nvm_ret *ret)
 }
 
 int nvm_be_spdk_gfeat(struct nvm_dev *dev, uint8_t id,
-		       union nvm_spec_feat *feat,
+		       union nvm_nvme_feat *feat,
 		       struct nvm_ret *ret)
 {
 	struct nvm_be_spdk_state *state = dev->be_state;
@@ -528,7 +528,7 @@ int nvm_be_spdk_gfeat(struct nvm_dev *dev, uint8_t id,
 }
 
 int nvm_be_spdk_sfeat(struct nvm_dev *dev, uint8_t id,
-		       const union nvm_spec_feat *feat,
+		       const union nvm_nvme_feat *feat,
 		       struct nvm_ret *ret)
 {
 	struct nvm_be_spdk_state *state = dev->be_state;

@@ -476,7 +476,7 @@ int nvm_cmd_rprt_arbs(struct nvm_dev *dev, int cs, int naddrs,
  *
  * @returns 0 on success, -1 on error and errno set to indicate the error.
  */
-int nvm_cmd_gfeat(struct nvm_dev *dev, uint8_t id, union nvm_spec_feat *feat,
+int nvm_cmd_gfeat(struct nvm_dev *dev, enum nvm_nvme_feat_id id, union nvm_nvme_feat *feat,
 		  struct nvm_ret *ret);
 
 /**
@@ -490,8 +490,8 @@ int nvm_cmd_gfeat(struct nvm_dev *dev, uint8_t id, union nvm_spec_feat *feat,
  *
  * @returns 0 on success, -1 on error and errno set to indicate the error.
  */
-int nvm_cmd_sfeat(struct nvm_dev *dev, uint8_t id,
-		  const union nvm_spec_feat *feat, struct nvm_ret *ret);
+int nvm_cmd_sfeat(struct nvm_dev *dev, enum nvm_nvme_feat_id id,
+		  const union nvm_nvme_feat *feat, struct nvm_ret *ret);
 
 /**
  * Execute an Open-Channel 1.2 get bad-block-table command
