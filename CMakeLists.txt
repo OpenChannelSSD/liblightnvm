@@ -92,7 +92,6 @@ set(HEADER_FILES
 	${PROJECT_SOURCE_DIR}/include/nvm_async.h
 	${PROJECT_SOURCE_DIR}/include/nvm_be.h
 	${PROJECT_SOURCE_DIR}/include/nvm_dev.h
-	${PROJECT_SOURCE_DIR}/include/nvm_nvme.h
 	${PROJECT_SOURCE_DIR}/include/nvm_omp.h
 	${PROJECT_SOURCE_DIR}/include/nvm_sgl.h
 	${PROJECT_SOURCE_DIR}/include/nvm_timer.h

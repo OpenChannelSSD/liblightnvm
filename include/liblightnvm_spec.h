@@ -376,6 +376,52 @@ union nvm_nvme_feat {
 };
 static_assert(sizeof(union nvm_nvme_feat) == 4, "Incorrect size");
 
+struct nvm_nvme_lbaf {
+	uint16_t ms;	///< metadata size
+	uint8_t  ds;	///< lba data size
+	uint8_t  rp;	///< relative performance
+};
+static_assert(sizeof(struct nvm_nvme_lbaf) == 4, "Incorrect size");
+
+struct nvm_nvme_ns {
+	uint64_t nsze;			///< namespace size
+	uint64_t ncap;			///< namespace capacity
+	uint64_t nuse;			///< namespace utilization
+	uint8_t  nsfeat;		///< namespace features
+	uint8_t  nlbaf;			///< number of lba formats
+	uint8_t  flbas;			///< formatted lba size
+	uint8_t  mc;			///< metadata capabilities
+	uint8_t  dpc;			///< end-to-end data protection
+					///  capabilities
+	uint8_t  dps;			///< end-to-end data protection type
+					///  settings
+	uint8_t  nmic;			///< namespace multi-path i/o and
+					///  namespace sharing capabilities
+	uint8_t  rescap;		///< reservation capabilities
+	uint8_t  fpi;			///< format progress indicator
+	uint8_t  dlfeat;		///< deallocate logical block features
+	uint16_t nawun;			///< namespace atomic write unit normal
+	uint16_t nawupf;		///< namespace atomic write unit power
+					///  fail
+	uint16_t nacwu;			///< namespace atomic compare & write
+					///  unit
+	uint16_t nabsn;			///< namespace atomic boundary size
+					///  normal
+	uint16_t nabo;			///< namespace atomic boundary offset
+	uint16_t nabspf;		///< namespace atomic boundary size
+					///  power fail
+	uint16_t noiob;			///< namespace optimal io boundary
+	uint8_t  nvmcap[16];		///< namespace nvm capacity
+	uint8_t  rsvd64[40];		///< reserved
+	uint8_t  nguid[16];		///< namespace globally unique
+					///  identifier
+	uint8_t  eui64[8];		///< ieee extended unique identifier
+	struct nvm_nvme_lbaf lbaf[16];	///< lba format specifications
+	uint8_t  rsvd192[192];		///< reserved
+	uint8_t  vs[3712];		///< vendor specific
+};
+static_assert(sizeof(struct nvm_nvme_ns) == 4096, "Incorrect size");
+
 /**
  * Prints a humanly readable representation of the give address format mask
  *
