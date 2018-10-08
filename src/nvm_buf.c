@@ -164,7 +164,7 @@ void nvm_buf_fill(char *buf, size_t nbytes)
 		buf[i] = (i % 26) + 65;
 }
 
-void nvm_buf_pr(char *buf, size_t nbytes)
+void nvm_buf_pr(const char *buf, size_t nbytes)
 {
 	const int width = 32;
 
@@ -178,7 +178,8 @@ void nvm_buf_pr(char *buf, size_t nbytes)
 	printf("# NVM_BUF_PR - END\n");
 }
 
-size_t nvm_buf_diff(char *expected, char *actual, size_t nbytes)
+
+size_t nvm_buf_diff(const char *expected, const char *actual, size_t nbytes)
 {
 	size_t diff = 0;
 
@@ -189,7 +190,7 @@ size_t nvm_buf_diff(char *expected, char *actual, size_t nbytes)
 	return diff;
 }
 
-void nvm_buf_diff_pr(char *expected, char *actual, size_t nbytes)
+void nvm_buf_diff_pr(const char *expected, const char *actual, size_t nbytes)
 {
 	size_t diff = 0;
 

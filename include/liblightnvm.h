@@ -1086,17 +1086,17 @@ void nvm_buf_fill(char *buf, size_t nbytes);
  * @param buf Pointer to the buffer to print
  * @param nbytes Amount of bytes of buf to print
  */
-void nvm_buf_pr(char *buf, size_t nbytes);
+void nvm_buf_pr(const char *buf, size_t nbytes);
 
 /**
  * Returns the number of bytes where expected is different from actual
  */
-size_t nvm_buf_diff(char *expected, char *actual, size_t nbytes);
+size_t nvm_buf_diff(const char *expected, const char *actual, size_t nbytes);
 
 /**
  * Prints the number and value of bytes where expected is different from actual
  */
-void nvm_buf_diff_pr(char *expected, char *actual, size_t nbytes);
+void nvm_buf_diff_pr(const char *expected, const char *actual, size_t nbytes);
 
 /**
  * Write content of buffer into file
