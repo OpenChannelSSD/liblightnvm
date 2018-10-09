@@ -1268,6 +1268,24 @@ uint64_t nvm_addr_dev2off(struct nvm_dev *dev, uint64_t addr);
  */
 uint64_t nvm_addr_off2dev(struct nvm_dev *dev, uint64_t addr);
 
+/*
+ * Fills out the `addrs` array defined as the contiguous range
+ * `[addr, addr + naddrs[`.
+ *
+ * @note This is a convenience function intended for use in preparation for
+ * calls to `nvm_cmd_{write|read}` when using using the, currently default,
+ * command option `NVM_CMD_VECTOR`.
+ *
+ * @note Address validity is not verified and this function can produce invalid
+ * addresses when crossing geometric boundaries.
+ *
+ * @param addrs The array of addresses to fill
+ * @param addr The starting address of address-range
+ * @param naddrs The number of addresses in the address-range
+ */
+void nvm_addr_fill_crange(struct nvm_addr *addrs, struct nvm_addr addr,
+			  uint32_t naddrs);
+
 /**
  * Prints a hexidecimal representation of the given address value
  */

@@ -221,3 +221,12 @@ struct nvm_addr nvm_addr_lpo2gen(struct nvm_dev *dev, uint64_t lpo)
 	return addr;
 }
 
+void nvm_addr_fill_crange(struct nvm_addr *addrs, struct nvm_addr addr,
+			  uint32_t naddrs)
+{
+	*addrs = addr;
+	for (uint32_t i = 1; i < naddrs; i++) {
+		addrs[i] = addrs[i-1];
+		addrs[i].l.sectr++;
+	}
+}
