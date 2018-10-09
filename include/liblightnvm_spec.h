@@ -426,6 +426,36 @@ enum nvm_nvme_flag {
 	NVM_NVME_FLAG_PRINFO_PRACT		= 0x1 << 13,
 };
 
+struct nvm_nvme_status {
+	uint16_t p	:  1;	///< phase tag
+	uint16_t sc	:  8;	///< status code
+	uint16_t sct	:  3;	///< status code type
+	uint16_t rsvd2	:  2;
+	uint16_t m	:  1;	///< more
+	uint16_t dnr	:  1;	///< do not retry
+};
+static_assert(sizeof(struct nvm_nvme_status) == 2, "Incorrect size");
+
+/**
+ * Completion queue entry
+ */
+struct nvm_nvme_cpl {
+	/* dword 0 */
+	uint32_t		cdw0;	///< command-specific
+
+	/* dword 1 */
+	uint32_t		rsvd1;
+
+	/* dword 2 */
+	uint16_t		sqhd;	///< submission queue head pointer
+	uint16_t		sqid;	///< submission queue identifier
+
+	/* dword 3 */
+	uint16_t		cid;	///< command identifier
+	struct nvm_nvme_status	status;
+};
+static_assert(sizeof(struct nvm_nvme_cpl) == 16, "Incorrect size");
+
 struct nvm_nvme_cmd {
 	/* cdw 00 */
 	uint16_t opcode	:  8;			///< opcode
