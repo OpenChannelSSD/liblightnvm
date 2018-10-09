@@ -35,7 +35,8 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_wre_scalar.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_wre_vector.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_copy.c
-	${CMAKE_CURRENT_SOURCE_DIR}/test_rules_read.c)
+	${CMAKE_CURRENT_SOURCE_DIR}/test_rules_read.c
+	${CMAKE_CURRENT_SOURCE_DIR}/test_rules_write.c)
 
 #
 # static linking, against lightnvm_a, to avoid runtime dependency on liblightnvm
