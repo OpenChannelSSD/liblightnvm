@@ -84,6 +84,14 @@ tests_on:
 tests_off:
 	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DTESTS=OFF)
 
+.PHONY: examples_on
+examples_on:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DEXAMPLES=ON)
+
+.PHONY: examples_off
+examples_off:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DEXAMPLES=OFF)
+
 .PHONY: ioctl_on
 ioctl_on:
 	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_BE_IOCTL_ENABLED=ON)
@@ -162,25 +170,25 @@ tags:
 #
 
 .PHONY: dev-spdk
-dev-spdk: clean cli_on tests_on ioctl_on lbd_on spdk_on debug_on deb_on configure build
+dev-spdk: clean cli_on tests_on examples_on ioctl_on lbd_on spdk_on debug_on deb_on configure build
 	sudo make clean-sys
 	sudo make clean-sys
 	sudo make install-deb
 
 .PHONY: dev
-dev: clean cli_on tests_on ioctl_on lbd_on spdk_off debug_on deb_on configure build
+dev: clean cli_on tests_on examples_on ioctl_on lbd_on spdk_off debug_on deb_on configure build
 	sudo make clean-sys
 	sudo make clean-sys
 	sudo make install-deb
 
 .PHONY: dev-spdk
-rel-spdk: clean cli_on tests_on ioctl_on lbd_on spdk_on debug_off deb_on configure build
+rel-spdk: clean cli_on tests_on examples_on ioctl_on lbd_on spdk_on debug_off deb_on configure build
 	sudo make clean-sys
 	sudo make clean-sys
 	sudo make install-deb
 
 .PHONY: dev
-rel: clean cli_on tests_on ioctl_on lbd_on spdk_off debug_off deb_on configure build
+rel: clean cli_on tests_on examples_on ioctl_on lbd_on spdk_off debug_off deb_on configure build
 	sudo make clean-sys
 	sudo make clean-sys
 	sudo make install-deb

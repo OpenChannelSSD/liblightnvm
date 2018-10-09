@@ -188,6 +188,9 @@ add_subdirectory(cli)
 # TESTS
 add_subdirectory(tests)
 
+# EXAMPLES
+add_subdirectory(examples)
+
 # Packages
 #if ("${CMAKE_VERSION}" VERSION_GREATER "2.8.7")
 #set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
@@ -211,5 +214,6 @@ set(CPACK_COMPONENT_LIB_DESCRIPTION "liblightnvm: User space I/O library for Ope
 set(CPACK_COMPONENT_DEV_DESCRIPTION "liblightnvm-dev: Public header and static library for liblightnvm")
 set(CPACK_COMPONENT_CLI_DESCRIPTION "liblightnvm-cli: Command-line interface for liblightnvm")
 set(CPACK_COMPONENT_TESTS_DESCRIPTION "liblightnvm-tests: Unit tests for liblightnvm")
+set(CPACK_COMPONENT_EXAMPLES_DESCRIPTION "liblightnvm-examples: Unit tests for liblightnvm")
 
 include(CPack)
