@@ -278,6 +278,8 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 	struct nvm_geo *geo = &dev->geo;
 	struct nvm_spec_idfy *idfy = NULL;
 
+	dev->be = be;		// TODO: Clean the initialization process
+
 	idfy = be->idfy(dev, NULL);
 	if (!idfy) {
 		NVM_DEBUG("FAILED: nvm_cmd_idfy");
@@ -344,11 +346,12 @@ int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
 	default:
 		NVM_DEBUG("Unsupported Version ID(%d)", idfy->s.verid);
 		errno = ENOSYS;
-		nvm_buf_free(idfy);
+		nvm_buf_free(dev, idfy);
+		dev->be = NULL;	// TODO: Clean the initialization process
 		return -1;
 	}
 
-	nvm_buf_free(idfy);
+	nvm_buf_free(dev, idfy);
 
 	return 0;
 }

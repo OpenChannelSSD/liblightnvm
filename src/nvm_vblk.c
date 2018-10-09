@@ -185,7 +185,7 @@ struct nvm_vblk *nvm_vblk_alloc_line(struct nvm_dev *dev, int ch_bgn,
 
 	default:
 		NVM_DEBUG("FAILED: unsupported verid: %d", verid);
-		nvm_buf_free(vblk);
+		nvm_buf_free(dev, vblk);
 		errno = ENOSYS;
 		return NULL;
 	}
@@ -473,7 +473,7 @@ static inline ssize_t vblk_async_pwrite_s20(struct nvm_vblk *vblk,
 	}
 
 	if (!buf) {	// Allocate and use a padding buffer
-		pad_buf = nvm_buf_alloc(geo, pad_nbytes);
+		pad_buf = nvm_buf_alloc(vblk->dev, pad_nbytes, NULL);
 		if (!pad_buf) {
 			NVM_DEBUG("FAILED: nvm_buf_alloc(pad)");
 			errno = ENOMEM;
@@ -483,10 +483,10 @@ static inline ssize_t vblk_async_pwrite_s20(struct nvm_vblk *vblk,
 		nvm_buf_fill(pad_buf, pad_nbytes);
 	}
 
-	if (meta_mode != NVM_META_MODE_NONE) {	// Meta
-		meta_buf = nvm_buf_alloc(geo, meta_tbytes);	// Alloc buf
+	if (meta_mode != NVM_META_MODE_NONE) {		// Meta buffer
+		meta_buf = nvm_buf_alloc(vblk->dev, meta_tbytes, NULL);
 		if (!meta_buf) {
-			nvm_buf_free(pad_buf);
+			nvm_buf_free(vblk->dev, pad_buf);
 			NVM_DEBUG("FAILED: nvm_buf_alloc(meta)");
 			errno = ENOMEM;
 			return -1;
@@ -508,8 +508,8 @@ static inline ssize_t vblk_async_pwrite_s20(struct nvm_vblk *vblk,
 	nerr = vblk_io_async(vblk, vsectr_bgn, count, (void *) buf, meta_buf,
 			     pad_buf, 1 /* write */);
 
-	nvm_buf_free(pad_buf);
-	nvm_buf_free(meta_buf);
+	nvm_buf_free(vblk->dev, pad_buf);
+	nvm_buf_free(vblk->dev, meta_buf);
 
 	if (nerr) {
 		NVM_DEBUG("FAILED: nvm_cmd_write, nerr(%zu)", nerr);
@@ -665,7 +665,7 @@ static inline ssize_t vblk_sync_pwrite_s20(struct nvm_vblk *vblk,
 	}
 
 	if (!buf) {	// Allocate and use a padding buffer
-		pad_buf = nvm_buf_alloc(geo, pad_nbytes);
+		pad_buf = nvm_buf_alloc(vblk->dev, pad_nbytes, NULL);
 		if (!pad_buf) {
 			NVM_DEBUG("FAILED: nvm_buf_alloc(pad)");
 			errno = ENOMEM;
@@ -675,10 +675,10 @@ static inline ssize_t vblk_sync_pwrite_s20(struct nvm_vblk *vblk,
 		nvm_buf_fill(pad_buf, pad_nbytes);
 	}
 
-	if (meta_mode != NVM_META_MODE_NONE) {	// Meta
-		meta_buf = nvm_buf_alloc(geo, meta_tbytes);	// Alloc buf
+	if (meta_mode != NVM_META_MODE_NONE) {		// Meta buffer
+		meta_buf = nvm_buf_alloc(vblk->dev, meta_tbytes, NULL);
 		if (!meta_buf) {
-			nvm_buf_free(pad_buf);
+			nvm_buf_free(vblk->dev, pad_buf);
 			NVM_DEBUG("FAILED: nvm_buf_alloc(meta)");
 			errno = ENOMEM;
 			return -1;
@@ -733,8 +733,8 @@ static inline ssize_t vblk_sync_pwrite_s20(struct nvm_vblk *vblk,
 		{}
 	}
 
-	nvm_buf_free(pad_buf);
-	nvm_buf_free(meta_buf);
+	nvm_buf_free(vblk->dev, pad_buf);
+	nvm_buf_free(vblk->dev, meta_buf);
 
 	if (nerr) {
 		NVM_DEBUG("FAILED: nvm_cmd_write, nerr(%zu)", nerr);
@@ -782,7 +782,7 @@ static inline ssize_t vblk_pwrite_s12(struct nvm_vblk *vblk, const void *buf,
 	if (!buf) {	// Allocate and use a padding buffer
 		const size_t nbytes = CMD_NSPAGES * SPAGE_NADDRS * geo->sector_nbytes;
 
-		padding_buf = nvm_buf_alloc(geo, nbytes);
+		padding_buf = nvm_buf_alloc(vblk->dev, nbytes, NULL);
 		if (!padding_buf) {
 			NVM_DEBUG("FAILED: nvm_buf_alloc(padding)");
 			errno = ENOMEM;
@@ -791,8 +791,8 @@ static inline ssize_t vblk_pwrite_s12(struct nvm_vblk *vblk, const void *buf,
 		nvm_buf_fill(padding_buf, nbytes);
 	}
 
-	if (meta_mode != NVM_META_MODE_NONE) {	// Meta
-		meta = nvm_buf_alloc(geo, meta_tbytes);		// Alloc buf
+	if (meta_mode != NVM_META_MODE_NONE) {	// Meta buffer
+		meta = nvm_buf_alloc(vblk->dev, meta_tbytes, NULL);
 		if (!meta) {
 			NVM_DEBUG("FAILED: nvm_buf_alloc(meta)");
 			errno = ENOMEM;
@@ -847,8 +847,8 @@ static inline ssize_t vblk_pwrite_s12(struct nvm_vblk *vblk, const void *buf,
 		{}
 	}
 
-	nvm_buf_free(padding_buf);
-	nvm_buf_free(meta);
+	nvm_buf_free(vblk->dev, padding_buf);
+	nvm_buf_free(vblk->dev, meta);
 
 	if (nerr) {
 		errno = EIO;

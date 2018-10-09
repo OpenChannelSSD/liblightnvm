@@ -52,7 +52,7 @@ void test_CMD_RPRT_ORDR(void)
 	}
 
 out:
-	nvm_buf_free(rprt);
+	nvm_buf_free(dev, rprt);
 }
 
 int main(int argc, char **argv)

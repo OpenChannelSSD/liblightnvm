@@ -68,7 +68,7 @@ int nvm_cmd_rprt_arbs(struct nvm_dev *dev, int cs, int naddrs,
 
 		rprt = nvm_cmd_rprt(dev, &addr, 0x0, NULL);	// Grab RPRT
 		if (!(rprt && (rprt->ndescr == geo->l.nchunk))) {
-			free(rprt);
+			nvm_buf_free(dev, rprt);
 			errno = EINVAL;
 			return -1;
 		}
@@ -85,12 +85,12 @@ int nvm_cmd_rprt_arbs(struct nvm_dev *dev, int cs, int naddrs,
 		}
 
 		if (des_idx == rprt->ndescr) {			// No chunk !
-			free(rprt);
+			nvm_buf_free(dev, rprt);
 			errno = EINVAL;
 			return -1;
 		}
 
-		free(rprt);
+		nvm_buf_free(dev, rprt);
 	}
 
 	return 0;

@@ -68,7 +68,7 @@ static void erase_s20(int use_metadata, int erase_mode, int naddrs)
 	}
 
 	struct nvm_spec_rprt_descr *updated = use_metadata ?
-		nvm_buf_alloc(geo, naddrs * sizeof(struct nvm_spec_rprt_descr)) : NULL;
+		nvm_buf_alloc(dev, naddrs * sizeof(struct nvm_spec_rprt_descr), NULL) : NULL;
 
 	// erase the chunk
 	res = nvm_cmd_erase(dev, chunk_addrs, naddrs, updated, erase_mode, &ret);
@@ -110,8 +110,8 @@ static void erase_s20(int use_metadata, int erase_mode, int naddrs)
 		CU_ASSERT(verify->wp == 0);
 	}
 
-	nvm_buf_free(updated);
-	nvm_buf_free(rprt);
+	nvm_buf_free(dev, updated);
+	nvm_buf_free(dev, rprt);
 
 	return;
 }

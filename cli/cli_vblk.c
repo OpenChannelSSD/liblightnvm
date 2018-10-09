@@ -43,7 +43,7 @@ static ssize_t _vblk_erase(struct nvm_cli *NVM_UNUSED(cli), struct nvm_vblk *vbl
 
 static ssize_t _vblk_write(struct nvm_cli *cli, struct nvm_vblk *vblk)
 {
-	const struct nvm_geo *geo = nvm_dev_get_geo(cli->args.dev);
+	const struct nvm_dev *dev = nvm_vblk_get_dev(vblk);
 	const size_t nbytes = nvm_vblk_get_nbytes(vblk);
 	char *buf = NULL;
 	ssize_t res = 0;
@@ -52,7 +52,7 @@ static ssize_t _vblk_write(struct nvm_cli *cli, struct nvm_vblk *vblk)
 	nvm_vblk_pr(vblk);
 
 	nvm_cli_timer_start();		// Allocate write buffer
-	buf = nvm_buf_alloc(geo, nbytes);
+	buf = nvm_buf_alloc(dev, nbytes, NULL);
 	if (!buf) {
 		nvm_cli_perror("nvm_buf_alloc(write buffer)");
 		return -1;
@@ -65,7 +65,7 @@ static ssize_t _vblk_write(struct nvm_cli *cli, struct nvm_vblk *vblk)
 	     cli->opts.file_input) {	// Fill with content from file
 		if (nvm_buf_from_file(buf, nbytes, cli->opts.file_input)) {
 			nvm_cli_perror("nvm_buf_from_file");
-			nvm_buf_free(buf);
+			nvm_buf_free(dev, buf);
 			return -1;
 		}
 	} else {
@@ -82,14 +82,14 @@ static ssize_t _vblk_write(struct nvm_cli *cli, struct nvm_vblk *vblk)
 	if (res < 0)
 		nvm_cli_perror("nvm_vblk_write");
 
-	nvm_buf_free(buf);
+	nvm_buf_free(dev, buf);
 
 	return res;
 }
 
 static ssize_t _vblk_read(struct nvm_cli *cli, struct nvm_vblk *vblk)
 {
-	const struct nvm_geo *geo = nvm_dev_get_geo(cli->args.dev);
+	const struct nvm_dev *dev = nvm_vblk_get_dev(vblk);
 	const size_t nbytes = nvm_vblk_get_nbytes(vblk);
 	char *buf = NULL;
 	ssize_t res = 0;
@@ -98,7 +98,7 @@ static ssize_t _vblk_read(struct nvm_cli *cli, struct nvm_vblk *vblk)
 	nvm_vblk_pr(vblk);
 
 	nvm_cli_timer_start();		// Allocate read buffer
-	buf = nvm_buf_alloc(geo, nbytes);
+	buf = nvm_buf_alloc(dev, nbytes, NULL);
 	if (!buf) {
 		nvm_cli_perror("nvm_buf_alloc(read buffer)");
 		return -1;
@@ -125,24 +125,24 @@ static ssize_t _vblk_read(struct nvm_cli *cli, struct nvm_vblk *vblk)
 			nvm_cli_perror("nvm_buf_to_file");
 	}
 
-	nvm_buf_free(buf);
+	nvm_buf_free(dev, buf);
 
 	return res;
 }
 
 static ssize_t _vblk_pread(struct nvm_cli *cli, struct nvm_vblk *vblk)
 {
-	const struct nvm_geo *geo = nvm_dev_get_geo(cli->args.dev);
-	char *buf = NULL;
-	ssize_t res = 0;
+	const struct nvm_dev *dev = nvm_vblk_get_dev(vblk);
 	size_t nbytes = cli->args.dec_vals[0];
 	size_t offset = cli->args.dec_vals[1];
+	char *buf = NULL;
+	ssize_t res = 0;
 
 	_vblk_cmd_mode(vblk);
 	nvm_vblk_pr(vblk);
 
 	nvm_cli_timer_start();		// Allocate read buffer
-	buf = nvm_buf_alloc(geo, nbytes);
+	buf = nvm_buf_alloc(dev, nbytes, NULL);
 	if (!buf) {
 		nvm_cli_perror("nvm_buf_alloc");
 		return -1;
@@ -164,7 +164,7 @@ static ssize_t _vblk_pread(struct nvm_cli *cli, struct nvm_vblk *vblk)
 			nvm_cli_perror("nvm_buf_to_file");
 	}
 
-	nvm_buf_free(buf);
+	nvm_buf_free(dev, buf);
 
 	return res;
 }

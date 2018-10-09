@@ -1,9 +1,7 @@
 /*
  * buf - Helper functions for buffer management
  *
- * Copyright (C) 2015-2017 Javier Gonzáles <javier@cnexlabs.com>
- * Copyright (C) 2015-2017 Matias Bjørling <matias@cnexlabs.com>
- * Copyright (C) 2015-2017 Simon A. F. Lund <slund@cnexlabs.com>
+ * Copyright (C) Simon A. F. Lund <slund@cnexlabs.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,18 +29,58 @@
 #include <stdio.h>
 #include <errno.h>
 #include <liblightnvm.h>
+#include <nvm_dev.h>
+#include <nvm_be.h>
 
-void *nvm_buf_alloc(const struct nvm_geo *geo, size_t nbytes)
+#ifdef NVM_BE_SPDK_ENABLED
+#include <spdk/stdinc.h>
+#include <spdk/env.h>
+#include <spdk/nvme.h>
+#else
+static inline void* spdk_dma_malloc(size_t NVM_UNUSED(size),
+				    size_t NVM_UNUSED(align),
+				    uint64_t *NVM_UNUSED(phys_addr))
 {
-	char *buf;
+	errno = ENOSYS;
+	return NULL;
+}
+static inline void spdk_dma_free(void *NVM_UNUSED(buf)) { }
+#define SPDK_VTOPHYS_ERROR	(0xFFFFFFFFFFFFFFFFULL)
+uint64_t spdk_vtophys(void *NVM_UNUSED(buf)) { return SPDK_VTOPHYS_ERROR; }
+#endif
+
+void *nvm_buf_virt_alloc(size_t alignment, size_t nbytes)
+{
+	if (!nbytes) {
+		errno = EINVAL;
+		return NULL;
+	}
+#ifdef WIN32
+	return _aligned_malloc(nbytes, alignment);
+#else
+	return aligned_alloc(alignment, nbytes);
+#endif
+}
+
+void nvm_buf_virt_free(void *buf)
+{
+#ifdef WIN32
+	_aligned_free(buf);
+#else
+	free(buf);
+#endif
+}
+
+void *nvm_buf_alloc(const struct nvm_dev *dev, size_t nbytes, uint64_t *phys)
+{
 	size_t alignment = 0;
 
-	switch(geo->verid) {
+	switch(dev->geo.verid) {
 	case NVM_SPEC_VERID_12:
-		alignment = geo->sector_nbytes;
+		alignment = dev->geo.sector_nbytes;
 		break;
 	case NVM_SPEC_VERID_20:
-		alignment = geo->l.nbytes;
+		alignment = dev->geo.l.nbytes;
 		break;
 	}
 
@@ -51,36 +89,72 @@ void *nvm_buf_alloc(const struct nvm_geo *geo, size_t nbytes)
 		errno = EINVAL;
 		return NULL;
 	}
-#ifdef WIN32
-	buf = _aligned_malloc(nbytes, alignment);
-#else
-	buf = aligned_alloc(alignment, nbytes);
-#endif
-	if (!buf) {
-		NVM_DEBUG("call to alloc failed");
-		return NULL;	// Propagate errno
-	}
 
-	return buf;
-}
+	switch(dev->be->id) {
+	case NVM_BE_IOCTL:
+	case NVM_BE_LBD:
+		return nvm_buf_virt_alloc(alignment, nbytes);
 
-void *nvm_buf_alloca(size_t alignment, size_t nbytes)
-{
-	char *buf;
+	case NVM_BE_SPDK:
+		return spdk_dma_malloc(nbytes, alignment, phys);
 
-	if (!nbytes) {
+	case NVM_BE_ANY:
 		errno = EINVAL;
 		return NULL;
 	}
-#ifdef WIN32
-	buf = _aligned_malloc(nbytes, alignment);
-#else
-	buf = aligned_alloc(alignment, nbytes);
-#endif
-	if (!buf)
-		return NULL;	// Propagate errno
 
-	return buf;
+	errno = EINVAL;
+	return NULL;
+}
+
+void nvm_buf_free(const struct nvm_dev *dev, void *buf)
+{
+	switch(dev->be->id) {
+		case NVM_BE_IOCTL:
+		case NVM_BE_LBD:
+			nvm_buf_virt_free(buf);
+			break;
+
+		case NVM_BE_SPDK:
+			spdk_dma_free(buf);
+			break;
+
+		case NVM_BE_ANY:
+			NVM_DEBUG("invalid dev, can't de-allocate");
+			break;
+	}
+}
+
+int nvm_buf_vtophys(const struct nvm_dev *dev, void *buf, uint64_t *phys)
+{
+	if (!phys) {
+		NVM_DEBUG("FAILED: phys is not provided");
+		errno = EINVAL;
+		return -1;
+	}
+
+	switch(dev->be->id) {
+		case NVM_BE_ANY:
+			NVM_DEBUG("FAILED: invalid be-id: %d", dev->be->id);
+			errno = EINVAL;
+			return -1;
+
+		case NVM_BE_IOCTL:
+		case NVM_BE_LBD:
+			NVM_DEBUG("FAILED: backend does not support DMA alloc");
+			errno = ENOSYS;
+			return -1;
+
+		case NVM_BE_SPDK:
+			*phys = spdk_vtophys(buf);
+			if (SPDK_VTOPHYS_ERROR == *phys) {
+				errno = EIO;
+				return -1;
+			}
+			break;
+	}
+
+	return 0;
 }
 
 void nvm_buf_fill(char *buf, size_t nbytes)
@@ -88,15 +162,6 @@ void nvm_buf_fill(char *buf, size_t nbytes)
 	#pragma omp parallel for schedule(static, 1)
 	for (size_t i = 0; i < nbytes; ++i)
 		buf[i] = (i % 26) + 65;
-}
-
-void nvm_buf_free(void *buf)
-{
-#ifdef WIN32
-	_aligned_free(buf);
-#else
-	free(buf);
-#endif
 }
 
 void nvm_buf_pr(char *buf, size_t nbytes)
@@ -112,7 +177,6 @@ void nvm_buf_pr(char *buf, size_t nbytes)
 	}
 	printf("# NVM_BUF_PR - END\n");
 }
-
 
 size_t nvm_buf_diff(char *expected, char *actual, size_t nbytes)
 {
@@ -200,11 +264,16 @@ void nvm_buf_set_free(struct nvm_buf_set *bufs)
 		return;
 	}
 
-	nvm_buf_free(bufs->write);
-	nvm_buf_free(bufs->write_meta);
-	nvm_buf_free(bufs->read);
-	nvm_buf_free(bufs->read_meta);
-	nvm_buf_free(bufs);
+	if (!bufs->dev) {
+		NVM_DEBUG("invalid buf-set, cannot de-allocate");
+		return;
+	}
+
+	nvm_buf_free(bufs->dev, bufs->write);
+	nvm_buf_free(bufs->dev, bufs->write_meta);
+	nvm_buf_free(bufs->dev, bufs->read);
+	nvm_buf_free(bufs->dev, bufs->read_meta);
+	nvm_buf_free(bufs->dev, bufs);
 }
 
 void nvm_buf_set_fill(struct nvm_buf_set *bufs)
@@ -223,27 +292,28 @@ void nvm_buf_set_fill(struct nvm_buf_set *bufs)
 struct nvm_buf_set *nvm_buf_set_alloc(struct nvm_dev *dev, size_t nbytes,
 				      size_t nbytes_meta)
 {
-	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
 	struct nvm_buf_set *bufs = NULL;
 
-	bufs = nvm_buf_alloc(geo, sizeof(*bufs));
+	bufs = nvm_buf_alloc(dev, sizeof(*bufs), NULL);
 	if (!bufs) {
 		NVM_DEBUG("FAILED: allocating bufs");
 		return NULL;
 	}
 	memset(bufs, 0, sizeof(*bufs));
 
+	bufs->dev = dev;
+
 	if (nbytes) {
 		bufs->nbytes = nbytes;
 
-		bufs->write = nvm_buf_alloc(geo, bufs->nbytes);
+		bufs->write = nvm_buf_alloc(dev, bufs->nbytes, NULL);
 		if (!bufs->write) {
 			NVM_DEBUG("FAILED: alloc w nbytes: %zu", bufs->nbytes);
 			nvm_buf_set_free(bufs);
 			return NULL;
 		}
 
-		bufs->read = nvm_buf_alloc(geo, bufs->nbytes);
+		bufs->read = nvm_buf_alloc(dev, bufs->nbytes, NULL);
 		if (!bufs->read) {
 			NVM_DEBUG("FAILED: alloc r nbytes: %zu", bufs->nbytes);
 			nvm_buf_set_free(bufs);
@@ -254,14 +324,14 @@ struct nvm_buf_set *nvm_buf_set_alloc(struct nvm_dev *dev, size_t nbytes,
 	if (nbytes_meta) {
 		bufs->nbytes_meta = nbytes_meta;
 
-		bufs->write_meta = nvm_buf_alloc(geo, bufs->nbytes_meta);
+		bufs->write_meta = nvm_buf_alloc(dev, bufs->nbytes_meta, NULL);
 		if (!bufs->write_meta) {
 			NVM_DEBUG("FAILED: alloc wm nbytes_meta: %zu", bufs->nbytes_meta);
 			nvm_buf_set_free(bufs);
 			return NULL;
 		}
 
-		bufs->read_meta = nvm_buf_alloc(geo, bufs->nbytes_meta);
+		bufs->read_meta = nvm_buf_alloc(dev, bufs->nbytes_meta, NULL);
 		if (!bufs->read_meta) {
 			NVM_DEBUG("FAILED: alloc rm nbytes_meta: %zu", bufs->nbytes_meta);
 			nvm_buf_set_free(bufs);

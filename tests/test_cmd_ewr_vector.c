@@ -41,14 +41,14 @@ void ewr_s12_1addr(int use_meta)
 	buf_r_nbytes = geo->sector_nbytes;
 	meta_r_nbytes = geo->meta_nbytes;
 
-	buf_w = nvm_buf_alloc(geo, buf_w_nbytes);	// Setup buffers
+	buf_w = nvm_buf_alloc(dev, buf_w_nbytes, NULL);	// Setup buffers
 	if (!buf_w) {
 		CU_FAIL("nvm_buf_alloc");
 		goto out;
 	}
 	nvm_buf_fill(buf_w, buf_w_nbytes);
 
-	meta_w = nvm_buf_alloc(geo, meta_w_nbytes);
+	meta_w = nvm_buf_alloc(dev, meta_w_nbytes, NULL);
 	if (!meta_w) {
 		CU_FAIL("nvm_buf_alloc");
 		goto out;
@@ -71,13 +71,13 @@ void ewr_s12_1addr(int use_meta)
 		       strlen(meta_descr));
 	}
 
-	buf_r = nvm_buf_alloc(geo, buf_r_nbytes);
+	buf_r = nvm_buf_alloc(dev, buf_r_nbytes, NULL);
 	if (!buf_r) {
 		CU_FAIL("nvm_buf_alloc");
 		goto out;
 	}
 
-	meta_r = nvm_buf_alloc(geo, meta_r_nbytes);
+	meta_r = nvm_buf_alloc(dev, meta_r_nbytes, NULL);
 	if (!meta_r) {
 		CU_FAIL("nvm_buf_alloc");
 		goto out;
@@ -182,10 +182,10 @@ out:
 		nvm_addr_prn(&blk_addr, 1, dev);
 	}
 
-	nvm_buf_free(meta_r);
-	nvm_buf_free(buf_r);
-	nvm_buf_free(meta_w);
-	nvm_buf_free(buf_w);
+	nvm_buf_free(dev, meta_r);
+	nvm_buf_free(dev, buf_r);
+	nvm_buf_free(dev, meta_w);
+	nvm_buf_free(dev, buf_w);
 }
 
 void test_EWR_S12_1ADDR_META0_SNGL(void)
@@ -479,7 +479,7 @@ static void ewr_s20(int use_rwmeta, int use_erase_meta)
 	nvm_buf_set_fill(bufs);
 
 	if (use_erase_meta) {
-		erase_meta = nvm_buf_alloc(geo, naddrs * sizeof(*erase_meta));
+		erase_meta = nvm_buf_alloc(dev, naddrs * sizeof(*erase_meta), NULL);
 		if (!erase_meta) {
 			CU_FAIL("nvm_buf_alloc for erase_meta");
 			goto out;
@@ -567,7 +567,7 @@ static void ewr_s20(int use_rwmeta, int use_erase_meta)
 
 out:
 	nvm_buf_set_free(bufs);
-	nvm_buf_free(erase_meta);
+	nvm_buf_free(dev, erase_meta);
 }
 
 void test_EWR_S20_RWMETA0_EMETA0(void)

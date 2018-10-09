@@ -159,7 +159,7 @@ struct nvm_spec_idfy *nvm_be_ioctl_idfy(struct nvm_dev *dev,
 	struct nvm_spec_idfy *idfy = NULL;
 	int err;
 
-	idfy = nvm_buf_alloca(0x1000, sizeof(*idfy));
+	idfy = nvm_buf_alloc(dev, sizeof(*idfy), NULL);
 	if (!idfy) {
 		errno = ENOMEM;
 		return NULL;
@@ -173,7 +173,7 @@ struct nvm_spec_idfy *nvm_be_ioctl_idfy(struct nvm_dev *dev,
 	err = ioctl_vam(dev, &cmd, ret);
 	if (err) {
 		NVM_DEBUG("FAILED: ioctl_vam err: %d", err);
-		nvm_buf_free(idfy);
+		nvm_buf_free(dev, idfy);
 		return NULL; // NOTE: Propagate errno
 	}
 
@@ -251,7 +251,7 @@ struct nvm_spec_rprt *nvm_be_ioctl_rprt(struct nvm_dev *dev,
 	const size_t descr_len = sizeof(struct nvm_spec_rprt_descr);
 	const size_t rprt_len = ndescr * descr_len + sizeof(rprt->ndescr);
 
-	rprt = nvm_buf_alloca(0x1000, rprt_len);
+	rprt = nvm_buf_alloc(dev, rprt_len, NULL);
 	if (!rprt) {
 		errno = ENOMEM;
 		return NULL;
@@ -287,7 +287,7 @@ struct nvm_spec_rprt *nvm_be_ioctl_rprt(struct nvm_dev *dev,
 		if(ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, &cmd)) {
 			NVM_DEBUG("FAILED: ioctl(NVME_IOCTL_ADMIN_CMD), errno: %s",
 				  strerror(errno));
-			free(rprt);
+			nvm_buf_free(dev, rprt);
 			return NULL;
 		}
 	}
@@ -306,7 +306,7 @@ struct nvm_spec_bbt *nvm_be_ioctl_gbbt(struct nvm_dev *dev,
 
 	uint32_t nblks = dev->geo.nblocks * dev->geo.nplanes;
 	spec_bbt_sz = sizeof(*spec_bbt) + sizeof(*(spec_bbt->blk)) * nblks;
-	spec_bbt = nvm_buf_alloc(&dev->geo, spec_bbt_sz);
+	spec_bbt = nvm_buf_alloc(dev, spec_bbt_sz, NULL);
 	if (!spec_bbt) {
 		NVM_DEBUG("FAILED: malloc k_bbt failed");
 		errno = ENOMEM;
@@ -323,14 +323,14 @@ struct nvm_spec_bbt *nvm_be_ioctl_gbbt(struct nvm_dev *dev,
 	if (err || (spec_bbt->tblks != nblks)) {
 		NVM_DEBUG("FAILED: be execution failed err: %d", err);
 		errno = EIO;
-		nvm_buf_free(spec_bbt);
+		nvm_buf_free(dev, spec_bbt);
 		return NULL;
 	}
 	if (!(spec_bbt->tblid[0] == 'B' && spec_bbt->tblid[1] == 'B' &&
 	      spec_bbt->tblid[2] == 'L' && spec_bbt->tblid[3] == 'T')) {
 		NVM_DEBUG("FAILED: invalid format of returned bbt");
 		errno = EIO;
-		nvm_buf_free(spec_bbt);
+		nvm_buf_free(dev, spec_bbt);
 		return NULL;
 	}
 
@@ -409,7 +409,7 @@ int nvm_be_ioctl_scalar_erase(struct nvm_dev *dev, struct nvm_addr *addrs,
 		return -1;
 	}
 
-	dsmr = nvm_buf_alloc(geo, dsmr_len);
+	dsmr = nvm_buf_alloc(dev, dsmr_len, NULL);
 	if (!dsmr) {
 		NVM_DEBUG("FAILED: nvm_buf_alloc of DSM range");
 		return -1;
@@ -431,11 +431,11 @@ int nvm_be_ioctl_scalar_erase(struct nvm_dev *dev, struct nvm_addr *addrs,
 	err = ioctl(dev->fd, NVME_IOCTL_IO_CMD, &cmd);
 	if (err) {
 		NVM_DEBUG("FAILED: ioctl(NVME_IOCTL_IO_CMD) err: %d", err);
-		nvm_buf_free(dsmr);
+		nvm_buf_free(dev, dsmr);
 		return -1;
 	}
 
-	nvm_buf_free(dsmr);
+	nvm_buf_free(dev, dsmr);
 
 	return 0;
 }
@@ -718,7 +718,7 @@ struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags)
 		return NULL;
 	}
 
-	erase_meta_hack = nvm_buf_alloc(&dev->geo, dev->geo.l.nbytes);
+	erase_meta_hack = nvm_buf_alloc(dev, dev->geo.l.nbytes, NULL);
 	if (!erase_meta_hack) {
 		NVM_DEBUG("FAILED: erase_meta_hack alloc");
 		close(dev->fd);
@@ -731,7 +731,7 @@ struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags)
 
 void nvm_be_ioctl_close(struct nvm_dev *dev)
 {
-	nvm_buf_free(erase_meta_hack);
+	nvm_buf_free(dev, erase_meta_hack);
 	close(dev->fd);
 }
 

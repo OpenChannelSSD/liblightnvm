@@ -62,7 +62,7 @@ void cmd_rprt(struct nvm_addr *punit_addr)
 	// Write it partially and check that it changed state to OPEN and wp
 	{
 		buf_len = nvm_vblk_get_nbytes(vblk) / 2;
-		buf = nvm_buf_alloc(geo, buf_len);
+		buf = nvm_buf_alloc(dev, buf_len, NULL);
 
 		res = nvm_vblk_write(vblk, buf, buf_len);
 		CU_ASSERT(res >= 0);
@@ -112,9 +112,10 @@ void cmd_rprt(struct nvm_addr *punit_addr)
 
 out:
 	nvm_vblk_free(vblk);
-	for (int idx = 0; idx <= rprt_cur; ++idx)
-		nvm_buf_free(rprt[idx]);
-	nvm_buf_free(buf);
+	for (int idx = 0; idx <= rprt_cur; ++idx) {
+		nvm_buf_free(dev, rprt[idx]);
+	}
+	nvm_buf_free(dev, buf);
 }
 
 void test_CMD_RPRT_PUNIT(void)

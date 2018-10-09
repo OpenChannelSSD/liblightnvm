@@ -961,26 +961,56 @@ int nvm_dev_get_ws_opt(const struct nvm_dev *dev);
 int nvm_dev_get_mw_cunits(const struct nvm_dev *dev);
 
 /**
- * Allocate a buffer aligned to match the given geometry
+ * Allocate a buffer for IO with the given device
+ *
+ * The buffer will be aligned to device geometry and DMA allocated if required
+ * by the backend for IO
  *
  * @note
  * nbytes must be greater than zero and a multiple of minimal granularity
  * @note
- * Free the buffer using nvm_buf_free
+ * De-allocate the buffer using `nvm_buf_free`
  *
- * @param geo The geometry to get alignment information from
+ * @see nvm_buf_free
+ *
+ * @param dev The device to allocate IO buffers for
  * @param nbytes The size of the allocated buffer in bytes
+ * @param phys A pointer to the variable to hold the physical address of the
+ * allocated buffer. If NULL, the physical address is not returned.
  *
- * @returns A pointer to the allocated memory. On error: NULL is returned and
- * `errno` set appropriatly
+ * @returns On success, a pointer to the allocated memory is returned. On error,
+ * NULL is returned and `errno` set to indicate the error.
  */
-void *nvm_buf_alloc(const struct nvm_geo *geo, size_t nbytes);
+void *nvm_buf_alloc(const struct nvm_dev *dev, size_t nbytes, uint64_t *phys);
 
 /**
- * Allocate a buffer of the given size with the given alignment
+ * Free the given IO buffer allocated with `nvm_buf_alloc`
+ *
+ * @see nvm_buf_alloc
+ *
+ * @param dev Pointer to the device which the IO buffer was allocated for
+ * @param buf Pointer to a buffer allocated with `nvm_buf_alloc`
+ */
+void nvm_buf_free(const struct nvm_dev *dev, void *buf);
+
+/**
+ * Retrieve the physical address of the given buffer
+ *
+ * @param dev Pointer to the device which the IO buffer was allocated for
+ * @param buf Pointer to a buffer allocated with `nvm_buf_alloc`
+ * @param phys A pointer to the variable to hold the physical address of the
+ * given buffer.
+ *
+ * @return On success, 0 is returned. On error, -1 is returned and errno set to
+ * indicate the error.
+ */
+int nvm_buf_vtophys(const struct nvm_dev *dev, void *buf, uint64_t *phys);
+
+/**
+ * Allocate a buffer of virtual memory of the given 'nbytes' and 'alignment'
  *
  * @note
- * Free the buffer using nvm_buf_free
+ * You must use `nvm_buf_virt_free` to de-allocate the buffer
  *
  * @param alignment The alignment in bytes
  * @param nbytes The size of the buffer in bytes
@@ -988,7 +1018,14 @@ void *nvm_buf_alloc(const struct nvm_geo *geo, size_t nbytes);
  * @returns A pointer to the allocated memory. On error: NULL is returned and
  * `errno` set appropriatly
  */
-void *nvm_buf_alloca(size_t alignment, size_t nbytes);
+void *nvm_buf_virt_alloc(size_t alignment, size_t nbytes);
+
+/**
+ * Free the given virtual memory buffer
+ *
+ * @param buf Pointer to a buffer allocated with `nvm_buf_virt_alloc`
+ */
+void nvm_buf_virt_free(void *buf);
 
 /**
  * Fills `buf` with chars A-Z
@@ -997,13 +1034,6 @@ void *nvm_buf_alloca(size_t alignment, size_t nbytes);
  * @param nbytes Amount of bytes to fill in buf
  */
 void nvm_buf_fill(char *buf, size_t nbytes);
-
-/**
- * Free the given buffer, calling regular "free" on the buffer might fail
- *
- * @param buf Pointer to the buffer to fill
- */
-void nvm_buf_free(void *buf);
 
 /**
  * Prints `buf` to stdout
@@ -1045,15 +1075,25 @@ int nvm_buf_to_file(char *buf, size_t nbytes, const char *path);
  */
 int nvm_buf_from_file(char *buf, size_t nbytes, const char *path);
 
+/**
+ * Encapsulation of a IO buffer-set for common-case setup
+ *
+ * This structure is allocated and initialized by `nvm_buf_set_alloc`, and
+ * de-allocated by `nvm_buf_set_free`
+ *
+ * @struct nvm_buf_set
+ */
 struct nvm_buf_set {
-	char *write;
-	char *write_meta;
+	struct nvm_dev *dev;	///< Device for which IO buffers are allocated
 
-	char *read;
-	char *read_meta;
+	char *write;		///< Data buffer to use for writes
+	char *write_meta;	///< Meta / OOB buffer to use for writes
 
-	size_t nbytes;
-	size_t nbytes_meta;
+	char *read;		///< Data buffer to use for reads
+	char *read_meta;	///< Meta / OOB buffer to use for reads
+
+	size_t nbytes;		///< # of bytes per data buffer
+	size_t nbytes_meta;	///< # of bytes per meta buffer
 };
 
 /**

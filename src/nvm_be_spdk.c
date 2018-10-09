@@ -404,37 +404,20 @@ static void cmd_sync_admin_cb(void *cb_arg, const struct spdk_nvme_cpl *cpl)
 }
 
 static inline int cmd_sync_admin(struct nvm_dev *dev, struct nvm_nvme_cmd *cmd,
-			      void *buf, size_t buf_len, struct nvm_ret *ret)
+				 void *buf, size_t buf_len, struct nvm_ret *ret)
 {
 	struct nvm_be_spdk_state *state = dev->be_state;
 	struct spdk_nvme_cmd *nvme_cmd = (struct spdk_nvme_cmd *)cmd;
 	struct cpl_ctx ctx = { 0 };
-	void *buf_dma = NULL;
 
-	if (buf && buf_len) {
-		size_t alloc_len = NVM_BE_SPDK_ALIGN * ((buf_len + NVM_BE_SPDK_ALIGN - 1) / NVM_BE_SPDK_ALIGN);
-
-		buf_dma = spdk_dma_malloc(alloc_len, NVM_BE_SPDK_ALIGN, NULL);
-		if (!buf_dma) {
-			NVM_DEBUG("FAILED: spdk_dma_malloc");
-			return -1;
-		}
-	}
-
-	if (spdk_nvme_ctrlr_cmd_admin_raw(state->ctrlr, nvme_cmd, buf_dma,
-					  buf_len, cmd_sync_admin_cb, &ctx)) {
+	if (spdk_nvme_ctrlr_cmd_admin_raw(state->ctrlr, nvme_cmd, buf, buf_len,
+					  cmd_sync_admin_cb, &ctx)) {
 		NVM_DEBUG("FAILED: spdk_nvme_ctrlr_cmd_admin_raw");
-		spdk_dma_free(buf_dma);
 		return -1;
 	}
 
 	while (!ctx.completed) {
 		spdk_nvme_ctrlr_process_admin_completions(state->ctrlr);
-	}
-
-	if (buf && buf_len) {
-		memcpy(buf, buf_dma, buf_len);
-		spdk_dma_free(buf_dma);
 	}
 
 	if (ret) {
@@ -487,7 +470,7 @@ struct nvm_spec_idfy *nvm_be_spdk_idfy(struct nvm_dev *dev, struct nvm_ret *ret)
 	cmd.opcode = NVM_AOPC_IDFY;
 	cmd.nsid = state->nsid;
 
-	idfy = nvm_buf_alloca(NVM_BE_SPDK_ALIGN, idfy_len);
+	idfy = nvm_buf_alloc(dev, idfy_len, NULL);
 	if (!idfy) {
 		errno = ENOMEM;
 		return NULL;
@@ -496,6 +479,7 @@ struct nvm_spec_idfy *nvm_be_spdk_idfy(struct nvm_dev *dev, struct nvm_ret *ret)
 
 	if (cmd_sync_admin(dev, &cmd, idfy, idfy_len, ret)) {
 		NVM_DEBUG("FAILED: cmd_sync_admin");
+		nvm_buf_free(dev, idfy);
 		return NULL;
 	}
 
@@ -567,7 +551,7 @@ struct nvm_spec_rprt *nvm_be_spdk_rprt(struct nvm_dev *dev,
 	ndescr = addr ? geo->l.nchunk : geo->l.nchunk * geo->l.npunit * geo->l.npugrp;
 	rprt_len = ndescr * DESCR_NBYTES + sizeof(rprt->ndescr);
 
-	rprt = nvm_buf_alloca(NVM_BE_SPDK_ALIGN, rprt_len);
+	rprt = nvm_buf_alloc(dev, rprt_len, NULL);
 	if (!rprt) {
 		errno = ENOMEM;
 		return NULL;
@@ -581,7 +565,7 @@ struct nvm_spec_rprt *nvm_be_spdk_rprt(struct nvm_dev *dev,
 		if (cmd_sync_admin_glp(dev, &rprt->descr[i],
 				      (count * DESCR_NBYTES) / 4 - 1,
 				      lpo_off + i * DESCR_NBYTES, 0x0, ret)) {
-			free(rprt);
+			nvm_buf_free(dev, rprt);
 			return NULL;
 		}
 	}
@@ -592,7 +576,6 @@ struct nvm_spec_rprt *nvm_be_spdk_rprt(struct nvm_dev *dev,
 struct nvm_spec_bbt *nvm_be_spdk_gbbt(struct nvm_dev *dev, struct nvm_addr addr,
 				      struct nvm_ret *ret)
 {
-	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
 	struct nvm_be_spdk_state *state = dev->be_state;
 
 	const uint32_t nblks = dev->geo.g.nblocks * dev->geo.g.nplanes;
@@ -601,7 +584,7 @@ struct nvm_spec_bbt *nvm_be_spdk_gbbt(struct nvm_dev *dev, struct nvm_addr addr,
 
 	struct nvm_nvme_cmd cmd = { 0 };
 
-	bbt = nvm_buf_alloc(geo, bbt_len);
+	bbt = nvm_buf_alloc(dev, bbt_len, NULL);
 	if (!bbt) {
 		errno = ENOMEM;
 		return NULL;
@@ -614,7 +597,7 @@ struct nvm_spec_bbt *nvm_be_spdk_gbbt(struct nvm_dev *dev, struct nvm_addr addr,
 
 	if (cmd_sync_admin(dev, &cmd, bbt, bbt_len, ret)) {
 		NVM_DEBUG("FAILED: cmd_sync_admin");
-		nvm_buf_free(bbt);
+		nvm_buf_free(dev, bbt);
 		return NULL;
 	}
 
@@ -661,11 +644,6 @@ int nvm_be_spdk_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs,
 	return 0;
 }
 
-//
-// TODO: Fix this cmd-wrapping by moving the DMA allocations up into
-// 'nvm_buf_alloc' or similar function and thereby achieving zero-copy from
-// application to device and much cleaner code...
-//
 struct cmd_wrap {
 	struct nvm_ret *ret;
 
@@ -673,15 +651,14 @@ struct cmd_wrap {
 	struct nvm_nvme_cmd cmd;
 	struct spdk_nvme_cmd *nvme_cmd;
 
+	void *meta;
+	size_t meta_len;
+
 	void *data;
-	void *data_dma;
 	size_t data_len;
 
-	struct spdk_nvme_dsm_range *dsmr;
-
-	void *meta;
-	void *meta_dma;
-	size_t meta_len;
+	struct spdk_nvme_dsm_range *dsmr_dma;
+	size_t dsmr_len;
 
 	int naddrs;
 	uint64_t addr_dfmt;	// Address on device-format for SCALAR CMDS
@@ -696,10 +673,7 @@ struct cmd_wrap {
 
 static inline void wrap_term(struct cmd_wrap *wrap)
 {
-	/* TODO: hoist up into 'nvm_buf_alloc' */
-	spdk_dma_free(wrap->data_dma);
-	spdk_dma_free(wrap->meta_dma);
-
+	spdk_dma_free(wrap->dsmr_dma);
 	spdk_dma_free(wrap->addrs_dma);
 	spdk_dma_free(wrap->dst_dma);
 	free(wrap);
@@ -714,20 +688,6 @@ static inline void wrap_cpl(struct cmd_wrap *wrap,
 					| (cpl->status.sct << 8)
 					| (cpl->status.m   << 13)
 					| (cpl->status.dnr << 14);
-	}
-
-	switch(wrap->cmd.opcode) {
-	case NVM_DOPC_SCALAR_READ:
-	case NVM_DOPC_VECTOR_READ:
-	case NVM_DOPC_VECTOR_ERASE:
-		if (wrap->data) {
-			memcpy(wrap->data, wrap->data_dma, wrap->data_len);
-		}
-		if (wrap->meta) {
-			memcpy(wrap->meta, wrap->meta_dma, wrap->meta_len);
-		}
-	default:
-		break;
 	}
 
 	wrap->completed = spdk_nvme_cpl_is_error(cpl) ? -1 : 1;
@@ -750,7 +710,7 @@ static void cmd_async_cb(void *cb_arg, const struct spdk_nvme_cpl *cpl)
 }
 
 /**
- * Setup submission entry and allocate DMA memory for the given opcode
+ * Setup submission entry and virt_allocate DMA memory for the given opcode
  */
 static inline struct cmd_wrap *wrap_setup(struct nvm_dev *dev, int opcode,
 					  void *data, void *meta,
@@ -788,21 +748,24 @@ static inline struct cmd_wrap *wrap_setup(struct nvm_dev *dev, int opcode,
 	wrap->addrs_len = naddrs * sizeof(uint64_t);
 
 	if (NVM_DOPC_SCALAR_ERASE == opcode) {
-		wrap->data_len = sizeof(*wrap->dsmr) * naddrs;
-		wrap->data_dma = spdk_dma_malloc(wrap->data_len,
+		wrap->dsmr_len = sizeof(*wrap->dsmr_dma) * naddrs;
+		wrap->dsmr_dma = spdk_dma_malloc(wrap->dsmr_len,
 						 NVM_BE_SPDK_ALIGN, NULL);
-		if (!wrap->data_dma) {
+
+		if (!wrap->dsmr_dma) {
 			NVM_DEBUG("FAILED: nvm_buf_alloc of DSM range");
 			goto failed;
 		}
 
-		wrap->dsmr = wrap->data_dma;
+		wrap->data = wrap->dsmr_dma;
+		wrap->data_len = wrap->dsmr_len;
+
 		for(int idx = 0; idx < naddrs; ++idx) {
 			const uint64_t slba = nvm_addr_gen2dev(dev, addrs[idx]);
 
-			wrap->dsmr[idx].attributes.raw = 0;
-			wrap->dsmr[idx].length = geo->l.nsectr;
-			wrap->dsmr[idx].starting_lba = slba;
+			wrap->dsmr_dma[idx].attributes.raw = 0;
+			wrap->dsmr_dma[idx].length = geo->l.nsectr;
+			wrap->dsmr_dma[idx].starting_lba = slba;
 		}
 
 		cmd->dsm.nr = naddrs - 1;
@@ -835,48 +798,7 @@ static inline struct cmd_wrap *wrap_setup(struct nvm_dev *dev, int opcode,
 		wrap->meta_len = meta ? naddrs * sizeof(struct nvm_spec_rprt_descr) : 0;
 	}
 
-	// Do DMA allocation on behalf of the user
-	// TODO: hoist up into nvm_buf_alloc
-	if (data) {		// Allocate and populate data
-		wrap->data_dma = spdk_dma_malloc(wrap->data_len,
-						 NVM_BE_SPDK_ALIGN, NULL);
-		if (!wrap->data_dma) {
-			NVM_DEBUG("FAILED: spdk_dma_malloc(data_dma)");
-			goto failed;
-		}
-
-		switch (opcode) {
-		case NVM_DOPC_VECTOR_WRITE:
-		case NVM_DOPC_SCALAR_WRITE:
-			memcpy(wrap->data_dma, wrap->data, wrap->data_len);
-		default:
-			break;
-		}
-	}
-
-	// Do DMA allocation on behalf of the user
-	// TODO: hoist up into nvm_buf_alloc
-	if (meta) {		// Allocate and populate meta
-		uint64_t meta_phys = 0;
-
-		wrap->meta_dma = spdk_dma_malloc(wrap->meta_len,
-						 NVM_BE_SPDK_ALIGN,
-						 &meta_phys);
-		if (!wrap->meta_dma) {
-			NVM_DEBUG("FAILED: spdk_dma_malloc(meta_dma)");
-			goto failed;
-		}
-
-		switch (opcode) {
-		case NVM_DOPC_VECTOR_WRITE:
-		case NVM_DOPC_SCALAR_WRITE:
-			memcpy(wrap->meta_dma, wrap->meta, wrap->meta_len);
-		default:
-			break;
-		}
-
-		wrap->nvme_cmd->mptr = meta_phys;
-	}
+	wrap->nvme_cmd->mptr = meta ? spdk_vtophys(meta) : 0;
 
 	switch (opcode) {
 		break;
@@ -974,9 +896,9 @@ static inline int cmd_async_ewrc(struct nvm_dev *dev, struct nvm_addr addrs[],
 	err = spdk_nvme_ctrlr_cmd_io_raw_with_md(state->ctrlr,
 						 qpair,
 						 wrap->nvme_cmd,
-						 wrap->data_dma,
+						 wrap->data,
 						 wrap->data_len,
-						 wrap->meta_dma,
+						 wrap->meta,
 						 cmd_async_cb,
 						 wrap);
 	if (err) {
@@ -1020,9 +942,9 @@ static inline int cmd_sync_ewrc(struct nvm_dev *dev,
 	err = spdk_nvme_ctrlr_cmd_io_raw_with_md(state->ctrlr,
 						 qpair,
 						 wrap->nvme_cmd,
-						 wrap->data_dma,
+						 wrap->data,
 						 wrap->data_len,
-						 wrap->meta_dma,
+						 wrap->meta,
 						 cmd_sync_cb,
 						 wrap);
 	omp_unset_lock(qpair_lock);

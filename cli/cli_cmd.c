@@ -17,7 +17,7 @@ static int cmd_idfy(struct nvm_cli *cli)
 
 	nvm_spec_idfy_pr(idfy, nvm_dev_get_quirks(dev));
 
-	nvm_buf_free(idfy);
+	nvm_buf_free(dev, idfy);
 
 	return 0;
 }
@@ -39,7 +39,7 @@ static int cmd_rprt(struct nvm_cli *cli)
 
 	nvm_spec_rprt_pr(rprt);
 
-	nvm_buf_free(rprt);
+	nvm_buf_free(dev, rprt);
 
 	return 0;
 }
@@ -58,7 +58,7 @@ static int cmd_gbbt(struct nvm_cli *cli)
 
 	nvm_spec_bbt_pr(bbt);
 
-	nvm_buf_free(bbt);
+	nvm_buf_free(dev, bbt);
 
 	return 0;
 }
@@ -112,7 +112,7 @@ static int cmd_write(struct nvm_cli *cli)
 	int meta_tbytes = args->naddrs * args->geo->meta_nbytes;
 	char *meta = NULL;
 
-	buf = nvm_buf_alloc(args->geo, buf_nbytes);	// data buffer
+	buf = nvm_buf_alloc(args->dev, buf_nbytes, NULL);	// data buffer
 	if (!buf) {
 		nvm_cli_perror("nvm_buf_alloc");
 		return -1;
@@ -121,7 +121,7 @@ static int cmd_write(struct nvm_cli *cli)
 	     cli->opts.file_input) {	// Fill with content from file
 		if (nvm_buf_from_file(buf, buf_nbytes, cli->opts.file_input)) {
 			nvm_cli_perror("nvm_buf_from_file");
-			nvm_buf_free(buf);
+			nvm_buf_free(args->dev, buf);
 			return -1;
 		}
 	} else {
@@ -129,10 +129,10 @@ static int cmd_write(struct nvm_cli *cli)
 	}
 
 	if (meta_tbytes) {
-		meta = nvm_buf_alloc(args->geo, meta_tbytes);
+		meta = nvm_buf_alloc(args->dev, meta_tbytes, NULL);
 		if (!meta) {
 			nvm_cli_perror("nvm_buf_alloc");
-			nvm_buf_free(buf);
+			nvm_buf_free(args->dev, buf);
 			return -1;
 		}
 		memset(meta, 0, meta_tbytes);
@@ -148,8 +148,8 @@ static int cmd_write(struct nvm_cli *cli)
 		nvm_ret_pr(&ret);
 	}
 
-	nvm_buf_free(buf);
-	nvm_buf_free(meta);
+	nvm_buf_free(args->dev, buf);
+	nvm_buf_free(args->dev, meta);
 
 	return err;
 }
@@ -166,17 +166,17 @@ static int cmd_read(struct nvm_cli *cli)
 	int meta_tbytes = args->naddrs * args->geo->meta_nbytes;
 	char *meta = NULL;
 
-	buf = nvm_buf_alloc(args->geo, buf_nbytes);	// data buffer
+	buf = nvm_buf_alloc(args->dev, buf_nbytes, NULL);	// data buffer
 	if (!buf) {
 		nvm_cli_perror("nvm_buf_alloc");
 		return -1;
 	}
 
 	if (meta_tbytes) {
-		meta = nvm_buf_alloc(args->geo, meta_tbytes);
+		meta = nvm_buf_alloc(args->dev, meta_tbytes, NULL);
 		if (!meta) {
 			nvm_cli_perror("nvm_buf_alloc");
-			nvm_buf_free(buf);
+			nvm_buf_free(args->dev, buf);
 			return -1;
 		}
 		memset(meta, 0, meta_tbytes);
@@ -212,8 +212,8 @@ static int cmd_read(struct nvm_cli *cli)
 			nvm_cli_perror("nvm_buf_to_file");
 	}
 
-	nvm_buf_free(buf);
-	nvm_buf_free(meta);
+	nvm_buf_free(args->dev, buf);
+	nvm_buf_free(args->dev, meta);
 
 	return err;
 }
