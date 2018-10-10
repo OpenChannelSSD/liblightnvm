@@ -128,20 +128,20 @@ add_library(${LNAME} STATIC ${HEADER_FILES} ${SOURCE_FILES})
 set_target_properties(${LNAME} PROPERTIES OUTPUT_NAME ${LNAME})
 
 if(${NVM_BE_SPDK_ENABLED})
-	target_link_libraries(${LNAME} spdk_nvme)
-	target_link_libraries(${LNAME} spdk_util)
-	target_link_libraries(${LNAME} spdk_log)
-	target_link_libraries(${LNAME} spdk_env_dpdk)
-	target_link_libraries(${LNAME} rte_bus_pci)
-	target_link_libraries(${LNAME} rte_eal)
-	target_link_libraries(${LNAME} rte_mempool)
-	target_link_libraries(${LNAME} rte_mempool_ring)
-	target_link_libraries(${LNAME} rte_pci)
-	target_link_libraries(${LNAME} rte_ring)
-	target_link_libraries(${LNAME} rt)
-	target_link_libraries(${LNAME} dl)
-	target_link_libraries(${LNAME} numa)
-	target_link_libraries(${LNAME} uuid)
+	set(NVM_BE_SPDK_DEPS spdk_nvme spdk_util spdk_log spdk_env_dpdk rte_bus_pci rte_eal rte_mempool rte_mempool_ring rte_pci rte_ring rt dl numa uuid)
+	foreach(NVM_BE_SPDK_DEP ${NVM_BE_SPDK_DEPS})
+		target_link_libraries(${LNAME} ${NVM_BE_SPDK_DEP})
+	endforeach()
+
+	try_compile(NVM_BE_SPDK_HAS_SGL
+		"${CMAKE_BINARY_DIR}/temp"
+		"${CMAKE_SOURCE_DIR}/cmake/try_compile_spdk_nvme_ctrlr_cmd_iov_raw_with_md.c"
+		LINK_LIBRARIES ${NVM_BE_SPDK_DEPS}
+		CMAKE_FLAGS ${CMAKE_C_FLAGS})
+
+	if (NVM_BE_SPDK_HAS_SGL)
+		add_definitions(-DNVM_BE_SPDK_HAS_SGL)
+	endif()
 endif()
 
 if(${NVM_BE_LBD_ENABLED} AND HAVE_LIBAIO)

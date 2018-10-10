@@ -65,6 +65,22 @@ struct nvm_be nvm_be_spdk = {
 #include <nvm_be.h>
 #include <nvm_be_spdk.h>
 
+#ifndef NVM_BE_SPDK_HAS_SGL
+int spdk_nvme_ctrlr_cmd_iov_raw_with_md(
+			struct spdk_nvme_ctrlr *NVM_UNUSED(ctrlr),
+			struct spdk_nvme_qpair *NVM_UNUSED(qpair),
+			struct spdk_nvme_cmd *NVM_UNUSED(cmd),
+			spdk_nvme_cmd_cb NVM_UNUSED(cb_fn),
+			void *NVM_UNUSED(cb_arg),
+			spdk_nvme_req_reset_sgl_cb NVM_UNUSED(reset_sgl_fn),
+			spdk_nvme_req_next_sge_cb NVM_UNUSED(next_sge_fn),
+			void *NVM_UNUSED(metadata))
+{
+	errno = ENOSYS;
+	return -1;
+}
+#endif
+
 static void sgl_reset_cb(void *cb_arg, uint32_t NVM_UNUSED(offset))
 {
 	struct nvm_sgl *sgl = ((struct nvm_cmd_wrap *) cb_arg)->data;
