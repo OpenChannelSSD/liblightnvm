@@ -19,17 +19,51 @@ HEAD can be subject to a git rebase.
  - Weed out redundant headers
  - Unify `nvm_bp`, `test_intf` and CLI ENV, args, setup and sub-commands
 
-## v0.1.6 (Upcoming)
+## v0.1.6
 
-* Zero-copy support for SPDK backend
- - Expand `nvm_buf` allocators
+Three new features and a couple of fixes/improvements.
 
-* Support for use of SGL via the `nvm_cmd` interface
- - Call `nvm_cmd_*` using command option `NVM_CMD_SGL`
- - data-ptr points to SGL/iovec compatible structure
- - meta-ptr points to SGL/iovec compatible structure
+### Experimental support for Scather/Gather List (SGL)
 
-## v0.1.5 (Upcoming)
+* Setup SGL (`nvm_sgl`) using `nvm_sgl_{alloc,add,free}`
+* Call `nvm_cmd_{write,read}` using command option `NVM_CMD_SGL`
+* Pass the `nvm_sgl` to `nvm_cmd_{write,read}` as data-pointer
+* NOTES
+  - meta is still a contiguous buffer
+  - requires custom version of SPDK
+
+### Zero-Copy support for SPDK backend
+
+* Changed `nvm_buf_{alloc,free}`
+  - Replaced `nvm_geo` with `nvm_dev` as argument, such that it can determine
+not only alignment requirements but also DMA/non-DMA allocation requirements
+  - Added `phys` argument such that the caller can get the physical address
+upon call-time
+* Added `nvm_dev` as argument to `nvm_buf_set`
+* Added `nvm_buf_vtophys` retrieving the physical addr. of an IO buffer
+* Added `nvm_buf_virt_{alloc,free}` explicitly allocating non-DMA buffers not
+intended for IO
+
+* lib: Refactored due to changes
+* cli: Refactored due to changes
+* lib: Refactored due to changes
+* `nvm_be_spdk`:
+ - Refactored due to changes
+ - Removed allocations for DATA and META and removed transfers back and
+ forth
+
+### Towards reuse of command construction/handling
+
+Added internal API for backends to perform command construction and completion
+handling these are available via `nvm_cmd_wrap_{setup,cpl,term}`.
+
+### Fixes / Improvements
+
+* Added build of examples to build-system
+* Fixed regression in return values for `NVM_BE_SPDK` with `NVM_CMD_SYNC`
+* Added inclusion of libbsd queue.h it is used internally by `nvm_sgl`
+
+## v0.1.5
 
 ### CLI
 
