@@ -14,7 +14,8 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/async-ex02-completion-poke.c
 	${CMAKE_CURRENT_SOURCE_DIR}/async-ex03-small-queue.c
 	${CMAKE_CURRENT_SOURCE_DIR}/async-ex12-horz.c
-	${CMAKE_CURRENT_SOURCE_DIR}/sync-ex01-ewr.c
+	${CMAKE_CURRENT_SOURCE_DIR}/sync-ex01-ewr-prp.c
+	${CMAKE_CURRENT_SOURCE_DIR}/sync-ex02-ewr-sgl.c
 	${CMAKE_CURRENT_SOURCE_DIR}/vblk-ex01-ewr.c)
 
 #

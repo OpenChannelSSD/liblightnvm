@@ -12,7 +12,7 @@
 #include <liblightnvm_spec.h>
 #include <liblightnvm_cli.h>
 
-int sync_ex01_ewr(struct nvm_bp *bp)
+int sync_ex02_ewr_sgl(struct nvm_bp *bp)
 {
 	const size_t nchunks = bp->naddrs;
 	struct nvm_addr chunk_addrs[nchunks];
@@ -41,21 +41,27 @@ int sync_ex01_ewr(struct nvm_bp *bp)
 		const size_t ofz = cidx * bp->geo->l.nsectr * bp->geo->l.nbytes;
 
 		for (size_t sectr = 0; sectr < bp->geo->l.nsectr; sectr += ws_opt) {
-			size_t buf_ofz = sectr * bp->geo->l.nbytes + ofz;
+			const size_t buf_ofz = sectr * bp->geo->l.nbytes + ofz;
+			struct nvm_sgl *sgl = nvm_sgl_alloc();
 			struct nvm_addr addrs[ws_opt];
 
 			for (size_t aidx = 0; aidx < ws_opt; ++aidx) {
+				const size_t buf_ofz_seg = buf_ofz + (aidx * bp->geo->l.nbytes);
 				addrs[aidx].val = chunk_addrs[cidx].val;
 				addrs[aidx].l.sectr = sectr + aidx;
+
+				nvm_sgl_add(sgl, bp->bufs->write + buf_ofz_seg,
+					    bp->geo->l.nbytes);
 			}
 
-			err = nvm_cmd_write(bp->dev, addrs, ws_opt,
-					    bp->bufs->write + buf_ofz, NULL,
-					    0x0, NULL);
+			err = nvm_cmd_write(bp->dev, addrs, ws_opt, sgl, NULL,
+					    NVM_CMD_SGL, NULL);
 			if (err) {
 				perror("nvm_cmd_write");
 				return -1;
 			}
+
+			nvm_sgl_free(sgl);
 		}
 	}
 	nvm_cli_timer_stop();
@@ -67,27 +73,33 @@ int sync_ex01_ewr(struct nvm_bp *bp)
 		const size_t ofz = cidx * bp->geo->l.nsectr * bp->geo->l.nbytes;
 
 		for (size_t sectr = 0; sectr < bp->geo->l.nsectr; sectr += ws_opt) {
-			size_t buf_ofz = sectr * bp->geo->l.nbytes + ofz;
+			const size_t buf_ofz = sectr * bp->geo->l.nbytes + ofz;
+			struct nvm_sgl *sgl = nvm_sgl_alloc();
 			struct nvm_addr addrs[ws_opt];
 
 			for (size_t aidx = 0; aidx < ws_opt; ++aidx) {
+				size_t buf_ofz_seg = buf_ofz + (aidx * bp->geo->l.nbytes);
 				addrs[aidx].val = chunk_addrs[cidx].val;
 				addrs[aidx].l.sectr = sectr + aidx;
+
+				nvm_sgl_add(sgl, bp->bufs->read + buf_ofz_seg,
+					    bp->geo->l.nbytes);
 			}
 
-			err = nvm_cmd_read(bp->dev, addrs, ws_opt,
-					   bp->bufs->read + buf_ofz, NULL,
-					   0x0, NULL);
+			err = nvm_cmd_read(bp->dev, addrs, ws_opt, sgl, NULL,
+					    NVM_CMD_SGL, NULL);
 			if (err) {
-				perror("nvm_cmd_read");
+				perror("nvm_cmd_write");
 				return -1;
 			}
+
+			nvm_sgl_free(sgl);
 		}
 	}
 	nvm_cli_timer_stop();
 	nvm_cli_timer_bw_pr("nvm_cmd_read", bp->bufs->nbytes);
 
-	// Sanity check: did we actually read from device
+	// Sanity check: did we read what we wrote?
 	diff = nvm_buf_diff(bp->bufs->write, bp->bufs->read,
 			    bp->bufs->nbytes);
 	if (diff) {
@@ -111,9 +123,9 @@ int main(int argc, char **argv)
 		return err;
 	}
 
-	err = sync_ex01_ewr(bp);
+	err = sync_ex02_ewr_sgl(bp);
 	if (err) {
-		perror("ex01_async_read");
+		perror("sync_ex02_ewr_sgl");
 		err = EXIT_FAILURE;
 	}
 
