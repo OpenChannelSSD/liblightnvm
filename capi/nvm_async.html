@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nvm_async - Asynchronous cmd &mdash; liblightnvm 0.1.5 documentation</title>
+  <title>nvm_async - Async. Controls &mdash; liblightnvm 0.1.6 documentation</title>
   
 
   
@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="nvm_vblk - Virtual Block" href="nvm_vblk.html" />
+    <link rel="next" title="nvm_sgl - Scather/Gather Lists" href="nvm_sgl.html" />
     <link rel="prev" title="nvm_cmd - Raw Commands" href="nvm_cmd.html" /> 
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.5
+                0.1.6
               </div>
             
           
@@ -93,7 +93,7 @@
 <li class="toctree-l2"><a class="reference internal" href="nvm_buf.html">nvm_buf - Buffer Allocation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_addr.html">nvm_addr - Addressing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_cmd.html">nvm_cmd - Raw Commands</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">nvm_async - Asynchronous cmd</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">nvm_async - Async. Controls</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-async-cmd-ctx">nvm_async_cmd_ctx</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-async-ctx">nvm_async_ctx</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-async-poke">nvm_async_poke</a></li>
@@ -104,6 +104,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#nvm-async-get-outstanding">nvm_async_get_outstanding</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_sgl.html">nvm_sgl - Scather/Gather Lists</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_vblk.html">nvm_vblk - Virtual Block</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_bbt.html">nvm_bbt - Bad-Block-Table</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_bp.html">nvm_bp - Boilerplate</a></li>
@@ -161,7 +162,7 @@
         
           <li><a href="index.html">C API</a> &raquo;</li>
         
-      <li>nvm_async - Asynchronous cmd</li>
+      <li>nvm_async - Async. Controls</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -180,8 +181,10 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="nvm-async-asynchronous-cmd">
-<span id="sec-capi-nvm-async"></span><h1>nvm_async - Asynchronous cmd<a class="headerlink" href="#nvm-async-asynchronous-cmd" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="nvm-async-async-controls">
+<span id="sec-capi-nvm-async"></span><h1>nvm_async - Async. Controls<a class="headerlink" href="#nvm-async-async-controls" title="Permalink to this headline">¶</a></h1>
+<p>When using the <code class="docutils literal notranslate"><span class="pre">nvm_cmd</span></code> option <code class="docutils literal notranslate"><span class="pre">NVM_CMD_ASYNC</span></code>, then use these functions
+to steer the asynchronous mechanics.</p>
 <div class="section" id="nvm-async-cmd-ctx">
 <h2>nvm_async_cmd_ctx<a class="headerlink" href="#nvm-async-cmd-ctx" title="Permalink to this headline">¶</a></h2>
 <dl class="struct">
@@ -336,7 +339,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="nvm_vblk.html" class="btn btn-neutral float-right" title="nvm_vblk - Virtual Block" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="nvm_sgl.html" class="btn btn-neutral float-right" title="nvm_sgl - Scather/Gather Lists" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="nvm_cmd.html" class="btn btn-neutral" title="nvm_cmd - Raw Commands" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -370,7 +373,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.5',
+            VERSION:'0.1.6',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

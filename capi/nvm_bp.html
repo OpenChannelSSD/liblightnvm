@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nvm_bp - Boilerplate &mdash; liblightnvm 0.1.5 documentation</title>
+  <title>nvm_bp - Boilerplate &mdash; liblightnvm 0.1.6 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.5
+                0.1.6
               </div>
             
           
@@ -93,15 +93,16 @@
 <li class="toctree-l2"><a class="reference internal" href="nvm_buf.html">nvm_buf - Buffer Allocation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_addr.html">nvm_addr - Addressing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_cmd.html">nvm_cmd - Raw Commands</a></li>
-<li class="toctree-l2"><a class="reference internal" href="nvm_async.html">nvm_async - Asynchronous cmd</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_async.html">nvm_async - Async. Controls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_sgl.html">nvm_sgl - Scather/Gather Lists</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_vblk.html">nvm_vblk - Virtual Block</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_bbt.html">nvm_bbt - Bad-Block-Table</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">nvm_bp - Boilerplate</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-bp">nvm_bp</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#nvm-bp-pr">nvm_bp_pr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-bp-term">nvm_bp_term</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#nvm-bp-init">nvm_bp_init</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-bp-init-from-args">nvm_bp_init_from_args</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-bp-init">nvm_bp_init</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-bp-pr">nvm_bp_pr</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="misc.html">Miscellaneous</a></li>
@@ -179,6 +180,7 @@
             
   <div class="section" id="nvm-bp-boilerplate">
 <span id="sec-capi-nvm-bp"></span><h1>nvm_bp - Boilerplate<a class="headerlink" href="#nvm-bp-boilerplate" title="Permalink to this headline">¶</a></h1>
+<p>Utilities for boilerplate code.</p>
 <div class="section" id="nvm-bp">
 <h2>nvm_bp<a class="headerlink" href="#nvm-bp" title="Permalink to this headline">¶</a></h2>
 <dl class="struct">
@@ -227,30 +229,12 @@
 </dd></dl>
 
 </div>
-<div class="section" id="nvm-bp-pr">
-<h2>nvm_bp_pr<a class="headerlink" href="#nvm-bp-pr" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="c.nvm_bp_pr">
-<span class="target" id="liblightnvm_8h_1a361e161127834ea8c855d882c26f1fec"></span>void <code class="descname">nvm_bp_pr</code><span class="sig-paren">(</span>const struct  <a class="reference internal" href="#c.nvm_bp" title="nvm_bp">nvm_bp</a>  *<em>&nbsp;bp</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bp_pr" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</div>
 <div class="section" id="nvm-bp-term">
 <h2>nvm_bp_term<a class="headerlink" href="#nvm-bp-term" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_bp_term">
 <span class="target" id="liblightnvm_8h_1aab6327a125d54ecd4e9741f5d5147894"></span>void <code class="descname">nvm_bp_term</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_bp" title="nvm_bp">nvm_bp</a>  *<em>&nbsp;bp</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bp_term" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-</div>
-<div class="section" id="nvm-bp-init">
-<h2>nvm_bp_init<a class="headerlink" href="#nvm-bp-init" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="c.nvm_bp_init">
-<span class="target" id="liblightnvm_8h_1a67b68cd0e80244b7e0063005398bc746"></span>struct <a class="reference internal" href="#c.nvm_bp" title="nvm_bp">nvm_bp</a>* <code class="descname">nvm_bp_init</code><span class="sig-paren">(</span>const char *<em>&nbsp;dev_ident</em>, int<em>&nbsp;flags</em>, int<em>&nbsp;naddrs</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bp_init" title="Permalink to this definition">¶</a></dt>
-<dd><p>argv[3]: naddrs argv[2]: Backend Identifier as hex, eg. </p>
-<p>NVM_BE_IOCTL(0x1), NVM_BE_SPDK(0x4) argv[1]: Device identifier, eg. “/dev/nvme0n1” or “traddrs:0000:00:01.0” </p>
-</dd></dl>
 
 </div>
 <div class="section" id="nvm-bp-init-from-args">
@@ -265,6 +249,24 @@
 </dl>
 </p>
 </dd></dl>
+
+</div>
+<div class="section" id="nvm-bp-init">
+<h2>nvm_bp_init<a class="headerlink" href="#nvm-bp-init" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_bp_init">
+<span class="target" id="liblightnvm_8h_1a67b68cd0e80244b7e0063005398bc746"></span>struct <a class="reference internal" href="#c.nvm_bp" title="nvm_bp">nvm_bp</a>* <code class="descname">nvm_bp_init</code><span class="sig-paren">(</span>const char *<em>&nbsp;dev_ident</em>, int<em>&nbsp;flags</em>, int<em>&nbsp;naddrs</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bp_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>argv[3]: naddrs argv[2]: Backend Identifier as hex, eg. </p>
+<p>NVM_BE_IOCTL(0x1), NVM_BE_SPDK(0x4) argv[1]: Device identifier, eg. “/dev/nvme0n1” or “traddrs:0000:00:01.0” </p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-bp-pr">
+<h2>nvm_bp_pr<a class="headerlink" href="#nvm-bp-pr" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_bp_pr">
+<span class="target" id="liblightnvm_8h_1a361e161127834ea8c855d882c26f1fec"></span>void <code class="descname">nvm_bp_pr</code><span class="sig-paren">(</span>const struct  <a class="reference internal" href="#c.nvm_bp" title="nvm_bp">nvm_bp</a>  *<em>&nbsp;bp</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_bp_pr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </div>
 </div>
@@ -311,7 +313,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.5',
+            VERSION:'0.1.6',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

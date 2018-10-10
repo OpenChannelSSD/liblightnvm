@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nvm_ver &mdash; liblightnvm 0.1.6 documentation</title>
+  <title>nvm_sgl - Scather/Gather Lists &mdash; liblightnvm 0.1.6 documentation</title>
   
 
   
@@ -28,8 +28,8 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="nvm_meta" href="nvm_meta.html" />
-    <link rel="prev" title="nvm_ret" href="nvm_ret.html" /> 
+    <link rel="next" title="nvm_vblk - Virtual Block" href="nvm_vblk.html" />
+    <link rel="prev" title="nvm_async - Async. Controls" href="nvm_async.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -94,27 +94,17 @@
 <li class="toctree-l2"><a class="reference internal" href="nvm_addr.html">nvm_addr - Addressing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_cmd.html">nvm_cmd - Raw Commands</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_async.html">nvm_async - Async. Controls</a></li>
-<li class="toctree-l2"><a class="reference internal" href="nvm_sgl.html">nvm_sgl - Scather/Gather Lists</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">nvm_sgl - Scather/Gather Lists</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-sgl">nvm_sgl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-sgl-add">nvm_sgl_add</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-sgl-alloc">nvm_sgl_alloc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-sgl-free">nvm_sgl_free</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_vblk.html">nvm_vblk - Virtual Block</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_bbt.html">nvm_bbt - Bad-Block-Table</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_bp.html">nvm_bp - Boilerplate</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="misc.html">Miscellaneous</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="nvm_be.html">nvm_be</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nvm_ret.html">nvm_ret</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">nvm_ver</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#nvm-ver-major">nvm_ver_major</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#nvm-ver-minor">nvm_ver_minor</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#nvm-ver-patch">nvm_ver_patch</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#nvm-ver-pr">nvm_ver_pr</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="nvm_meta.html">nvm_meta</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nvm_mode.html">nvm_mode</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nvm_pmode.html">nvm_pmode</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nvm_bounds.html">nvm_bounds</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nvm_quirks.html">nvm_quirks</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="misc.html">Miscellaneous</a></li>
 <li class="toctree-l2"><a class="reference internal" href="header.html">Public Header</a></li>
 </ul>
 </li>
@@ -168,15 +158,13 @@
         
           <li><a href="index.html">C API</a> &raquo;</li>
         
-          <li><a href="misc.html">Miscellaneous</a> &raquo;</li>
-        
-      <li>nvm_ver</li>
+      <li>nvm_sgl - Scather/Gather Lists</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/capi/nvm_ver.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/capi/nvm_sgl.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -189,53 +177,76 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="nvm-ver">
-<span id="sec-capi-nvm-ver"></span><h1>nvm_ver<a class="headerlink" href="#nvm-ver" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="nvm-ver-major">
-<h2>nvm_ver_major<a class="headerlink" href="#nvm-ver-major" title="Permalink to this headline">¶</a></h2>
+  <div class="section" id="nvm-sgl-scather-gather-lists">
+<span id="sec-capi-nvm-sgl"></span><h1>nvm_sgl - Scather/Gather Lists<a class="headerlink" href="#nvm-sgl-scather-gather-lists" title="Permalink to this headline">¶</a></h1>
+<p>When using the <code class="docutils literal notranslate"><span class="pre">nvm_cmd</span></code> option <code class="docutils literal notranslate"><span class="pre">NVM_CMD_SGL</span></code>, then use these functions to
+manage the Scather/Gather Lists.</p>
+<div class="section" id="nvm-sgl">
+<h2>nvm_sgl<a class="headerlink" href="#nvm-sgl" title="Permalink to this headline">¶</a></h2>
+<dl class="struct">
+<dt id="c.nvm_sgl">
+<span class="target" id="structnvm__sgl"></span><em class="property">struct </em><code class="descname">nvm_sgl</code><a class="headerlink" href="#c.nvm_sgl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Opaque handle for a Scatter Gather List (SGL). </p>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-sgl-add">
+<h2>nvm_sgl_add<a class="headerlink" href="#nvm-sgl-add" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="c.nvm_ver_major">
-<span class="target" id="liblightnvm_8h_1aa4466103089a0ba08e23ea94e429ec13"></span>int <code class="descname">nvm_ver_major</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_ver_major" title="Permalink to this definition">¶</a></dt>
-<dd><p><dl class="docutils">
-<dt><strong>Return</strong></dt>
-<dd>the “major” version of the library </dd>
+<dt id="c.nvm_sgl_add">
+<span class="target" id="liblightnvm_8h_1a0cb924f941df5202096275b76c161393"></span>void <code class="descname">nvm_sgl_add</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_sgl" title="nvm_sgl">nvm_sgl</a>  *<em>&nbsp;sgl</em>, void *<em>&nbsp;buf</em>, size_t<em>&nbsp;nbytes</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_sgl_add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an entry to the SGL. </p>
+<p><dl class="docutils">
+<dt><strong>See</strong></dt>
+<dd><a class="reference internal" href="#liblightnvm_8h_1a6bbed0dfe94ef08d02b8a9f446b92102"><span class="std std-ref">nvm_sgl_alloc</span></a> </dd>
+<dt><strong>See</strong></dt>
+<dd><a class="reference internal" href="nvm_buf.html#liblightnvm_8h_1a4e1d8ccfebbc262bbe8646eb1a26cfa9"><span class="std std-ref">nvm_buf_alloc</span></a></dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">sgl</span></code>: Pointer to sgl as allocated by <code class="docutils literal notranslate"><span class="pre">nvm_sgl_alloc</span></code> </li>
+<li><code class="docutils literal notranslate"><span class="pre">buf</span></code>: Pointer to buffer as allocated with <code class="docutils literal notranslate"><span class="pre">nvm_buf_alloc</span></code> </li>
+<li><code class="docutils literal notranslate"><span class="pre">nbytes</span></code>: Size of the given buffer in bytes </li>
+</ul>
+</dd>
 </dl>
 </p>
 </dd></dl>
 
 </div>
-<div class="section" id="nvm-ver-minor">
-<h2>nvm_ver_minor<a class="headerlink" href="#nvm-ver-minor" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="nvm-sgl-alloc">
+<h2>nvm_sgl_alloc<a class="headerlink" href="#nvm-sgl-alloc" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="c.nvm_ver_minor">
-<span class="target" id="liblightnvm_8h_1ad44a458c7ca1933978b04b5e215fe081"></span>int <code class="descname">nvm_ver_minor</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_ver_minor" title="Permalink to this definition">¶</a></dt>
-<dd><p><dl class="docutils">
+<dt id="c.nvm_sgl_alloc">
+<span class="target" id="liblightnvm_8h_1a6bbed0dfe94ef08d02b8a9f446b92102"></span>struct <a class="reference internal" href="#c.nvm_sgl" title="nvm_sgl">nvm_sgl</a>* <code class="descname">nvm_sgl_alloc</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_sgl_alloc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allocate a SGL. </p>
+<p><dl class="docutils">
+<dt><strong>See</strong></dt>
+<dd><a class="reference internal" href="#liblightnvm_8h_1a0cb924f941df5202096275b76c161393"><span class="std std-ref">nvm_sgl_add</span></a> </dd>
+<dt><strong>See</strong></dt>
+<dd><a class="reference internal" href="#liblightnvm_8h_1a577b60c53798884dffb3ee3b3b15f4e4"><span class="std std-ref">nvm_sgl_free</span></a></dd>
 <dt><strong>Return</strong></dt>
-<dd>the “minor” version of the library </dd>
+<dd>An initialized (empty) SGL. </dd>
 </dl>
 </p>
 </dd></dl>
 
 </div>
-<div class="section" id="nvm-ver-patch">
-<h2>nvm_ver_patch<a class="headerlink" href="#nvm-ver-patch" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="nvm-sgl-free">
+<h2>nvm_sgl_free<a class="headerlink" href="#nvm-sgl-free" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="c.nvm_ver_patch">
-<span class="target" id="liblightnvm_8h_1a67d9bd2088d56cf0d5c5ce8dee858649"></span>int <code class="descname">nvm_ver_patch</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_ver_patch" title="Permalink to this definition">¶</a></dt>
-<dd><p><dl class="docutils">
-<dt><strong>Return</strong></dt>
-<dd>the “patch” version of the library </dd>
+<dt id="c.nvm_sgl_free">
+<span class="target" id="liblightnvm_8h_1a577b60c53798884dffb3ee3b3b15f4e4"></span>void <code class="descname">nvm_sgl_free</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_sgl" title="nvm_sgl">nvm_sgl</a>  *<em>&nbsp;sgl</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_sgl_free" title="Permalink to this definition">¶</a></dt>
+<dd><p>De-allocate an SGL. </p>
+<p><dl class="docutils">
+<dt><strong>See</strong></dt>
+<dd><a class="reference internal" href="#liblightnvm_8h_1a6bbed0dfe94ef08d02b8a9f446b92102"><span class="std std-ref">nvm_sgl_alloc</span></a></dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">sgl</span></code>: Pointer to sgl as allocated by <code class="docutils literal notranslate"><span class="pre">nvm_sgl_alloc</span></code> </li>
+</ul>
+</dd>
 </dl>
 </p>
-</dd></dl>
-
-</div>
-<div class="section" id="nvm-ver-pr">
-<h2>nvm_ver_pr<a class="headerlink" href="#nvm-ver-pr" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="c.nvm_ver_pr">
-<span class="target" id="liblightnvm_8h_1ad11691ce2b6faa5bfb2b2ae261d9b538"></span>void <code class="descname">nvm_ver_pr</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_ver_pr" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prints version information about the library. </p>
 </dd></dl>
 
 </div>
@@ -249,10 +260,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="nvm_meta.html" class="btn btn-neutral float-right" title="nvm_meta" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="nvm_vblk.html" class="btn btn-neutral float-right" title="nvm_vblk - Virtual Block" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="nvm_ret.html" class="btn btn-neutral" title="nvm_ret" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="nvm_async.html" class="btn btn-neutral" title="nvm_async - Async. Controls" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nvm_buf - Buffer Allocation &mdash; liblightnvm 0.1.5 documentation</title>
+  <title>nvm_buf - Buffer Allocation &mdash; liblightnvm 0.1.6 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.5
+                0.1.6
               </div>
             
           
@@ -92,16 +92,18 @@
 <li class="toctree-l2"><a class="reference internal" href="nvm_geo.html">nvm_geo - Geometry</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">nvm_buf - Buffer Allocation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-buf-set">nvm_buf_set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-buf-vtophys">nvm_buf_vtophys</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-buf-to-file">nvm_buf_to_file</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-buf-from-file">nvm_buf_from_file</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-buf-diff">nvm_buf_diff</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-buf-alloc">nvm_buf_alloc</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#nvm-buf-alloca">nvm_buf_alloca</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-buf-set-alloc">nvm_buf_set_alloc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-buf-virt-alloc">nvm_buf_virt_alloc</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-buf-fill">nvm_buf_fill</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-buf-set-fill">nvm_buf_set_fill</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-buf-free">nvm_buf_free</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-buf-set-free">nvm_buf_set_free</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nvm-buf-virt-free">nvm_buf_virt_free</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-buf-diff-pr">nvm_buf_diff_pr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-buf-pr">nvm_buf_pr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#nvm-buf-set-pr">nvm_buf_set_pr</a></li>
@@ -109,7 +111,8 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_addr.html">nvm_addr - Addressing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_cmd.html">nvm_cmd - Raw Commands</a></li>
-<li class="toctree-l2"><a class="reference internal" href="nvm_async.html">nvm_async - Asynchronous cmd</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_async.html">nvm_async - Async. Controls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_sgl.html">nvm_sgl - Scather/Gather Lists</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_vblk.html">nvm_vblk - Virtual Block</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_bbt.html">nvm_bbt - Bad-Block-Table</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_bp.html">nvm_bp - Boilerplate</a></li>
@@ -193,39 +196,74 @@
 <dl class="struct">
 <dt id="c.nvm_buf_set">
 <span class="target" id="structnvm__buf__set"></span><em class="property">struct </em><code class="descname">nvm_buf_set</code><a class="headerlink" href="#c.nvm_buf_set" title="Permalink to this definition">¶</a></dt>
-<dd><div class="breathe-sectiondef docutils container">
+<dd><p>Encapsulation of a IO buffer-set for common-case setup. </p>
+<p>This structure is allocated and initialized by <code class="docutils literal notranslate"><span class="pre">nvm_buf_set_alloc</span></code>, and de-allocated by <code class="docutils literal notranslate"><span class="pre">nvm_buf_set_free</span></code> </p>
+<div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Members</p>
+<dl class="variable">
+<dt id="c.nvm_buf_set::dev">
+<span class="target" id="structnvm__buf__set_1aea59686406c86cd423a14dc931174b16"></span>struct <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>* <code class="descname">dev</code><a class="headerlink" href="#c.nvm_buf_set::dev" title="Permalink to this definition">¶</a></dt>
+<dd><p>Device for which IO buffers are allocated. </p>
+</dd></dl>
+
 <dl class="variable">
 <dt id="c.nvm_buf_set::write">
 <span class="target" id="structnvm__buf__set_1ab8f5e5f29d0eecedfc58d079c2a1155a"></span>char* <code class="descname">write</code><a class="headerlink" href="#c.nvm_buf_set::write" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Data buffer to use for writes. </p>
+</dd></dl>
 
 <dl class="variable">
 <dt id="c.nvm_buf_set::write_meta">
 <span class="target" id="structnvm__buf__set_1af47e98e232f199f212b5d3d5ca9e799c"></span>char* <code class="descname">write_meta</code><a class="headerlink" href="#c.nvm_buf_set::write_meta" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Meta / OOB buffer to use for writes. </p>
+</dd></dl>
 
 <dl class="variable">
 <dt id="c.nvm_buf_set::read">
 <span class="target" id="structnvm__buf__set_1a246942e819da0b52d71e600aad969e56"></span>char* <code class="descname">read</code><a class="headerlink" href="#c.nvm_buf_set::read" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Data buffer to use for reads. </p>
+</dd></dl>
 
 <dl class="variable">
 <dt id="c.nvm_buf_set::read_meta">
 <span class="target" id="structnvm__buf__set_1a5dc24f8ac2a61fb04fd8aeb2bc9c1767"></span>char* <code class="descname">read_meta</code><a class="headerlink" href="#c.nvm_buf_set::read_meta" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Meta / OOB buffer to use for reads. </p>
+</dd></dl>
 
 <dl class="variable">
 <dt id="c.nvm_buf_set::nbytes">
 <span class="target" id="structnvm__buf__set_1ab11f18dcbf5fbbbd4d66dbce4db9619b"></span>size_t <code class="descname">nbytes</code><a class="headerlink" href="#c.nvm_buf_set::nbytes" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p><em>of bytes per data buffer</em></p>
+</dd></dl>
 
 <dl class="variable">
 <dt id="c.nvm_buf_set::nbytes_meta">
 <span class="target" id="structnvm__buf__set_1ae4f03a63a9fb805ec4f5899aaac2cb63"></span>size_t <code class="descname">nbytes_meta</code><a class="headerlink" href="#c.nvm_buf_set::nbytes_meta" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p><em>of bytes per meta buffer</em></p>
+</dd></dl>
 
 </div>
+</dd></dl>
+
+</div>
+<div class="section" id="nvm-buf-vtophys">
+<h2>nvm_buf_vtophys<a class="headerlink" href="#nvm-buf-vtophys" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_buf_vtophys">
+<span class="target" id="liblightnvm_8h_1ab64e2f9017c4b38f1a75dfc114c2e3ab"></span>int <code class="descname">nvm_buf_vtophys</code><span class="sig-paren">(</span>const struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, void *<em>&nbsp;buf</em>, uint64_t *<em>&nbsp;phys</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_buf_vtophys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve the physical address of the given buffer. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>On success, 0 is returned. On error, -1 is returned and errno set to indicate the error. </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">dev</span></code>: Pointer to the device which the IO buffer was allocated for </li>
+<li><code class="docutils literal notranslate"><span class="pre">buf</span></code>: Pointer to a buffer allocated with <code class="docutils literal notranslate"><span class="pre">nvm_buf_alloc</span></code> </li>
+<li><code class="docutils literal notranslate"><span class="pre">phys</span></code>: A pointer to the variable to hold the physical address of the given buffer.</li>
+</ul>
+</dd>
+</dl>
+</p>
 </dd></dl>
 
 </div>
@@ -284,41 +322,23 @@
 <h2>nvm_buf_alloc<a class="headerlink" href="#nvm-buf-alloc" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_buf_alloc">
-<span class="target" id="liblightnvm_8h_1afc8ae47b17cfb871ea0abd60de7f521a"></span>void* <code class="descname">nvm_buf_alloc</code><span class="sig-paren">(</span>const struct  <a class="reference internal" href="nvm_geo.html#c.nvm_geo" title="nvm_geo">nvm_geo</a>  *<em>&nbsp;geo</em>, size_t<em>&nbsp;nbytes</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_buf_alloc" title="Permalink to this definition">¶</a></dt>
-<dd><p>Allocate a buffer aligned to match the given geometry. </p>
+<span class="target" id="liblightnvm_8h_1a4e1d8ccfebbc262bbe8646eb1a26cfa9"></span>void* <code class="descname">nvm_buf_alloc</code><span class="sig-paren">(</span>const struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, size_t<em>&nbsp;nbytes</em>, uint64_t *<em>&nbsp;phys</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_buf_alloc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allocate a buffer for IO with the given device. </p>
+<p>The buffer will be aligned to device geometry and DMA allocated if required by the backend for IO</p>
 <p><dl class="docutils">
 <dt><strong>Note</strong></dt>
 <dd>nbytes must be greater than zero and a multiple of minimal granularity </dd>
 <dt><strong>Note</strong></dt>
-<dd>Free the buffer using nvm_buf_free</dd>
+<dd>De-allocate the buffer using <code class="docutils literal notranslate"><span class="pre">nvm_buf_free</span></code></dd>
+<dt><strong>See</strong></dt>
+<dd><a class="reference internal" href="#liblightnvm_8h_1a799a676e4a63d7de85578e294e81e412"><span class="std std-ref">nvm_buf_free</span></a></dd>
 <dt><strong>Return</strong></dt>
-<dd>A pointer to the allocated memory. On error: NULL is returned and <code class="docutils literal notranslate"><span class="pre">errno</span></code> set appropriatly </dd>
+<dd>On success, a pointer to the allocated memory is returned. On error, NULL is returned and <code class="docutils literal notranslate"><span class="pre">errno</span></code> set to indicate the error. </dd>
 <dt><strong>Parameters</strong></dt>
 <dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">geo</span></code>: The geometry to get alignment information from </li>
-<li><code class="docutils literal notranslate"><span class="pre">nbytes</span></code>: The size of the allocated buffer in bytes</li>
-</ul>
-</dd>
-</dl>
-</p>
-</dd></dl>
-
-</div>
-<div class="section" id="nvm-buf-alloca">
-<h2>nvm_buf_alloca<a class="headerlink" href="#nvm-buf-alloca" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="c.nvm_buf_alloca">
-<span class="target" id="liblightnvm_8h_1a59e9463e24fc966eb59e670bb6c9fb8d"></span>void* <code class="descname">nvm_buf_alloca</code><span class="sig-paren">(</span>size_t<em>&nbsp;alignment</em>, size_t<em>&nbsp;nbytes</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_buf_alloca" title="Permalink to this definition">¶</a></dt>
-<dd><p>Allocate a buffer of the given size with the given alignment. </p>
-<p><dl class="docutils">
-<dt><strong>Note</strong></dt>
-<dd>Free the buffer using nvm_buf_free</dd>
-<dt><strong>Return</strong></dt>
-<dd>A pointer to the allocated memory. On error: NULL is returned and <code class="docutils literal notranslate"><span class="pre">errno</span></code> set appropriatly </dd>
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">alignment</span></code>: The alignment in bytes </li>
-<li><code class="docutils literal notranslate"><span class="pre">nbytes</span></code>: The size of the buffer in bytes</li>
+<li><code class="docutils literal notranslate"><span class="pre">dev</span></code>: The device to allocate IO buffers for </li>
+<li><code class="docutils literal notranslate"><span class="pre">nbytes</span></code>: The size of the allocated buffer in bytes </li>
+<li><code class="docutils literal notranslate"><span class="pre">phys</span></code>: A pointer to the variable to hold the physical address of the allocated buffer. If NULL, the physical address is not returned.</li>
 </ul>
 </dd>
 </dl>
@@ -332,6 +352,28 @@
 <dt id="c.nvm_buf_set_alloc">
 <span class="target" id="liblightnvm_8h_1a5d0536d21cdde9c53dd7b02692d57af0"></span>struct <a class="reference internal" href="#c.nvm_buf_set" title="nvm_buf_set">nvm_buf_set</a>* <code class="descname">nvm_buf_set_alloc</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, size_t<em>&nbsp;nbytes</em>, size_t<em>&nbsp;nbytes_meta</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_buf_set_alloc" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+</div>
+<div class="section" id="nvm-buf-virt-alloc">
+<h2>nvm_buf_virt_alloc<a class="headerlink" href="#nvm-buf-virt-alloc" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_buf_virt_alloc">
+<span class="target" id="liblightnvm_8h_1a625394d2257a349e942f9c577be2749a"></span>void* <code class="descname">nvm_buf_virt_alloc</code><span class="sig-paren">(</span>size_t<em>&nbsp;alignment</em>, size_t<em>&nbsp;nbytes</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_buf_virt_alloc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allocate a buffer of virtual memory of the given ‘nbytes’ and ‘alignment’. </p>
+<p><dl class="docutils">
+<dt><strong>Note</strong></dt>
+<dd>You must use <code class="docutils literal notranslate"><span class="pre">nvm_buf_virt_free</span></code> to de-allocate the buffer</dd>
+<dt><strong>Return</strong></dt>
+<dd>A pointer to the allocated memory. On error: NULL is returned and <code class="docutils literal notranslate"><span class="pre">errno</span></code> set appropriatly </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">alignment</span></code>: The alignment in bytes </li>
+<li><code class="docutils literal notranslate"><span class="pre">nbytes</span></code>: The size of the buffer in bytes</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
 
 </div>
 <div class="section" id="nvm-buf-fill">
@@ -364,12 +406,15 @@
 <h2>nvm_buf_free<a class="headerlink" href="#nvm-buf-free" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="c.nvm_buf_free">
-<span class="target" id="liblightnvm_8h_1ac100663d6564f62419d8bcb2cb2d7f6f"></span>void <code class="descname">nvm_buf_free</code><span class="sig-paren">(</span>void *<em>&nbsp;buf</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_buf_free" title="Permalink to this definition">¶</a></dt>
-<dd><p>Free the given buffer, calling regular “free” on the buffer might fail. </p>
+<span class="target" id="liblightnvm_8h_1a799a676e4a63d7de85578e294e81e412"></span>void <code class="descname">nvm_buf_free</code><span class="sig-paren">(</span>const struct  <a class="reference internal" href="nvm_dev.html#c.nvm_dev" title="nvm_dev">nvm_dev</a>  *<em>&nbsp;dev</em>, void *<em>&nbsp;buf</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_buf_free" title="Permalink to this definition">¶</a></dt>
+<dd><p>Free the given IO buffer allocated with <code class="docutils literal notranslate"><span class="pre">nvm_buf_alloc</span></code> </p>
 <p><dl class="docutils">
+<dt><strong>See</strong></dt>
+<dd><a class="reference internal" href="#liblightnvm_8h_1a4e1d8ccfebbc262bbe8646eb1a26cfa9"><span class="std std-ref">nvm_buf_alloc</span></a></dd>
 <dt><strong>Parameters</strong></dt>
 <dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">buf</span></code>: Pointer to the buffer to fill </li>
+<li><code class="docutils literal notranslate"><span class="pre">dev</span></code>: Pointer to the device which the IO buffer was allocated for </li>
+<li><code class="docutils literal notranslate"><span class="pre">buf</span></code>: Pointer to a buffer allocated with <code class="docutils literal notranslate"><span class="pre">nvm_buf_alloc</span></code> </li>
 </ul>
 </dd>
 </dl>
@@ -383,6 +428,23 @@
 <dt id="c.nvm_buf_set_free">
 <span class="target" id="liblightnvm_8h_1a3880a585fc9920c7ed7b488116212185"></span>void <code class="descname">nvm_buf_set_free</code><span class="sig-paren">(</span>struct  <a class="reference internal" href="#c.nvm_buf_set" title="nvm_buf_set">nvm_buf_set</a>  *<em>&nbsp;bufs</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_buf_set_free" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+</div>
+<div class="section" id="nvm-buf-virt-free">
+<h2>nvm_buf_virt_free<a class="headerlink" href="#nvm-buf-virt-free" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="c.nvm_buf_virt_free">
+<span class="target" id="liblightnvm_8h_1aab4f18473b36c4e336daa0aded761e88"></span>void <code class="descname">nvm_buf_virt_free</code><span class="sig-paren">(</span>void *<em>&nbsp;buf</em><span class="sig-paren">)</span><a class="headerlink" href="#c.nvm_buf_virt_free" title="Permalink to this definition">¶</a></dt>
+<dd><p>Free the given virtual memory buffer. </p>
+<p><dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">buf</span></code>: Pointer to a buffer allocated with <code class="docutils literal notranslate"><span class="pre">nvm_buf_virt_alloc</span></code> </li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
 
 </div>
 <div class="section" id="nvm-buf-diff-pr">
@@ -465,7 +527,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.5',
+            VERSION:'0.1.6',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

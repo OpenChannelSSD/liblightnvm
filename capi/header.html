@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Public Header &mdash; liblightnvm 0.1.5 documentation</title>
+  <title>Public Header &mdash; liblightnvm 0.1.6 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.5
+                0.1.6
               </div>
             
           
@@ -93,7 +93,8 @@
 <li class="toctree-l2"><a class="reference internal" href="nvm_buf.html">nvm_buf - Buffer Allocation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_addr.html">nvm_addr - Addressing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_cmd.html">nvm_cmd - Raw Commands</a></li>
-<li class="toctree-l2"><a class="reference internal" href="nvm_async.html">nvm_async - Asynchronous cmd</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_async.html">nvm_async - Async. Controls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nvm_sgl.html">nvm_sgl - Scather/Gather Lists</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_vblk.html">nvm_vblk - Virtual Block</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_bbt.html">nvm_bbt - Bad-Block-Table</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nvm_bp.html">nvm_bp - Boilerplate</a></li>
@@ -283,6 +284,44 @@
 <span class="cm"> * @struct nvm_dev</span>
 <span class="cm"> */</span>
 <span class="k">struct</span> <span class="n">nvm_dev</span><span class="p">;</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Opaque handle for a Scatter Gather List (SGL).</span>
+<span class="cm"> *</span>
+<span class="cm"> * @struct nvm_sgl</span>
+<span class="cm"> */</span>
+<span class="k">struct</span> <span class="n">nvm_sgl</span><span class="p">;</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * De-allocate an SGL</span>
+<span class="cm"> *</span>
+<span class="cm"> * @see nvm_sgl_alloc</span>
+<span class="cm"> *</span>
+<span class="cm"> * @param sgl Pointer to sgl as allocated by `nvm_sgl_alloc`</span>
+<span class="cm"> */</span>
+<span class="kt">void</span> <span class="nf">nvm_sgl_free</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_sgl</span> <span class="o">*</span><span class="n">sgl</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Allocate a SGL</span>
+<span class="cm"> *</span>
+<span class="cm"> * @see nvm_sgl_add</span>
+<span class="cm"> * @see nvm_sgl_free</span>
+<span class="cm"> *</span>
+<span class="cm"> * @returns An initialized (empty) SGL.</span>
+<span class="cm"> */</span>
+<span class="k">struct</span> <span class="n">nvm_sgl</span> <span class="o">*</span><span class="nf">nvm_sgl_alloc</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Add an entry to the SGL</span>
+<span class="cm"> *</span>
+<span class="cm"> * @see nvm_sgl_alloc</span>
+<span class="cm"> * @see nvm_buf_alloc</span>
+<span class="cm"> *</span>
+<span class="cm"> * @param sgl Pointer to sgl as allocated by `nvm_sgl_alloc`</span>
+<span class="cm"> * @param buf Pointer to buffer as allocated with `nvm_buf_alloc`</span>
+<span class="cm"> * @param nbytes Size of the given buffer in bytes</span>
+<span class="cm"> */</span>
+<span class="kt">void</span> <span class="nf">nvm_sgl_add</span><span class="p">(</span><span class="k">struct</span> <span class="n">nvm_sgl</span> <span class="o">*</span><span class="n">sgl</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">nbytes</span><span class="p">);</span>
 
 <span class="cm">/**</span>
 <span class="cm"> * Virtual block abstraction</span>
@@ -1135,26 +1174,56 @@
 <span class="kt">int</span> <span class="nf">nvm_dev_get_mw_cunits</span><span class="p">(</span><span class="k">const</span> <span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">);</span>
 
 <span class="cm">/**</span>
-<span class="cm"> * Allocate a buffer aligned to match the given geometry</span>
+<span class="cm"> * Allocate a buffer for IO with the given device</span>
+<span class="cm"> *</span>
+<span class="cm"> * The buffer will be aligned to device geometry and DMA allocated if required</span>
+<span class="cm"> * by the backend for IO</span>
 <span class="cm"> *</span>
 <span class="cm"> * @note</span>
 <span class="cm"> * nbytes must be greater than zero and a multiple of minimal granularity</span>
 <span class="cm"> * @note</span>
-<span class="cm"> * Free the buffer using nvm_buf_free</span>
+<span class="cm"> * De-allocate the buffer using `nvm_buf_free`</span>
 <span class="cm"> *</span>
-<span class="cm"> * @param geo The geometry to get alignment information from</span>
+<span class="cm"> * @see nvm_buf_free</span>
+<span class="cm"> *</span>
+<span class="cm"> * @param dev The device to allocate IO buffers for</span>
 <span class="cm"> * @param nbytes The size of the allocated buffer in bytes</span>
+<span class="cm"> * @param phys A pointer to the variable to hold the physical address of the</span>
+<span class="cm"> * allocated buffer. If NULL, the physical address is not returned.</span>
 <span class="cm"> *</span>
-<span class="cm"> * @returns A pointer to the allocated memory. On error: NULL is returned and</span>
-<span class="cm"> * `errno` set appropriatly</span>
+<span class="cm"> * @returns On success, a pointer to the allocated memory is returned. On error,</span>
+<span class="cm"> * NULL is returned and `errno` set to indicate the error.</span>
 <span class="cm"> */</span>
-<span class="kt">void</span> <span class="o">*</span><span class="nf">nvm_buf_alloc</span><span class="p">(</span><span class="k">const</span> <span class="k">struct</span> <span class="n">nvm_geo</span> <span class="o">*</span><span class="n">geo</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">nbytes</span><span class="p">);</span>
+<span class="kt">void</span> <span class="o">*</span><span class="nf">nvm_buf_alloc</span><span class="p">(</span><span class="k">const</span> <span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">nbytes</span><span class="p">,</span> <span class="kt">uint64_t</span> <span class="o">*</span><span class="n">phys</span><span class="p">);</span>
 
 <span class="cm">/**</span>
-<span class="cm"> * Allocate a buffer of the given size with the given alignment</span>
+<span class="cm"> * Free the given IO buffer allocated with `nvm_buf_alloc`</span>
+<span class="cm"> *</span>
+<span class="cm"> * @see nvm_buf_alloc</span>
+<span class="cm"> *</span>
+<span class="cm"> * @param dev Pointer to the device which the IO buffer was allocated for</span>
+<span class="cm"> * @param buf Pointer to a buffer allocated with `nvm_buf_alloc`</span>
+<span class="cm"> */</span>
+<span class="kt">void</span> <span class="nf">nvm_buf_free</span><span class="p">(</span><span class="k">const</span> <span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">buf</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Retrieve the physical address of the given buffer</span>
+<span class="cm"> *</span>
+<span class="cm"> * @param dev Pointer to the device which the IO buffer was allocated for</span>
+<span class="cm"> * @param buf Pointer to a buffer allocated with `nvm_buf_alloc`</span>
+<span class="cm"> * @param phys A pointer to the variable to hold the physical address of the</span>
+<span class="cm"> * given buffer.</span>
+<span class="cm"> *</span>
+<span class="cm"> * @return On success, 0 is returned. On error, -1 is returned and errno set to</span>
+<span class="cm"> * indicate the error.</span>
+<span class="cm"> */</span>
+<span class="kt">int</span> <span class="nf">nvm_buf_vtophys</span><span class="p">(</span><span class="k">const</span> <span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">uint64_t</span> <span class="o">*</span><span class="n">phys</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Allocate a buffer of virtual memory of the given &#39;nbytes&#39; and &#39;alignment&#39;</span>
 <span class="cm"> *</span>
 <span class="cm"> * @note</span>
-<span class="cm"> * Free the buffer using nvm_buf_free</span>
+<span class="cm"> * You must use `nvm_buf_virt_free` to de-allocate the buffer</span>
 <span class="cm"> *</span>
 <span class="cm"> * @param alignment The alignment in bytes</span>
 <span class="cm"> * @param nbytes The size of the buffer in bytes</span>
@@ -1162,7 +1231,14 @@
 <span class="cm"> * @returns A pointer to the allocated memory. On error: NULL is returned and</span>
 <span class="cm"> * `errno` set appropriatly</span>
 <span class="cm"> */</span>
-<span class="kt">void</span> <span class="o">*</span><span class="nf">nvm_buf_alloca</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">alignment</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">nbytes</span><span class="p">);</span>
+<span class="kt">void</span> <span class="o">*</span><span class="nf">nvm_buf_virt_alloc</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">alignment</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">nbytes</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Free the given virtual memory buffer</span>
+<span class="cm"> *</span>
+<span class="cm"> * @param buf Pointer to a buffer allocated with `nvm_buf_virt_alloc`</span>
+<span class="cm"> */</span>
+<span class="kt">void</span> <span class="nf">nvm_buf_virt_free</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">buf</span><span class="p">);</span>
 
 <span class="cm">/**</span>
 <span class="cm"> * Fills `buf` with chars A-Z</span>
@@ -1171,13 +1247,6 @@
 <span class="cm"> * @param nbytes Amount of bytes to fill in buf</span>
 <span class="cm"> */</span>
 <span class="kt">void</span> <span class="nf">nvm_buf_fill</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">nbytes</span><span class="p">);</span>
-
-<span class="cm">/**</span>
-<span class="cm"> * Free the given buffer, calling regular &quot;free&quot; on the buffer might fail</span>
-<span class="cm"> *</span>
-<span class="cm"> * @param buf Pointer to the buffer to fill</span>
-<span class="cm"> */</span>
-<span class="kt">void</span> <span class="nf">nvm_buf_free</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">buf</span><span class="p">);</span>
 
 <span class="cm">/**</span>
 <span class="cm"> * Prints `buf` to stdout</span>
@@ -1219,15 +1288,25 @@
 <span class="cm"> */</span>
 <span class="kt">int</span> <span class="nf">nvm_buf_from_file</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">nbytes</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">path</span><span class="p">);</span>
 
+<span class="cm">/**</span>
+<span class="cm"> * Encapsulation of a IO buffer-set for common-case setup</span>
+<span class="cm"> *</span>
+<span class="cm"> * This structure is allocated and initialized by `nvm_buf_set_alloc`, and</span>
+<span class="cm"> * de-allocated by `nvm_buf_set_free`</span>
+<span class="cm"> *</span>
+<span class="cm"> * @struct nvm_buf_set</span>
+<span class="cm"> */</span>
 <span class="k">struct</span> <span class="n">nvm_buf_set</span> <span class="p">{</span>
-	<span class="kt">char</span> <span class="o">*</span><span class="n">write</span><span class="p">;</span>
-	<span class="kt">char</span> <span class="o">*</span><span class="n">write_meta</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">nvm_dev</span> <span class="o">*</span><span class="n">dev</span><span class="p">;</span>	<span class="c1">///&lt; Device for which IO buffers are allocated</span>
 
-	<span class="kt">char</span> <span class="o">*</span><span class="n">read</span><span class="p">;</span>
-	<span class="kt">char</span> <span class="o">*</span><span class="n">read_meta</span><span class="p">;</span>
+	<span class="kt">char</span> <span class="o">*</span><span class="n">write</span><span class="p">;</span>		<span class="c1">///&lt; Data buffer to use for writes</span>
+	<span class="kt">char</span> <span class="o">*</span><span class="n">write_meta</span><span class="p">;</span>	<span class="c1">///&lt; Meta / OOB buffer to use for writes</span>
 
-	<span class="kt">size_t</span> <span class="n">nbytes</span><span class="p">;</span>
-	<span class="kt">size_t</span> <span class="n">nbytes_meta</span><span class="p">;</span>
+	<span class="kt">char</span> <span class="o">*</span><span class="n">read</span><span class="p">;</span>		<span class="c1">///&lt; Data buffer to use for reads</span>
+	<span class="kt">char</span> <span class="o">*</span><span class="n">read_meta</span><span class="p">;</span>	<span class="c1">///&lt; Meta / OOB buffer to use for reads</span>
+
+	<span class="kt">size_t</span> <span class="n">nbytes</span><span class="p">;</span>		<span class="c1">///&lt; # of bytes per data buffer</span>
+	<span class="kt">size_t</span> <span class="n">nbytes_meta</span><span class="p">;</span>	<span class="c1">///&lt; # of bytes per meta buffer</span>
 <span class="p">};</span>
 
 <span class="cm">/**</span>
@@ -1645,7 +1724,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.5',
+            VERSION:'0.1.6',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

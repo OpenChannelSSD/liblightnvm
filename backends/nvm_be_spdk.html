@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>SPDK &mdash; liblightnvm 0.1.5 documentation</title>
+  <title>SPDK &mdash; liblightnvm 0.1.6 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.5
+                0.1.6
               </div>
             
           
@@ -94,7 +94,7 @@
 <li class="toctree-l2"><a class="reference internal" href="nvm_be_lbd.html">IOCTL - LBD</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">SPDK</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#installing-spdk">Installing <strong>SPDK</strong></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#unbinding-devices">Unbinding devices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#unbinding-devices-and-setting-up-memory">Unbinding devices and setting up memory</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#re-binding-devices">Re-binding devices</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#device-identifiers">Device Identifiers</a></li>
 </ul>
@@ -102,6 +102,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#build-liblightnvm-with-spdk-support">Build <strong>liblightnvm</strong> with <strong>SPDK</strong> support</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#linking-your-source-with-liblightnvm-and-spdk">Linking your source with <strong>liblightnvm</strong> and <strong>SPDK</strong></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#enabling-vfio-without-limits">Enabling <code class="docutils literal notranslate"><span class="pre">VFIO</span></code> without limits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#inspecting-and-manually-changing-memory-avaiable-to-spdk-aka-hugepages">Inspecting and manually changing memory avaiable to <cite>SPDK</cite> aka <cite>HUGEPAGES</cite></a></li>
 </ul>
 </li>
 </ul>
@@ -219,10 +220,11 @@ sudo make install
 <span class="o">=====================</span>
 </pre></div>
 </div>
-<div class="section" id="unbinding-devices">
-<h3>Unbinding devices<a class="headerlink" href="#unbinding-devices" title="Permalink to this headline">¶</a></h3>
-<p>Run the following:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">spdk</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">setup</span><span class="o">.</span><span class="n">sh</span>
+<div class="section" id="unbinding-devices-and-setting-up-memory">
+<h3>Unbinding devices and setting up memory<a class="headerlink" href="#unbinding-devices-and-setting-up-memory" title="Permalink to this headline">¶</a></h3>
+<p>By running the command below <cite>8GB</cite> of hugepages will be configured and the
+device detached from the Kernel NVMe driver:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">HUGEMEM</span><span class="o">=</span><span class="mi">8192</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">spdk</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">setup</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 <p>This should output similar to:</p>
@@ -354,11 +356,47 @@ your CPU.</li>
 </pre></div>
 </div>
 <p>And <strong>SPDK</strong> setup:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">spdk</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">setup</span><span class="o">.</span><span class="n">sh</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">HUGEMEM</span><span class="o">=</span><span class="mi">8192</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">spdk</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">setup</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 <p>Should rebind the device to <code class="docutils literal notranslate"><span class="pre">vfio-pci</span></code>, eg.:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">0000</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mf">00.0</span> <span class="p">(</span><span class="mi">1</span><span class="n">d1d</span> <span class="mi">2807</span><span class="p">):</span> <span class="n">nvme</span> <span class="o">-&gt;</span> <span class="n">vfio</span><span class="o">-</span><span class="n">pci</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="inspecting-and-manually-changing-memory-avaiable-to-spdk-aka-hugepages">
+<h2>Inspecting and manually changing memory avaiable to <cite>SPDK</cite> aka <cite>HUGEPAGES</cite><a class="headerlink" href="#inspecting-and-manually-changing-memory-avaiable-to-spdk-aka-hugepages" title="Permalink to this headline">¶</a></h2>
+<p>The <cite>SPDK</cite> setup script provides <cite>HUGEMEM</cite> and <cite>NRHUGE</cite> environment variables
+to control the amount of memory available via <cite>HUGEPAGES</cite>. However, if you want
+to manually change or just inspect the <cite>HUGEPAGE</cite> config the have a look below.</p>
+<p>Inspect the system configuration by running:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">grep</span> <span class="o">.</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">system</span><span class="o">/</span><span class="n">node</span><span class="o">/</span><span class="n">node0</span><span class="o">/</span><span class="n">hugepages</span><span class="o">/</span><span class="n">hugepages</span><span class="o">-</span><span class="mi">2048</span><span class="n">kB</span><span class="o">/*</span>
+</pre></div>
+</div>
+<p>If you have not yet run the setup script, then it will most likely output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">system</span><span class="o">/</span><span class="n">node</span><span class="o">/</span><span class="n">node0</span><span class="o">/</span><span class="n">hugepages</span><span class="o">/</span><span class="n">hugepages</span><span class="o">-</span><span class="mi">2048</span><span class="n">kB</span><span class="o">/</span><span class="n">free_hugepages</span><span class="p">:</span><span class="mi">0</span>
+<span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">system</span><span class="o">/</span><span class="n">node</span><span class="o">/</span><span class="n">node0</span><span class="o">/</span><span class="n">hugepages</span><span class="o">/</span><span class="n">hugepages</span><span class="o">-</span><span class="mi">2048</span><span class="n">kB</span><span class="o">/</span><span class="n">nr_hugepages</span><span class="p">:</span><span class="mi">0</span>
+<span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">system</span><span class="o">/</span><span class="n">node</span><span class="o">/</span><span class="n">node0</span><span class="o">/</span><span class="n">hugepages</span><span class="o">/</span><span class="n">hugepages</span><span class="o">-</span><span class="mi">2048</span><span class="n">kB</span><span class="o">/</span><span class="n">surplus_hugepages</span><span class="p">:</span><span class="mi">0</span>
+</pre></div>
+</div>
+<p>And after running the setup script it should output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">system</span><span class="o">/</span><span class="n">node</span><span class="o">/</span><span class="n">node0</span><span class="o">/</span><span class="n">hugepages</span><span class="o">/</span><span class="n">hugepages</span><span class="o">-</span><span class="mi">2048</span><span class="n">kB</span><span class="o">/</span><span class="n">free_hugepages</span><span class="p">:</span><span class="mi">1024</span>
+<span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">system</span><span class="o">/</span><span class="n">node</span><span class="o">/</span><span class="n">node0</span><span class="o">/</span><span class="n">hugepages</span><span class="o">/</span><span class="n">hugepages</span><span class="o">-</span><span class="mi">2048</span><span class="n">kB</span><span class="o">/</span><span class="n">nr_hugepages</span><span class="p">:</span><span class="mi">1024</span>
+<span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">system</span><span class="o">/</span><span class="n">node</span><span class="o">/</span><span class="n">node0</span><span class="o">/</span><span class="n">hugepages</span><span class="o">/</span><span class="n">hugepages</span><span class="o">-</span><span class="mi">2048</span><span class="n">kB</span><span class="o">/</span><span class="n">surplus_hugepages</span><span class="p">:</span><span class="mi">0</span>
+</pre></div>
+</div>
+<p>This tells that <cite>1024</cite> hugepages, each of size <cite>2048kB</cite> are available, that is,
+a total of two gigabytes can be used.</p>
+<p>One way of increasing memory available to <cite>SPDK</cite> is by increasing the number of
+<cite>2048Kb</cite> hugepages. E.g. increase from two to eight gigabytes by increasing
+<cite>nr_hugespages</cite> to <cite>4096</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">echo</span> <span class="s2">&quot;4096&quot;</span> <span class="o">&gt;</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">system</span><span class="o">/</span><span class="n">node</span><span class="o">/</span><span class="n">node0</span><span class="o">/</span><span class="n">hugepages</span><span class="o">/</span><span class="n">hugepages</span><span class="o">-</span><span class="mi">2048</span><span class="n">kB</span><span class="o">/</span><span class="n">nr_hugepages</span>
+</pre></div>
+</div>
+<p>After doing this, then inspecting the configuration should output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">system</span><span class="o">/</span><span class="n">node</span><span class="o">/</span><span class="n">node0</span><span class="o">/</span><span class="n">hugepages</span><span class="o">/</span><span class="n">hugepages</span><span class="o">-</span><span class="mi">2048</span><span class="n">kB</span><span class="o">/</span><span class="n">free_hugepages</span><span class="p">:</span><span class="mi">4096</span>
+<span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">system</span><span class="o">/</span><span class="n">node</span><span class="o">/</span><span class="n">node0</span><span class="o">/</span><span class="n">hugepages</span><span class="o">/</span><span class="n">hugepages</span><span class="o">-</span><span class="mi">2048</span><span class="n">kB</span><span class="o">/</span><span class="n">nr_hugepages</span><span class="p">:</span><span class="mi">4096</span>
+<span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">devices</span><span class="o">/</span><span class="n">system</span><span class="o">/</span><span class="n">node</span><span class="o">/</span><span class="n">node0</span><span class="o">/</span><span class="n">hugepages</span><span class="o">/</span><span class="n">hugepages</span><span class="o">-</span><span class="mi">2048</span><span class="n">kB</span><span class="o">/</span><span class="n">surplus_hugepages</span><span class="p">:</span><span class="mi">0</span>
 </pre></div>
 </div>
 </div>
@@ -406,7 +444,7 @@ your CPU.</li>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.5',
+            VERSION:'0.1.6',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

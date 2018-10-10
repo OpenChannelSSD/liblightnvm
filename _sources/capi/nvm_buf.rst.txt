@@ -9,6 +9,11 @@ nvm_buf_set
 .. doxygenstruct:: nvm_buf_set
    :members:
 
+nvm_buf_vtophys
+---------------
+
+.. doxygenfunction:: nvm_buf_vtophys
+
 nvm_buf_to_file
 ---------------
 
@@ -29,15 +34,15 @@ nvm_buf_alloc
 
 .. doxygenfunction:: nvm_buf_alloc
 
-nvm_buf_alloca
---------------
-
-.. doxygenfunction:: nvm_buf_alloca
-
 nvm_buf_set_alloc
 -----------------
 
 .. doxygenfunction:: nvm_buf_set_alloc
+
+nvm_buf_virt_alloc
+------------------
+
+.. doxygenfunction:: nvm_buf_virt_alloc
 
 nvm_buf_fill
 ------------
@@ -58,6 +63,11 @@ nvm_buf_set_free
 ----------------
 
 .. doxygenfunction:: nvm_buf_set_free
+
+nvm_buf_virt_free
+-----------------
+
+.. doxygenfunction:: nvm_buf_virt_free
 
 nvm_buf_diff_pr
 ---------------

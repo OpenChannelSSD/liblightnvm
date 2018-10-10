@@ -1,7 +1,10 @@
 .. _sec-capi-nvm_async:
 
-nvm_async - Asynchronous cmd
-============================
+nvm_async - Async. Controls
+===========================
+
+When using the ``nvm_cmd`` option ``NVM_CMD_ASYNC``, then use these functions
+to steer the asynchronous mechanics.
 
 nvm_async_cmd_ctx
 -----------------
