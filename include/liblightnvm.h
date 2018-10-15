@@ -976,6 +976,16 @@ int nvm_dev_set_write_naddrs_max(struct nvm_dev *dev, int naddrs);
  */
 const struct nvm_geo *nvm_dev_get_geo(const struct nvm_dev *dev);
 
+/*
+ * Returns the namespace of the given device
+ *
+ * @param dev Device handle obtained with `nvm_dev_open`.
+ *
+ * @return On success, pointer to namespace structure. On error, NULL is
+ * returned and errno is set to indicate the error.
+ */
+const struct nvm_nvme_ns *nvm_dev_get_ns(const struct nvm_dev *dev);
+
 /**
  * Returns the minimum write size, in number of sectors, for the given device.
  *

@@ -19,6 +19,7 @@ static int seed = 0;
 static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
 static struct nvm_dev *dev;
 static const struct nvm_geo *geo;
+static const struct nvm_nvme_ns *ns;
 
 static int suite_setup(void)
 {
@@ -30,6 +31,7 @@ static int suite_setup(void)
 	}
 
 	geo = nvm_dev_get_geo(dev);
+	ns = nvm_dev_get_ns(dev);
 
 	return 0;
 }

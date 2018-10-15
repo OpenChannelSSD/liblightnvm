@@ -144,6 +144,11 @@ const struct nvm_geo * nvm_dev_get_geo(const struct nvm_dev *dev)
 	return &dev->geo;
 }
 
+const struct nvm_nvme_ns *nvm_dev_get_ns(const struct nvm_dev *dev)
+{
+	return &dev->ns;
+}
+
 int nvm_dev_get_ws_min(const struct nvm_dev *dev)
 {
 	switch(dev->verid) {
