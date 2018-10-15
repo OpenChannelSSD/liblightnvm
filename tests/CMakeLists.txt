@@ -21,15 +21,15 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/test_dev.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_addr_conv.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_buf.c
-	${CMAKE_CURRENT_SOURCE_DIR}/test_vblk.c
+	${CMAKE_CURRENT_SOURCE_DIR}/test_vblk_wre.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_bbt.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_sgl.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_rprt.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_rprt_ordr.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_feat.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_erase.c
-	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_ewr_scalar.c
-	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_ewr_vector.c
+	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_wre_scalar.c
+	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_wre_vector.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_copy.c)
 
 #

@@ -37,11 +37,6 @@ int vblk_ewr(struct nvm_addr *addrs, int naddrs, int mode)
 		}
 	}
 
-	if (nvm_vblk_erase(vblk) < 0) {
-		CU_FAIL("FAILED: nvm_vblk_erase");
-		goto out;
-	}
-
 	if (nvm_vblk_write(vblk, bufs->write, nbytes) < 0) {
 		CU_FAIL("FAILED: nvm_vblk_write");
 		goto out;
@@ -49,6 +44,11 @@ int vblk_ewr(struct nvm_addr *addrs, int naddrs, int mode)
 
 	if (nvm_vblk_read(vblk, bufs->read, nbytes) < 0) {
 		CU_FAIL("FAILED: nvm_vblk_read");
+		goto out;
+	}
+
+	if (nvm_vblk_erase(vblk) < 0) {
+		CU_FAIL("FAILED: nvm_vblk_erase");
 		goto out;
 	}
 
@@ -156,7 +156,7 @@ int main(int argc, char **argv)
 {
 	int err = 0;
 
-	CU_pSuite pSuite = suite_create("nvm_vblk_{erase,write,read}",
+	CU_pSuite pSuite = suite_create("nvm_test_vblk_wre",
 					argc, argv);
 	if (!pSuite)
 		goto out;

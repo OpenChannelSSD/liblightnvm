@@ -25,13 +25,6 @@ static void ewr(int use_meta, int erase_cmd_mode)
 	}
 	nvm_buf_set_fill(bufs);
 
-	// Erase the chunk
-	res = nvm_cmd_erase(dev, &chunk_addr, 1, NULL, erase_cmd_mode, &ret);
-	if (res < 0) {
-		CU_FAIL("Erase failure");
-		goto failure;
-	}
-
 	// Write the chunk
 	for (size_t sectr = 0; sectr < geo->l.nsectr; sectr += naddrs) {
 		struct nvm_addr addr = chunk_addr;
@@ -89,6 +82,13 @@ static void ewr(int use_meta, int erase_cmd_mode)
 			CU_FAIL("buf_diff || meta_diff");
 			goto failure;
 		}
+	}
+
+	// Erase the chunk
+	res = nvm_cmd_erase(dev, &chunk_addr, 1, NULL, erase_cmd_mode, &ret);
+	if (res < 0) {
+		CU_FAIL("Erase failure");
+		goto failure;
 	}
 
 	CU_PASS("Success");
@@ -165,7 +165,7 @@ int main(int argc, char **argv)
 {
 	int err = 0;
 
-	CU_pSuite pSuite = suite_create("nvm_cmd_{erase,write,read}",
+	CU_pSuite pSuite = suite_create("nvm_test_cmd_wre_scalar",
 					argc, argv);
 	if (!pSuite)
 		goto out;

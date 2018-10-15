@@ -485,20 +485,6 @@ static void ewr_s20(int use_rwmeta, int use_erase_meta)
 			goto out;
 		}
 	}
-
-	res = nvm_cmd_erase(dev, &chunk_addr, 1, erase_meta, 0x0, &ret); ///< Erase
-	if (res < 0) {
-		CU_FAIL("Erase failure");
-		goto out;
-	}
-    
-	if (use_erase_meta) {
-		CU_ASSERT(erase_meta->cs == NVM_CHUNK_STATE_FREE);
-		CU_ASSERT(erase_meta->wp == 0);
-		CU_ASSERT(erase_meta->naddrs == geo->l.nsectr);
-		CU_ASSERT(erase_meta->addr == nvm_addr_gen2dev(dev, chunk_addr));
-	}
-
 								///< Write
 	for (size_t sectr = 0; sectr < geo->l.nsectr; sectr += naddrs) {
 		for (int i = 0; i < naddrs; ++i) {
@@ -561,6 +547,19 @@ static void ewr_s20(int use_rwmeta, int use_erase_meta)
 			CU_FAIL("buf_diff || meta_diff");
 			goto out;
 		}
+	}
+
+	res = nvm_cmd_erase(dev, &chunk_addr, 1, erase_meta, 0x0, &ret); ///< Erase
+	if (res < 0) {
+		CU_FAIL("Erase failure");
+		goto out;
+	}
+
+	if (use_erase_meta) {
+		CU_ASSERT(erase_meta->cs == NVM_CHUNK_STATE_FREE);
+		CU_ASSERT(erase_meta->wp == 0);
+		CU_ASSERT(erase_meta->naddrs == geo->l.nsectr);
+		CU_ASSERT(erase_meta->addr == nvm_addr_gen2dev(dev, chunk_addr));
 	}
 
 	CU_PASS("Success");
@@ -638,7 +637,7 @@ int main(int argc, char **argv)
 {
 	int err = 0;
 
-	CU_pSuite pSuite = suite_create("nvm_cmd_{erase,write,read}",
+	CU_pSuite pSuite = suite_create("nvm_test_cmd_wre_vector",
 					argc, argv);
 	if (!pSuite)
 		goto out;
