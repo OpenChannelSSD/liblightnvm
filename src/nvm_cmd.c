@@ -49,7 +49,7 @@ void nvm_cmd_wrap_cpl(struct nvm_cmd_wrap *wrap,
 					| (cpl->status.dnr << 14);
 	}
 
-	wrap->completed = 1;
+	wrap->completed = (cpl->status.sc != 0 || cpl->status.sct != 0) ? -1 : 1;
 }
 
 /**
