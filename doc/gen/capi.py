@@ -32,7 +32,10 @@ def gen_capi(args):
         "nvm_dev": "Device Management",
         "nvm_addr": "Addressing",
         "nvm_cmd": "Raw Commands",
+        "nvm_async": "Async. Controls",
+        "nvm_sgl": "Scather/Gather Lists",
         "nvm_vblk": "Virtual Block",
+        "nvm_bp": "Boilerplate",
         "nvm_bbt": "Bad-Block-Table"
     }
     docs = {}
@@ -62,7 +65,6 @@ def gen_capi(args):
                 "addr_erase", "addr_read", "addr_write", "addr_check",
                 "addr_.*2",
                 "vblk_erase", "vblk_p?read", "vblk_p?write", "vblk_pad",
-                "lba_p?read", "lba_p?write",
                 "_alloc", "_fill", "_free", "_pr",
                 "_get_", "_set_"
             ]
@@ -97,16 +99,25 @@ def gen_capi(args):
                     "", ""
                 ])
 
+        # Normalize handling of struct and externvar, prefer struct when
+        # available
+
+        jazz = []
         for mangler in ["struct", "externvar"]:
             if mangler in lib[ns]:
                 for struct in lib[ns][mangler]:
-                    rst += "\n".join([
-                        struct,
-                        "-" * len(struct), "",
-                        ".. doxygenstruct:: %s" % struct,
-                        "   :members:",
-                        "", ""
-                    ])
+                    if struct in [item[0] for item in jazz]:
+                        continue
+                    jazz.append((struct, mangler))
+
+        for struct, _ in jazz:
+            rst += "\n".join([
+                struct,
+                "-" * len(struct), "",
+                ".. doxygenstruct:: %s" % struct,
+                "   :members:"
+                "", "", ""
+            ])
 
         if "enum" in lib[ns]:
             for enum in lib[ns]["enum"]:
