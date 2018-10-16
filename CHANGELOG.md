@@ -10,14 +10,42 @@ Sections with "(Upcoming)" describe changes on the roadmap for liblightnvm.
 Changes on the `master` branch, from the latest version tag up to and including
 HEAD can be subject to a git rebase.
 
-## v0.1.7 (Upcoming)
+## v0.1.8 (Upcoming)
 
 * API / header cleanup
- - Adopt negative errno calling convention?
- - Update function descriptions
- - Replace `dev_path`/`dev_name` with `dev_ident`
- - Weed out redundant headers
+ - Consider adopting negative errno calling convention
  - Unify `nvm_bp`, `test_intf` and CLI ENV, args, setup and sub-commands
+ - Replace `dev_path`/`dev_name` with `dev_ident`
+
+## v0.1.7
+
+Release is primarily fixes, cleanup, and expansion of test-suite
+
+### C API
+
+A bunch of fixes:
+
+* Added 'constness' of read-only buffer variables
+* Added missing @return descriptions
+* Normalized @return | @returns -> @return
+* Missing assignments of `errno`
+* Missing error-indicator in `wrap->completed`
+* Command-accessors
+
+And a couple of additions:
+
+* `nvm_addr_fill_crange`
+* `nvm_dev_get_ns`
+* `nvm_ret_clear`
+
+### Testing
+
+Four tests have been added which verify device behavior according to OCCSD 2.0:
+
+* `test_compliance.c`
+* `test_rules_read.c`
+* `test_rules_reset.c`
+* `test_rules_write.c`
 
 ## v0.1.6
 
