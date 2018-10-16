@@ -16,6 +16,10 @@ message("TESTS-CMAKE_C_FLAGS(${CMAKE_C_FLAGS})")
 
 include_directories("${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_SOURCE_DIR}/include/linux/uapi")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
+
+set(HEADER_FILES
+	${CMAKE_CURRENT_SOURCE_DIR}/include/nvm_test.h)
 
 set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/test_dev.c
@@ -38,7 +42,7 @@ set(SOURCE_FILES
 foreach(SRC_FN ${SOURCE_FILES})
 	get_filename_component(SRC_FN_WE ${SRC_FN} NAME_WE)
 	set(EXE_FN "nvm_${SRC_FN_WE}")
-	add_executable(${EXE_FN} ${SRC_FN})
+	add_executable(${EXE_FN} ${SRC_FN} util.c)
 	target_link_libraries(${EXE_FN} ${CUNIT} pthread ${LNAME})
 	install(TARGETS ${EXE_FN} DESTINATION bin COMPONENT tests)
 endforeach()
