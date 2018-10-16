@@ -84,6 +84,11 @@ nvm_dev_get_name
 
 .. doxygenfunction:: nvm_dev_get_name
 
+nvm_dev_get_ns
+--------------
+
+.. doxygenfunction:: nvm_dev_get_ns
+
 nvm_dev_get_nsid
 ----------------
 

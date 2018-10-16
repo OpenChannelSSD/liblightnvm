@@ -54,6 +54,11 @@ nvm_addr_off2gen
 
 .. doxygenfunction:: nvm_addr_off2gen
 
+nvm_addr_fill_crange
+--------------------
+
+.. doxygenfunction:: nvm_addr_fill_crange
+
 nvm_addr_pr
 -----------
 
