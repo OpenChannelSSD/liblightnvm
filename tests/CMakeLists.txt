@@ -37,7 +37,8 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/test_cmd_copy.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_rules_read.c
 	${CMAKE_CURRENT_SOURCE_DIR}/test_rules_write.c
-	${CMAKE_CURRENT_SOURCE_DIR}/test_rules_reset.c)
+	${CMAKE_CURRENT_SOURCE_DIR}/test_rules_reset.c
+	${CMAKE_CURRENT_SOURCE_DIR}/test_compliance.c)
 
 #
 # static linking, against lightnvm_a, to avoid runtime dependency on liblightnvm
