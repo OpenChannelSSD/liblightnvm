@@ -30,6 +30,18 @@
 #include <nvm_dev.h>
 #include <nvm_cmd.h>
 
+int nvm_cmd_is_scalar(uint16_t opcode)
+{
+	switch (opcode) {
+	case NVM_DOPC_SCALAR_WRITE:
+	case NVM_DOPC_SCALAR_READ:
+	case NVM_DOPC_SCALAR_ERASE:
+		return 1;
+	}
+
+	return 0;
+}
+
 void nvm_cmd_wrap_term(struct nvm_cmd_wrap *wrap)
 {
 	nvm_buf_free(wrap->dev, wrap->dsmr_dma);
@@ -120,7 +132,12 @@ struct nvm_cmd_wrap *nvm_cmd_wrap_setup(struct nvm_dev *dev, int opcode,
 		break;
 
 	case NVM_SPEC_VERID_20:
-		wrap->cmd.ewrc.naddrs = naddrs - 1;
+		if (nvm_cmd_is_scalar(opcode)) {
+			wrap->cmd.nvme.naddrs = naddrs - 1;
+		} else {
+			wrap->cmd.s20.naddrs = naddrs - 1;
+		}
+
 		wrap->data_len = data ? geo->l.nbytes * naddrs : 0;
 		wrap->meta_len = meta ? geo->l.nbytes_oob * naddrs : 0;
 		break;

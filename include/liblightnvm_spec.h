@@ -571,6 +571,15 @@ struct nvm_nvme_cmd {
 	/* cdw 12 */
 	union {
 		struct {
+			uint32_t naddrs : 16;	///< Number of logical blocks
+			uint32_t rsvd	: 10;
+			uint32_t prinfo	:  4;	///< Protection Information
+						///< Field
+			uint32_t fua	:  1;	///< Force unit access
+			uint32_t lr	:  1;	///< Limited retry
+		} nvme;
+
+		struct {
 			uint32_t naddrs	: 16;	///< # addrs. in PPA list
 			uint32_t control: 16;	///< PMODE, Scrabler, etc.
 		} s12;
@@ -580,7 +589,7 @@ struct nvm_nvme_cmd {
 			uint32_t rsvd	: 24;
 			uint32_t fua	: 1;	///< Force unit access
 			uint32_t lr	: 1;	///< Limited retry
-		} ewrc;
+		} s20;
 
 		uint32_t lpol;			///< Log Page Offset Lower
 
