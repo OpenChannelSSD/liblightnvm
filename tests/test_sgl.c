@@ -56,8 +56,11 @@ int main(int argc, char **argv)
 	if (!pSuite)
 		goto out;
 
-	if (!CU_add_test(pSuite, "simple", test_sgl))
-		goto out;
+	switch (be_id) {
+	case NVM_BE_SPDK:
+		if (!CU_add_test(pSuite, "simple", test_sgl))
+			goto out;
+	}
 
 	switch(rmode) {
 	case NVM_TEST_RMODE_AUTO:
