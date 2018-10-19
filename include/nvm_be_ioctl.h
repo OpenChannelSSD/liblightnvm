@@ -109,6 +109,27 @@ struct nvm_cmd {
 		} user;		///< Common NVMe IO cmd. fields
 
 		struct {
+			uint8_t  opcode;
+			uint8_t  flags;
+			uint16_t rsvd1;
+			uint32_t nsid;
+			uint32_t cdw2;
+			uint32_t cdw3;
+			uint64_t metadata;
+			uint64_t addr;
+			uint32_t metadata_len;
+			uint32_t data_len;
+			uint32_t cdw10;
+			uint32_t cdw11;
+			uint32_t cdw12;
+			uint32_t cdw13;
+			uint32_t cdw14;
+			uint32_t cdw15;
+			uint32_t timeout_ms;
+			uint32_t result;
+		} passthru;
+
+		struct {
 			uint8_t opcode;
 			uint8_t flags;
 			uint16_t rsvd;
