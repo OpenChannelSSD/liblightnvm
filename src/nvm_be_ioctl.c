@@ -199,7 +199,7 @@ int nvm_be_ioctl_gfeat(struct nvm_dev *dev, uint8_t id,
 		return -1;
 	}
 
-	*((uint32_t *) feat) = cmd.result;
+	feat->a = cmd.result;
 
 	return 0;
 }
@@ -214,7 +214,7 @@ int nvm_be_ioctl_sfeat(struct nvm_dev *dev, uint8_t id,
 	cmd.opcode = NVM_AOPC_SFEAT;
 	cmd.nsid = dev->nsid;
 	cmd.cdw10 = id;
-	cmd.cdw11 = *((uint32_t *) feat);
+	cmd.cdw11 = feat->a;
 
 	err = ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, &cmd);
 	if (err) {

@@ -1,52 +1,56 @@
 #include "test_intf.c"
 
-static void set_error_recovery(bool on)
+static void _test_assert_dulbe_enabled()
 {
 	union nvm_nvme_feat feat = { 0 };
+	int rc;
 
-	if (on) {
-		feat.error_recovery.dulbe = 1;
-	}
+	rc = nvm_cmd_gfeat(dev, NVM_NVME_FEAT_ERROR_RECOVERY, &feat, NULL);
+	CU_ASSERT(rc == 0);
 
-	if (nvm_cmd_sfeat(dev, NVM_FEAT_ERROR_RECOVERY, &feat, NULL)) {
-		CU_FAIL("nvm_cmd_sfeat");
-		return;
-	}
+	CU_ASSERT(feat.error_recovery.dulbe == 0x1);
 }
 
-static void test_GETSET_FEATURE()
+static void _test_assert_dulbe_disabled()
 {
 	union nvm_nvme_feat feat = { 0 };
-	if (nvm_cmd_gfeat(dev, NVM_FEAT_ERROR_RECOVERY, &feat, NULL)) {
-		CU_FAIL("nvm_cmd_gfeat");
-		return;
-	}
+	int rc;
 
-	if (feat.error_recovery.dulbe) {
-		set_error_recovery(false);
+	rc = nvm_cmd_gfeat(dev, NVM_NVME_FEAT_ERROR_RECOVERY, &feat, NULL);
+	CU_ASSERT(rc == 0);
 
-		if (nvm_cmd_gfeat(dev, NVM_FEAT_ERROR_RECOVERY, &feat, NULL)) {
-			CU_FAIL("nvm_cmd_gfeat");
-			return;
-		}
+	CU_ASSERT(feat.error_recovery.dulbe == 0x0);
+}
 
-		CU_ASSERT(feat.error_recovery.dulbe == 0);
+static void test_set_dulbe_enable()
+{
+	union nvm_nvme_feat feat = { .error_recovery.dulbe = 1, };
+	int rc;
 
-		set_error_recovery(true);
-	} else {
-		set_error_recovery(true);
+	rc = nvm_cmd_sfeat(dev, NVM_NVME_FEAT_ERROR_RECOVERY, &feat, NULL);
+	CU_ASSERT(rc == 0);
 
-		if (nvm_cmd_gfeat(dev, NVM_FEAT_ERROR_RECOVERY, &feat, NULL)) {
-			CU_FAIL("nvm_cmd_gfeat");
-			return;
-		}
+	_test_assert_dulbe_enabled();
+}
 
-		CU_ASSERT(feat.error_recovery.dulbe == 1);
+static void test_set_dulbe_disable()
+{
+	union nvm_nvme_feat feat = { .error_recovery.dulbe = 0, };
+	int rc;
 
-		set_error_recovery(false);
-	}
+	rc = nvm_cmd_sfeat(dev, NVM_NVME_FEAT_ERROR_RECOVERY, &feat, NULL);
+	CU_ASSERT(rc == 0);
 
-	CU_PASS("Success");
+	_test_assert_dulbe_disabled();
+}
+
+static void test_get()
+{
+	union nvm_nvme_feat feat = { 0 };
+	int rc;
+
+	rc = nvm_cmd_gfeat(dev, NVM_NVME_FEAT_ERROR_RECOVERY, &feat, NULL);
+	CU_ASSERT(rc == 0);
 }
 
 int main(int argc, char **argv)
@@ -58,7 +62,13 @@ int main(int argc, char **argv)
 	if (!pSuite)
 		goto out;
 
-	if (!CU_add_test(pSuite, "GET/SET FEAT", test_GETSET_FEATURE))
+	if (!CU_add_test(pSuite, "feat: {feature: ERROR_RECOVERY; get}", test_get))
+		goto out;
+	if (!CU_add_test(pSuite, "feat: {feature: ERROR_RECOVERY; attribute: DULBE; set: DISABLE}", test_set_dulbe_disable))
+		goto out;
+	if (!CU_add_test(pSuite, "feat: {feature: ERROR_RECOVERY; attribute: DULBE; set: ENABLE}", test_set_dulbe_enable))
+		goto out;
+	if (!CU_add_test(pSuite, "[CLEANUP] feat: {feature: ERROR_RECOVERY; attribute: DULBE; set: DISABLE}", test_set_dulbe_disable))
 		goto out;
 
 	switch(rmode) {

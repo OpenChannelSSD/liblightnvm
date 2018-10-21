@@ -341,8 +341,8 @@ void nvm_spec_rprt_pr(const struct nvm_spec_rprt *rprt);
  * Representation of Spec. 2.0 feature types
  */
 enum nvm_nvme_feat_id {
-	NVM_FEAT_ERROR_RECOVERY = 0x5,
-	NVM_FEAT_MEDIA_FEEDBACK = 0xCA
+	NVM_NVME_FEAT_ERROR_RECOVERY = 0x5,
+	NVM_NVME_FEAT_MEDIA_FEEDBACK = 0xCA
 };
 
 /**
@@ -375,6 +375,12 @@ union nvm_nvme_feat {
 	uint32_t a;
 };
 static_assert(sizeof(union nvm_nvme_feat) == 4, "Incorrect size");
+
+#define NVM_NVME_FEAT_ERROR_RECOVERY_DULBE(feat) (feat & (1 << 16))
+#define NVM_NVME_FEAT_ERROR_RECOVERY_TLER(feat)  (feat & 0xffff)
+
+#define NVM_NVME_FEAT_MEDIA_FEEDBACK_HECC(feat)  (feat & 0x1)
+#define NVM_NVME_FEAT_MEDIA_FEEDBACK_VHECC(feat) (feat & 0x2)
 
 struct nvm_nvme_lbaf {
 	uint16_t ms;	///< metadata size

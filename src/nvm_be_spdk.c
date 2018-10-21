@@ -522,7 +522,7 @@ int nvm_be_spdk_gfeat(struct nvm_dev *dev, uint8_t id,
 		return -1;
 	}
 
-	*((uint32_t *) feat) = ret->result.cdw0;
+	feat->a = ret->result.cdw0;
 
 	return 0;
 }
