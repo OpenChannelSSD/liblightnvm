@@ -7,7 +7,6 @@
 .. toctree::
 
    nvm_be
-   nvm_ret
    nvm_ver
    nvm_meta
    nvm_mode

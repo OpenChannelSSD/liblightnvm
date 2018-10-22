@@ -23,5 +23,6 @@ The :ref:`sec-capi-header` is available for inspection in its raw form.
    nvm_vblk
    nvm_bbt
    nvm_bp
+   nvm_ret
    misc
    header

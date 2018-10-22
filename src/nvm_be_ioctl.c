@@ -75,6 +75,26 @@ struct nvm_be nvm_be_ioctl = {
 
 static void *erase_meta_hack;
 
+#ifdef NVM_DEBUG_ENABLED
+static const char *ioctl_request_to_str(unsigned long req)
+{
+	switch (req) {
+	case NVME_IOCTL_ID:           return "NVME_IOCTL_ID";
+	case NVME_IOCTL_ADMIN_CMD:    return "NVME_IOCTL_ADMIN_CMD";
+	case NVME_IOCTL_SUBMIT_IO:    return "NVME_IOCTL_SUBMIT_IO";
+	case NVME_IOCTL_IO_CMD:       return "NVME_IOCTL_IO_CMD";
+	case NVME_IOCTL_RESET:        return "NVME_IOCTL_RESET";
+	case NVME_IOCTL_SUBSYS_RESET: return "NVME_IOCTL_SUBSYS_RESET";
+	case NVME_IOCTL_RESCAN:       return "NVME_IOCTL_RESCAN";
+
+	case NVME_NVM_IOCTL_SUBMIT_VIO: return "NVME_NVM_IOCTL_SUBMIT_VIO";
+	case NVME_NVM_IOCTL_ADMIN_VIO:  return "NVME_NVM_IOCTL_ADMIN_VIO";
+
+	default:                      return "NVME_IOCTL_UNKNOWN";
+	}
+}
+#endif
+
 static inline int ioctl_vio(struct nvm_dev *dev, struct nvm_cmd *cmd,
 			    struct nvm_ret *ret)
 {
@@ -127,6 +147,33 @@ static inline int ioctl_vam(struct nvm_dev *dev, struct nvm_cmd *cmd,
 	}
 
 	return 0;
+}
+
+static inline int ioctl_wrap(struct nvm_dev *dev, unsigned long req,
+			     struct nvm_cmd *cmd, struct nvm_ret *ret)
+{
+	int err = ioctl(dev->fd, req, cmd);
+
+	if (!err) {
+		return 0;
+	}
+
+	if (!ret) {
+		return -1;
+	}
+
+	if (err == -1 && errno == EINVAL) {
+		err = 0x2; // Invalid Field in Command
+	}
+
+	if (err > 0 && ret != NULL) {
+		ret->status = err;
+	}
+
+	NVM_DEBUG("FAILED: ioctl; req: %s, err: 0x%x, errno: %d (%s)",
+		  ioctl_request_to_str(req), err, errno, strerror(errno));
+
+	return -1;
 }
 
 void nvm_cmd_vio_pr(struct nvm_cmd *cmd)
@@ -182,44 +229,39 @@ struct nvm_spec_idfy *nvm_be_ioctl_idfy(struct nvm_dev *dev,
 
 int nvm_be_ioctl_gfeat(struct nvm_dev *dev, uint8_t id,
 		       union nvm_nvme_feat *feat,
-		       struct nvm_ret *NVM_UNUSED(ret))
+		       struct nvm_ret *ret)
 {
-	struct nvme_passthru_cmd cmd = { 0 };
+	struct nvm_cmd cmd = { 0 };
 	int err;
 
-	cmd.opcode = NVM_AOPC_GFEAT;
-	cmd.nsid = dev->nsid;
-	cmd.cdw10 = id;
+	cmd.admin.opcode = NVM_AOPC_GFEAT;
+	cmd.admin.nsid = dev->nsid;
+	cmd.admin.cdw10 = id;
 
-	err = ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, &cmd);
+	err = ioctl_wrap(dev, NVME_IOCTL_ADMIN_CMD, &cmd, ret);
 	if (err) {
-		NVM_DEBUG("FAILED: ioctl(NVME_IOCTL_ADMIN_CMD) err: %d, errno: %s",
-			  err, strerror(errno));
-
 		return -1;
 	}
 
-	feat->a = cmd.result;
+	feat->a = cmd.admin.result;
 
 	return 0;
 }
 
 int nvm_be_ioctl_sfeat(struct nvm_dev *dev, uint8_t id,
 		       const union nvm_nvme_feat *feat,
-		       struct nvm_ret *NVM_UNUSED(ret))
+		       struct nvm_ret *ret)
 {
-	struct nvme_passthru_cmd cmd = { 0 };
+	struct nvm_cmd cmd = { 0 };
 	int err;
 
-	cmd.opcode = NVM_AOPC_SFEAT;
-	cmd.nsid = dev->nsid;
-	cmd.cdw10 = id;
-	cmd.cdw11 = feat->a;
+	cmd.admin.opcode = NVM_AOPC_SFEAT;
+	cmd.admin.nsid = dev->nsid;
+	cmd.admin.cdw10 = id;
+	cmd.admin.cdw11 = feat->a;
 
-	err = ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, &cmd);
+	err = ioctl_wrap(dev, NVME_IOCTL_ADMIN_CMD, &cmd, ret);
 	if (err) {
-		NVM_DEBUG("FAILED: ioctl(NVME_IOCTL_ADMIN_CMD) err: %d, errno: %s",
-			  err, strerror(errno));
 		return -1;
 	}
 
@@ -229,7 +271,7 @@ int nvm_be_ioctl_sfeat(struct nvm_dev *dev, uint8_t id,
 struct nvm_spec_rprt *nvm_be_ioctl_rprt(struct nvm_dev *dev,
 					struct nvm_addr *addr,
 					int NVM_UNUSED(opt),
-					struct nvm_ret *NVM_UNUSED(ret))
+					struct nvm_ret *ret)
 {
 	if (NVM_SPEC_VERID_20 != dev->verid) {
 		errno = EINVAL;
@@ -266,12 +308,12 @@ struct nvm_spec_rprt *nvm_be_ioctl_rprt(struct nvm_dev *dev,
 	for (unsigned int i = 0; i < ndescr; i += max_descr_pr_call) {
 		data_len = NVM_MIN(max_descr_pr_call, ndescr - i) * descr_len;
 
-		struct nvme_passthru_cmd cmd = { 0 };
+		struct nvm_cmd cmd = { 0 };
 
-		cmd.opcode = NVM_AOPC_RPRT;
-		cmd.nsid = dev->nsid;
-		cmd.addr = (uint64_t) (uintptr_t) &rprt->descr[i];
-		cmd.data_len = data_len;
+		cmd.admin.opcode = NVM_AOPC_RPRT;
+		cmd.admin.nsid = dev->nsid;
+		cmd.admin.addr = (uint64_t) (uintptr_t) &rprt->descr[i];
+		cmd.admin.data_len = data_len;
 
 		uint32_t numd = (data_len >> 2) - 1;
 		uint16_t numdu = numd >> 16;
@@ -279,14 +321,12 @@ struct nvm_spec_rprt *nvm_be_ioctl_rprt(struct nvm_dev *dev,
 
 		uint64_t lpo = lpo_off + i * descr_len;
 
-		cmd.cdw10 = 0xCA | (numdl << 16);
-		cmd.cdw11 = numdu;
-		cmd.cdw12 = lpo;
-		cmd.cdw13 = (lpo >> 32);
+		cmd.admin.cdw10 = 0xCA | (numdl << 16);
+		cmd.admin.cdw11 = numdu;
+		cmd.admin.cdw12 = lpo;
+		cmd.admin.cdw13 = (lpo >> 32);
 
-		if(ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, &cmd)) {
-			NVM_DEBUG("FAILED: ioctl(NVME_IOCTL_ADMIN_CMD), errno: %s",
-				  strerror(errno));
+		if (ioctl_wrap(dev, NVME_IOCTL_ADMIN_CMD, &cmd, ret)) {
 			nvm_buf_free(dev, rprt);
 			return NULL;
 		}
@@ -389,7 +429,7 @@ int nvm_be_ioctl_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs, int naddrs,
 
 int nvm_be_ioctl_scalar_erase(struct nvm_dev *dev, struct nvm_addr *addrs,
 			      int naddrs, uint16_t flags,
-			      struct nvm_ret *NVM_UNUSED(ret))
+			      struct nvm_ret *ret)
 {
 	if (flags & NVM_CMD_ASYNC) {
 		NVM_DEBUG("FAILED: NVM_BE_IOCTL does not support NVM_CMD_ASYNC");
@@ -400,8 +440,7 @@ int nvm_be_ioctl_scalar_erase(struct nvm_dev *dev, struct nvm_addr *addrs,
 	const struct nvm_geo *geo = nvm_dev_get_geo(dev);
 	struct nvm_nvme_dsm_range *dsmr = NULL;
 	size_t dsmr_len = sizeof(*dsmr) * naddrs;
-	struct nvme_passthru_cmd cmd = { 0 };
-	int err = 0;
+	struct nvm_cmd cmd = { 0 };
 
 	if ((!naddrs) || (naddrs > NVM_NADDR_MAX)) {
 		NVM_DEBUG("FAILED: invalid naddrs: %d", naddrs);
@@ -421,16 +460,15 @@ int nvm_be_ioctl_scalar_erase(struct nvm_dev *dev, struct nvm_addr *addrs,
 		dsmr[idx].slba = nvm_addr_gen2dev(dev, addrs[idx]);
 	}
 
-	cmd.opcode = NVM_DOPC_SCALAR_ERASE;
-	cmd.nsid = dev->nsid;
-	cmd.addr = (__u64)(uintptr_t) dsmr;
-	cmd.data_len = naddrs * sizeof(*dsmr);
-	cmd.cdw10 = naddrs - 1;
-	cmd.cdw11 = 0x1 << 2; // Assign Bit: Attribute Deallocate (AD)
+	cmd.passthru.opcode = NVM_DOPC_SCALAR_ERASE;
+	cmd.passthru.nsid = dev->nsid;
+	cmd.passthru.addr = (__u64)(uintptr_t) dsmr;
+	cmd.passthru.data_len = naddrs * sizeof(*dsmr);
+	cmd.passthru.cdw10 = naddrs - 1;
+	cmd.passthru.cdw11 = 0x1 << 2; // Assign Bit: Attribute Deallocate (AD)
 
-	err = ioctl(dev->fd, NVME_IOCTL_IO_CMD, &cmd);
+	int err = ioctl_wrap(dev, NVME_IOCTL_IO_CMD, &cmd, ret);
 	if (err) {
-		NVM_DEBUG("FAILED: ioctl(NVME_IOCTL_IO_CMD) err: %d", err);
 		nvm_buf_free(dev, dsmr);
 		return -1;
 	}
@@ -454,21 +492,18 @@ static inline int cmd_scalar_wr_dep_ioc(struct nvm_dev *dev,
 					void *data, void *meta,
 					uint16_t NVM_UNUSED(flags),
 					uint16_t opcode,
-					struct nvm_ret *NVM_UNUSED(ret))
+					struct nvm_ret *ret)
 {
-	struct nvme_user_io cmd = { 0 };
-	cmd.opcode = opcode;
-	cmd.nblocks = naddrs - 1;
-	cmd.metadata = (__u64)(uintptr_t) meta;
-	cmd.addr = (__u64)(uintptr_t) data;
-	cmd.slba = nvm_addr_gen2dev(dev, addr);
+	struct nvm_cmd cmd = { 0 };
 
-	int err;
+	cmd.user.opcode = opcode;
+	cmd.user.nblocks = naddrs - 1;
+	cmd.user.metadata = (__u64)(uintptr_t) meta;
+	cmd.user.addr = (__u64)(uintptr_t) data;
+	cmd.user.slba = nvm_addr_gen2dev(dev, addr);
 
-	err = ioctl(dev->fd, NVME_IOCTL_SUBMIT_IO, &cmd);
+	int err = ioctl_wrap(dev, NVME_IOCTL_SUBMIT_IO, &cmd, ret);
 	if (err) {
-		NVM_DEBUG("FAILED: NVME_IOCTL_SUBMIT_IO err: %d, errno: %s",
-			  err, strerror(errno));
 		return -1;
 	}
 
@@ -494,26 +529,25 @@ static inline int cmd_scalar_wr(struct nvm_dev *dev, struct nvm_addr addr,
 					     flags, opcode, ret);
 	}
 
-	struct nvme_passthru_cmd cmd = { 0 };
+	struct nvm_cmd cmd = { 0 };
 
-	cmd.opcode = opcode;
-	cmd.nsid = dev->nsid;
-	cmd.metadata = (__u64)(uintptr_t) meta;
-	cmd.addr = (__u64)(uintptr_t) data;
-	cmd.metadata_len = meta ? dev->geo.meta_nbytes * naddrs : 0;
-	cmd.data_len = dev->geo.sector_nbytes * naddrs;
+	cmd.passthru.opcode = opcode;
+	cmd.passthru.nsid = dev->nsid;
+	cmd.passthru.metadata = (__u64)(uintptr_t) meta;
+	cmd.passthru.addr = (__u64)(uintptr_t) data;
+	cmd.passthru.metadata_len = meta ? dev->geo.meta_nbytes * naddrs : 0;
+	cmd.passthru.data_len = dev->geo.sector_nbytes * naddrs;
 
 	uint64_t slba = nvm_addr_gen2dev(dev, addr);
 
-	cmd.cdw10 = slba;
-	cmd.cdw11 = slba >> 32;
-	cmd.cdw12 = naddrs - 1;
+	cmd.passthru.cdw10 = slba;
+	cmd.passthru.cdw11 = slba >> 32;
+	cmd.passthru.cdw12 = naddrs - 1;
 
 	int err;
 
-	err = ioctl(dev->fd, NVME_IOCTL_IO_CMD, &cmd);
+	err = ioctl_wrap(dev, NVME_IOCTL_IO_CMD, &cmd, ret);
 	if (err) {
-		NVM_DEBUG("FAILED: ioctl-scalar failed: %s", strerror(errno));
 		return -1;
 	}
 
@@ -689,16 +723,14 @@ struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags)
 		return NULL;
 	}
 
-	struct nvme_admin_cmd cmd = { 0 };
+	struct nvm_cmd cmd = { 0 };
 
-	cmd.opcode = 0x06; // identify
-	cmd.nsid = dev->nsid;
-	cmd.addr = (uint64_t)(uintptr_t) &dev->ns;
-	cmd.data_len = 0x1000;
+	cmd.admin.opcode = 0x06; // identify
+	cmd.admin.nsid = dev->nsid;
+	cmd.admin.addr = (uint64_t)(uintptr_t) &dev->ns;
+	cmd.admin.data_len = 0x1000;
 
-	if(ioctl(dev->fd, NVME_IOCTL_ADMIN_CMD, &cmd)) {
-		NVM_DEBUG("FAILED: ioctl(NVME_IOCTL_ADMIN_CMD), errno: %s",
-			  strerror(errno));
+	if (ioctl_wrap(dev, NVME_IOCTL_ADMIN_CMD, &cmd, NULL)) {
 		return NULL;
 	}
 
