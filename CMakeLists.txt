@@ -132,6 +132,13 @@ if(${NVM_BE_SPDK_ENABLED})
 		target_link_libraries(${LNAME} ${NVM_BE_SPDK_DEP})
 	endforeach()
 
+	if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+		if(EXISTS "${ROOT}/usr/local/include/dpdk")
+			include_directories("/usr/local/include/dpdk")
+			add_definitions(-DNVM_BE_SPDK_CHOKE_PRINTING)
+		endif()
+	endif()
+
 	try_compile(NVM_BE_SPDK_HAS_SGL
 		"${CMAKE_BINARY_DIR}/temp"
 		"${CMAKE_SOURCE_DIR}/cmake/try_compile_spdk_nvme_ctrlr_cmd_iov_raw_with_md.c"

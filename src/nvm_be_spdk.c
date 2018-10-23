@@ -64,6 +64,10 @@ struct nvm_be nvm_be_spdk = {
 #include <nvm_sgl.h>
 #include <nvm_be.h>
 #include <nvm_be_spdk.h>
+#ifdef NVM_BE_SPDK_CHOKE_PRINTING
+#include <dpdk/rte_log.h>
+#include <spdk/log.h>
+#endif
 
 #ifndef NVM_BE_SPDK_HAS_SGL
 int spdk_nvme_ctrlr_cmd_iov_raw_with_md(
@@ -189,6 +193,12 @@ struct nvm_dev *nvm_be_spdk_open(const char *dev_path, int NVM_UNUSED(flags))
 	memset(state, 0, sizeof(*state));
 
 	dev->be_state = state;
+
+#ifdef NVM_BE_SPDK_CHOKE_PRINTING
+	// SPDK and DPDK are very chatty
+	spdk_log_set_print_level(SPDK_LOG_ERROR);
+	rte_log_set_global_level(RTE_LOG_EMERG);
+#endif
 
 	/*
 	 * SPDK relies on an abstraction around the local environment named env
