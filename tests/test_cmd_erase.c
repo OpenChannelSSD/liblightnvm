@@ -13,7 +13,7 @@ static void erase_s20(int use_metadata, int erase_mode, int naddrs)
 	ssize_t res;
 
 	// get an abitrary free chunk
-	if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, naddrs, chunk_addrs)) {
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, naddrs, chunk_addrs)) {
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		return;
 	}
@@ -23,7 +23,7 @@ static void erase_s20(int use_metadata, int erase_mode, int naddrs)
 		lun_addr.l.punit = chunk_addrs[i].l.punit;
 
 		// get report for all chunks in lun
-		if (NULL == (rprt = nvm_cmd_rprt(dev, &lun_addr, 0, NULL))) {
+		if (NULL == (rprt = nvm_cmd_rprt(DEV, &lun_addr, 0, NULL))) {
 			CU_FAIL("nvm_cmd_rprt failed");
 			return;
 		}
@@ -33,14 +33,14 @@ static void erase_s20(int use_metadata, int erase_mode, int naddrs)
 		CU_ASSERT(primes[i].cs == NVM_CHUNK_STATE_FREE);
 	}
 
-	struct nvm_vblk *vblk = nvm_vblk_alloc(dev, chunk_addrs, naddrs);
+	struct nvm_vblk *vblk = nvm_vblk_alloc(DEV, chunk_addrs, naddrs);
 	if (!vblk) {
 		CU_FAIL("FAILED: Allocating vblk");
 		return;
 	}
 	size_t nbytes = nvm_vblk_get_nbytes(vblk);
 
-	struct nvm_buf_set *bufs = nvm_buf_set_alloc(dev, nbytes, 0);
+	struct nvm_buf_set *bufs = nvm_buf_set_alloc(DEV, nbytes, 0);
 	if (!bufs) {
 		CU_FAIL("FAILED: Allocating nvm_buf_set");
 		return;
@@ -57,7 +57,7 @@ static void erase_s20(int use_metadata, int erase_mode, int naddrs)
 		lun_addr.l.punit = chunk_addrs[i].l.punit;
 
 		// get report for all chunks in lun
-		if (NULL == (rprt = nvm_cmd_rprt(dev, &lun_addr, 0, NULL))) {
+		if (NULL == (rprt = nvm_cmd_rprt(DEV, &lun_addr, 0, NULL))) {
 			CU_FAIL("nvm_cmd_rprt failed");
 			return;
 		}
@@ -68,10 +68,10 @@ static void erase_s20(int use_metadata, int erase_mode, int naddrs)
 	}
 
 	struct nvm_spec_rprt_descr *updated = use_metadata ?
-		nvm_buf_alloc(dev, naddrs * sizeof(struct nvm_spec_rprt_descr), NULL) : NULL;
+		nvm_buf_alloc(DEV, naddrs * sizeof(struct nvm_spec_rprt_descr), NULL) : NULL;
 
 	// erase the chunk
-	res = nvm_cmd_erase(dev, chunk_addrs, naddrs, updated, erase_mode, &ret);
+	res = nvm_cmd_erase(DEV, chunk_addrs, naddrs, updated, erase_mode, &ret);
 	if (res < 0) {
 		CU_FAIL("Erase failure");
 		return;
@@ -97,7 +97,7 @@ static void erase_s20(int use_metadata, int erase_mode, int naddrs)
 		lun_addr.l.punit = chunk_addrs[i].l.punit;
 
 		// get report for all chunks in lun
-		if (NULL == (rprt = nvm_cmd_rprt(dev, &lun_addr, 0, NULL))) {
+		if (NULL == (rprt = nvm_cmd_rprt(DEV, &lun_addr, 0, NULL))) {
 			CU_FAIL("nvm_cmd_rprt failed");
 			return;
 		}
@@ -110,15 +110,15 @@ static void erase_s20(int use_metadata, int erase_mode, int naddrs)
 		CU_ASSERT(verify->wp == 0);
 	}
 
-	nvm_buf_free(dev, updated);
-	nvm_buf_free(dev, rprt);
+	nvm_buf_free(DEV, updated);
+	nvm_buf_free(DEV, rprt);
 
 	return;
 }
 
 void test_ERASE_VECTOR_S20_NADDRS_ONE_META(void)
 {
-	switch(nvm_dev_get_verid(dev)) {
+	switch(nvm_dev_get_verid(DEV)) {
 	case NVM_SPEC_VERID_12:
 		CU_PASS("nothing to test");
 		break;
@@ -134,13 +134,13 @@ void test_ERASE_VECTOR_S20_NADDRS_ONE_META(void)
 
 void test_ERASE_VECTOR_S20_NADDRS_NPUNITS_META(void)
 {
-	switch(nvm_dev_get_verid(dev)) {
+	switch(nvm_dev_get_verid(DEV)) {
 	case NVM_SPEC_VERID_12:
 		CU_PASS("nothing to test");
 		break;
 
 	case NVM_SPEC_VERID_20:
-		erase_s20(1, NVM_CMD_VECTOR, geo->l.npunit);
+		erase_s20(1, NVM_CMD_VECTOR, GEO->l.npunit);
 		break;
 
 	default:
@@ -150,7 +150,7 @@ void test_ERASE_VECTOR_S20_NADDRS_NPUNITS_META(void)
 
 void test_ERASE_VECTOR_S20_NADDRS_ONE(void)
 {
-	switch(nvm_dev_get_verid(dev)) {
+	switch(nvm_dev_get_verid(DEV)) {
 	case NVM_SPEC_VERID_12:
 		CU_PASS("nothing to test");
 		break;
@@ -166,13 +166,13 @@ void test_ERASE_VECTOR_S20_NADDRS_ONE(void)
 
 void test_ERASE_VECTOR_S20_NADDRS_NPUNITS(void)
 {
-	switch(nvm_dev_get_verid(dev)) {
+	switch(nvm_dev_get_verid(DEV)) {
 	case NVM_SPEC_VERID_12:
 		CU_PASS("nothing to test");
 		break;
 
 	case NVM_SPEC_VERID_20:
-		erase_s20(0, NVM_CMD_VECTOR, geo->l.npunit);
+		erase_s20(0, NVM_CMD_VECTOR, GEO->l.npunit);
 		break;
 
 	default:
@@ -182,7 +182,7 @@ void test_ERASE_VECTOR_S20_NADDRS_NPUNITS(void)
 
 void test_ERASE_SCALAR_S20_NADDRS_ONE(void)
 {
-	switch(nvm_dev_get_verid(dev)) {
+	switch(nvm_dev_get_verid(DEV)) {
 	case NVM_SPEC_VERID_12:
 		CU_PASS("nothing to test");
 		break;
@@ -198,13 +198,13 @@ void test_ERASE_SCALAR_S20_NADDRS_ONE(void)
 
 void test_ERASE_SCALAR_S20_NADDRS_NPUNITS(void)
 {
-	switch(nvm_dev_get_verid(dev)) {
+	switch(nvm_dev_get_verid(DEV)) {
 	case NVM_SPEC_VERID_12:
 		CU_PASS("nothing to test");
 		break;
 
 	case NVM_SPEC_VERID_20:
-		erase_s20(0, NVM_CMD_SCALAR, geo->l.npunit);
+		erase_s20(0, NVM_CMD_SCALAR, GEO->l.npunit);
 		break;
 
 	default:
@@ -250,13 +250,13 @@ int main(int argc, char **argv)
 	if (!CU_add_test(pSuite, "ERASE_SCALAR_S20_NADDRS_BAD", test_ERASE_SCALAR_S20_NADDRS_BAD))
 		goto out;
 */
-	switch(rmode) {
+	switch(RMODE) {
 	case NVM_TEST_RMODE_AUTO:
 		CU_automated_run_tests();
 		break;
 
 	default:
-		CU_basic_set_mode(rmode);
+		CU_basic_set_mode(RMODE);
 		CU_basic_run_tests();
 		break;
 	}

@@ -4,15 +4,15 @@ static void conv_sectr_addresses(int func)
 {
 	size_t tsectr = 0;
 	
-	switch (nvm_dev_get_verid(dev)) {
+	switch (nvm_dev_get_verid(DEV)) {
 	case NVM_SPEC_VERID_12:
-		tsectr = geo->g.nchannels * geo->g.nluns * geo->g.nplanes *
-			geo->g.nblocks * geo->g.npages * geo->g.nsectors;
+		tsectr = GEO->g.nchannels * GEO->g.nluns * GEO->g.nplanes *
+			GEO->g.nblocks * GEO->g.npages * GEO->g.nsectors;
 		break;
 	
 	case NVM_SPEC_VERID_20:
-		tsectr = geo->l.npugrp * geo->l.npunit * geo->l.nchunk *
-			 geo->l.nsectr;
+		tsectr = GEO->l.npugrp * GEO->l.npunit * GEO->l.nchunk *
+			 GEO->l.nsectr;
 		break;
 
 	default:
@@ -25,42 +25,42 @@ static void conv_sectr_addresses(int func)
 		struct nvm_addr act = { .val = 0 };
 		uint64_t conv;
 
-		switch (nvm_dev_get_verid(dev)) {
+		switch (nvm_dev_get_verid(DEV)) {
 		case NVM_SPEC_VERID_12:
-			exp.g.sec = sectr % geo->nsectors;
-			exp.g.pg = (sectr / geo->nsectors ) % geo->npages;
-			exp.g.blk = ((sectr / geo->nsectors) / geo->npages ) % geo->nblocks;
-			exp.g.pl = (((sectr / geo->nsectors) / geo->npages ) / geo->nblocks) % geo->nplanes;
-			exp.g.lun = ((((sectr / geo->nsectors) / geo->npages ) / geo->nblocks) / geo->nplanes) % geo->nluns;
-			exp.g.ch = (((((sectr / geo->nsectors) / geo->npages ) / geo->nblocks) / geo->nplanes) / geo->nluns) % geo->nchannels;
+			exp.g.sec = sectr % GEO->nsectors;
+			exp.g.pg = (sectr / GEO->nsectors ) % GEO->npages;
+			exp.g.blk = ((sectr / GEO->nsectors) / GEO->npages ) % GEO->nblocks;
+			exp.g.pl = (((sectr / GEO->nsectors) / GEO->npages ) / GEO->nblocks) % GEO->nplanes;
+			exp.g.lun = ((((sectr / GEO->nsectors) / GEO->npages ) / GEO->nblocks) / GEO->nplanes) % GEO->nluns;
+			exp.g.ch = (((((sectr / GEO->nsectors) / GEO->npages ) / GEO->nblocks) / GEO->nplanes) / GEO->nluns) % GEO->nchannels;
 			break;
 
 		case NVM_SPEC_VERID_20:
-			exp.l.sectr = sectr % geo->l.nsectr;
-			exp.l.chunk = (sectr / geo->l.nsectr ) % geo->l.nchunk;
-			exp.l.punit = ((sectr / geo->l.nsectr) / geo->l.nchunk ) % geo->l.npunit;
-			exp.l.pugrp = (((sectr / geo->l.nsectr) / geo->l.nchunk ) / geo->l.npunit) % geo->l.npugrp;
+			exp.l.sectr = sectr % GEO->l.nsectr;
+			exp.l.chunk = (sectr / GEO->l.nsectr ) % GEO->l.nchunk;
+			exp.l.punit = ((sectr / GEO->l.nsectr) / GEO->l.nchunk ) % GEO->l.npunit;
+			exp.l.pugrp = (((sectr / GEO->l.nsectr) / GEO->l.nchunk ) / GEO->l.npunit) % GEO->l.npugrp;
 			break;
 		}
 
-		CU_ASSERT(!nvm_addr_check(exp, dev));
+		CU_ASSERT(!nvm_addr_check(exp, DEV));
 
 		switch (func) {
 		case 0:
-			conv = nvm_addr_gen2dev(dev, exp);
-			act = nvm_addr_dev2gen(dev, conv);
+			conv = nvm_addr_gen2dev(DEV, exp);
+			act = nvm_addr_dev2gen(DEV, conv);
 			break;
 
 		case 1:
-			conv = nvm_addr_gen2off(dev, exp);
-			act = nvm_addr_off2gen(dev, conv);
+			conv = nvm_addr_gen2off(DEV, exp);
+			act = nvm_addr_off2gen(DEV, conv);
 			break;
 
 		case 2:
-			conv = nvm_addr_gen2dev(dev, exp);
-			conv = nvm_addr_dev2off(dev, conv);
-			conv = nvm_addr_off2dev(dev, conv);
-			act = nvm_addr_dev2gen(dev, conv);
+			conv = nvm_addr_gen2dev(DEV, exp);
+			conv = nvm_addr_dev2off(DEV, conv);
+			conv = nvm_addr_off2dev(DEV, conv);
+			act = nvm_addr_dev2gen(DEV, conv);
 			break;
 
 		default:
@@ -69,9 +69,9 @@ static void conv_sectr_addresses(int func)
 		}
 
 		CU_ASSERT_EQUAL(act.val, exp.val);
-		if ((CU_BRM_VERBOSE == rmode) && (act.val != exp.val)) {
-			printf("Expected: "); nvm_addr_prn(&exp, 1, dev);
-			printf("Got:      "); nvm_addr_prn(&act, 1, dev);
+		if ((CU_BRM_VERBOSE == RMODE) && (act.val != exp.val)) {
+			printf("Expected: "); nvm_addr_prn(&exp, 1, DEV);
+			printf("Got:      "); nvm_addr_prn(&act, 1, DEV);
 		}
 	}
 }
@@ -80,14 +80,14 @@ static void conv_chunk_addresses(int func)
 {
 	size_t tchunk = 0;
 	
-	switch (nvm_dev_get_verid(dev)) {
+	switch (nvm_dev_get_verid(DEV)) {
 	case NVM_SPEC_VERID_12:
-		tchunk = geo->g.nchannels * geo->g.nluns * geo->g.nplanes *
-			geo->g.nblocks;
+		tchunk = GEO->g.nchannels * GEO->g.nluns * GEO->g.nplanes *
+			GEO->g.nblocks;
 		break;
 	
 	case NVM_SPEC_VERID_20:
-		tchunk = geo->l.npugrp * geo->l.npunit * geo->l.nchunk;
+		tchunk = GEO->l.npugrp * GEO->l.npunit * GEO->l.nchunk;
 		break;
 
 	default:
@@ -100,30 +100,30 @@ static void conv_chunk_addresses(int func)
 		struct nvm_addr act = { .val = 0 };
 		uint64_t conv;
 
-		switch (nvm_dev_get_verid(dev)) {
+		switch (nvm_dev_get_verid(DEV)) {
 		case NVM_SPEC_VERID_12:
 			exp.g.sec = 0;
 			exp.g.pg = 0;
-			exp.g.blk = chunk % geo->nblocks;
-			exp.g.pl = (chunk / geo->nblocks) % geo->nplanes;
-			exp.g.lun = ((chunk / geo->nblocks) / geo->nplanes) % geo->nluns;
-			exp.g.ch = (((chunk / geo->nblocks) / geo->nplanes) % geo->nluns) % geo->nchannels;
+			exp.g.blk = chunk % GEO->nblocks;
+			exp.g.pl = (chunk / GEO->nblocks) % GEO->nplanes;
+			exp.g.lun = ((chunk / GEO->nblocks) / GEO->nplanes) % GEO->nluns;
+			exp.g.ch = (((chunk / GEO->nblocks) / GEO->nplanes) % GEO->nluns) % GEO->nchannels;
 			break;
 
 		case NVM_SPEC_VERID_20:
 			exp.l.sectr = 0;
-			exp.l.chunk = chunk % geo->l.nchunk;
-			exp.l.punit = (chunk / geo->l.nchunk ) % geo->l.npunit;
-			exp.l.pugrp = ((chunk / geo->l.nchunk ) / geo->l.npunit) % geo->l.npugrp;
+			exp.l.chunk = chunk % GEO->l.nchunk;
+			exp.l.punit = (chunk / GEO->l.nchunk ) % GEO->l.npunit;
+			exp.l.pugrp = ((chunk / GEO->l.nchunk ) / GEO->l.npunit) % GEO->l.npugrp;
 			break;
 		}
 
-		CU_ASSERT(!nvm_addr_check(exp, dev));
+		CU_ASSERT(!nvm_addr_check(exp, DEV));
 
 		switch (func) {
 		case 0:
-			conv = nvm_addr_gen2lpo(dev, exp);
-			act = nvm_addr_lpo2gen(dev, conv);
+			conv = nvm_addr_gen2lpo(DEV, exp);
+			act = nvm_addr_lpo2gen(DEV, conv);
 			break;
 
 		default:
@@ -132,9 +132,9 @@ static void conv_chunk_addresses(int func)
 		}
 
 		CU_ASSERT_EQUAL(act.val, exp.val);
-		if ((CU_BRM_VERBOSE == rmode) && (act.val != exp.val)) {
-			printf("Expected: "); nvm_addr_prn(&exp, 1, dev);
-			printf("Got:      "); nvm_addr_prn(&act, 1, dev);
+		if ((CU_BRM_VERBOSE == RMODE) && (act.val != exp.val)) {
+			printf("Expected: "); nvm_addr_prn(&exp, 1, DEV);
+			printf("Got:      "); nvm_addr_prn(&act, 1, DEV);
 		}
 	}
 }
@@ -176,13 +176,13 @@ int main(int argc, char **argv)
 	if (!CU_add_test(pSuite, "fmt gen -> lpo -> gen", test_FMT_GEN_LPO_GEN))
 		goto out;
 
-	switch(rmode) {
+	switch(RMODE) {
 	case NVM_TEST_RMODE_AUTO:
 		CU_automated_run_tests();
 		break;
 
 	default:
-		CU_basic_set_mode(rmode);
+		CU_basic_set_mode(RMODE);
 		CU_basic_run_tests();
 		break;
 	}

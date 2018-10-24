@@ -14,9 +14,9 @@ void test_CMD_RPRT_ORDR(void)
 {
 	struct nvm_spec_rprt *rprt = NULL;
 
-	size_t tchunks = geo->l.npugrp * geo->l.npunit * geo->l.nchunk;
+	size_t tchunks = GEO->l.npugrp * GEO->l.npunit * GEO->l.nchunk;
 
-	rprt = nvm_cmd_rprt(dev, NULL, 0x0, NULL);
+	rprt = nvm_cmd_rprt(DEV, NULL, 0x0, NULL);
 	CU_ASSERT_PTR_NOT_NULL(rprt);
 	if (!rprt)
 		goto out;
@@ -28,12 +28,12 @@ void test_CMD_RPRT_ORDR(void)
 	for (size_t i = 0; i < tchunks; ++i) {
 		const struct nvm_addr addr = {
 		.l.sectr = 0,
-		.l.chunk = i % geo->l.nchunk,
-		.l.punit = (i / geo->l.nchunk) % geo->l.npunit,
-		.l.pugrp = ((i / geo->l.nchunk) / geo->l.npunit) % geo->l.npugrp
+		.l.chunk = i % GEO->l.nchunk,
+		.l.punit = (i / GEO->l.nchunk) % GEO->l.npunit,
+		.l.pugrp = ((i / GEO->l.nchunk) / GEO->l.npunit) % GEO->l.npugrp
 		};
 
-		const uint32_t addr_dev = nvm_addr_gen2dev(dev, addr);
+		const uint32_t addr_dev = nvm_addr_gen2dev(DEV, addr);
 
 		struct nvm_spec_rprt_descr *descr = &rprt->descr[i];
 
@@ -52,7 +52,7 @@ void test_CMD_RPRT_ORDR(void)
 	}
 
 out:
-	nvm_buf_free(dev, rprt);
+	nvm_buf_free(DEV, rprt);
 }
 
 int main(int argc, char **argv)
@@ -66,13 +66,13 @@ int main(int argc, char **argv)
 	if (!CU_add_test(pSuite, "nvm_cmd_rprt ORDR", test_CMD_RPRT_ORDR))
 		goto out;
 
-	switch(rmode) {
+	switch(RMODE) {
 	case NVM_TEST_RMODE_AUTO:
 		CU_automated_run_tests();
 		break;
 
 	default:
-		CU_basic_set_mode(rmode);
+		CU_basic_set_mode(RMODE);
 		CU_basic_run_tests();
 		break;
 	}

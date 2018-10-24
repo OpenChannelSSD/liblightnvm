@@ -25,26 +25,26 @@
 
 int cmd_copy(int cmd_opt)
 {
-	const size_t io_nsectr = nvm_dev_get_ws_opt(dev);
-	size_t bufs_nbytes = geo->l.nsectr * geo->l.nbytes;
+	const size_t io_nsectr = nvm_dev_get_ws_opt(DEV);
+	size_t bufs_nbytes = GEO->l.nsectr * GEO->l.nbytes;
 	struct nvm_buf_set *bufs = NULL;
 	struct nvm_addr chunks[NCHUNKS];
 	int res = -1;
 
-	if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, NCHUNKS, chunks)) {
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, NCHUNKS, chunks)) {
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		goto exit;
 	}
 
-	bufs = nvm_buf_set_alloc(dev, bufs_nbytes, 0);
+	bufs = nvm_buf_set_alloc(DEV, bufs_nbytes, 0);
 	if (!bufs) {
 		CU_FAIL("nvm_buf_set_alloc");
 		goto exit;
 	}
 	nvm_buf_set_fill(bufs);
 
-	for (size_t sectr = 0; sectr < geo->l.nsectr; sectr += io_nsectr) {
-		const size_t buf_ofz = sectr * geo->l.nbytes;
+	for (size_t sectr = 0; sectr < GEO->l.nsectr; sectr += io_nsectr) {
+		const size_t buf_ofz = sectr * GEO->l.nbytes;
 		struct nvm_addr src[io_nsectr];
 
 		for (size_t idx = 0; idx < io_nsectr; ++idx) {
@@ -52,7 +52,7 @@ int cmd_copy(int cmd_opt)
 			src[idx].l.sectr = sectr + idx;
 		}
 
-		res = nvm_cmd_write(dev, src, io_nsectr,
+		res = nvm_cmd_write(DEV, src, io_nsectr,
 				    bufs->write + buf_ofz, NULL,
 				    cmd_opt, NULL);
 		if (res < 0) {
@@ -61,7 +61,7 @@ int cmd_copy(int cmd_opt)
 		}
 	}
 
-	for (size_t sectr = 0; sectr < geo->l.nsectr; sectr += io_nsectr) {
+	for (size_t sectr = 0; sectr < GEO->l.nsectr; sectr += io_nsectr) {
 		struct nvm_addr src[io_nsectr];
 		struct nvm_addr dst[io_nsectr];
 
@@ -73,15 +73,15 @@ int cmd_copy(int cmd_opt)
 			dst[idx].l.sectr = sectr + idx;
 		}
 
-		res = nvm_cmd_copy(dev, src, dst, io_nsectr, 0, NULL);
+		res = nvm_cmd_copy(DEV, src, dst, io_nsectr, 0, NULL);
 		if (res < 0) {
 			CU_FAIL("nvm_cmd_copy");
 			goto exit;
 		}
 	}
 
-	for (size_t sectr = 0; sectr < geo->l.nsectr; sectr += io_nsectr) {
-		const size_t buf_ofz = sectr * geo->l.nbytes;
+	for (size_t sectr = 0; sectr < GEO->l.nsectr; sectr += io_nsectr) {
+		const size_t buf_ofz = sectr * GEO->l.nbytes;
 		struct nvm_addr dst[io_nsectr];
 
 		for (size_t idx = 0; idx < io_nsectr; ++idx) {
@@ -89,7 +89,7 @@ int cmd_copy(int cmd_opt)
 			dst[idx].l.sectr = sectr + idx;
 		}
 
-		res = nvm_cmd_read(dev, dst, io_nsectr,
+		res = nvm_cmd_read(DEV, dst, io_nsectr,
 				   bufs->read + buf_ofz, NULL,
 				   cmd_opt, NULL);
 		if (res < 0) {
@@ -135,13 +135,13 @@ int main(int argc, char **argv)
 	if (!CU_ADD_TEST(pSuite, test_CMD_COPY_SWR))
 		goto out;
 
-	switch(rmode) {
+	switch(RMODE) {
 	case NVM_TEST_RMODE_AUTO:
 		CU_automated_run_tests();
 		break;
 
 	default:
-		CU_basic_set_mode(rmode);
+		CU_basic_set_mode(RMODE);
 		CU_basic_run_tests();
 		break;
 	}

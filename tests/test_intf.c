@@ -23,15 +23,15 @@
 
 #define MDTS_BYTES (MPSMIN * (1 << MDTS))
 
-static int be_id = NVM_BE_ANY;
-static int seed = 0;
-static char nvm_dev_path[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
+static int BE_ID = NVM_BE_ANY;
+static int SEED = 0;
+static char NVM_DEV_PATH[NVM_DEV_PATH_LEN] = "/dev/nvme0n1";
 
-int rmode = CU_BRM_NORMAL;
+int RMODE = CU_BRM_NORMAL;
 
-struct nvm_dev *dev;
-const struct nvm_geo *geo;
-const struct nvm_nvme_ns *ns;
+struct nvm_dev *DEV;
+const struct nvm_geo *GEO;
+const struct nvm_nvme_ns *NS;
 
 int MULTIPLE_RESETS_SUPPORTED;
 
@@ -43,27 +43,27 @@ uint32_t MAX_SCALAR_LBAS;
 
 static int suite_setup(void)
 {
-	srand(seed);
+	srand(SEED);
 
-	dev = nvm_dev_openf(nvm_dev_path, be_id);
-	if (!dev) {
+	DEV = nvm_dev_openf(NVM_DEV_PATH, BE_ID);
+	if (!DEV) {
 		return -1;
 	}
 
-	geo = nvm_dev_get_geo(dev);
-	ns = nvm_dev_get_ns(dev);
+	GEO = nvm_dev_get_geo(DEV);
+	NS = nvm_dev_get_ns(DEV);
 
-	MULTIPLE_RESETS_SUPPORTED = nvm_dev_get_mccap(dev) & 0x2;
+	MULTIPLE_RESETS_SUPPORTED = nvm_dev_get_mccap(DEV) & 0x2;
 
-	WS_MIN = nvm_dev_get_ws_min(dev);
-	WS_OPT = nvm_dev_get_ws_opt(dev);
-	MW_CUNITS = nvm_dev_get_mw_cunits(dev);
+	WS_MIN = nvm_dev_get_ws_min(DEV);
+	WS_OPT = nvm_dev_get_ws_opt(DEV);
+	MW_CUNITS = nvm_dev_get_mw_cunits(DEV);
 
-	SECTOR_SIZE = geo->l.nbytes;
+	SECTOR_SIZE = GEO->l.nbytes;
 
 	MAX_SCALAR_LBAS = (MDTS_BYTES / (WS_MIN * SECTOR_SIZE)) * WS_MIN;
 
-	if (rmode == CU_BRM_VERBOSE) {
+	if (RMODE == CU_BRM_VERBOSE) {
 		fprintf(stderr, "# nvm_test: multiple resets are %s\n",
 			MULTIPLE_RESETS_SUPPORTED ? "supported" : "NOT supported");
 	}
@@ -73,39 +73,39 @@ static int suite_setup(void)
 
 static int suite_teardown(void)
 {
-	geo = NULL;
-	nvm_dev_close(dev);
+	GEO = NULL;
+	nvm_dev_close(DEV);
 
 	return 0;
 }
 
 static CU_pSuite suite_create(const char *title, int argc, char *argv[])
 {
-	seed = time(NULL);			// Default arbitrary seed
+	SEED = time(NULL);			// Default arbitrary SEED
 
 	switch(argc) {
 	case 5:
-		be_id = atoi(argv[4]);
+		BE_ID = atoi(argv[4]);
 		/* FALLTHRU */
 	case 4:
 		switch(atoi(argv[3])) {
 		case NVM_TEST_RMODE_AUTO:
-			rmode = NVM_TEST_RMODE_AUTO;
+			RMODE = NVM_TEST_RMODE_AUTO;
 			break;
 		case 2:
-			rmode = CU_BRM_VERBOSE;
+			RMODE = CU_BRM_VERBOSE;
 			break;
 		case 1:
-			rmode = CU_BRM_SILENT;
+			RMODE = CU_BRM_SILENT;
 			break;
 		case 0:
 		default:
-			rmode = CU_BRM_NORMAL;
+			RMODE = CU_BRM_NORMAL;
 			break;
 		}
 		/* FALLTHRU */
 	case 3:
-		seed = atoi(argv[2]);		// Overwrite default seed
+		SEED = atoi(argv[2]);		// Overwrite default SEED
 		/* FALLTHRU */
 	case 2:
 		if (strlen(argv[1]) > NVM_DEV_PATH_LEN) {
@@ -113,13 +113,13 @@ static CU_pSuite suite_create(const char *title, int argc, char *argv[])
 			       NVM_DEV_PATH_LEN);
 			return NULL;
                 }
-		strncpy(nvm_dev_path, argv[1], NVM_DEV_PATH_LEN);
+		strncpy(NVM_DEV_PATH, argv[1], NVM_DEV_PATH_LEN);
 		break;
 	}
 
-	if (rmode == CU_BRM_VERBOSE) {
-		printf("# ARGS: {dev: '%s', seed: %u, rmode: 0x%x, be_id: 0x%x}\n",
-		       nvm_dev_path, seed, rmode, be_id);
+	if (RMODE == CU_BRM_VERBOSE) {
+		printf("# ARGS: {DEV: '%s', SEED: %u, RMODE: 0x%x, be_id: 0x%x}\n",
+		       NVM_DEV_PATH, SEED, RMODE, BE_ID);
 	}
 
 	CU_set_error_action(CUEA_ABORT);

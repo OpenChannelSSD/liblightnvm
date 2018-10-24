@@ -6,19 +6,19 @@
  */
 static void ewr(int use_meta, int erase_cmd_mode)
 {
-	const int naddrs = nvm_dev_get_ws_min(dev);
+	const int naddrs = nvm_dev_get_ws_min(DEV);
 	struct nvm_buf_set *bufs = NULL;
 	struct nvm_ret ret;
 	struct nvm_addr chunk_addr = { .val = 0 };
 	ssize_t res;
 
-	if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, 1, &chunk_addr)) {
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, 1, &chunk_addr)) {
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		goto failure;
 	}
 
-	bufs = nvm_buf_set_alloc(dev, naddrs * geo->l.nbytes,
-				 use_meta ? naddrs * geo->l.nbytes_oob : 0);
+	bufs = nvm_buf_set_alloc(DEV, naddrs * GEO->l.nbytes,
+				 use_meta ? naddrs * GEO->l.nbytes_oob : 0);
 	if (!bufs) {
 		CU_FAIL("nvm_buf_set_alloc");
 		goto failure;
@@ -26,12 +26,12 @@ static void ewr(int use_meta, int erase_cmd_mode)
 	nvm_buf_set_fill(bufs);
 
 	// Write the chunk
-	for (size_t sectr = 0; sectr < geo->l.nsectr; sectr += naddrs) {
+	for (size_t sectr = 0; sectr < GEO->l.nsectr; sectr += naddrs) {
 		struct nvm_addr addr = chunk_addr;
 
 		addr.l.sectr = sectr;
 
-		res = nvm_cmd_write(dev, &addr, naddrs, bufs->write,
+		res = nvm_cmd_write(DEV, &addr, naddrs, bufs->write,
 				    bufs->write_meta, NVM_CMD_SCALAR, &ret);
 		if (res < 0) {
 			CU_FAIL("Write failure");
@@ -40,7 +40,7 @@ static void ewr(int use_meta, int erase_cmd_mode)
 	}
 
 	// Read
-	for (size_t sectr = 0; sectr < geo->l.nsectr; sectr += naddrs) {
+	for (size_t sectr = 0; sectr < GEO->l.nsectr; sectr += naddrs) {
 		struct nvm_addr addr = chunk_addr;
 
 		size_t buf_diff = 0;
@@ -52,7 +52,7 @@ static void ewr(int use_meta, int erase_cmd_mode)
 		if (use_meta)
 			memset(bufs->read_meta, 0, bufs->nbytes_meta);
 
-		res = nvm_cmd_read(dev, &addr, naddrs, bufs->read,
+		res = nvm_cmd_read(DEV, &addr, naddrs, bufs->read,
 				   bufs->read_meta, NVM_CMD_SCALAR, &ret);
 		if (res < 0) {
 			CU_FAIL("Read failure: command error");
@@ -70,7 +70,7 @@ static void ewr(int use_meta, int erase_cmd_mode)
 						 bufs->nbytes_meta);
 			if (meta_diff) {
 				CU_FAIL("Read failure: meta mismatch");
-				if (CU_BRM_VERBOSE == rmode) {
+				if (CU_BRM_VERBOSE == RMODE) {
 					nvm_buf_diff_pr(bufs->write_meta,
 							bufs->read_meta,
 							bufs->nbytes_meta);
@@ -85,7 +85,7 @@ static void ewr(int use_meta, int erase_cmd_mode)
 	}
 
 	// Erase the chunk
-	res = nvm_cmd_erase(dev, &chunk_addr, 1, NULL, erase_cmd_mode, &ret);
+	res = nvm_cmd_erase(DEV, &chunk_addr, 1, NULL, erase_cmd_mode, &ret);
 	if (res < 0) {
 		CU_FAIL("Erase failure");
 		goto failure;
@@ -99,7 +99,7 @@ failure:
 
 void test_EWR_SSS(void)
 {
-	switch(nvm_dev_get_verid(dev)) {
+	switch(nvm_dev_get_verid(DEV)) {
 	case NVM_SPEC_VERID_12:
 		CU_PASS("Nothing to test");
 		break;
@@ -115,7 +115,7 @@ void test_EWR_SSS(void)
 
 void test_EWR_SSS_META1(void)
 {
-	switch(nvm_dev_get_verid(dev)) {
+	switch(nvm_dev_get_verid(DEV)) {
 	case NVM_SPEC_VERID_12:
 		CU_PASS("Nothing to test");
 		break;
@@ -131,7 +131,7 @@ void test_EWR_SSS_META1(void)
 
 void test_EWR_VSS(void)
 {
-	switch(nvm_dev_get_verid(dev)) {
+	switch(nvm_dev_get_verid(DEV)) {
 	case NVM_SPEC_VERID_12:
 		CU_PASS("Nothing to test");
 		break;
@@ -147,7 +147,7 @@ void test_EWR_VSS(void)
 
 void test_EWR_VSS_META1(void)
 {
-	switch(nvm_dev_get_verid(dev)) {
+	switch(nvm_dev_get_verid(DEV)) {
 	case NVM_SPEC_VERID_12:
 		CU_PASS("Nothing to test");
 		break;
@@ -170,7 +170,7 @@ int main(int argc, char **argv)
 	if (!pSuite)
 		goto out;
 
-	switch (be_id) {
+	switch (BE_ID) {
 		case NVM_BE_IOCTL:
 		case NVM_BE_SPDK:
 			if (!CU_add_test(pSuite, "EWR_SSS_META", test_EWR_SSS_META1))
@@ -185,13 +185,13 @@ int main(int argc, char **argv)
 				goto out;
 	}
 
-	switch(rmode) {
+	switch(RMODE) {
 	case NVM_TEST_RMODE_AUTO:
 		CU_automated_run_tests();
 		break;
 
 	default:
-		CU_basic_set_mode(rmode);
+		CU_basic_set_mode(RMODE);
 		CU_basic_run_tests();
 		break;
 	}

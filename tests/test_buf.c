@@ -27,9 +27,9 @@ static void test_BUF(void) {
 	for (size_t i = 0; i < nbsizes; ++i) {
 		void *buf = NULL;
 
-		buf = nvm_buf_alloc(dev, bsizes[i], NULL);
+		buf = nvm_buf_alloc(DEV, bsizes[i], NULL);
 		CU_ASSERT_PTR_NOT_NULL(buf);
-		nvm_buf_free(dev, buf);
+		nvm_buf_free(DEV, buf);
 	}
 }
 
@@ -38,7 +38,7 @@ static void test_BUF_SET(void) {
 	for (size_t i = 0; i < nbsizes; ++i) {
 		struct nvm_buf_set *bufs = NULL;
 
-		bufs = nvm_buf_set_alloc(dev, bsizes[i], 0);
+		bufs = nvm_buf_set_alloc(DEV, bsizes[i], 0);
 		CU_ASSERT_PTR_NOT_NULL(bufs);
 		nvm_buf_set_free(bufs);
 	}
@@ -62,13 +62,13 @@ int main(int argc, char **argv)
 	if (!CU_add_test(pSuite, "BUF_SET", test_BUF_SET))
 		goto out;
 
-	switch(rmode) {
+	switch(RMODE) {
 	case NVM_TEST_RMODE_AUTO:
 		CU_automated_run_tests();
 		break;
 
 	default:
-		CU_basic_set_mode(rmode);
+		CU_basic_set_mode(RMODE);
 		CU_basic_run_tests();
 		break;
 	}

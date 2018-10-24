@@ -6,17 +6,17 @@ int vblk_ewr(struct nvm_addr *addrs, int naddrs, int mode)
 	struct nvm_vblk *vblk = NULL;
 	size_t nbytes = 0;
 
-	if (CU_BRM_VERBOSE == rmode)
-		nvm_addr_prn(addrs, naddrs, dev);
+	if (CU_BRM_VERBOSE == RMODE)
+		nvm_addr_prn(addrs, naddrs, DEV);
 
-	vblk = nvm_vblk_alloc(dev, addrs, naddrs);
+	vblk = nvm_vblk_alloc(DEV, addrs, naddrs);
 	if (!vblk) {
 		CU_FAIL("FAILED: Allocating vblk");
 		goto out;
 	}
 	nbytes = nvm_vblk_get_nbytes(vblk);
 
-	bufs = nvm_buf_set_alloc(dev, nbytes, 0);
+	bufs = nvm_buf_set_alloc(DEV, nbytes, 0);
 	if (!bufs) {
 		CU_FAIL("FAILED: Allocating nvm_buf_set");
 		goto out;
@@ -69,16 +69,16 @@ void test_VBLK_EWR_VECTOR_SYNC(void)
 	struct nvm_addr addrs[0x1000] = { 0 };
 	size_t naddrs = 0;
 
-	switch(nvm_dev_get_verid(dev)) {
+	switch(nvm_dev_get_verid(DEV)) {
 	case NVM_SPEC_VERID_12:
-		naddrs = geo->g.nchannels * geo->g.nluns;
-		if (nvm_cmd_gbbt_arbs(dev, NVM_BBT_FREE, naddrs, addrs))
+		naddrs = GEO->g.nchannels * GEO->g.nluns;
+		if (nvm_cmd_gbbt_arbs(DEV, NVM_BBT_FREE, naddrs, addrs))
 			CU_FAIL("FAILED: nvm_cmd_gbbt_arbs");
 		break;
 
 	case NVM_SPEC_VERID_20:
-		naddrs = geo->l.npugrp * geo->l.npunit;
-		if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, naddrs, addrs))
+		naddrs = GEO->l.npugrp * GEO->l.npunit;
+		if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, naddrs, addrs))
 			CU_FAIL("FAILED: nvm_cmd_rprt_arbs");
 		break;
 	}
@@ -91,16 +91,16 @@ void test_VBLK_EWR_VECTOR_ASYNC(void)
 	struct nvm_addr addrs[0x1000] = { 0 };
 	size_t naddrs = 0;
 
-	switch(nvm_dev_get_verid(dev)) {
+	switch(nvm_dev_get_verid(DEV)) {
 	case NVM_SPEC_VERID_12:
-		naddrs = geo->g.nchannels * geo->g.nluns;
-		if (nvm_cmd_gbbt_arbs(dev, NVM_BBT_FREE, naddrs, addrs))
+		naddrs = GEO->g.nchannels * GEO->g.nluns;
+		if (nvm_cmd_gbbt_arbs(DEV, NVM_BBT_FREE, naddrs, addrs))
 			CU_FAIL("FAILED: nvm_cmd_gbbt_arbs");
 		break;
 
 	case NVM_SPEC_VERID_20:
-		naddrs = geo->l.npugrp * geo->l.npunit;
-		if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, naddrs, addrs))
+		naddrs = GEO->l.npugrp * GEO->l.npunit;
+		if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, naddrs, addrs))
 			CU_FAIL("FAILED: nvm_cmd_rprt_arbs");
 		break;
 	}
@@ -113,16 +113,16 @@ void test_VBLK_EWR_SCALAR_SYNC(void)
 	struct nvm_addr addrs[0x1000] = { 0 };
 	size_t naddrs = 0;
 
-	switch(nvm_dev_get_verid(dev)) {
+	switch(nvm_dev_get_verid(DEV)) {
 	case NVM_SPEC_VERID_12:
-		naddrs = geo->g.nchannels * geo->g.nluns;
-		if (nvm_cmd_gbbt_arbs(dev, NVM_BBT_FREE, naddrs, addrs))
+		naddrs = GEO->g.nchannels * GEO->g.nluns;
+		if (nvm_cmd_gbbt_arbs(DEV, NVM_BBT_FREE, naddrs, addrs))
 			CU_FAIL("FAILED: nvm_cmd_gbbt_arbs");
 		break;
 
 	case NVM_SPEC_VERID_20:
-		naddrs = geo->l.npugrp * geo->l.npunit;
-		if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, naddrs, addrs))
+		naddrs = GEO->l.npugrp * GEO->l.npunit;
+		if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, naddrs, addrs))
 			CU_FAIL("FAILED: nvm_cmd_rprt_arbs");
 		break;
 	}
@@ -135,16 +135,16 @@ void test_VBLK_EWR_SCALAR_ASYNC(void)
 	struct nvm_addr addrs[0x1000] = { 0 };
 	size_t naddrs = 0;
 
-	switch(nvm_dev_get_verid(dev)) {
+	switch(nvm_dev_get_verid(DEV)) {
 	case NVM_SPEC_VERID_12:
-		naddrs = geo->g.nchannels * geo->g.nluns;
-		if (nvm_cmd_gbbt_arbs(dev, NVM_BBT_FREE, naddrs, addrs))
+		naddrs = GEO->g.nchannels * GEO->g.nluns;
+		if (nvm_cmd_gbbt_arbs(DEV, NVM_BBT_FREE, naddrs, addrs))
 			CU_FAIL("FAILED: nvm_cmd_gbbt_arbs");
 		break;
 
 	case NVM_SPEC_VERID_20:
-		naddrs = geo->l.npugrp * geo->l.npunit;
-		if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, naddrs, addrs))
+		naddrs = GEO->l.npugrp * GEO->l.npunit;
+		if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, naddrs, addrs))
 			CU_FAIL("FAILED: nvm_cmd_rprt_arbs");
 		break;
 	}
@@ -161,7 +161,7 @@ int main(int argc, char **argv)
 	if (!pSuite)
 		goto out;
 
-	switch (be_id) {
+	switch (BE_ID) {
 		case NVM_BE_SPDK:
 			if (!CU_add_test(pSuite, "VBLK EWR S20 VECTOR/ASYNC", test_VBLK_EWR_VECTOR_ASYNC))
 				goto out;
@@ -177,13 +177,13 @@ int main(int argc, char **argv)
 				goto out;
 	}
 
-	switch(rmode) {
+	switch(RMODE) {
 	case NVM_TEST_RMODE_AUTO:
 		CU_automated_run_tests();
 		break;
 
 	default:
-		CU_basic_set_mode(rmode);
+		CU_basic_set_mode(RMODE);
 		CU_basic_run_tests();
 		break;
 	}

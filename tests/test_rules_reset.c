@@ -33,7 +33,7 @@ static void _test_reset_free(nvm_test_reset_ok_fn reset_ok,
 {
 	struct nvm_addr addr;
 
-	if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, 1, &addr)) {
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, 1, &addr)) {
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		return;
 	}
@@ -50,12 +50,12 @@ static void _test_reset_open(nvm_test_reset_err_fn reset_err)
 	struct nvm_addr addr;
 	char *buf;
 
-	if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, 1, &addr)) {
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, 1, &addr)) {
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		return;
 	}
 
-	buf = nvm_buf_alloc(dev, WS_MIN * SECTOR_SIZE, NULL);
+	buf = nvm_buf_alloc(DEV, WS_MIN * SECTOR_SIZE, NULL);
 	CU_ASSERT_PTR_NOT_NULL(buf);
 
 	nvm_test_scalar_write_ok(addr, WS_MIN, buf);
@@ -70,15 +70,15 @@ static void _test_reset_closed(nvm_test_reset_ok_fn reset_ok)
 	struct nvm_addr addr;
 	char *buf;
 
-	if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, 1, &addr)) {
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, 1, &addr)) {
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		return;
 	}
 
-	buf = nvm_buf_alloc(dev, geo->l.nsectr * SECTOR_SIZE, NULL);
+	buf = nvm_buf_alloc(DEV, GEO->l.nsectr * SECTOR_SIZE, NULL);
 	CU_ASSERT_PTR_NOT_NULL(buf);
 
-	nvm_test_scalar_write_ok(addr, geo->l.nsectr, buf);
+	nvm_test_scalar_write_ok(addr, GEO->l.nsectr, buf);
 
 	nvm_test_rprt_assert_state(addr, NVM_CHUNK_STATE_CLOSED);
 
@@ -89,7 +89,7 @@ static void _test_reset_offline(nvm_test_reset_err_fn reset_err)
 {
 	struct nvm_addr addr;
 
-	if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_OFFLINE, 1, &addr)) {
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_OFFLINE, 1, &addr)) {
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		return;
 	}
@@ -100,7 +100,7 @@ static void _test_reset_offline(nvm_test_reset_err_fn reset_err)
 static void _test_reset_non_existing(nvm_test_reset_err_fn reset_err)
 {
 	struct nvm_addr addr = {
-		.l.chunk = geo->l.nchunk,
+		.l.chunk = GEO->l.nchunk,
 	};
 
 	reset_err(&addr, LNVM_ERR_INVALID_RESET);
@@ -145,13 +145,13 @@ int main(int argc, char **argv)
 	if (!CU_add_test(pSuite, "reset rules: {state: N/A; mode: VECTOR}", test_vector_reset_non_existing))
 		goto out;
 
-	switch(rmode) {
+	switch(RMODE) {
 	case NVM_TEST_RMODE_AUTO:
 		CU_automated_run_tests();
 		break;
 
 	default:
-		CU_basic_set_mode(rmode);
+		CU_basic_set_mode(RMODE);
 		CU_basic_run_tests();
 		break;
 	}

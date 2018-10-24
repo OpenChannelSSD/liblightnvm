@@ -36,12 +36,12 @@ static void _test_write_slba(nvm_test_write_ok_fn write_ok)
 {
 	char *buf;
 
-	if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, 1, &addr)) {
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, 1, &addr)) {
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		return;
 	}
 
-	buf = nvm_buf_alloc(dev, WS_MIN * SECTOR_SIZE, NULL);
+	buf = nvm_buf_alloc(DEV, WS_MIN * SECTOR_SIZE, NULL);
 	CU_ASSERT_PTR_NOT_NULL(buf);
 
 	write_ok(addr, WS_MIN, buf);
@@ -49,7 +49,7 @@ static void _test_write_slba(nvm_test_write_ok_fn write_ok)
 	nvm_test_rprt_assert_wp(addr, WS_MIN);
 	nvm_test_rprt_assert_state(addr, NVM_CHUNK_STATE_OPEN);
 
-	nvm_buf_free(dev, buf);
+	nvm_buf_free(DEV, buf);
 }
 
 static void _test_write_wp(nvm_test_write_ok_fn write_ok)
@@ -62,11 +62,11 @@ static void _test_write_wp(nvm_test_write_ok_fn write_ok)
 
 	rprt = nvm_test_rprt(addr);
 	wp = rprt->descr[addr.l.chunk].wp;
-	nvm_buf_free(dev, rprt);
+	nvm_buf_free(DEV, rprt);
 
 	addr.l.sectr = wp;
 
-	buf = nvm_buf_alloc(dev, WS_MIN * SECTOR_SIZE, NULL);
+	buf = nvm_buf_alloc(DEV, WS_MIN * SECTOR_SIZE, NULL);
 	CU_ASSERT_PTR_NOT_NULL(buf);
 
 	write_ok(addr, WS_MIN, buf);
@@ -74,7 +74,7 @@ static void _test_write_wp(nvm_test_write_ok_fn write_ok)
 	nvm_test_rprt_assert_wp(addr, wp + WS_MIN);
 	nvm_test_rprt_assert_state(addr, NVM_CHUNK_STATE_OPEN);
 
-	nvm_buf_free(dev, buf);
+	nvm_buf_free(DEV, buf);
 }
 
 static void _test_write_ooo(nvm_test_write_err_fn write_err)
@@ -87,12 +87,12 @@ static void _test_write_ooo(nvm_test_write_err_fn write_err)
 
 	rprt = nvm_test_rprt(addr);
 	wp = rprt->descr[addr.l.chunk].wp;
-	nvm_buf_free(dev, rprt);
+	nvm_buf_free(DEV, rprt);
 
 	// write at wp+ws_min (out of order)
 	addr.l.sectr = wp + WS_MIN;
 
-	buf = nvm_buf_alloc(dev, WS_MIN * SECTOR_SIZE, NULL);
+	buf = nvm_buf_alloc(DEV, WS_MIN * SECTOR_SIZE, NULL);
 	CU_ASSERT_PTR_NOT_NULL(buf);
 
 	write_err(addr, WS_MIN, buf, LNVM_ERR_OUT_OF_ORDER);
@@ -108,7 +108,7 @@ static void _test_write_ooo(nvm_test_write_err_fn write_err)
 	nvm_test_rprt_assert_wp(addr, wp);
 	nvm_test_rprt_assert_state(addr, NVM_CHUNK_STATE_OPEN);
 
-	nvm_buf_free(dev, buf);
+	nvm_buf_free(DEV, buf);
 }
 
 static void _test_write_wp_close(nvm_test_write_ok_fn write_ok)
@@ -122,11 +122,11 @@ static void _test_write_wp_close(nvm_test_write_ok_fn write_ok)
 	rprt = nvm_test_rprt(addr);
 	wp = rprt->descr[addr.l.chunk].wp;
 	nlba = rprt->descr[addr.l.chunk].naddrs - wp;
-	nvm_buf_free(dev, rprt);
+	nvm_buf_free(DEV, rprt);
 
 	addr.l.sectr = wp;
 
-	buf = nvm_buf_alloc(dev, nlba * SECTOR_SIZE, NULL);
+	buf = nvm_buf_alloc(DEV, nlba * SECTOR_SIZE, NULL);
 	CU_ASSERT_PTR_NOT_NULL(buf);
 
 	write_ok(addr, nlba, buf);
@@ -134,7 +134,7 @@ static void _test_write_wp_close(nvm_test_write_ok_fn write_ok)
 	nvm_test_rprt_assert_wp(addr, nlba + wp);
 	nvm_test_rprt_assert_state(addr, NVM_CHUNK_STATE_CLOSED);
 
-	nvm_buf_free(dev, buf);
+	nvm_buf_free(DEV, buf);
 }
 
 static void _test_write_wp_closed(nvm_test_write_err_fn write_err)
@@ -145,42 +145,42 @@ static void _test_write_wp_closed(nvm_test_write_err_fn write_err)
 
 	addr.l.sectr = 0;
 
-	buf = nvm_buf_alloc(dev, WS_MIN * SECTOR_SIZE, NULL);
+	buf = nvm_buf_alloc(DEV, WS_MIN * SECTOR_SIZE, NULL);
 	CU_ASSERT_PTR_NOT_NULL(buf);
 
 	write_err(addr, WS_MIN, buf, NVME_ERR_WRITE_FAULT);
 
-	nvm_buf_free(dev, buf);
+	nvm_buf_free(DEV, buf);
 }
 
 static void _test_write_offline(nvm_test_write_err_fn write_err)
 {
 	char *buf;
 
-	if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_OFFLINE, 1, &addr)) {
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_OFFLINE, 1, &addr)) {
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		return;
 	}
 
-	buf = nvm_buf_alloc(dev, WS_MIN * SECTOR_SIZE, NULL);
+	buf = nvm_buf_alloc(DEV, WS_MIN * SECTOR_SIZE, NULL);
 	CU_ASSERT_PTR_NOT_NULL(buf);
 
 	write_err(addr, WS_MIN, buf, NVME_ERR_WRITE_FAULT);
 
-	nvm_buf_free(dev, buf);
+	nvm_buf_free(DEV, buf);
 }
 
 static void _test_write_oor(nvm_test_write_err_fn write_err)
 {
-	char *buf = nvm_buf_alloc(dev, WS_MIN * SECTOR_SIZE, NULL);
+	char *buf = nvm_buf_alloc(DEV, WS_MIN * SECTOR_SIZE, NULL);
 	CU_ASSERT_PTR_NOT_NULL(buf);
 
 	// make out of range address
-	addr.l.chunk = geo->l.nchunk;
+	addr.l.chunk = GEO->l.nchunk;
 
 	write_err(addr, WS_MIN, buf, NVME_ERR_WRITE_FAULT);
 
-	nvm_buf_free(dev, buf);
+	nvm_buf_free(DEV, buf);
 }
 
 MAKE_TESTS_1(write_slba, write_ok)
@@ -231,13 +231,13 @@ int main(int argc, char **argv)
 	if (!CU_add_test(pSuite, "write rules: {state: N/A; mode: VECTOR; write to non-existing LBA}", test_vector_write_oor))
 		goto out;
 
-	switch(rmode) {
+	switch(RMODE) {
 	case NVM_TEST_RMODE_AUTO:
 		CU_automated_run_tests();
 		break;
 
 	default:
-		CU_basic_set_mode(rmode);
+		CU_basic_set_mode(RMODE);
 		CU_basic_run_tests();
 		break;
 	}

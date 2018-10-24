@@ -38,7 +38,7 @@ void nvm_test_set_dulbe(int enable)
 		feat.error_recovery.dulbe = 1;
 	}
 
-	rc = nvm_cmd_sfeat(dev, NVM_NVME_FEAT_ERROR_RECOVERY, &feat, NULL);
+	rc = nvm_cmd_sfeat(DEV, NVM_NVME_FEAT_ERROR_RECOVERY, &feat, NULL);
 	CU_ASSERT(rc == 0);
 }
 
@@ -51,19 +51,19 @@ void nvm_test_read_and_verify(struct nvm_addr *addr, int dulbe,
 	const char v = NVME_DLFEAT_VAL;
 	int rc;
 
-	buf = nvm_buf_alloc(dev, geo->l.nbytes, NULL);
+	buf = nvm_buf_alloc(DEV, GEO->l.nbytes, NULL);
 	if (buf == NULL) {
 		CU_FAIL("nvm_buf_alloc");
 		return;
 	}
 
-	nvm_buf_fill(buf, geo->l.nbytes);
+	nvm_buf_fill(buf, GEO->l.nbytes);
 
-	rc = nvm_cmd_read(dev, addr, 1, buf, NULL, cmd_opts, &ret);
+	rc = nvm_cmd_read(DEV, addr, 1, buf, NULL, cmd_opts, &ret);
 
-	verify(rc, &ret, buf, &v, geo->l.nbytes, err);
+	verify(rc, &ret, buf, &v, GEO->l.nbytes, err);
 
-	nvm_buf_free(dev, buf);
+	nvm_buf_free(DEV, buf);
 
 	CU_PASS("SUCCESS");
 }
@@ -88,7 +88,7 @@ void nvm_test_verify_read_ok_predef(int rc,
 	unsigned char dlfeat_val;
 	size_t diff = 0;
 
-	switch (ns->dlfeat & 0x7) {
+	switch (NS->dlfeat & 0x7) {
 		case 0x1:
 			dlfeat_val = 0x00;
 			break;
@@ -127,7 +127,7 @@ void nvm_test_verify_read_err(int rc, const struct nvm_ret *ret,
 {
 	CU_ASSERT(rc == -1);
 	CU_ASSERT(ret->status & err);
-	if (!(ret->status & err) && CU_BRM_VERBOSE == rmode) {
+	if (!(ret->status & err) && CU_BRM_VERBOSE == RMODE) {
 		nvm_ret_pr(ret);
 	}
 }
@@ -137,7 +137,7 @@ void nvm_test_verify_read_err(int rc, const struct nvm_ret *ret,
 void nvm_test_read_oneshot_ok(struct nvm_addr *addr, uint32_t nlba, char *buf,
 	const char *expected, enum nvm_cmd_opts cmd_opts)
 {
-	int rc = nvm_cmd_read(dev, addr, nlba, buf, NULL, cmd_opts, NULL);
+	int rc = nvm_cmd_read(DEV, addr, nlba, buf, NULL, cmd_opts, NULL);
 	nvm_test_verify_read_ok(rc, NULL, buf, expected, nlba * SECTOR_SIZE, 0x0);
 }
 
@@ -160,7 +160,7 @@ void nvm_test_vector_read_oneshot_ok(struct nvm_addr slba, uint32_t nlba,
 void nvm_test_write_oneshot_ok(struct nvm_addr *addr, uint32_t nlba,
 	const char *buf, enum nvm_cmd_opts cmd_opts)
 {
-	int rc = nvm_cmd_write(dev, addr, nlba, buf, NULL, cmd_opts, NULL);
+	int rc = nvm_cmd_write(DEV, addr, nlba, buf, NULL, cmd_opts, NULL);
 	CU_ASSERT(rc == 0);
 }
 
@@ -183,7 +183,7 @@ void nvm_test_vector_write_oneshot_ok(struct nvm_addr slba, uint32_t nlba,
 void nvm_test_read_oneshot_ok_predef(struct nvm_addr *addr, uint32_t nlba,
 	char *buf, enum nvm_cmd_opts cmd_opts)
 {
-	int rc = nvm_cmd_read(dev, addr, nlba, buf, NULL, cmd_opts, NULL);
+	int rc = nvm_cmd_read(DEV, addr, nlba, buf, NULL, cmd_opts, NULL);
 	nvm_test_verify_read_ok_predef(rc, NULL, buf, NULL, nlba * SECTOR_SIZE, 0x0);
 }
 
@@ -207,7 +207,7 @@ void nvm_test_read_oneshot_err(struct nvm_addr *addr, uint32_t nlba, char *buf,
 	enum nvm_cmd_opts cmd_opts, uint16_t err)
 {
 	struct nvm_ret ret = { 0 };
-	int rc = nvm_cmd_read(dev, addr, nlba, buf, NULL, cmd_opts, &ret);
+	int rc = nvm_cmd_read(DEV, addr, nlba, buf, NULL, cmd_opts, &ret);
 	nvm_test_verify_read_err(rc, &ret, NULL, NULL, 0, err);
 }
 
@@ -231,10 +231,10 @@ void nvm_test_write_oneshot_err(struct nvm_addr *addr, uint32_t nlba,
 	const char *buf, enum nvm_cmd_opts cmd_opts, uint32_t err)
 {
 	struct nvm_ret ret = { 0 };
-	int rc = nvm_cmd_write(dev, addr, nlba, buf, NULL, cmd_opts, &ret);
+	int rc = nvm_cmd_write(DEV, addr, nlba, buf, NULL, cmd_opts, &ret);
 	CU_ASSERT(rc == -1);
 	CU_ASSERT(ret.status & err);
-	if (!(ret.status & err) && CU_BRM_VERBOSE == rmode) {
+	if (!(ret.status & err) && CU_BRM_VERBOSE == RMODE) {
 		nvm_ret_pr(&ret);
 	}
 }
@@ -368,7 +368,7 @@ struct nvm_spec_rprt *nvm_test_rprt(struct nvm_addr addr)
 		.l.punit = addr.l.punit,
 	};
 
-	struct nvm_spec_rprt *rprt = nvm_cmd_rprt(dev, &punit, 0x0, NULL);
+	struct nvm_spec_rprt *rprt = nvm_cmd_rprt(DEV, &punit, 0x0, NULL);
 	CU_ASSERT_PTR_NOT_NULL(rprt);
 
 	return rprt;
@@ -378,21 +378,21 @@ void nvm_test_rprt_assert_wp(struct nvm_addr addr, uint32_t wp)
 {
 	struct nvm_spec_rprt *rprt = nvm_test_rprt(addr);
 	CU_ASSERT(rprt->descr[addr.l.chunk].wp == wp);
-	nvm_buf_free(dev, rprt);
+	nvm_buf_free(DEV, rprt);
 }
 
 void nvm_test_rprt_assert_state(struct nvm_addr addr, enum nvm_spec_chunk_state state)
 {
 	struct nvm_spec_rprt *rprt = nvm_test_rprt(addr);
 	CU_ASSERT(rprt->descr[addr.l.chunk].cs == state);
-	nvm_buf_free(dev, rprt);
+	nvm_buf_free(DEV, rprt);
 }
 
 
 void nvm_test_reset_ok(struct nvm_addr *addr, enum nvm_cmd_opts cmd_opts)
 {
 	struct nvm_ret ret = { 0 };
-	int rc = nvm_cmd_erase(dev, addr, 1, NULL, cmd_opts, &ret);
+	int rc = nvm_cmd_erase(DEV, addr, 1, NULL, cmd_opts, &ret);
 	CU_ASSERT(rc == 0);
 }
 
@@ -412,10 +412,10 @@ void nvm_test_reset_err(struct nvm_addr *addrs, enum nvm_cmd_opts cmd_opts,
 	uint32_t err)
 {
 	struct nvm_ret ret = { 0 };
-	int rc = nvm_cmd_erase(dev, addrs, 1, NULL, cmd_opts, &ret);
+	int rc = nvm_cmd_erase(DEV, addrs, 1, NULL, cmd_opts, &ret);
 	CU_ASSERT(rc == -1);
 	CU_ASSERT(ret.status & err);
-	if (!(ret.status & err) && CU_BRM_VERBOSE == rmode) {
+	if (!(ret.status & err) && CU_BRM_VERBOSE == RMODE) {
 		nvm_ret_pr(&ret);
 	}
 }

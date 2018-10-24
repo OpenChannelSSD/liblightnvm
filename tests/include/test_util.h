@@ -44,9 +44,9 @@
 #define LNVM_ERR_INVALID_RESET 0x2c1
 #define LNVM_ERR_OUT_OF_ORDER  0x2f2
 
-extern struct nvm_dev *dev;
-extern const struct nvm_geo *geo;
-extern const struct nvm_nvme_ns *ns;
+extern struct nvm_dev *DEV;
+extern const struct nvm_geo *GEO;
+extern const struct nvm_nvme_ns *NS;
 
 extern uint32_t WS_MIN;
 extern uint32_t WS_OPT;
@@ -54,7 +54,7 @@ extern uint32_t MW_CUNITS;
 extern uint32_t SECTOR_SIZE;
 extern uint32_t MAX_SCALAR_LBAS;
 
-extern int rmode;
+extern int RMODE;
 
 #define MAKE_TEST_1(type, name, arg)                                          \
 	static void test_ ## type ## _ ## name (void)                         \

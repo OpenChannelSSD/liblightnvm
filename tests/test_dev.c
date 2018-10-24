@@ -4,7 +4,7 @@ void test_DEV_OPEN_CLOSE(void)
 {
 	struct nvm_dev *dev;
 
-	dev = nvm_dev_open(nvm_dev_path);
+	dev = nvm_dev_open(NVM_DEV_PATH);
 	CU_ASSERT_PTR_NOT_NULL_FATAL(dev);
 
 	nvm_dev_close(dev);
@@ -16,7 +16,7 @@ void test_DEV_OPEN_CLOSE_N(void)
 	struct nvm_dev *dev[10];
 
 	for (int i = 0; i < n; ++i) {
-		dev[i] = nvm_dev_open(nvm_dev_path);
+		dev[i] = nvm_dev_open(NVM_DEV_PATH);
 		CU_ASSERT_PTR_NOT_NULL(dev[i]);
 		if (!dev[i])
 			break;
@@ -43,13 +43,13 @@ int main(int argc, char **argv)
 	if (!CU_add_test(pSuite, "nvm_dev_[open|close] n", test_DEV_OPEN_CLOSE_N))
 		goto out;
 
-	switch(rmode) {
+	switch(RMODE) {
 	case NVM_TEST_RMODE_AUTO:
 		CU_automated_run_tests();
 		break;
 
 	default:
-		CU_basic_set_mode(rmode);
+		CU_basic_set_mode(RMODE);
 		CU_basic_run_tests();
 		break;
 	}

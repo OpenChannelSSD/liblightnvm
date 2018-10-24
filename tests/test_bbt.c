@@ -14,8 +14,8 @@ static struct nvm_addr arb_lun_addr(void)
 	struct nvm_addr addr = { .val = 0 };
 	int arb = rand();
 
-	addr.g.ch = arb % geo->nchannels;
-	addr.g.lun = arb % geo->nluns;
+	addr.g.ch = arb % GEO->nchannels;
+	addr.g.lun = arb % GEO->nluns;
 
 	return addr;
 }
@@ -62,20 +62,20 @@ static void bbt_get(int bbts_cached)
 	struct nvm_ret ret = { 0 };
 	const struct nvm_bbt *bbt;
 
-	nvm_dev_set_bbts_cached(dev, bbts_cached);
-	if (FLUSH_ALL && nvm_bbt_flush_all(dev, &ret)) {
+	nvm_dev_set_bbts_cached(DEV, bbts_cached);
+	if (FLUSH_ALL && nvm_bbt_flush_all(DEV, &ret)) {
 		CU_FAIL("FAILED: nvm_bbt_flush_all");
 		return;
 	}
 
-	bbt = nvm_bbt_get(dev, lun_addr, &ret);	// Verify that we can call it
+	bbt = nvm_bbt_get(DEV, lun_addr, &ret);	// Verify that we can call it
 	CU_ASSERT_PTR_NOT_NULL(bbt);
 	if (!bbt)
 		return;
 
 	// Verify that it contains the expected number of blocks
-	CU_ASSERT_EQUAL(bbt->nblks, geo->nplanes * geo->nblocks);
-	if (bbt->nblks != geo->nplanes * geo->nblocks) {
+	CU_ASSERT_EQUAL(bbt->nblks, GEO->nplanes * GEO->nblocks);
+	if (bbt->nblks != GEO->nplanes * GEO->nblocks) {
 		CU_FAIL("FAILED: Unexpected value of bbt->nblks");
 		return;
 	}
@@ -102,7 +102,7 @@ static void bbt_get(int bbts_cached)
 
 void test_BBT_GET(void)
 {
-	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(DEV)) {
 		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
@@ -112,7 +112,7 @@ void test_BBT_GET(void)
 
 void test_BBT_GET_CACHED(void)
 {
-	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(DEV)) {
 		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
@@ -139,21 +139,21 @@ static void bbt_mark_naddr(unsigned int naddr_pr_call, int bbts_cached)
 	struct nvm_ret ret = { 0 };
 	const int nblks = NVM_NADDR_MAX;
 
-	const int nvblks = nblks / geo->nplanes;
+	const int nvblks = nblks / GEO->nplanes;
 	const int vblk_ofz = 4;
-	const int vblk_skip = (geo->nblocks - vblk_ofz) / nvblks;
+	const int vblk_skip = (GEO->nblocks - vblk_ofz) / nvblks;
 
 	struct nvm_addr addrs[NVM_NADDR_MAX];
 
-	nvm_dev_set_bbts_cached(dev, bbts_cached);
-	if (FLUSH_ALL && nvm_bbt_flush_all(dev, &ret)) {
+	nvm_dev_set_bbts_cached(DEV, bbts_cached);
+	if (FLUSH_ALL && nvm_bbt_flush_all(DEV, &ret)) {
 		CU_FAIL("FAILED: nvm_bbt_flush_all");
 		return;
 	}
 
-	for (int i = 0; i < nblks; i += geo->nplanes) {	// Construct addresses
-		int vblk = vblk_ofz + (i / geo->nplanes) * vblk_skip;
-		for (size_t pl = 0; pl < geo->nplanes; ++pl) {
+	for (int i = 0; i < nblks; i += GEO->nplanes) {	// Construct addresses
+		int vblk = vblk_ofz + (i / GEO->nplanes) * vblk_skip;
+		for (size_t pl = 0; pl < GEO->nplanes; ++pl) {
 			addrs[i + pl].ppa = lun_addr.ppa;
 			addrs[i + pl].g.blk = vblk;
 			addrs[i + pl].g.pl = pl;
@@ -161,7 +161,7 @@ static void bbt_mark_naddr(unsigned int naddr_pr_call, int bbts_cached)
 	}
 
 	for (int i = 0; i < nblks; ++i) {	// Verify constructed addrs
-		if (nvm_addr_check(addrs[i], dev)) {
+		if (nvm_addr_check(addrs[i], DEV)) {
 			CU_FAIL("FAILED: Constructing addresses");
 			return;
 		}
@@ -176,7 +176,7 @@ static void bbt_mark_naddr(unsigned int naddr_pr_call, int bbts_cached)
 		for (int ofz = 0; ofz < nblks; ofz += naddr_pr_call) {
 			int err;
 
-			err = nvm_bbt_mark(dev, &addrs[ofz], naddr_pr_call,
+			err = nvm_bbt_mark(DEV, &addrs[ofz], naddr_pr_call,
 					   state, &ret);
 			if (err) {
 				CU_FAIL("FAILED: nvm_bbt_mark");
@@ -184,7 +184,7 @@ static void bbt_mark_naddr(unsigned int naddr_pr_call, int bbts_cached)
 			}
 		}
 
-		bbt = nvm_bbt_get(dev, lun_addr, &ret);
+		bbt = nvm_bbt_get(DEV, lun_addr, &ret);
 		CU_ASSERT_PTR_NOT_NULL(bbt);
 		if (!bbt) {
 			CU_FAIL("FAILED: Retrieving bbt for verification");
@@ -192,7 +192,7 @@ static void bbt_mark_naddr(unsigned int naddr_pr_call, int bbts_cached)
 		}
 
 		for (int i = 0; i < nblks; ++i) {	// Verify state
-			int idx = addrs[i].g.blk * geo->nplanes + addrs[i].g.pl;
+			int idx = addrs[i].g.blk * GEO->nplanes + addrs[i].g.pl;
 			CU_ASSERT_EQUAL(bbt->blks[idx], state);
 			if (bbt->blks[idx] != state) {
 				CU_FAIL("FAILED: Unexpected value of bbt");
@@ -204,7 +204,7 @@ static void bbt_mark_naddr(unsigned int naddr_pr_call, int bbts_cached)
 
 void test_BBT_MARK_NADDR_MAX(void)
 {
-	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(DEV)) {
 		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
@@ -214,7 +214,7 @@ void test_BBT_MARK_NADDR_MAX(void)
 
 void test_BBT_MARK_NADDR_MAX2(void)
 {
-	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(DEV)) {
 		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
@@ -224,7 +224,7 @@ void test_BBT_MARK_NADDR_MAX2(void)
 
 void test_BBT_MARK_NADDR_MAX4(void)
 {
-	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(DEV)) {
 		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
@@ -234,7 +234,7 @@ void test_BBT_MARK_NADDR_MAX4(void)
 
 void test_BBT_MARK_NADDR_1(void)
 {
-	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(DEV)) {
 		CU_FAIL("FAILED: device is NOT spec. 1.2");
 	}
 
@@ -243,7 +243,7 @@ void test_BBT_MARK_NADDR_1(void)
 
 void test_BBT_MARK_NADDR_MAX_CACHED(void)
 {
-	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(DEV)) {
 		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
@@ -252,7 +252,7 @@ void test_BBT_MARK_NADDR_MAX_CACHED(void)
 
 void test_BBT_MARK_NADDR_MAX2_CACHED(void)
 {
-	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(DEV)) {
 		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
@@ -261,7 +261,7 @@ void test_BBT_MARK_NADDR_MAX2_CACHED(void)
 
 void test_BBT_MARK_NADDR_MAX4_CACHED(void)
 {
-	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(DEV)) {
 		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
@@ -270,7 +270,7 @@ void test_BBT_MARK_NADDR_MAX4_CACHED(void)
 
 void test_BBT_MARK_NADDR_1_CACHED(void)
 {
-	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(DEV)) {
 		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
@@ -292,26 +292,26 @@ static void bbt_set(int bbts_cached)
 	const struct nvm_bbt *bbt_act;
 	int res;
 
-	nvm_dev_set_bbts_cached(dev, bbts_cached);
-	if (FLUSH_ALL && nvm_bbt_flush_all(dev, &ret)) {
+	nvm_dev_set_bbts_cached(DEV, bbts_cached);
+	if (FLUSH_ALL && nvm_bbt_flush_all(DEV, &ret)) {
 		CU_FAIL("FAILED: nvm_bbt_flush_all");
 		return;
 	}
 
-	bbt_exp = nvm_bbt_alloc_cp(nvm_bbt_get(dev, lun_addr, &ret));
+	bbt_exp = nvm_bbt_alloc_cp(nvm_bbt_get(DEV, lun_addr, &ret));
 	if (!bbt_exp) {
 		CU_FAIL("FAILED: nvm_bbt_get -- prior to nvm_bbt_set");
 		return;
 	}
 
 	// Check that we have the expected number of blocks
-	CU_ASSERT_EQUAL(bbt_exp->nblks, geo->nplanes * geo->nblocks);
+	CU_ASSERT_EQUAL(bbt_exp->nblks, GEO->nplanes * GEO->nblocks);
 
 	// Flip the state four plane-spanning-blocks
-	int nblks = 4 * geo->nplanes;
-	for (int i = 0; i < nblks; i += geo->nplanes) {
-		int plane_blk = (10 * geo->nplanes) + i * 4;
-		for (size_t pl = 0; pl < geo->nplanes; ++pl) {
+	int nblks = 4 * GEO->nplanes;
+	for (int i = 0; i < nblks; i += GEO->nplanes) {
+		int plane_blk = (10 * GEO->nplanes) + i * 4;
+		for (size_t pl = 0; pl < GEO->nplanes; ++pl) {
 			int idx = plane_blk + pl;
 
 			if (bbt_exp->blks[idx])
@@ -319,20 +319,20 @@ static void bbt_set(int bbts_cached)
 			else
 				bbt_exp->blks[idx] = NVM_BBT_HMRK;
 
-			if (CU_BRM_VERBOSE == rmode)
+			if (CU_BRM_VERBOSE == RMODE)
 				printf("FLIPPED: blk(%d), idx(%d), exp(%d)\n",
 					plane_blk, idx, bbt_exp->blks[idx]);
 		}
 	}
 
-	res = nvm_bbt_set(dev, bbt_exp, &ret);	// Persist changes
+	res = nvm_bbt_set(DEV, bbt_exp, &ret);	// Persist changes
 	if (res < 0) {
 		CU_FAIL("FAILED: nvm_bbt_set");
 		nvm_bbt_free(bbt_exp);
 		return;
 	}
 
-	bbt_act = nvm_bbt_get(dev, lun_addr, &ret);
+	bbt_act = nvm_bbt_get(DEV, lun_addr, &ret);
 	if (!bbt_act) {
 		CU_FAIL("FAILED: nvm_bbt_get -- after nvm_bbt_set")
 		nvm_bbt_free(bbt_exp);
@@ -351,7 +351,7 @@ static void bbt_set(int bbts_cached)
 		}
 	}
 
-	if ((CU_BRM_VERBOSE == rmode) && res) {
+	if ((CU_BRM_VERBOSE == RMODE) && res) {
 		for (uint64_t blk = 0; blk < bbt_act->nblks; ++blk)
 			if (bbt_exp->blks[blk] != bbt_act->blks[blk])
 				printf("FAILED: blk(%lu): exp(%d) != act(%d)\n",
@@ -365,7 +365,7 @@ static void bbt_set(int bbts_cached)
 
 void test_BBT_SET(void)
 {
-	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(DEV)) {
 		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
@@ -375,7 +375,7 @@ void test_BBT_SET(void)
 
 void test_BBT_SET_CACHED(void)
 {
-	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(dev)) {
+	if (NVM_SPEC_VERID_12 != nvm_dev_get_verid(DEV)) {
 		CU_FAIL("FAILED: device is NOT spec. 1.2");
 		return;
 	}
@@ -417,13 +417,13 @@ int main(int argc, char **argv)
 	if (!CU_add_test(pSuite, "nvm_bbt_set CACHED", test_BBT_SET_CACHED))
 		goto out;
 
-	switch(rmode) {
+	switch(RMODE) {
 	case NVM_TEST_RMODE_AUTO:
 		CU_automated_run_tests();
 		break;
 
 	default:
-		CU_basic_set_mode(rmode);
+		CU_basic_set_mode(RMODE);
 		CU_basic_run_tests();
 		break;
 	}

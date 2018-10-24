@@ -34,7 +34,7 @@ typedef void (*_read_and_verify_fn)(struct nvm_addr *addr, int dulbe,
 static void _test_read_free(_read_and_verify_fn read_and_verify)
 {
 	struct nvm_addr addr;
-	if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, 1, &addr)) {
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, 1, &addr)) {
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		return;
 	}
@@ -46,7 +46,7 @@ static void _test_read_free(_read_and_verify_fn read_and_verify)
 static void _test_read_free_dulbe(_read_and_verify_fn read_and_verify)
 {
 	struct nvm_addr addr;
-	if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, 1, &addr)) {
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, 1, &addr)) {
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		return;
 	}
@@ -58,7 +58,7 @@ static void _test_read_free_dulbe(_read_and_verify_fn read_and_verify)
 static void _test_read_offline(_read_and_verify_fn read_and_verify)
 {
 	struct nvm_addr addr;
-	if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_OFFLINE, 1, &addr)) {
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_OFFLINE, 1, &addr)) {
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		return;
 	}
@@ -70,7 +70,7 @@ static void _test_read_offline(_read_and_verify_fn read_and_verify)
 static void _test_read_offline_dulbe(_read_and_verify_fn read_and_verify)
 {
 	struct nvm_addr addr;
-	if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_OFFLINE, 1, &addr)) {
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_OFFLINE, 1, &addr)) {
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		return;
 	}
@@ -84,7 +84,7 @@ static void _test_read_oor(_read_and_verify_fn read_and_verify)
 	nvm_test_set_dulbe(false);
 
 	struct nvm_addr addr = {
-		.l.chunk = geo->l.nchunk,
+		.l.chunk = GEO->l.nchunk,
 	};
 
 	read_and_verify(&addr, false /* dulbe */,
@@ -96,7 +96,7 @@ static void _test_read_oor_dulbe(_read_and_verify_fn read_and_verify)
 	nvm_test_set_dulbe(true);
 
 	struct nvm_addr addr = {
-		.l.chunk = geo->l.nchunk,
+		.l.chunk = GEO->l.nchunk,
 	};
 
 	read_and_verify(&addr, true /* dulbe */,
@@ -112,12 +112,12 @@ static void _test_read_mw_cunits(nvm_test_write_ok_fn write_ok,
 
 	nvm_test_set_dulbe(false);
 
-	if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, 1, &addr)) {
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, 1, &addr)) {
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		return;
 	}
 
-	bufs = nvm_buf_set_alloc(dev, geo->l.nsectr * SECTOR_SIZE, 0);
+	bufs = nvm_buf_set_alloc(DEV, GEO->l.nsectr * SECTOR_SIZE, 0);
 	if (bufs == NULL) {
 		CU_FAIL("nvm_buf_set_alloc");
 		return;
@@ -158,12 +158,12 @@ static void _test_read_mw_cunits_dulbe(nvm_test_write_ok_fn write_ok,
 
 	nvm_test_set_dulbe(true);
 
-	if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, 1, &addr)) {
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, 1, &addr)) {
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		return;
 	}
 
-	bufs = nvm_buf_set_alloc(dev, geo->l.nsectr * SECTOR_SIZE, 0);
+	bufs = nvm_buf_set_alloc(DEV, GEO->l.nsectr * SECTOR_SIZE, 0);
 	if (bufs == NULL) {
 		CU_FAIL("nvm_buf_set_alloc");
 		return;
@@ -197,12 +197,12 @@ static void _test_read_slba_gt_wp(nvm_test_write_ok_fn write_ok,
 
 	nvm_test_set_dulbe(false);
 
-	if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, 1, &addr)) {
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, 1, &addr)) {
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		return;
 	}
 
-	bufs = nvm_buf_set_alloc(dev, geo->l.nsectr * SECTOR_SIZE, 0);
+	bufs = nvm_buf_set_alloc(DEV, GEO->l.nsectr * SECTOR_SIZE, 0);
 	if (bufs == NULL) {
 		CU_FAIL("nvm_buf_set_alloc");
 		return;
@@ -235,12 +235,12 @@ static void _test_read_slba_gt_wp_dulbe(nvm_test_write_ok_fn write_ok,
 
 	nvm_test_set_dulbe(true);
 
-	if (nvm_cmd_rprt_arbs(dev, NVM_CHUNK_STATE_FREE, 1, &addr)) {
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, 1, &addr)) {
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		return;
 	}
 
-	bufs = nvm_buf_set_alloc(dev, geo->l.nsectr * SECTOR_SIZE, 0);
+	bufs = nvm_buf_set_alloc(DEV, GEO->l.nsectr * SECTOR_SIZE, 0);
 	if (bufs == NULL) {
 		CU_FAIL("nvm_buf_set_alloc");
 		return;
@@ -329,13 +329,13 @@ int main(int argc, char **argv)
 	if (!CU_add_test(pSuite, "read rules: {state: FREE; mode: VECTOR; slba > wp; dulbe: ON}", test_vector_read_slba_gt_wp_dulbe))
 		goto out;
 
-	switch(rmode) {
+	switch(RMODE) {
 	case NVM_TEST_RMODE_AUTO:
 		CU_automated_run_tests();
 		break;
 
 	default:
-		CU_basic_set_mode(rmode);
+		CU_basic_set_mode(RMODE);
 		CU_basic_run_tests();
 		break;
 	}
