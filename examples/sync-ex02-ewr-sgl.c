@@ -28,13 +28,6 @@ int sync_ex02_ewr_sgl(struct nvm_bp *bp)
 		return -1;
 	}
 
-	printf("# nvm_cmd_erase\n");
-	err = nvm_cmd_erase(bp->dev, chunk_addrs, nchunks, NULL, 0x0, NULL);
-	if (err) {
-		perror("nvm_cmd_erase");
-		return -1;
-	}
-
 	printf("# nvm_cmd_write\n");
 	nvm_cli_timer_start();
 	for (size_t cidx = 0; cidx < nchunks; ++cidx) {
@@ -99,6 +92,13 @@ int sync_ex02_ewr_sgl(struct nvm_bp *bp)
 	nvm_cli_timer_stop();
 	nvm_cli_timer_bw_pr("nvm_cmd_read", bp->bufs->nbytes);
 
+	printf("# nvm_cmd_erase\n");
+	err = nvm_cmd_erase(bp->dev, chunk_addrs, nchunks, NULL, 0x0, NULL);
+	if (err) {
+		perror("nvm_cmd_erase");
+		return -1;
+	}
+
 	// Sanity check: did we read what we wrote?
 	diff = nvm_buf_diff(bp->bufs->write, bp->bufs->read,
 			    bp->bufs->nbytes);
@@ -132,4 +132,3 @@ int main(int argc, char **argv)
 	nvm_bp_term(bp);
 	return err;
 }
-

@@ -74,13 +74,6 @@ int ex01_async_read(struct nvm_bp *bp)
 		return -1;
 	}
 
-	printf("# nvm_vblk_erase\n");
-	res = nvm_vblk_erase(bp->vblk);
-	if (res < 0) {
-		perror("nvm_vblk_erase");
-		return -1;
-	}
-
 	printf("# nvm_vblk_write\n");
 	res = nvm_vblk_write(bp->vblk, bp->bufs->write, bp->bufs->nbytes);
 	if (res < 0) {
@@ -173,4 +166,3 @@ int main(int argc, char **argv)
 	nvm_bp_term(bp);
 	return err;
 }
-

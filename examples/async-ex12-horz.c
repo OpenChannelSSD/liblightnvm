@@ -134,13 +134,6 @@ int async_ex12_horz(struct nvm_bp *bp)
 		return -1;
 	}
 
-	// Erase SYNC
-	err = nvm_cmd_erase(bp->dev, bp->addrs, bp->naddrs, NULL, 0x0, 0);
-	if (err) {
-		perror("nvm_cmd_erase");
-		return -1;
-	}
-
 	// Write ASYNC
 	printf("# nvm_cmd_write(NVM_CMD_ASYNC | VECTOR_WRITE)\n");
 	nvm_cli_timer_start();
@@ -206,4 +199,3 @@ int main(int argc, char **argv)
 	nvm_bp_term(bp);
 	return err;
 }
-

@@ -65,13 +65,6 @@ int ex03_small_queue(struct nvm_bp *bp)
 		return -1;
 	}
 
-	printf("# nvm_vblk_erase\n");
-	res = nvm_vblk_erase(bp->vblk);
-	if (res < 0) {
-		perror("nvm_vblk_erase");
-		goto exit;
-	}
-
 	printf("# nvm_vblk_write\n");
 	res = nvm_vblk_write(bp->vblk, bp->bufs->write, bp->bufs->nbytes);
 	if (res < 0) {
@@ -108,14 +101,6 @@ int ex03_small_queue(struct nvm_bp *bp)
 
 	printf("# nvm_async_wait -- done, res: %zd\n", res);
 
-exit:
-	// Tear down the ASYNC context
-	printf("# nvm_async_term\n");
-	if (nvm_async_term(bp->dev, ctx)) {
-		perror("# nvm_async_term");
-		return -1;
-	}
-
 	// Sanity check: did we actually read from device
 	diff = nvm_buf_diff(bp->bufs->write, bp->bufs->read,
 				   bp->bufs->nbytes);
@@ -123,6 +108,14 @@ exit:
 		nvm_buf_diff_pr(bp->bufs->write, bp->bufs->read,
 				bp->bufs->nbytes);
 		errno = EIO;
+		return -1;
+	}
+
+exit:
+	// Tear down the ASYNC context
+	printf("# nvm_async_term\n");
+	if (nvm_async_term(bp->dev, ctx)) {
+		perror("# nvm_async_term");
 		return -1;
 	}
 

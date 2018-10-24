@@ -40,16 +40,6 @@ int vblk_ex01_ewr(struct nvm_bp *bp)
 		return -1;
 	}
 
-	printf("# vblk: erase BEFORE write\n");
-	nvm_cli_timer_start();
-	err = nvm_vblk_erase(vblk);					// ERASE
-	if (err < 0) {
-		perror("nvm_vblk_erase");
-		return -1;
-	}
-	nvm_cli_timer_stop();
-	nvm_cli_timer_bw_pr("nvm_vblk_erase", bp->bufs->nbytes);
-
 	printf("# vblk: write\n");
 	nvm_cli_timer_start();
 	err = nvm_vblk_write(vblk, bp->bufs->write, bp->bufs->nbytes);	// WRITE
@@ -69,6 +59,16 @@ int vblk_ex01_ewr(struct nvm_bp *bp)
 	}
 	nvm_cli_timer_stop();
 	nvm_cli_timer_bw_pr("nvm_cmd_read", bp->bufs->nbytes);
+
+	printf("# vblk: erase\n");
+	nvm_cli_timer_start();
+	err = nvm_vblk_erase(vblk);					// ERASE
+	if (err < 0) {
+		perror("nvm_vblk_erase");
+		return -1;
+	}
+	nvm_cli_timer_stop();
+	nvm_cli_timer_bw_pr("nvm_vblk_erase", bp->bufs->nbytes);
 
 	nvm_vblk_free(vblk);						// FREE
 
@@ -105,4 +105,3 @@ int main(int argc, char **argv)
 	nvm_bp_term(bp);
 	return err;
 }
-
