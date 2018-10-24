@@ -85,6 +85,8 @@ int spdk_nvme_ctrlr_cmd_iov_raw_with_md(
 }
 #endif
 
+#define NVM_BE_SPDK_MAX_PROBE_ATTEMPTS 2
+
 static void sgl_reset_cb(void *cb_arg, uint32_t NVM_UNUSED(offset))
 {
 	struct nvm_sgl *sgl = ((struct nvm_cmd_wrap *) cb_arg)->data;
@@ -98,7 +100,7 @@ static int sgl_next_sge_cb(void *cb_arg, void **address, uint32_t *length)
 }
 
 /**
- * Attaches only to the device matching the traddr
+ * Attach to the device matching the traddr and only if we have not yet attached
  */
 static bool probe_cb(void *cb_ctx, const struct spdk_nvme_transport_id *trid,
 		     struct spdk_nvme_ctrlr_opts *opts)
@@ -126,8 +128,8 @@ static void attach_cb(void *cb_ctx,
 		      struct spdk_nvme_ctrlr *ctrlr,
 		      const struct spdk_nvme_ctrlr_opts *NVM_UNUSED(opts))
 {
+	const int num_ns = spdk_nvme_ctrlr_get_num_ns(ctrlr);
 	struct nvm_be_spdk_state *state = cb_ctx;
-	int num_ns = spdk_nvme_ctrlr_get_num_ns(ctrlr);
 
 	for (int nsid = 1; nsid <= num_ns; nsid++) {
 		struct spdk_nvme_ns *ns = NULL;
@@ -153,42 +155,44 @@ static void attach_cb(void *cb_ctx,
 
 void nvm_be_spdk_close(struct nvm_dev *dev)
 {
-	struct nvm_be_spdk_state *state = NULL;
+	struct nvm_be_spdk_state *state = dev ? dev->be_state : NULL;
 
-	if (!(dev && dev->be_state))
+	if (!state) {
 		return;
-
-	state = dev->be_state;
+	}
 
 	if (state->qpair) {
 		spdk_nvme_ctrlr_free_io_qpair(state->qpair);
 		omp_destroy_lock(&state->qpair_lock);
 	}
 
-	if (state->ctrlr)
+	if (state->ctrlr) {
 		spdk_nvme_detach(state->ctrlr);
+	}
 
 	free(state);
+	dev->be_state = NULL;
 }
 
 struct nvm_dev *nvm_be_spdk_open(const char *dev_path, int NVM_UNUSED(flags))
 {
-	int err;
-	struct nvm_dev *dev = NULL;
 	struct nvm_be_spdk_state *state = NULL;
+	struct nvm_dev *dev = NULL;
+	int err;
 
 	dev = malloc(sizeof(*dev));
 	if (!dev) {
-		// Propagate `errno` from malloc
-		return NULL;
+		NVM_DEBUG("FAILED: malloc(nvm_dev)");
+		return NULL;	// Propagate `errno` from malloc
 	}
 	memset(dev, 0, sizeof(*dev));
 
 	state = malloc(sizeof(*state));
 	if (!state) {
+		NVM_DEBUG("FAILED: malloc(spdk_be_state)");
 		nvm_be_spdk_close(dev);
-		// Propagate `errno` from malloc
-		return NULL;
+		free(dev);
+		return NULL;	// Propagate `errno` from malloc
 	}
 	memset(state, 0, sizeof(*state));
 
@@ -211,7 +215,13 @@ struct nvm_dev *nvm_be_spdk_open(const char *dev_path, int NVM_UNUSED(flags))
 	state->opts.shm_id = 0;
 	state->opts.master_core = 0;
 
-	spdk_env_init(&(state->opts));
+	err = spdk_env_init(&(state->opts));
+	if (err) {
+		NVM_DEBUG("FAILED: spdk_env_init");
+		nvm_be_spdk_close(dev);
+		free(dev);
+		return NULL;	// Propagate `errno` from spdk_env_init
+	}
 
 	/*
 	 * Parse the dev_path into transport_id so we can use it to compare to
@@ -225,6 +235,7 @@ struct nvm_dev *nvm_be_spdk_open(const char *dev_path, int NVM_UNUSED(flags))
 
 		errno = -err;
 		nvm_be_spdk_close(dev);
+		free(dev);
 		return NULL;
 	}
 
@@ -235,31 +246,25 @@ struct nvm_dev *nvm_be_spdk_open(const char *dev_path, int NVM_UNUSED(flags))
 	 * for each controller after the SPDK NVMe driver has completed
 	 * initializing the controller we chose to attach.
 	 */
-	err = spdk_nvme_probe(&state->trid, state, probe_cb, attach_cb, NULL);
-	if (err) {
-		NVM_DEBUG("FAILED: spdk_nvme_probe(...) -- retrying...");
+	for (int i = 0; !state->attached; ++i) {
+		if (NVM_BE_SPDK_MAX_PROBE_ATTEMPTS == i) {
+			NVM_DEBUG("FAILED: max attempts exceeded");
+			goto failed;
+		}
 
 		err = spdk_nvme_probe(&state->trid, state, probe_cb, attach_cb,
 				      NULL);
-		if (err) {
-			NVM_DEBUG("FAILED: spdk_nvme_probe(...)");
-			nvm_be_spdk_close(dev);
-			return NULL;
+		if ((err) || (!state->attached)) {
+			NVM_DEBUG("FAILED: spdk_nvme_probe, a:%d, e:%d, i:%d",
+				  state->attached, err, i);
 		}
-	}
-
-	if (!state->attached) {
-		NVM_DEBUG("FAILED: attaching NVMe controller");
-		nvm_be_spdk_close(dev);
-		return NULL;
 	}
 
 	// Setup NVMe IO qpair for SYNC commands
 	state->qpair = spdk_nvme_ctrlr_alloc_io_qpair(state->ctrlr, NULL, 0);
 	if (!state->qpair) {
 		NVM_DEBUG("FAILED: allocating qpair");
-		nvm_be_spdk_close(dev);
-		return NULL;
+		goto failed;
 	}
 
 	// Setup IO qpair lock for SYNC commands
@@ -268,8 +273,7 @@ struct nvm_dev *nvm_be_spdk_open(const char *dev_path, int NVM_UNUSED(flags))
 	const struct spdk_nvme_ns_data *nsdata = spdk_nvme_ns_get_data(state->ns);
 	if (nsdata == NULL) {
 		NVM_DEBUG("FAILED: spdk_nvme_ns_get_data");
-		nvm_be_spdk_close(dev);
-		return NULL;
+		goto failed;
 	}
 
 	dev->nsid = state->nsid;
@@ -278,20 +282,23 @@ struct nvm_dev *nvm_be_spdk_open(const char *dev_path, int NVM_UNUSED(flags))
 	err = nvm_be_populate(dev, &nvm_be_spdk);
 	if (err) {
 		NVM_DEBUG("FAILED: nvm_be_populate, err(%d)", err);
-		nvm_be_spdk_close(dev);
-		return NULL;
+		goto failed;
 	}
 
 	err = nvm_be_populate_derived(dev);
 	if (err) {
 		NVM_DEBUG("FAILED: nvm_be_populate_derived");
-		nvm_be_spdk_close(dev);
-		return NULL;
+		goto failed;
 	}
 
 	NVM_DEBUG("Let's go!");
 
 	return dev;
+
+failed:
+	nvm_be_spdk_close(dev);
+	free(dev);
+	return NULL;
 }
 
 /**
