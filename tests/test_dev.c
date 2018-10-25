@@ -12,17 +12,17 @@ void test_DEV_OPEN_CLOSE(void)
 
 void test_DEV_OPEN_CLOSE_N(void)
 {
-	const int n = 10;
-	struct nvm_dev *dev[10];
+	struct nvm_dev *dev[] = {0,0,0,0,0,0,0,0,0,0};
+	int ndev = sizeof(dev) / sizeof(dev[0]);
 
-	for (int i = 0; i < n; ++i) {
+	for (int i = 0; i < ndev; ++i) {
 		dev[i] = nvm_dev_open(NVM_DEV_PATH);
 		CU_ASSERT_PTR_NOT_NULL(dev[i]);
 		if (!dev[i])
 			break;
 	}
 
-	for (int i = 0; i < n; ++i) {
+	for (int i = 0; i < ndev; ++i) {
 		if (!dev[i])
 			break;
 		nvm_dev_close(dev[i]);
