@@ -1,3 +1,4 @@
+#include "test_util.h"
 #include "test_intf.c"
 
 static size_t descr_idx(struct nvm_addr *punit_addr, struct nvm_addr chunk_addr)
@@ -68,7 +69,7 @@ void cmd_rprt(struct nvm_addr *punit_addr)
 		CU_ASSERT(res >= 0);
 		if (res < 0)
 			goto out;
-		
+
 		rprt[++rprt_cur] = nvm_cmd_rprt(DEV, punit_addr, 0x0, &ret);
 		CU_ASSERT_PTR_NOT_NULL(rprt[rprt_cur]);
 		if (!rprt[rprt_cur])
@@ -84,7 +85,7 @@ void cmd_rprt(struct nvm_addr *punit_addr)
 		CU_ASSERT(res >= 0);
 		if (res < 0)
 			goto out;
-		
+
 		rprt[++rprt_cur] = nvm_cmd_rprt(DEV, punit_addr, 0x0, &ret);
 		CU_ASSERT_PTR_NOT_NULL(rprt[rprt_cur]);
 		if (!rprt[rprt_cur])
@@ -120,6 +121,8 @@ out:
 
 void test_CMD_RPRT_PUNIT(void)
 {
+	SPEC_20_ONLY
+
 	struct nvm_addr punit_addr = { .val=0 };
 
 	// Construct an arbitrary punit address
@@ -131,6 +134,8 @@ void test_CMD_RPRT_PUNIT(void)
 
 void test_CMD_RPRT_ALL(void)
 {
+	SPEC_20_ONLY
+
 	cmd_rprt(NULL);
 }
 

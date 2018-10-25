@@ -26,6 +26,7 @@
  */
 
 #include "test_util.h"
+#include "test_rules.h"
 #include "test_intf.c"
 
 static void _test_reset_free(nvm_test_reset_ok_fn reset_ok,
@@ -106,11 +107,11 @@ static void _test_reset_non_existing(nvm_test_reset_err_fn reset_err)
 	reset_err(&addr, LNVM_ERR_INVALID_RESET);
 }
 
-MAKE_TESTS_2(reset_free, reset_ok, reset_err)
-MAKE_TESTS_1(reset_open, reset_err)
-MAKE_TESTS_1(reset_closed, reset_ok)
-MAKE_TESTS_1(reset_offline, reset_err)
-MAKE_TESTS_1(reset_non_existing, reset_err)
+MAKE_RULES_TESTS_2(reset_free, reset_ok, reset_err)
+MAKE_RULES_TESTS_1(reset_open, reset_err)
+MAKE_RULES_TESTS_1(reset_closed, reset_ok)
+MAKE_RULES_TESTS_1(reset_offline, reset_err)
+MAKE_RULES_TESTS_1(reset_non_existing, reset_err)
 
 int main(int argc, char **argv)
 {

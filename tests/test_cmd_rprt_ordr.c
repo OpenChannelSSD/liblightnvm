@@ -1,3 +1,4 @@
+#include "test_util.h"
 #include "test_intf.c"
 
 /**
@@ -12,6 +13,8 @@
 
 void test_CMD_RPRT_ORDR(void)
 {
+	SPEC_20_ONLY
+
 	struct nvm_spec_rprt *rprt = NULL;
 
 	size_t tchunks = GEO->l.npugrp * GEO->l.npunit * GEO->l.nchunk;

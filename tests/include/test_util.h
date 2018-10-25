@@ -56,41 +56,18 @@ extern uint32_t MAX_SCALAR_LBAS;
 
 extern int RMODE;
 
-#define MAKE_TEST_1(type, name, arg)                                          \
-	static void test_ ## type ## _ ## name (void)                         \
-	{                                                                     \
-		_test_ ## name (nvm_test_ ## type ## _ ## arg);               \
+#define SPEC_20_ONLY                                                          \
+	if (nvm_dev_get_verid(DEV) != NVM_SPEC_VERID_20) {                    \
+		CU_PASS("device is not OCSSD 2.0; skipping test");            \
+		return;                                                       \
 	}
 
-
-#define MAKE_TEST_2(type, name, arg1, arg2)                                   \
-	static void test_ ## type ## _ ## name (void)                         \
-	{                                                                     \
-		_test_ ## name (                                              \
-			nvm_test_ ## type ## _ ## arg1,                       \
-			nvm_test_ ## type ## _ ## arg2);                      \
+#define SPEC_12_ONLY                                                          \
+	if (nvm_dev_get_verid(DEV) != NVM_SPEC_VERID_12) {                    \
+		CU_PASS("device is not OCSSD 1.2; skipping test");            \
+		return;                                                       \
 	}
 
-#define MAKE_TEST_3(type, name, arg1, arg2, arg3)                             \
-	static void test_ ## type ## _ ## name (void)                         \
-	{                                                                     \
-		_test_ ## name (                                              \
-			nvm_test_ ## type ## _ ## arg1,                       \
-			nvm_test_ ## type ## _ ## arg2,                       \
-			nvm_test_ ## type ## _ ## arg3);                      \
-	}
-
-#define MAKE_TESTS_1(name, arg)                                               \
-	MAKE_TEST_1(scalar, name, arg)                                        \
-	MAKE_TEST_1(vector, name, arg)
-
-#define MAKE_TESTS_2(name, arg1, arg2)                                        \
-	MAKE_TEST_2(scalar, name, arg1, arg2)                                 \
-	MAKE_TEST_2(vector, name, arg1, arg2)
-
-#define MAKE_TESTS_3(name, arg1, arg2, arg3)                                  \
-	MAKE_TEST_3(scalar, name, arg1, arg2, arg3)                           \
-	MAKE_TEST_3(vector, name, arg1, arg2, arg3)
 
 /*
  * A function that verifies a request.

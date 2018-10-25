@@ -3,6 +3,8 @@
 
 static void test_compliance_scalar_write_exceed_mdts()
 {
+	SPEC_20_ONLY
+
 	struct nvm_addr addr;
 
 	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, 1, &addr)) {

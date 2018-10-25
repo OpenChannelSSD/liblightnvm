@@ -26,6 +26,7 @@
  */
 
 #include "test_util.h"
+#include "test_rules.h"
 #include "test_intf.c"
 
 #include <CUnit/Basic.h>
@@ -183,13 +184,13 @@ static void _test_write_oor(nvm_test_write_err_fn write_err)
 	nvm_buf_free(DEV, buf);
 }
 
-MAKE_TESTS_1(write_slba, write_ok)
-MAKE_TESTS_1(write_wp, write_ok)
-MAKE_TESTS_1(write_ooo, write_err)
-MAKE_TESTS_1(write_wp_close, write_ok)
-MAKE_TESTS_1(write_wp_closed, write_err)
-MAKE_TESTS_1(write_offline, write_err)
-MAKE_TESTS_1(write_oor, write_err)
+MAKE_RULES_TESTS_1(write_slba, write_ok)
+MAKE_RULES_TESTS_1(write_wp, write_ok)
+MAKE_RULES_TESTS_1(write_ooo, write_err)
+MAKE_RULES_TESTS_1(write_wp_close, write_ok)
+MAKE_RULES_TESTS_1(write_wp_closed, write_err)
+MAKE_RULES_TESTS_1(write_offline, write_err)
+MAKE_RULES_TESTS_1(write_oor, write_err)
 
 int main(int argc, char **argv)
 {

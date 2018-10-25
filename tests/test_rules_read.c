@@ -26,6 +26,7 @@
  */
 
 #include "test_util.h"
+#include "test_rules.h"
 #include "test_intf.c"
 
 typedef void (*_read_and_verify_fn)(struct nvm_addr *addr, int dulbe,
@@ -265,16 +266,16 @@ static void _test_read_slba_gt_wp_dulbe(nvm_test_write_ok_fn write_ok,
 	nvm_buf_set_free(bufs);
 }
 
-MAKE_TESTS_1(read_free, read_and_verify)
-MAKE_TESTS_1(read_free_dulbe, read_and_verify)
-MAKE_TESTS_1(read_offline, read_and_verify)
-MAKE_TESTS_1(read_offline_dulbe, read_and_verify)
-MAKE_TESTS_1(read_oor, read_and_verify)
-MAKE_TESTS_1(read_oor_dulbe, read_and_verify)
-MAKE_TESTS_3(read_mw_cunits, write_ok, read_ok, read_ok_predef)
-MAKE_TESTS_3(read_mw_cunits_dulbe, write_ok, read_err, read_ok)
-MAKE_TESTS_2(read_slba_gt_wp, write_ok, read_ok_predef)
-MAKE_TESTS_2(read_slba_gt_wp_dulbe, write_ok, read_err)
+MAKE_RULES_TESTS_1(read_free, read_and_verify)
+MAKE_RULES_TESTS_1(read_free_dulbe, read_and_verify)
+MAKE_RULES_TESTS_1(read_offline, read_and_verify)
+MAKE_RULES_TESTS_1(read_offline_dulbe, read_and_verify)
+MAKE_RULES_TESTS_1(read_oor, read_and_verify)
+MAKE_RULES_TESTS_1(read_oor_dulbe, read_and_verify)
+MAKE_RULES_TESTS_3(read_mw_cunits, write_ok, read_ok, read_ok_predef)
+MAKE_RULES_TESTS_3(read_mw_cunits_dulbe, write_ok, read_err, read_ok)
+MAKE_RULES_TESTS_2(read_slba_gt_wp, write_ok, read_ok_predef)
+MAKE_RULES_TESTS_2(read_slba_gt_wp_dulbe, write_ok, read_err)
 
 int main(int argc, char **argv)
 {
