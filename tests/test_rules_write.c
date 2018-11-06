@@ -177,7 +177,7 @@ static void _test_write_oor(nvm_test_write_err_fn write_err)
 	CU_ASSERT_PTR_NOT_NULL(buf);
 
 	// make out of range address
-	addr.l.chunk = GEO->l.nchunk;
+	addr.l.pugrp = GEO->l.npugrp;
 
 	write_err(addr, WS_MIN, buf, NVME_ERR_WRITE_FAULT);
 
