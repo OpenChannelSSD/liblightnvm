@@ -88,6 +88,8 @@ void nvm_test_verify_read_ok_predef(int rc,
 	unsigned char dlfeat_val;
 	size_t diff = 0;
 
+	CU_ASSERT(rc == 0);
+
 	switch (NS->dlfeat & 0x7) {
 		case 0x1:
 			dlfeat_val = 0x00;
@@ -95,21 +97,22 @@ void nvm_test_verify_read_ok_predef(int rc,
 		case 0x2:
 			dlfeat_val = 0xff;
 			break;
-		default: /* 0x0 ... */
+		case 0x0:
 			/* value of deallocated or unwritten blocks are not
-			 * reported, assume 0x4E ('N') just to make the test
-			 * err out */
-			dlfeat_val = 0x4E;
-			break;
+			 * reported, so do not check the buffer */
+
+			/* fallthrough */
+		default:
+			return;
 	}
 
-	CU_ASSERT(rc == 0);
 	for (size_t i = 0; i < count; i++) {
 		if (buf[i] == dlfeat_val) {
 			continue;
 		}
 		++diff;
 	}
+
 	CU_ASSERT(diff == 0);
 }
 
