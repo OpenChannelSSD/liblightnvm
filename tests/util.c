@@ -124,18 +124,42 @@ void nvm_test_verify_read_ok(int rc, const struct nvm_ret *NVM_UNUSED(ret),
 	CU_ASSERT(nvm_buf_diff(buf, expected, count) == 0);
 }
 
+void nvm_test_verify_err(int rc, const struct nvm_ret *ret, uint16_t err)
+{
+	uint8_t sc = NVM_TEST_NVME_STATUS_SC(ret->status);
+	uint8_t sc_want = NVM_TEST_NVME_STATUS_SC(err);
+	uint8_t sct = NVM_TEST_NVME_STATUS_SCT(ret->status);
+	uint8_t sct_want = NVM_TEST_NVME_STATUS_SCT(err);
+
+	CU_ASSERT(rc == -1);
+	CU_ASSERT(sc == sc_want);
+	CU_ASSERT(sct == sct_want);
+
+	if (CU_BRM_VERBOSE == RMODE) {
+		nvm_ret_pr(ret);
+
+		if (rc != -1) {
+			fprintf(stderr, "expected `rc == -1`; got %d\n", rc);
+		}
+
+		if (sc != sc_want) {
+			fprintf(stderr, "expected `sc == 0x%x; got 0x%x\n",
+				sc_want, sc);
+		}
+
+		if (sct != sct_want) {
+			fprintf(stderr, "expected `sct == 0x%x; got 0x%x\n",
+				sct_want, sct);
+		}
+	}
+}
+
 void nvm_test_verify_read_err(int rc, const struct nvm_ret *ret,
 	const char *NVM_UNUSED(buf), const char *NVM_UNUSED(expected),
 	size_t NVM_UNUSED(count), uint16_t err)
 {
-	CU_ASSERT(rc == -1);
-	CU_ASSERT(ret->status & err);
-	if (!(ret->status & err) && CU_BRM_VERBOSE == RMODE) {
-		nvm_ret_pr(ret);
-	}
+	nvm_test_verify_err(rc, ret, err);
 }
-
-
 
 void nvm_test_read_oneshot_ok(struct nvm_addr *addr, uint32_t nlba, char *buf,
 	const char *expected, enum nvm_cmd_opts cmd_opts)
@@ -235,11 +259,8 @@ void nvm_test_write_oneshot_err(struct nvm_addr *addr, uint32_t nlba,
 {
 	struct nvm_ret ret = { 0 };
 	int rc = nvm_cmd_write(DEV, addr, nlba, buf, NULL, cmd_opts, &ret);
-	CU_ASSERT(rc == -1);
-	CU_ASSERT(ret.status & err);
-	if (!(ret.status & err) && CU_BRM_VERBOSE == RMODE) {
-		nvm_ret_pr(&ret);
-	}
+
+	nvm_test_verify_err(rc, &ret, err);
 }
 
 void nvm_test_scalar_write_oneshot_err(struct nvm_addr addr, uint32_t nlba,
@@ -416,11 +437,8 @@ void nvm_test_reset_err(struct nvm_addr *addrs, enum nvm_cmd_opts cmd_opts,
 {
 	struct nvm_ret ret = { 0 };
 	int rc = nvm_cmd_erase(DEV, addrs, 1, NULL, cmd_opts, &ret);
-	CU_ASSERT(rc == -1);
-	CU_ASSERT(ret.status & err);
-	if (!(ret.status & err) && CU_BRM_VERBOSE == RMODE) {
-		nvm_ret_pr(&ret);
-	}
+
+	nvm_test_verify_err(rc, &ret, err);
 }
 
 void nvm_test_scalar_reset_err(struct nvm_addr *addrs, uint32_t err)

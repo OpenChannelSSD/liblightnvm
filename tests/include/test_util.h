@@ -70,6 +70,8 @@ extern int RMODE;
 		return;                                                       \
 	}
 
+#define NVM_TEST_NVME_STATUS_SC(status)  (status & 0xff)
+#define NVM_TEST_NVME_STATUS_SCT(status) ((status >> 8) & 0x7)
 
 /*
  * A function that verifies a request.
