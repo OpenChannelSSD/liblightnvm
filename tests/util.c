@@ -85,7 +85,7 @@ void nvm_test_verify_read_ok_predef(int rc,
 	const char *NVM_UNUSED(expected), size_t count,
 	uint16_t NVM_UNUSED(err))
 {
-	unsigned char dlfeat_val;
+	char dlfeat_val;
 	size_t diff = 0;
 
 	switch (NS->dlfeat & 0x7) {
