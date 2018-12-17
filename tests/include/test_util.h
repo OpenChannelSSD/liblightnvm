@@ -77,42 +77,43 @@ extern int RMODE;
  * A function that verifies a request.
  */
 typedef void (*nvm_test_verify_fn)(int rc, const struct nvm_ret *ret,
-	const char *expected, const char *buf, size_t count, uint16_t err);
+				   const void *expected, const void *buf,
+				   size_t count, uint16_t err);
 
 /*
  * A function that reads `nlba`s starting at `addr` and asserts that the data
  * read is equal to `expected`.
  */
 typedef void (*nvm_test_read_ok_fn)(struct nvm_addr addr, uint32_t nlba,
-	char *buf, const char *expected);
+				    void *buf, const void *expected);
 
 /*
  * A function that reads `nlba`s starting at `addr` and asserts that the data
  * read is predefined.
  */
 typedef void (*nvm_test_read_ok_predef_fn)(struct nvm_addr addr, uint32_t nlba,
-	char *buf);
+					   void *buf);
 
 /*
  * A function that writes `nlba`s starting at `addr` and asserts that the
  * command completes successfully.
  */
 typedef void (*nvm_test_write_ok_fn)(struct nvm_addr addr, uint32_t nlba,
-	const char *buf);
+				     const void *buf);
 
 /*
  * A function that attempts to writes `nlba`s starting at `addr` and asserts
  * that the error in `err` is returned.
  */
 typedef void (*nvm_test_write_err_fn)(struct nvm_addr addr, uint32_t nlba,
-	const char *buf, uint16_t err);
+				      const void *buf, uint16_t err);
 
 /*
  * A function that attempts to read `nlba`s starting at `addr` and asserts
  * that the error in `err` is returned.
  */
 typedef void (*nvm_test_read_err_fn)(struct nvm_addr addr, uint32_t nlba,
-	char *buf, uint16_t err);
+				     void *buf, uint16_t err);
 
 /*
  * A function that resets the chunks indicated by `addrs` and asserts that it
@@ -140,20 +141,23 @@ void nvm_test_set_dulbe(int enable);
  * completed successfully.
  */
 void nvm_test_verify_read_ok_predef(int rc, const struct nvm_ret *ret,
-	const char *buf, const char *expected, size_t count, uint16_t err);
+				    const void *buf, const void *expected,
+				    size_t count, uint16_t err);
 
 /*
  * Assert that the contents of `buf` is equal to those in `expected` and that
  * the command completed successfully.
  */
 void nvm_test_verify_read_ok(int rc, const struct nvm_ret *ret,
-	const char *buf, const char *expected, size_t count, uint16_t err);
+			     const void *buf, const void *expected,
+			     size_t count, uint16_t err);
 
 /*
  * Asserts that the command was unsuccessful and returned `err`.
  */
 void nvm_test_verify_read_err(int rc, const struct nvm_ret *ret,
-	const char *buf, const char *expected, size_t count, uint16_t err);
+			      const void *buf, const void *expected,
+			      size_t count, uint16_t err);
 
 
 /*
@@ -164,7 +168,8 @@ void nvm_test_verify_read_err(int rc, const struct nvm_ret *ret,
  * feature is enabled.
  */
 void nvm_test_read_and_verify(struct nvm_addr *addr, int dulbe,
-	enum nvm_cmd_opts cmd_opts, nvm_test_verify_fn verify, uint16_t err);
+			      enum nvm_cmd_opts cmd_opts,
+			      nvm_test_verify_fn verify, uint16_t err);
 
 /*
  * Read one sector at `addr` using a scalar command and verify the result using
@@ -174,7 +179,7 @@ void nvm_test_read_and_verify(struct nvm_addr *addr, int dulbe,
  * feature is enabled.
  */
 void nvm_test_scalar_read_and_verify(struct nvm_addr *addr, int dulbe,
-	nvm_test_verify_fn verify, uint16_t err);
+				     nvm_test_verify_fn verify, uint16_t err);
 
 /*
  * Read one sector at `addr` using a vector command and verify the result using
@@ -184,26 +189,26 @@ void nvm_test_scalar_read_and_verify(struct nvm_addr *addr, int dulbe,
  * feature is enabled.
  */
 void nvm_test_vector_read_and_verify(struct nvm_addr *addr, int dulbe,
-	nvm_test_verify_fn verify, uint16_t err);
+				     nvm_test_verify_fn verify, uint16_t err);
 
 
 /*
  * Read `nlba` LBAs using a single command, asserting success.
  */
-void nvm_test_read_oneshot_ok(struct nvm_addr *addr, uint32_t nlba, char *buf,
-	const char *expected, enum nvm_cmd_opts cmd_opts);
+void nvm_test_read_oneshot_ok(struct nvm_addr *addr, uint32_t nlba, void *buf,
+			      const void *expected, enum nvm_cmd_opts cmd_opts);
 
 /*
  * Read `nlba` LBAs using a single scalar command, asserting success.
  */
 void nvm_test_scalar_read_oneshot_ok(struct nvm_addr addr, uint32_t nlba,
-	char *buf, const char *expected);
+				     void *buf, const void *expected);
 
 /*
  * Read `nlba` LBAs using a single vector read command, asserting success.
  */
 void nvm_test_vector_read_oneshot_ok(struct nvm_addr slba, uint32_t nlba,
-	char *buf, const char *expected);
+				     void *buf, const void *expected);
 
 
 
@@ -211,19 +216,19 @@ void nvm_test_vector_read_oneshot_ok(struct nvm_addr slba, uint32_t nlba,
  * Write `nlba` LBAs using a single command, asserting success.
  */
 void nvm_test_write_oneshot_ok(struct nvm_addr *addr, uint32_t nlba,
-	const char *buf, enum nvm_cmd_opts cmd_opts);
+			       const void *buf, enum nvm_cmd_opts cmd_opts);
 
 /*
  * Write `nlba` LBAs using a single scalar command, asserting success.
  */
 void nvm_test_scalar_write_oneshot_ok(struct nvm_addr addr, uint32_t nlba,
-	const char *buf);
+				      const void *buf);
 
 /*
  * Write `nlba` LBAs using a single vector command, asserting success.
  */
 void nvm_test_vector_write_oneshot_ok(struct nvm_addr slba, uint32_t nlba,
-	const char *buf);
+				      const void *buf);
 
 
 
@@ -232,21 +237,21 @@ void nvm_test_vector_write_oneshot_ok(struct nvm_addr slba, uint32_t nlba,
  * predefined data is returned.
  */
 void nvm_test_read_oneshot_ok_predef(struct nvm_addr *addr, uint32_t nlba,
-	char *buf, enum nvm_cmd_opts cmd_opts);
+				     void *buf, enum nvm_cmd_opts cmd_opts);
 
 /*
  * Read `nlba` LBAs using a single scalar command, asserting success and that
  * predefined data is returned.
  */
 void nvm_test_scalar_read_oneshot_ok_predef(struct nvm_addr addr,
-	uint32_t nlba, char *buf);
+					    uint32_t nlba, void *buf);
 
 /*
  * Read `nlba` LBAs using a single vector command, asserting success and that
  * predefined data is returned.
  */
 void nvm_test_vector_read_oneshot_ok_predef(struct nvm_addr slba,
-	uint32_t nlba, char *buf);
+					    uint32_t nlba, void *buf);
 
 
 
@@ -254,22 +259,22 @@ void nvm_test_vector_read_oneshot_ok_predef(struct nvm_addr slba,
  * Read `nlba` LBAs using a single command, asserting that an error equal to
  * `err` is returned.
  */
-void nvm_test_read_oneshot_err(struct nvm_addr *addr, uint32_t nlba, char *buf,
-	enum nvm_cmd_opts cmd_opts, uint16_t err);
+void nvm_test_read_oneshot_err(struct nvm_addr *addr, uint32_t nlba, void *buf,
+			       enum nvm_cmd_opts cmd_opts, uint16_t err);
 
 /*
  * Read `nlba` LBAs using a single scalar command, asserting that an error
  * equal to `err` is returned.
  */
 void nvm_test_scalar_read_oneshot_err(struct nvm_addr addr, uint32_t nlba,
-	char *buf, uint16_t err);
+				      void *buf, uint16_t err);
 
 /*
  * Read `nlba` LBAs using a single vector command, asserting that an error
  * equal to `err` is returned.
  */
 void nvm_test_vector_read_oneshot_err(struct nvm_addr slba, uint32_t nlba,
-	char *buf, uint16_t err);
+				      void *buf, uint16_t err);
 
 
 
@@ -278,21 +283,22 @@ void nvm_test_vector_read_oneshot_err(struct nvm_addr slba, uint32_t nlba,
  * `err` is returned.
  */
 void nvm_test_write_oneshot_err(struct nvm_addr *addr, uint32_t nlba,
-	const char *buf, enum nvm_cmd_opts cmd_opts, uint32_t err);
+				const void *buf, enum nvm_cmd_opts cmd_opts,
+				uint32_t err);
 
 /*
  * Write `nlba` LBAs using a single scalar command, asserting that an error
  * equal to `err` is returned.
  */
 void nvm_test_scalar_write_oneshot_err(struct nvm_addr addr, uint32_t nlba,
-	const char *buf, uint32_t err);
+				       const void *buf, uint32_t err);
 
 /*
  * Write `nlba` LBAs using a single vector command, asserting that an error
  * equal to `err` is returned.
  */
 void nvm_test_vector_write_oneshot_err(struct nvm_addr slba, uint32_t nlba,
-	const char *buf, uint32_t err);
+				       const void *buf, uint32_t err);
 
 
 
@@ -301,14 +307,14 @@ void nvm_test_vector_write_oneshot_err(struct nvm_addr slba, uint32_t nlba,
  * each, asserting success.
  */
 void nvm_test_scalar_write_ok(struct nvm_addr addr, uint32_t nlba,
-	const char *buf);
+			      const void *buf);
 
 /*
  * Write `nlba`s by splitting into multiple vector commands of WS_MIN LBAs
  * each, asserting success.
  */
 void nvm_test_vector_write_ok(struct nvm_addr addr, uint32_t nlba,
-	const char *buf);
+			      const void *buf);
 
 
 
@@ -316,15 +322,15 @@ void nvm_test_vector_write_ok(struct nvm_addr addr, uint32_t nlba,
  * Read `nlba`s by splitting into multiple scalar commands of WS_MIN LBAs
  * each, asserting success.
  */
-void nvm_test_scalar_read_ok(struct nvm_addr addr, uint32_t nlba, char *buf,
-	const char *expected);
+void nvm_test_scalar_read_ok(struct nvm_addr addr, uint32_t nlba, void *buf,
+			     const void *expected);
 
 /*
  * Read `nlba`s by splitting into multiple vector commands of WS_MIN LBAs
  * each, asserting success.
  */
-void nvm_test_vector_read_ok(struct nvm_addr addr, uint32_t nlba, char *buf,
-	const char *expected);
+void nvm_test_vector_read_ok(struct nvm_addr addr, uint32_t nlba, void *buf,
+			     const void *expected);
 
 
 
@@ -333,14 +339,14 @@ void nvm_test_vector_read_ok(struct nvm_addr addr, uint32_t nlba, char *buf,
  * each, asserting success and that predefined data is returned.
  */
 void nvm_test_scalar_read_ok_predef(struct nvm_addr addr, uint32_t nlba,
-	char *buf);
+				    void *buf);
 
 /*
  * Read `nlba`s by splitting into multiple vector commands of WS_MIN LBAs
  * each, asserting success and that predefined data is returned.
  */
 void nvm_test_vector_read_ok_predef(struct nvm_addr addr, uint32_t nlba,
-	char *buf);
+				    void *buf);
 
 
 
@@ -348,15 +354,15 @@ void nvm_test_vector_read_ok_predef(struct nvm_addr addr, uint32_t nlba,
  * Read `nlba`s by splitting into multiple scalar commands of WS_MIN LBAs
  * each, asserting that an error equal to `err` is returned.
  */
-void nvm_test_scalar_read_err(struct nvm_addr addr, uint32_t nlba, char *buf,
-	uint16_t err);
+void nvm_test_scalar_read_err(struct nvm_addr addr, uint32_t nlba, void *buf,
+			      uint16_t err);
 
 /*
  * Read `nlba`s by splitting into multiple vector commands of WS_MIN LBAs
  * each, asserting that an error equal to `err` is returned.
  */
-void nvm_test_vector_read_err(struct nvm_addr addr, uint32_t nlba, char *buf,
-	uint16_t err);
+void nvm_test_vector_read_err(struct nvm_addr addr, uint32_t nlba, void *buf,
+			      uint16_t err);
 
 
 
@@ -365,14 +371,14 @@ void nvm_test_vector_read_err(struct nvm_addr addr, uint32_t nlba, char *buf,
  * each, asserting that an error equal to `err` is returned.
  */
 void nvm_test_scalar_write_err(struct nvm_addr addr, uint32_t nlba,
-	const char *buf, uint16_t err);
+			       const void *buf, uint16_t err);
 
 /*
  * Read `nlba`s by splitting into multiple vector commands of WS_MIN LBAs
  * each, asserting that an error equal to `err` is returned.
  */
 void nvm_test_vector_write_err(struct nvm_addr addr, uint32_t nlba,
-	const char *buf, uint16_t err);
+			       const void *buf, uint16_t err);
 
 
 
@@ -395,7 +401,7 @@ void nvm_test_rprt_assert_wp(struct nvm_addr addr, uint32_t wp);
  * `state`.
  */
 void nvm_test_rprt_assert_state(struct nvm_addr addr,
-	enum nvm_spec_chunk_state state);
+				enum nvm_spec_chunk_state state);
 
 
 /*
@@ -422,7 +428,7 @@ void nvm_test_vector_reset_ok(struct nvm_addr *addrs);
  * with `err`.
  */
 void nvm_test_reset_err(struct nvm_addr *addrs, enum nvm_cmd_opts cmd_opts,
-	uint32_t err);
+			uint32_t err);
 
 /*
  * Attempt to reset the chunks indicated by `addrs` using an NVMe DSM command
