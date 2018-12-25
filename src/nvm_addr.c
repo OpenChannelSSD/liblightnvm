@@ -106,13 +106,13 @@ int nvm_addr_check(struct nvm_addr addr, const struct nvm_dev *dev)
 
 	case NVM_SPEC_VERID_20:
 		if (addr.l.pugrp >= geo->l.npugrp)
-			exceeded |= NVM_BOUNDS_CHANNEL;
+			exceeded |= NVM_BOUNDS_PUGRP;
 		if (addr.l.punit >= geo->l.npunit)
-			exceeded |= NVM_BOUNDS_LUN;
+			exceeded |= NVM_BOUNDS_PUNIT;
 		if (addr.l.chunk >= geo->l.nchunk)
-			exceeded |= NVM_BOUNDS_PLANE;
+			exceeded |= NVM_BOUNDS_CHUNK;
 		if (addr.l.sectr >= geo->l.nsectr)
-			exceeded |= NVM_BOUNDS_BLOCK;
+			exceeded |= NVM_BOUNDS_SECTR;
 		return exceeded;
 	}
 
