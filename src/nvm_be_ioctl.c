@@ -741,14 +741,6 @@ struct nvm_dev *nvm_be_ioctl_open(const char *dev_path, int flags)
 		return NULL;
 	}
 
-	err = nvm_be_populate_derived(dev);
-	if (err) {
-		NVM_DEBUG("FAILED: nvm_be_populate_derived");
-		close(dev->fd);
-		free(dev);
-		return NULL;
-	}
-
 	dev->be_state = nvm_buf_alloc(dev, dev->geo.l.nbytes, NULL);
 	if (!dev->be_state) {
 		NVM_DEBUG("FAILED: be_state/erase_meta_hack alloc");
