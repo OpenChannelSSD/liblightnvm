@@ -42,6 +42,7 @@ struct nvm_be_spdk_state {
 	struct spdk_env_opts opts;
 	struct spdk_nvme_ctrlr *ctrlr;
 	struct spdk_nvme_ns *ns;
+	struct spdk_nvme_ns_data nsdata;
 	uint16_t nsid;
 	int attached;
 
