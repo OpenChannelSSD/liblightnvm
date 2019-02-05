@@ -273,89 +273,6 @@ int nvm_be_split_dpath(const char *dev_path, char *nvme_name, int *nsid)
 	return 0;
 }
 
-int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
-{
-	struct nvm_geo *geo = &dev->geo;
-	struct nvm_spec_idfy *idfy = NULL;
-
-	dev->be = be;		// TODO: Clean the initialization process
-
-	idfy = be->idfy(dev, NULL);
-	if (!idfy) {
-		NVM_DEBUG("FAILED: nvm_cmd_idfy");
-		return -1; // NOTE: Propagate errno
-	}
-	// Handle IDFY reporting 3, mark as 2.0
-	if (idfy->s.verid == 0x3)
-		idfy->s.verid = NVM_SPEC_VERID_20;
-
-	dev->idfy = *idfy;
-	dev->verid = geo->verid = idfy->s.verid;
-
-	switch (idfy->s.verid) {
-	case NVM_SPEC_VERID_12:
-		// Geometry
-		geo->page_nbytes = idfy->s12.grp[0].fpg_sz;
-		geo->sector_nbytes = idfy->s12.grp[0].csecs;
-		geo->meta_nbytes = idfy->s12.grp[0].sos;
-
-		geo->nchannels = idfy->s12.grp[0].num_ch;
-		geo->nluns = idfy->s12.grp[0].num_lun;
-		geo->nplanes = idfy->s12.grp[0].num_pln;
-		geo->nblocks = idfy->s12.grp[0].num_blk;
-		geo->npages = idfy->s12.grp[0].num_pg;
-
-		// Capabilities
-		dev->mccap = idfy->s12.grp[0].mccap;
-
-		// Addressing format / offset / mask
-		dev->ppaf = idfy->s12.ppaf;
-
-		construct_ppaf_mask(&dev->ppaf, &dev->mask);
-		break;
-
-	case NVM_SPEC_VERID_20:
-		// Geometry
-		geo->l.npugrp = idfy->s20.lgeo.npugrp;
-		geo->l.npunit = idfy->s20.lgeo.npunit;
-		geo->l.nchunk = idfy->s20.lgeo.nchunk;
-		geo->l.nsectr = idfy->s20.lgeo.nsectr;
-
-		struct nvm_nvme_lbaf lbaf = dev->ns.lbaf[dev->ns.flbas & 0xf];
-
-		geo->l.nbytes = 1 << lbaf.ds;
-		geo->l.nbytes_oob = lbaf.ms;
-
-		// Capabilities
-		dev->mccap = idfy->s20.mccap;
-
-		// Addressing format / offset / mask
-		dev->lbaf = idfy->s20.lbaf;
-
-		dev->lbaz.sectr = 0;
-		dev->lbaz.chunk = dev->lbaf.sectr;
-		dev->lbaz.punit = dev->lbaz.chunk + dev->lbaf.chunk;
-		dev->lbaz.pugrp = dev->lbaz.punit + dev->lbaf.punit;
-
-		dev->lbam.sectr = (((uint64_t)1 << dev->lbaf.sectr) - 1) << dev->lbaz.sectr;
-		dev->lbam.chunk = (((uint64_t)1 << dev->lbaf.chunk) - 1) << dev->lbaz.chunk;
-		dev->lbam.punit = (((uint64_t)1 << dev->lbaf.punit) - 1) << dev->lbaz.punit;
-		dev->lbam.pugrp = (((uint64_t)1 << dev->lbaf.pugrp) - 1) << dev->lbaz.pugrp;
-		break;
-
-	default:
-		NVM_DEBUG("Unsupported Version ID(%d)", idfy->s.verid);
-		errno = ENOSYS;
-		nvm_buf_free(dev, idfy);
-		dev->be = NULL;	// TODO: Clean the initialization process
-		return -1;
-	}
-
-	nvm_buf_free(dev, idfy);
-
-	return 0;
-}
-
 int nvm_be_populate_quirks(struct nvm_dev *dev, const char serial[])
 {
 	const int serial_len = strlen(serial);
@@ -442,3 +359,104 @@ int nvm_be_populate_derived(struct nvm_dev *dev)
 
 	return 0;
 }
+
+int nvm_be_populate(struct nvm_dev *dev, struct nvm_be *be)
+{
+	struct nvm_geo *geo = &dev->geo;
+	struct nvm_spec_idfy *idfy = NULL;
+	int err;
+
+	dev->be = be;			// TODO: Clean the init. process
+
+	idfy = be->idfy(dev, NULL);
+	if (!idfy) {
+		NVM_DEBUG("FAILED: be->idfy(...)");
+		return -1;
+	}
+	
+	if (idfy->s.verid == 0x3) {	// Handle IDFY reporting 3, mark as 2.0
+		idfy->s.verid = NVM_SPEC_VERID_20;
+	}
+
+	dev->idfy = *idfy;
+	dev->verid = geo->verid = idfy->s.verid;
+
+	switch (idfy->s.verid) {
+	case NVM_SPEC_VERID_12:
+		// Geometry
+		geo->page_nbytes = idfy->s12.grp[0].fpg_sz;
+		geo->sector_nbytes = idfy->s12.grp[0].csecs;
+		geo->meta_nbytes = idfy->s12.grp[0].sos;
+
+		geo->nchannels = idfy->s12.grp[0].num_ch;
+		geo->nluns = idfy->s12.grp[0].num_lun;
+		geo->nplanes = idfy->s12.grp[0].num_pln;
+		geo->nblocks = idfy->s12.grp[0].num_blk;
+		geo->npages = idfy->s12.grp[0].num_pg;
+
+		// Capabilities
+		dev->mccap = idfy->s12.grp[0].mccap;
+
+		// Addressing format / offset / mask
+		dev->ppaf = idfy->s12.ppaf;
+
+		construct_ppaf_mask(&dev->ppaf, &dev->mask);
+		break;
+
+	case NVM_SPEC_VERID_20:
+		// Geometry
+		geo->l.npugrp = idfy->s20.lgeo.npugrp;
+		geo->l.npunit = idfy->s20.lgeo.npunit;
+		geo->l.nchunk = idfy->s20.lgeo.nchunk;
+		geo->l.nsectr = idfy->s20.lgeo.nsectr;
+
+		struct nvm_nvme_lbaf lbaf = dev->ns.lbaf[dev->ns.flbas & 0xf];
+
+		geo->l.nbytes = 1 << lbaf.ds;
+		geo->l.nbytes_oob = lbaf.ms;
+
+		// Capabilities
+		dev->mccap = idfy->s20.mccap;
+
+		// Addressing format / offset / mask
+		dev->lbaf = idfy->s20.lbaf;
+
+		dev->lbaz.sectr = 0;
+		dev->lbaz.chunk = dev->lbaf.sectr;
+		dev->lbaz.punit = dev->lbaz.chunk + dev->lbaf.chunk;
+		dev->lbaz.pugrp = dev->lbaz.punit + dev->lbaf.punit;
+
+		dev->lbam.sectr = (((uint64_t)1 << dev->lbaf.sectr) - 1) << dev->lbaz.sectr;
+		dev->lbam.chunk = (((uint64_t)1 << dev->lbaf.chunk) - 1) << dev->lbaz.chunk;
+		dev->lbam.punit = (((uint64_t)1 << dev->lbaf.punit) - 1) << dev->lbaz.punit;
+		dev->lbam.pugrp = (((uint64_t)1 << dev->lbaf.pugrp) - 1) << dev->lbaz.pugrp;
+		break;
+
+	default:
+		NVM_DEBUG("FAILED: Unsupported Version ID(%d)", idfy->s.verid);
+		errno = ENOSYS;
+		goto failed;
+	}
+
+	err = nvm_be_populate_derived(dev);
+	if (err) {
+		NVM_DEBUG("FAILED: nvm_be_populate_derived");
+		goto failed;
+	}
+	
+	err = nvm_be_populate_quirks(dev, "");
+	if (err) {
+		NVM_DEBUG("FAILED: nvm_be_populate_quirks");
+		goto failed;
+	}
+
+	nvm_buf_free(dev, idfy);
+
+	return 0;
+
+failed:
+	nvm_buf_free(dev, idfy);
+	dev->be = NULL;			// TODO: Clean the init. process
+	return -1;
+}
+
