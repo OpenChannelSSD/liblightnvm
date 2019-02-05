@@ -51,6 +51,10 @@ struct nvm_be_spdk_state {
 	omp_lock_t qpair_lock;		///< LOCK for SYNC IO commands
 };
 
+struct nvm_be_spdk_state *nvm_be_spdk_state_init(const char *ident, int flags);
+
+void nvm_be_spdk_state_term(struct nvm_be_spdk_state *state);
+
 void nvm_be_spdk_close(struct nvm_dev *dev);
 
 struct nvm_dev *nvm_be_spdk_open(const char *dev_path, int flags);
