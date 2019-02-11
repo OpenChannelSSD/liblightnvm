@@ -9,7 +9,7 @@ size_t nvm_buf_diff_qrk(char *expected, char *actual, size_t nbytes,
 	size_t diff = 0;
 
 	for (size_t i = 0; i < nbytes; ++i) {
-		if ((i % nbytes_oob) < nbytes_qrk)
+		if (nbytes_oob && ((i % nbytes_oob) < nbytes_qrk))
 			continue;
 
 		if (expected[i] != actual[i])
