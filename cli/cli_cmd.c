@@ -71,7 +71,7 @@ static int cmd_sbbt(struct nvm_cli *cli)
 	uint64_t flags = cli->args.hex_vals[0];
 
 	nvm_cli_info_pr("nvm_cmd_sbbt");
-	nvm_cli_info_pr("flags: 0x%04X", flags);
+	nvm_cli_info_pr("flags: 0x%04lX", flags);
 	nvm_addr_prn(addrs, naddrs, dev);
 
 	if (nvm_cmd_sbbt(dev, addrs, naddrs, flags, NULL))
