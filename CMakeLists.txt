@@ -139,16 +139,6 @@ if(${NVM_BE_SPDK_ENABLED})
 			add_definitions(-DNVM_BE_SPDK_CHOKE_PRINTING)
 		endif()
 	endif()
-
-	try_compile(NVM_BE_SPDK_HAS_SGL
-		"${CMAKE_BINARY_DIR}/temp"
-		"${CMAKE_SOURCE_DIR}/cmake/try_compile_spdk_nvme_ctrlr_cmd_iov_raw_with_md.c"
-		LINK_LIBRARIES ${NVM_BE_SPDK_DEPS}
-		CMAKE_FLAGS ${CMAKE_C_FLAGS})
-
-	if (NVM_BE_SPDK_HAS_SGL)
-		add_definitions(-DNVM_BE_SPDK_HAS_SGL)
-	endif()
 endif()
 
 if(${NVM_BE_LBD_ENABLED} AND HAVE_LIBAIO)

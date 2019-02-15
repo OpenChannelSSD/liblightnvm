@@ -27,61 +27,135 @@
  */
 
 #include <stdlib.h>
+#include <bsd/sys/queue.h>
+
+#include <liblightnvm_spec.h>
+#include <nvm_dev.h>
 #include <nvm_sgl.h>
 #include <nvm_cmd.h>
 
-struct nvm_sgl *nvm_sgl_alloc()
+struct nvm_sgl_pool *nvm_sgl_pool_create(struct nvm_dev *dev)
 {
-	struct nvm_sgl *sgl = calloc(1, sizeof(*sgl));
+	struct nvm_sgl_pool *pool = calloc(1, sizeof(*pool));
+	if (!pool) {
+		return NULL;
+	}
 
-	STAILQ_INIT(&sgl->headp);
+	pool->dev = dev;
+
+	return pool;
+}
+
+void nvm_sgl_pool_destroy(struct nvm_sgl_pool *pool)
+{
+	struct nvm_dev *dev = pool->dev;
+	struct nvm_sgl *sgl;
+
+	while (!SLIST_EMPTY(&pool->free_list)) {
+		sgl = SLIST_FIRST(&pool->free_list);
+		SLIST_REMOVE_HEAD(&pool->free_list, free_list);
+		nvm_sgl_destroy(dev, sgl);
+	}
+
+	free(pool);
+
+}
+
+struct nvm_sgl *nvm_sgl_create(struct nvm_dev *dev, int hint)
+{
+	size_t dsize = sizeof(struct nvm_nvme_sgl_descriptor);
+
+	struct nvm_sgl *sgl;
+	if (NULL == (sgl = calloc(1, sizeof(*sgl)))) {
+		return NULL;
+	}
+
+	if (hint) {
+		sgl->descriptors = nvm_buf_alloc(dev, hint * dsize, NULL);
+		if (!sgl->descriptors) {
+			free(sgl);
+			return NULL;
+		}
+	}
+
+	sgl->nalloc = hint;
+	sgl->indirect = nvm_buf_alloc(dev, dsize, NULL);
 
 	return sgl;
 }
 
-void nvm_sgl_add(struct nvm_sgl *sgl, void *addr, size_t len)
+struct nvm_sgl *nvm_sgl_alloc(struct nvm_sgl_pool *pool)
 {
-	struct nvm_sgl_entry *entry = calloc(1, sizeof(*entry));
-	entry->addr = addr;
-	entry->len = len;
+	struct nvm_sgl *sgl;
 
-	STAILQ_INSERT_TAIL(&sgl->headp, entry, entries);
-}
-
-void nvm_sgl_free(struct nvm_sgl *sgl)
-{
-	struct nvm_sgl_entry *entry = STAILQ_FIRST(&sgl->headp);
-	struct nvm_sgl_entry *tmp;
-
-	while (entry != NULL)	{
-		tmp = STAILQ_NEXT(entry, entries);
-		free(entry);
-		entry = tmp;
+	if (NULL != (sgl = SLIST_FIRST(&pool->free_list))) {
+		SLIST_REMOVE_HEAD(&pool->free_list, free_list);
+		return sgl;
 	}
 
+	return nvm_sgl_create(pool->dev, 1);
+}
+
+void nvm_sgl_destroy(struct nvm_dev *dev, struct nvm_sgl *sgl)
+{
+	nvm_buf_free(dev, sgl->descriptors);
+	nvm_buf_free(dev, sgl->indirect);
 	free(sgl);
 }
 
 void nvm_sgl_reset(struct nvm_sgl *sgl)
 {
-	sgl->curr = STAILQ_FIRST(&sgl->headp);
+	sgl->ndescr = 0;
+	sgl->len = 0;
 }
 
-int nvm_sgl_next_sge(struct nvm_sgl *sgl, void **address, uint32_t *length)
+void nvm_sgl_free(struct nvm_sgl_pool *pool, struct nvm_sgl *sgl)
 {
-	struct nvm_sgl_entry *iov = sgl->curr;
+	sgl->ndescr = 0;
+	sgl->len = 0;
+	SLIST_INSERT_HEAD(&pool->free_list, sgl, free_list);
+}
 
-	if (!iov) {
-		*length = 0;
-		*address = NULL;
 
-		return 0;
+int nvm_sgl_add(struct nvm_dev *dev, struct nvm_sgl *sgl, void *addr,
+	size_t len)
+{
+	struct nvm_nvme_sgl_descriptor *d;
+
+	/**
+	 * FIXME(klaus.jensen): currently we only support one Last Segment
+	 *  descriptor (one 4K page).
+	 */
+	if (sgl->ndescr == 256) {
+		NVM_DEBUG("max 256 SGL descriptors supported");
+		errno = EINVAL;
+		return -1;
 	}
 
-	*address = iov->addr;
-	*length = iov->len;
+	if (sgl->ndescr == sgl->nalloc) {
+		size_t nbytes;
+		sgl->nalloc = sgl->nalloc ? 2 * sgl->nalloc : 1;
+		nbytes = sgl->nalloc * sizeof(struct nvm_nvme_sgl_descriptor);
+		sgl->descriptors = nvm_buf_realloc(dev, sgl->descriptors, nbytes, NULL);
+		if (!sgl->descriptors) {
+			return -1;
+		}
+	}
 
-	sgl->curr = STAILQ_NEXT(sgl->curr, entries);
+	d = &sgl->descriptors[sgl->ndescr];
+	d->unkeyed.type = NVM_NVME_SGL_DESCR_TYPE_DATA_BLOCK;
+	d->unkeyed.len = len;
+
+	uint64_t phys;
+
+	if (nvm_buf_vtophys(dev, addr, &phys)) {
+		return -1;
+	}
+
+	d->addr = phys;
+
+	sgl->len += len;
+	++sgl->ndescr;
 
 	return 0;
 }

@@ -508,6 +508,53 @@ struct nvm_nvme_cpl {
 };
 static_assert(sizeof(struct nvm_nvme_cpl) == 16, "Incorrect size");
 
+enum nvm_nvme_sgl_descriptor_type {
+	NVM_NVME_SGL_DESCR_TYPE_DATA_BLOCK = 0x0,
+	NVM_NVME_SGL_DESCR_TYPE_BIT_BUCKET = 0x1,
+	NVM_NVME_SGL_DESCR_TYPE_SEGMENT = 0x2,
+	NVM_NVME_SGL_DESCR_TYPE_LAST_SEGMENT = 0x3,
+	NVM_NVME_SGL_DESCR_TYPE_KEYED_DATA_BLOCK = 0x4,
+
+	NVM_NVME_SGL_DESCR_TYPE_VENDOR_SPECIFIC = 0xf,
+};
+
+enum nvm_nvme_sgl_descriptor_subtype {
+	NVM_NVME_SGL_DESCR_SUBTYPE_ADDRESS = 0x0,
+	NVM_NVME_SGL_DESCR_SUBTYPE_OFFSET = 0x1,
+};
+
+/**
+ * SGL descriptor
+ */
+struct nvm_nvme_sgl_descriptor {
+	uint64_t addr;				///< common field
+
+	union {
+		struct {
+			uint64_t rsvd    : 56;
+			uint64_t subtype :  4;	///< SGL subtype
+			uint64_t type    :  4;	///< SGL type
+		} generic;
+
+		struct {
+			uint64_t len     : 32;	///< Length of entry
+			uint64_t rsvd    : 24;
+			uint64_t subtype :  4;	///< SGL subtype
+			uint64_t type    :  4;	///< SGL type
+		} unkeyed;
+	};
+};
+static_assert(sizeof(struct nvm_nvme_sgl_descriptor) == 16, "Incorrect size");
+
+/**
+ * PRP or SGL for Data Transfer field
+ */
+enum nvm_nvme_psdt {
+	NVM_NVME_PSDT_PRP = 0x0,
+	NVM_NVME_PSDT_SGL_MPTR_CONTIGUOUS = 0x1,
+	NVM_NVME_PSDT_SGL_MPTR_SGL = 0x2,
+};
+
 struct nvm_nvme_cmd {
 	/* cdw 00 */
 	uint16_t opcode	:  8;			///< opcode
@@ -531,6 +578,8 @@ struct nvm_nvme_cmd {
 			uint64_t prp1;		///< PRP entry 1
 			uint64_t prp2;		///< PRP entry 2
 		} prp;
+
+		struct nvm_nvme_sgl_descriptor sgl; ///< SGL
 	} dptr;
 
 	/* cdw 10-11 */
