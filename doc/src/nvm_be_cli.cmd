@@ -1,1 +1,1 @@
-NVM_CLI_BE_ID=0x1 nvm_dev info /dev/nvme0n1
+NVM_BE=NMV_BE_IOCTL nvm_dev info /dev/nvme0n1
