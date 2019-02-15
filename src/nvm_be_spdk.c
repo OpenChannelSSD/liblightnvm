@@ -72,35 +72,9 @@ struct nvm_be nvm_be_spdk = {
 #include <spdk/log.h>
 #endif
 
-#ifndef NVM_BE_SPDK_HAS_SGL
-int spdk_nvme_ctrlr_cmd_iov_raw_with_md(
-			struct spdk_nvme_ctrlr *NVM_UNUSED(ctrlr),
-			struct spdk_nvme_qpair *NVM_UNUSED(qpair),
-			struct spdk_nvme_cmd *NVM_UNUSED(cmd),
-			spdk_nvme_cmd_cb NVM_UNUSED(cb_fn),
-			void *NVM_UNUSED(cb_arg),
-			spdk_nvme_req_reset_sgl_cb NVM_UNUSED(reset_sgl_fn),
-			spdk_nvme_req_next_sge_cb NVM_UNUSED(next_sge_fn),
-			void *NVM_UNUSED(metadata))
-{
-	errno = ENOSYS;
-	return -1;
-}
-#endif
-
 #define NVM_BE_SPDK_MAX_PROBE_ATTEMPTS 2
 
-static void sgl_reset_cb(void *cb_arg, uint32_t NVM_UNUSED(offset))
-{
-	struct nvm_sgl *sgl = ((struct nvm_cmd_wrap *) cb_arg)->data;
-	nvm_sgl_reset(sgl);
-}
-
-static int sgl_next_sge_cb(void *cb_arg, void **address, uint32_t *length)
-{
-	struct nvm_sgl *sgl = ((struct nvm_cmd_wrap *) cb_arg)->data;
-	return nvm_sgl_next_sge(sgl, address, length);
-}
+static int _do_spdk_env_init = 1;
 
 /**
  * Attach to the device matching the traddr and only if we have not yet attached
@@ -217,28 +191,32 @@ struct nvm_be_spdk_state *nvm_be_spdk_state_init(const char *ident,
 	}
 	memset(state, 0, sizeof(*state));
 
-#ifdef NVM_BE_SPDK_CHOKE_PRINTING
-	// SPDK and DPDK are very chatty, this makes them less so.
-	spdk_log_set_print_level(SPDK_LOG_ERROR);
-	rte_log_set_global_level(RTE_LOG_EMERG);
-#endif
-
-	/*
-	 * SPDK relies on an abstraction around the local environment named env
-	 * that handles memory allocation and PCI device operations.  This
-	 * library must be initialized first.
-	 */
-	spdk_env_opts_init(&(state->opts));
-
 	state->opts.name = "liblightnvm";
 	state->opts.shm_id = 0;
 	state->opts.master_core = 0;
 
-	err = spdk_env_init(&(state->opts));
-	if (err) {
-		NVM_DEBUG("FAILED: spdk_env_init");
-		nvm_be_spdk_state_term(state);
-		return NULL;
+	if (_do_spdk_env_init) {
+#ifdef NVM_BE_SPDK_CHOKE_PRINTING
+		// SPDK and DPDK are very chatty, this makes them less so.
+		spdk_log_set_print_level(SPDK_LOG_ERROR);
+		rte_log_set_global_level(RTE_LOG_EMERG);
+#endif
+
+		/*
+		 * SPDK relies on an abstraction around the local environment named env
+		 * that handles memory allocation and PCI device operations.  This
+		 * library must be initialized first.
+		 */
+		spdk_env_opts_init(&(state->opts));
+
+		err = spdk_env_init(&(state->opts));
+		if (err) {
+			NVM_DEBUG("FAILED: spdk_env_init");
+			nvm_be_spdk_state_term(state);
+			return NULL;
+		}
+
+		_do_spdk_env_init = 0;
 	}
 
 	/*
@@ -766,17 +744,7 @@ static inline int cmd_async_ewrc(struct nvm_dev *dev, struct nvm_addr addrs[],
 	// Submit command
 	ret->async.ctx->outstanding += 1;
 
-	if (flags & NVM_CMD_SGL) {
-		err = spdk_nvme_ctrlr_cmd_iov_raw_with_md(state->ctrlr,
-						 qpair,
-						 (struct spdk_nvme_cmd *)&wrap->cmd,
-						 cmd_async_cb,
-						 wrap,
-						 sgl_reset_cb,
-						 sgl_next_sge_cb,
-						 wrap->meta);
-	} else {
-		err = spdk_nvme_ctrlr_cmd_io_raw_with_md(state->ctrlr,
+	err = spdk_nvme_ctrlr_cmd_io_raw_with_md(state->ctrlr,
 						 qpair,
 						 (struct spdk_nvme_cmd *)&wrap->cmd,
 						 wrap->data,
@@ -784,7 +752,6 @@ static inline int cmd_async_ewrc(struct nvm_dev *dev, struct nvm_addr addrs[],
 						 wrap->meta,
 						 cmd_async_cb,
 						 wrap);
-	}
 
 	if (err) {
 		ret->async.ctx->outstanding -= 1;
@@ -824,25 +791,15 @@ static inline int cmd_sync_ewrc(struct nvm_dev *dev,
 
 	// Submit command
 	omp_set_lock(qpair_lock);
-	if (flags & NVM_CMD_SGL) {
-		err = spdk_nvme_ctrlr_cmd_iov_raw_with_md(state->ctrlr,
+
+	err = spdk_nvme_ctrlr_cmd_io_raw_with_md(state->ctrlr,
 						 qpair,
-						 (struct spdk_nvme_cmd *)&wrap->cmd,
-						 cmd_sync_cb,
-						 wrap,
-						 sgl_reset_cb,
-						 sgl_next_sge_cb,
-						 wrap->meta);
-	} else {
-		err = spdk_nvme_ctrlr_cmd_io_raw_with_md(state->ctrlr,
-						 qpair,
-						 (struct spdk_nvme_cmd *)&wrap->cmd,
+						 (struct spdk_nvme_cmd *) &wrap->cmd,
 						 wrap->data,
 						 wrap->data_len,
 						 wrap->meta,
 						 cmd_sync_cb,
 						 wrap);
-	}
 	omp_unset_lock(qpair_lock);
 
 	if (err) {
