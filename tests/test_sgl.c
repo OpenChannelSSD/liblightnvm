@@ -136,8 +136,7 @@ int main(int argc, char **argv)
 {
 	int err = 0;
 
-	CU_pSuite pSuite = suite_create("sgl",
-					argc, argv);
+	CU_pSuite pSuite = suite_create("sgl", argc, argv, 0);
 	if (!pSuite)
 		goto out;
 

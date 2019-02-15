@@ -165,8 +165,8 @@ int main(int argc, char **argv)
 {
 	int err = 0;
 
-	CU_pSuite pSuite = suite_create("nvm_test_cmd_wre_scalar",
-					argc, argv);
+	CU_pSuite pSuite = suite_create("nvm_test_cmd_wre_scalar", argc, argv,
+					0);
 	if (!pSuite)
 		goto out;
 
