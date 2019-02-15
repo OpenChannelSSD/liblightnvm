@@ -129,7 +129,8 @@ static int _cli_parse(int argc, char *argv[])
 	return 0;
 }
 
-static CU_pSuite suite_create(const char *title, int argc, char *argv[])
+static CU_pSuite suite_create(const char *title, int argc, char *argv[],
+			      int skip)
 {
 	if (_cli_parse(argc, argv)) {
 		return NULL;
@@ -138,19 +139,10 @@ static CU_pSuite suite_create(const char *title, int argc, char *argv[])
 
 	if (CUE_SUCCESS != CU_initialize_registry())
 		return NULL;
+
+	if (skip) {
+		return CU_add_suite(title, NULL, NULL);
+	}
 
 	return CU_add_suite(title, suite_setup, suite_teardown);
-}
-
-static CU_pSuite suite_create_nosetup(const char *title, int argc, char *argv[])
-{
-	if (_cli_parse(argc, argv)) {
-		return NULL;
-	}
-	CU_set_error_action(CUEA_ABORT);
-
-	if (CUE_SUCCESS != CU_initialize_registry())
-		return NULL;
-
-	return CU_add_suite(title, NULL, NULL);
 }

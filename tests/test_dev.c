@@ -51,7 +51,7 @@ int main(int argc, char **argv)
 {
 	int err = 0;
 
-	CU_pSuite pSuite = suite_create_nosetup("nvm_dev_*", argc, argv);
+	CU_pSuite pSuite = suite_create("nvm_dev_*", argc, argv, 1);
 	if (!pSuite)
 		goto out;
 
