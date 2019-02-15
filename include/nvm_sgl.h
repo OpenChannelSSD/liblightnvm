@@ -29,26 +29,22 @@
 #ifndef __INTERNAL_NVM_SGL_H
 #define __INTERNAL_NVM_SGL_H
 
-#include <sys/types.h>
-#include <stdint.h>
+#include <nvm_dev.h>
 
 #include <bsd/sys/queue.h>
 
-struct nvm_sgl_entry {
-	void *addr;
+struct nvm_sgl {
+	struct nvm_nvme_sgl_descriptor *indirect, *descriptors;
+	int ndescr, nalloc;
 	size_t len;
 
-	STAILQ_ENTRY(nvm_sgl_entry) entries;
+	SLIST_ENTRY(nvm_sgl) free_list;
 };
 
-struct nvm_sgl {
-	struct nvm_sgl_entry *curr;
+struct nvm_sgl_pool {
+	struct nvm_dev *dev;
 
-	STAILQ_HEAD(, nvm_sgl_entry) headp;
+	SLIST_HEAD(, nvm_sgl) free_list;
 };
-
-void nvm_sgl_reset(struct nvm_sgl *sgl);
-
-int nvm_sgl_next_sge(struct nvm_sgl *sgl, void **addr, uint32_t *len);
 
 #endif /* __INTERNAL_NVM_SGL_H */

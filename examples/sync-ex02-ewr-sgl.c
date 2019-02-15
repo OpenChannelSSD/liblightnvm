@@ -35,7 +35,7 @@ int sync_ex02_ewr_sgl(struct nvm_bp *bp)
 
 		for (size_t sectr = 0; sectr < bp->geo->l.nsectr; sectr += ws_opt) {
 			const size_t buf_ofz = sectr * bp->geo->l.nbytes + ofz;
-			struct nvm_sgl *sgl = nvm_sgl_alloc();
+			struct nvm_sgl *sgl = nvm_sgl_create(bp->dev, 1);
 			struct nvm_addr addrs[ws_opt];
 
 			for (size_t aidx = 0; aidx < ws_opt; ++aidx) {
@@ -43,7 +43,7 @@ int sync_ex02_ewr_sgl(struct nvm_bp *bp)
 				addrs[aidx].val = chunk_addrs[cidx].val;
 				addrs[aidx].l.sectr = sectr + aidx;
 
-				nvm_sgl_add(sgl, bp->bufs->write + buf_ofz_seg,
+				nvm_sgl_add(bp->dev, sgl, bp->bufs->write + buf_ofz_seg,
 					    bp->geo->l.nbytes);
 			}
 
@@ -54,7 +54,7 @@ int sync_ex02_ewr_sgl(struct nvm_bp *bp)
 				return -1;
 			}
 
-			nvm_sgl_free(sgl);
+			nvm_sgl_destroy(bp->dev, sgl);
 		}
 	}
 	nvm_cli_timer_stop();
@@ -67,7 +67,7 @@ int sync_ex02_ewr_sgl(struct nvm_bp *bp)
 
 		for (size_t sectr = 0; sectr < bp->geo->l.nsectr; sectr += ws_opt) {
 			const size_t buf_ofz = sectr * bp->geo->l.nbytes + ofz;
-			struct nvm_sgl *sgl = nvm_sgl_alloc();
+			struct nvm_sgl *sgl = nvm_sgl_create(bp->dev, 1);
 			struct nvm_addr addrs[ws_opt];
 
 			for (size_t aidx = 0; aidx < ws_opt; ++aidx) {
@@ -75,7 +75,7 @@ int sync_ex02_ewr_sgl(struct nvm_bp *bp)
 				addrs[aidx].val = chunk_addrs[cidx].val;
 				addrs[aidx].l.sectr = sectr + aidx;
 
-				nvm_sgl_add(sgl, bp->bufs->read + buf_ofz_seg,
+				nvm_sgl_add(bp->dev, sgl, bp->bufs->read + buf_ofz_seg,
 					    bp->geo->l.nbytes);
 			}
 
@@ -86,7 +86,7 @@ int sync_ex02_ewr_sgl(struct nvm_bp *bp)
 				return -1;
 			}
 
-			nvm_sgl_free(sgl);
+			nvm_sgl_destroy(bp->dev, sgl);
 		}
 	}
 	nvm_cli_timer_stop();
