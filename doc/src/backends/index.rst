@@ -18,23 +18,22 @@ implementation.
 +------------------+------------+
 | ``NVM_BE_SPDK``  | ``0x4``    |
 +------------------+------------+
+| ``NVM_BE_PRXY``  | ``0x8``    |
++------------------+------------+
 
 By default liblightnvm goes through the available backends in the order as
 listed above and chooses to use the first backend capable of opening a device
 without error.
 
 The user can choose to use a specific backend by providing the backend
-identifier. When using the CLI, this is done by setting the environment
-variable NVM_CLI_BE_ID e.g.:
+identifier via the API `nvm_dev_openf`. Or by setting environment variable
+`NVM_BE` to the name of the backend. For example, when using the CLI:
 
 .. literalinclude:: nvm_be_cli.cmd
    :language: bash
 
 .. literalinclude:: nvm_be_cli.out
    :language: bash
-
-Or when using the ``C API``, by providing the backend identifier to function
-`nvm_dev_openf`.
 
 Not all backends support all features.
 
@@ -62,3 +61,4 @@ Not all backends support all features.
    nvm_be_ioctl
    nvm_be_lbd
    nvm_be_spdk
+   nvm_be_proxy
