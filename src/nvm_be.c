@@ -33,6 +33,48 @@
 #include <nvm_be.h>
 #include <nvm_dev.h>
 
+static struct nvm_be *nvm_be_imps[] = {
+	&nvm_be_ioctl,
+	&nvm_be_lbd,
+	&nvm_be_spdk,
+	NULL
+};
+
+/**
+ * Resolve the identifier of the given backend name.
+ *
+ * @returns Returns numerical identifier on success. On error, e.g. the given
+ * name does not exists in the list of backend implementations, -1 is returned.
+ */
+static inline int nvm_be_name2id(const char *bname)
+{
+	for (int i = 0; nvm_be_imps[i]; ++i) {
+		if (strcasecmp(bname, nvm_be_imps[i]->name)) {
+			continue;
+		}
+		
+		NVM_DEBUG("INFO: '%s' -> '%d'", bname, nvm_be_imps[i]->id);
+		return nvm_be_imps[i]->id;
+	}
+
+	NVM_DEBUG("FAILED: no backend with name: '%s'", bname);
+	return -1;
+}
+
+static inline const char *nvm_be_id2name(enum nvm_be_id bid)
+{
+	for (int i = 0; nvm_be_imps[i]; ++i) {
+		if (nvm_be_imps[i]->id != bid) {
+			continue;
+		}
+		
+		return nvm_be_imps[i]->name;
+	}
+
+	NVM_DEBUG("FAILED: no backend with id: '%d'", bid);
+	return "";
+}
+
 static inline uint64_t _ilog2(uint64_t x)
 {
 	uint64_t val = 0;
@@ -458,5 +500,45 @@ failed:
 	nvm_buf_free(dev, idfy);
 	dev->be = NULL;			// TODO: Clean the init. process
 	return -1;
+}
+
+struct nvm_dev *nvm_be_factory(const char *dev_ident, int flags)
+{
+	int bid;
+
+	bid = flags & NVM_BE_ALL;
+	if ((bid == NVM_BE_ANY) && (getenv("NVM_BE"))) {
+		bid = nvm_be_name2id(getenv("NVM_BE"));
+	}
+
+	switch (bid) {
+	case NVM_BE_IOCTL:
+	case NVM_BE_LBD:
+	case NVM_BE_SPDK:
+	case NVM_BE_ANY:
+		break;
+
+	default:
+		NVM_DEBUG("FAILED: invalid bid: '%d'", bid);
+		return NULL;
+	}
+
+	for (int i = 0; nvm_be_imps[i]; ++i) {
+		struct nvm_dev *dev = NULL;
+
+		if (bid && !(nvm_be_imps[i]->id & bid)) {
+			continue;
+		}
+
+		dev = nvm_be_imps[i]->open(dev_ident, flags);
+		if (!dev) {
+			continue;
+		}
+
+		dev->be = nvm_be_imps[i];
+		return dev;
+	}
+
+	return NULL;
 }
 

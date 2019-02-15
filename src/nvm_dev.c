@@ -34,13 +34,6 @@
 #include <nvm_be.h>
 #include <nvm_dev.h>
 
-static struct nvm_be *nvm_backends[] = {
-	&nvm_be_ioctl,
-	&nvm_be_lbd,
-	&nvm_be_spdk,
-	NULL
-};
-
 const char *nvm_pmode_str(int pmode) {
 	switch (pmode) {
 	case NVM_FLAG_PMODE_SNGL:
@@ -403,25 +396,13 @@ int nvm_dev_set_bbts_cached(struct nvm_dev *dev, int bbts_cached)
 }
 
 struct nvm_dev * nvm_dev_openf(const char *dev_path, int flags) {
-	int be = flags & NVM_BE_ALL;
 	struct nvm_dev *dev = NULL;
 
-	NVM_DEBUG("dev_path: %s, flags: 0x%x", dev_path, flags);
-
-	for (int i = 0; nvm_backends[i]; ++i) {
-		if (be && !(nvm_backends[i]->id & be))
-			continue;
-
-		dev = nvm_backends[i]->open(dev_path, 0x0);
-		if (dev) {
-			dev->be = nvm_backends[i];
-			break;
-		}
-	}
-
+	dev = nvm_be_factory(dev_path, flags);
 	if (!dev) {
 		errno = errno ? errno : EIO;
-		NVM_DEBUG("FAILED: no backend can open, ident: %s", dev_path);
+		NVM_DEBUG("FAILED: no backend for ident: %s with flags: %d",
+			  dev_path, flags);
 		return NULL;
 	}
 
