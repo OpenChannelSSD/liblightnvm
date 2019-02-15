@@ -162,6 +162,7 @@ int main(int argc, char **argv)
 		goto out;
 
 	switch (BE_ID) {
+		case NVM_BE_NOCD:
 		case NVM_BE_SPDK:
 			if (!CU_add_test(pSuite, "VBLK EWR S20 VECTOR/ASYNC", test_VBLK_EWR_VECTOR_ASYNC))
 				goto out;

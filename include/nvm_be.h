@@ -270,5 +270,6 @@ struct nvm_dev *nvm_be_factory(const char *dev_ident, int flags);
 extern struct nvm_be nvm_be_ioctl;
 extern struct nvm_be nvm_be_lbd;
 extern struct nvm_be nvm_be_spdk;
+extern struct nvm_be nvm_be_nocd;
 
 #endif /* __INTERNAL_NVM_BE_H */

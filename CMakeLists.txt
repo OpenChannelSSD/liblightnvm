@@ -105,6 +105,7 @@ set(SOURCE_FILES
 	${PROJECT_SOURCE_DIR}/src/nvm_be_ioctl.c
 	${PROJECT_SOURCE_DIR}/src/nvm_be_lbd.c
 	${PROJECT_SOURCE_DIR}/src/nvm_be_spdk.c
+	${PROJECT_SOURCE_DIR}/src/nvm_be_nocd.c
 	${PROJECT_SOURCE_DIR}/src/nvm_bounds.c
 	${PROJECT_SOURCE_DIR}/src/nvm_bp.c
 	${PROJECT_SOURCE_DIR}/src/nvm_buf.c
