@@ -38,7 +38,9 @@ int MULTIPLE_RESETS_SUPPORTED;
 uint32_t WS_MIN;
 uint32_t WS_OPT;
 uint32_t MW_CUNITS;
+uint32_t NSECTR;
 uint32_t SECTOR_SIZE;
+uint32_t OOB_SIZE;
 uint32_t MAX_SCALAR_LBAS;
 
 static int suite_setup(void)
@@ -59,7 +61,9 @@ static int suite_setup(void)
 	WS_OPT = nvm_dev_get_ws_opt(DEV);
 	MW_CUNITS = nvm_dev_get_mw_cunits(DEV);
 
+	NSECTR = GEO->l.nsectr;
 	SECTOR_SIZE = GEO->l.nbytes;
+	OOB_SIZE = GEO->l.nbytes_oob;
 
 	MAX_SCALAR_LBAS = (MDTS_BYTES / (WS_MIN * SECTOR_SIZE)) * WS_MIN;
 

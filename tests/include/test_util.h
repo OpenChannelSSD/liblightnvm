@@ -51,7 +51,9 @@ extern const struct nvm_nvme_ns *NS;
 extern uint32_t WS_MIN;
 extern uint32_t WS_OPT;
 extern uint32_t MW_CUNITS;
+extern uint32_t NSECTR;
 extern uint32_t SECTOR_SIZE;
+extern uint32_t OOB_SIZE;
 extern uint32_t MAX_SCALAR_LBAS;
 
 extern int RMODE;
