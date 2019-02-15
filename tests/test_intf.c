@@ -79,7 +79,7 @@ static int suite_teardown(void)
 	return 0;
 }
 
-static CU_pSuite suite_create(const char *title, int argc, char *argv[])
+static int _cli_parse(int argc, char *argv[])
 {
 	SEED = time(NULL);			// Default arbitrary SEED
 
@@ -111,21 +111,42 @@ static CU_pSuite suite_create(const char *title, int argc, char *argv[])
 		if (strlen(argv[1]) > NVM_DEV_PATH_LEN) {
 			printf("ERR: len(dev_path) > %d characters\n",
 			       NVM_DEV_PATH_LEN);
-			return NULL;
+			return -1;
                 }
 		strncpy(NVM_DEV_PATH, argv[1], NVM_DEV_PATH_LEN);
 		break;
 	}
 
 	if (RMODE == CU_BRM_VERBOSE) {
-		printf("# ARGS: {DEV: '%s', SEED: %u, RMODE: 0x%x, be_id: 0x%x}\n",
+		printf("# ARGS: {DEV: '%s' SEED: %u RMODE: 0x%x be_id: 0x%x}\n",
 		       NVM_DEV_PATH, SEED, RMODE, BE_ID);
 	}
 
+	return 0;
+}
+
+static CU_pSuite suite_create(const char *title, int argc, char *argv[])
+{
+	if (_cli_parse(argc, argv)) {
+		return NULL;
+	}
 	CU_set_error_action(CUEA_ABORT);
 
 	if (CUE_SUCCESS != CU_initialize_registry())
 		return NULL;
 
 	return CU_add_suite(title, suite_setup, suite_teardown);
+}
+
+static CU_pSuite suite_create_nosetup(const char *title, int argc, char *argv[])
+{
+	if (_cli_parse(argc, argv)) {
+		return NULL;
+	}
+	CU_set_error_action(CUEA_ABORT);
+
+	if (CUE_SUCCESS != CU_initialize_registry())
+		return NULL;
+
+	return CU_add_suite(title, NULL, NULL);
 }
