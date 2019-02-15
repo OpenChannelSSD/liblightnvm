@@ -47,6 +47,13 @@ static inline void* spdk_dma_malloc(size_t NVM_UNUSED(size),
 static inline void spdk_dma_free(void *NVM_UNUSED(buf)) { }
 #define SPDK_VTOPHYS_ERROR	(0xFFFFFFFFFFFFFFFFULL)
 uint64_t spdk_vtophys(void *NVM_UNUSED(buf)) { return SPDK_VTOPHYS_ERROR; }
+void *spdk_dma_realloc(void *NVM_UNUSED(buf), size_t NVM_UNUSED(size),
+		       size_t NVM_UNUSED(align),
+		       uint64_t *NVM_UNUSED(phys_addr))
+{
+	errno = ENOSYS;
+	return NULL;
+}
 #endif
 
 void *nvm_buf_virt_alloc(size_t alignment, size_t nbytes)
@@ -60,6 +67,13 @@ void *nvm_buf_virt_alloc(size_t alignment, size_t nbytes)
 #else
 	return aligned_alloc(alignment, nbytes);
 #endif
+}
+
+void *nvm_buf_virt_realloc(void *NVM_UNUSED(buf), size_t NVM_UNUSED(alignment),
+	size_t NVM_UNUSED(nbytes))
+{
+	errno = ENOSYS;
+	return NULL;
 }
 
 void nvm_buf_virt_free(void *buf)
@@ -97,6 +111,44 @@ void *nvm_buf_alloc(const struct nvm_dev *dev, size_t nbytes, uint64_t *phys)
 
 	case NVM_BE_SPDK:
 		return spdk_dma_malloc(nbytes, alignment, phys);
+
+	case NVM_BE_ANY:
+		errno = EINVAL;
+		return NULL;
+	}
+
+	errno = EINVAL;
+	return NULL;
+}
+
+void *nvm_buf_realloc(const struct nvm_dev *dev, void *buf, size_t nbytes,
+		      uint64_t *phys)
+{
+	size_t alignment = 0;
+
+	switch (dev->geo.verid) {
+	case NVM_SPEC_VERID_12:
+		alignment = dev->geo.sector_nbytes;
+		break;
+	case NVM_SPEC_VERID_20:
+		alignment = dev->geo.l.nbytes;
+		break;
+	}
+
+	if (!nbytes) {
+		NVM_DEBUG("!nbytes: %zu", nbytes);
+		errno = EINVAL;
+		return NULL;
+	}
+
+	switch (dev->be->id) {
+	case NVM_BE_IOCTL:
+	case NVM_BE_LBD:
+		return nvm_buf_virt_realloc(buf, alignment, nbytes);
+
+	case NVM_BE_SPDK:
+	case NVM_BE_NOCD:
+		return spdk_dma_realloc(buf, nbytes, alignment, phys);
 
 	case NVM_BE_ANY:
 		errno = EINVAL;

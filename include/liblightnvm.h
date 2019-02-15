@@ -1133,6 +1133,31 @@ int nvm_dev_get_be_id(const struct nvm_dev *dev);
 void *nvm_buf_alloc(const struct nvm_dev *dev, size_t nbytes, uint64_t *phys);
 
 /**
+ * Reallocate a buffer for IO with the given device
+ *
+ * The buffer will be aligned to device geometry and DMA allocated if required
+ * by the backend for IO
+ *
+ * @note
+ * nbytes must be greater than zero and a multiple of minimal granularity
+ * @note
+ * De-allocate the buffer using `nvm_buf_free`
+ *
+ * @see nvm_buf_free
+ *
+ * @param dev The device to allocate IO buffers for
+ * @param buf The buffer to reallocate
+ * @param nbytes The size of the allocated buffer in bytes
+ * @param phys A pointer to the variable to hold the physical address of the
+ * allocated buffer. If NULL, the physical address is not returned.
+ *
+ * @return On success, a pointer to the allocated memory is returned. On error,
+ * NULL is returned and `errno` set to indicate the error.
+ */
+void *nvm_buf_realloc(const struct nvm_dev *dev, void *buf, size_t nbytes,
+		      uint64_t *phys);
+
+/**
  * Free the given IO buffer allocated with `nvm_buf_alloc`
  *
  * @see nvm_buf_alloc
