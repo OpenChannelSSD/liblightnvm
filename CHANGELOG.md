@@ -10,12 +10,40 @@ Sections with "(Upcoming)" describe changes on the roadmap for liblightnvm.
 Changes on the `master` branch, from the latest version tag up to and including
 HEAD can be subject to a git rebase.
 
-## v0.1.8 (Upcoming)
+## v0.1.9 (Upcoming)
 
 * API / header cleanup
  - Consider adopting negative errno calling convention
  - Unify `nvm_bp`, `test_intf` and CLI ENV, args, setup and sub-commands
  - Replace `dev_path`/`dev_name` with `dev_ident`
+
+* Add support for AER
+
+* Pass-through
+ - Add best-effort support for IOCTL
+ - Added meta-data setup on admin-command-pass-through
+
+## v0.1.8
+
+* Added backend `NVM_BE_NOCD`
+ - Enables Non Open-Channel Devices with the liblightnvm API
+
+* Added NVMe command pass-through
+ - Currently only available with backends `NVM_BE_NOCD` and `NVM_BE_SPDK`
+
+* Added `NVM_BE` parsing by library when `nvm_dev_openf` is opened with ANY
+ - The library, examples, CLI, and tests all had different ways of communicating
+   the same thing. It is now unified in `NVM_BE` variable
+ - It uses the backend name to identify backend instead of the numerical
+   identifier, this helps avoid clashes when experimenting with new backends
+
+* Refactored internal implementation of SGL support -- API unchanged
+
+* CLI
+ - Removed `NVM_CLI_BE_ID` environment var parsing, replaced by `NVM_BE`
+
+* TESTS
+ - bunch of fixes to testcases
 
 ## v0.1.7
 
