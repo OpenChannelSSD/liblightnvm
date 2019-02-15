@@ -37,6 +37,7 @@ static struct nvm_be *nvm_be_imps[] = {
 	&nvm_be_ioctl,
 	&nvm_be_lbd,
 	&nvm_be_spdk,
+	&nvm_be_nocd,
 	NULL
 };
 
@@ -525,6 +526,7 @@ struct nvm_dev *nvm_be_factory(const char *dev_ident, int flags)
 	case NVM_BE_IOCTL:
 	case NVM_BE_LBD:
 	case NVM_BE_SPDK:
+	case NVM_BE_NOCD:
 	case NVM_BE_ANY:
 		break;
 

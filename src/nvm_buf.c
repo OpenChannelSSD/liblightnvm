@@ -110,6 +110,7 @@ void *nvm_buf_alloc(const struct nvm_dev *dev, size_t nbytes, uint64_t *phys)
 		return nvm_buf_virt_alloc(alignment, nbytes);
 
 	case NVM_BE_SPDK:
+	case NVM_BE_NOCD:
 		return spdk_dma_malloc(nbytes, alignment, phys);
 
 	case NVM_BE_ANY:
@@ -168,6 +169,7 @@ void nvm_buf_free(const struct nvm_dev *dev, void *buf)
 			break;
 
 		case NVM_BE_SPDK:
+		case NVM_BE_NOCD:
 			spdk_dma_free(buf);
 			break;
 
@@ -198,6 +200,7 @@ int nvm_buf_vtophys(const struct nvm_dev *dev, void *buf, uint64_t *phys)
 			return -1;
 
 		case NVM_BE_SPDK:
+		case NVM_BE_NOCD:
 			*phys = spdk_vtophys(buf);
 			if (SPDK_VTOPHYS_ERROR == *phys) {
 				errno = EIO;

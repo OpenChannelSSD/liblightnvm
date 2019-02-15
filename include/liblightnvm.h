@@ -60,8 +60,9 @@ enum nvm_be_id {
 	NVM_BE_IOCTL	= 0x1,		///< IOCTL backend
 	NVM_BE_LBD	= 0x1 << 1,	///< IOCTL + LBD backend
 	NVM_BE_SPDK	= 0x1 << 2,	///< SPDK backend
+	NVM_BE_NOCD	= 0x1 << 3,	///< NON Open-Channel Device backend
 };
-#define NVM_BE_ALL (NVM_BE_IOCTL | NVM_BE_LBD | NVM_BE_SPDK)
+#define NVM_BE_ALL (NVM_BE_IOCTL | NVM_BE_LBD | NVM_BE_SPDK | NVM_BE_NOCD)
 
 /**
  * Enumeration of nvm_cmd options
