@@ -288,6 +288,51 @@ static int cmd_copy(struct nvm_cli *cli)
 	return 0;
 }
 
+static int cmd_pass(struct nvm_cli *cli, int flags)
+{
+	struct nvm_cli_opts_pfile *pfile = &cli->opts.pfile;
+	struct nvm_dev *dev = cli->args.dev;
+	struct nvm_nvme_cmd *cmd = NULL;
+	struct nvm_ret ret;
+	int err;
+
+	nvm_cli_info_pr("nvm_cmd_pass(..., CMD_OPTS=0x%x, ...)", flags);
+	nvm_cli_opts_pfile_pr(pfile);
+
+	cmd = pfile->cmd_buf;
+	if (!cmd) {
+		nvm_cli_info_pr("Please provide a command-file with '-c'");
+		errno = EIO;
+		return -1;
+	}
+
+	nvm_nvme_cmd_pr(cmd, 0x0);
+
+	err = nvm_cmd_pass(dev, cmd, pfile->data_buf, pfile->data_nbytes,
+			   pfile->meta_buf, pfile->meta_nbytes, flags, &ret);
+	if (err) {
+		nvm_ret_pr(&ret);
+		return -1;
+	}
+
+	err = nvm_cli_opts_pfile_dump(cli);
+	if (err) {
+		nvm_cli_perror("failed writing changes to '-c', '-m', or '-d'");
+		return -1;
+	}
+
+	return 0;
+}
+
+static int cmd_pioc(struct nvm_cli *cli)
+{
+	return cmd_pass(cli, NVM_CMD_SYNC | NVM_CMD_PIOC);
+}
+
+static int cmd_padc(struct nvm_cli *cli)
+{
+	return cmd_pass(cli, NVM_CMD_SYNC | NVM_CMD_PADC);
+}
 
 /**
  * Command-line interface (CLI) boiler-plate
@@ -300,18 +345,20 @@ static struct nvm_cli_cmd cmds[] = {
 	{"rprt_lun",	cmd_rprt,	NVM_CLI_ARG_ADDR_LUN, NVM_CLI_OPT_DEFAULT},
 	{"gbbt",	cmd_gbbt,	NVM_CLI_ARG_ADDR_LUN, NVM_CLI_OPT_DEFAULT},
 	{"sbbt",	cmd_sbbt,	NVM_CLI_ARG_ADDR_BLK_HEXVAL, NVM_CLI_OPT_DEFAULT},
+
 	{"erase",	cmd_erase,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT},
 	{"write",	cmd_write,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_INPUT},
 	{"read",	cmd_read,	NVM_CLI_ARG_ADDR_LIST, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_OUTPUT},
 	{"copy",	cmd_copy,	NVM_CLI_ARG_VCOPY_S20, NVM_CLI_OPT_DEFAULT},
 
+	{"pioc",	cmd_pioc,	NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_CMD | NVM_CLI_OPT_FILE_META | NVM_CLI_OPT_FILE_DATA},
+	{"padc",	cmd_padc,	NVM_CLI_ARG_DEV_PATH, NVM_CLI_OPT_DEFAULT | NVM_CLI_OPT_FILE_CMD | NVM_CLI_OPT_FILE_META | NVM_CLI_OPT_FILE_DATA},
 };
-
 
 /* Define the CLI */
 static struct nvm_cli cli = {
-	.title = "NVM command (nvm_cmd_*)",
-	.descr_short = "Construct and execute NVM commands",
+	.title = "NVM command (C API: nvm_cmd_*)",
+	.descr_short = "Construct and execute NVMe/NVM commands",
 	.cmds = cmds,
 	.ncmds = sizeof(cmds) / sizeof(cmds[0]),
 };
