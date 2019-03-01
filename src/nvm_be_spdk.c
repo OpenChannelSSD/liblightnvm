@@ -76,6 +76,35 @@ struct nvm_be nvm_be_spdk = {
 
 static int _do_spdk_env_init = 1;
 
+static inline int submit_adc(struct spdk_nvme_ctrlr *ctrlr,
+			     struct nvm_nvme_cmd *cmd,
+			     void *buf, uint32_t len,
+			     spdk_nvme_cmd_cb cb_fn, void *cb_arg)
+{
+#ifdef NVM_TRACE_ENABLED
+	NVM_DEBUG("Dumping ADMIN command");
+	nvm_nvme_cmd_pr(cmd, 0x0);
+#endif
+	return spdk_nvme_ctrlr_cmd_admin_raw(ctrlr, (struct spdk_nvme_cmd*)cmd,
+					     buf, len, cb_fn, cb_arg);
+}
+
+static inline int submit_ioc(struct spdk_nvme_ctrlr *ctrlr,
+			     struct spdk_nvme_qpair *qpair,
+			     struct nvm_nvme_cmd *cmd,
+			     void *buf, uint32_t len, void *md_buf,
+			     spdk_nvme_cmd_cb cb_fn, void *cb_arg)
+{
+#ifdef NVM_TRACE_ENABLED
+	NVM_DEBUG("Dumping IO command");
+	nvm_nvme_cmd_pr(cmd, 0x0);
+#endif
+	return spdk_nvme_ctrlr_cmd_io_raw_with_md(ctrlr, qpair,
+						  (struct spdk_nvme_cmd*)cmd,
+						  buf, len, md_buf, cb_fn,
+						  cb_arg);
+}
+
 /**
  * Attach to the device matching the traddr and only if we have not yet attached
  */
@@ -315,8 +344,6 @@ struct nvm_dev *nvm_be_spdk_open(const char *dev_path, int flags)
 		goto failed;
 	}
 
-	NVM_DEBUG("Let's go! SPDK YO!");
-
 	return dev;
 
 failed:
@@ -464,12 +491,11 @@ static inline int cmd_sync_admin(struct nvm_dev *dev, struct nvm_nvme_cmd *cmd,
 				 void *buf, size_t buf_len, struct nvm_ret *ret)
 {
 	struct nvm_be_spdk_state *state = dev->be_state;
-	struct spdk_nvme_cmd *nvme_cmd = (struct spdk_nvme_cmd *)cmd;
 	struct cpl_ctx ctx = { 0 };
 
-	if (spdk_nvme_ctrlr_cmd_admin_raw(state->ctrlr, nvme_cmd, buf, buf_len,
-					  cmd_sync_admin_cb, &ctx)) {
-		NVM_DEBUG("FAILED: spdk_nvme_ctrlr_cmd_admin_raw");
+	if (submit_adc(state->ctrlr, cmd, buf, buf_len, cmd_sync_admin_cb,
+		       &ctx)) {
+		NVM_DEBUG("FAILED: submit_adc");
 		return -1;
 	}
 
@@ -489,7 +515,7 @@ static inline int cmd_sync_admin(struct nvm_dev *dev, struct nvm_nvme_cmd *cmd,
 }
 
 static int cmd_sync_admin_glp(struct nvm_dev *dev, void *buf, uint32_t ndw,
-			     uint64_t lpo, int opt, struct nvm_ret *ret)
+			      uint64_t lpo, int opt, struct nvm_ret *ret)
 {
 	struct nvm_nvme_cmd cmd = { 0 };
 	struct nvm_be_spdk_state *state = dev->be_state;
@@ -744,15 +770,9 @@ static inline int cmd_async_ewrc(struct nvm_dev *dev, struct nvm_addr addrs[],
 	// Submit command
 	ret->async.ctx->outstanding += 1;
 
-	err = spdk_nvme_ctrlr_cmd_io_raw_with_md(state->ctrlr,
-						 qpair,
-						 (struct spdk_nvme_cmd *)&wrap->cmd,
-						 wrap->data,
-						 wrap->data_len,
-						 wrap->meta,
-						 cmd_async_cb,
-						 wrap);
-
+	err = submit_ioc(state->ctrlr, qpair, &wrap->cmd,
+			 wrap->data, wrap->data_len, wrap->meta,
+			 cmd_async_cb, wrap);
 	if (err) {
 		ret->async.ctx->outstanding -= 1;
 		NVM_DEBUG("FAILED: submission failed");
@@ -791,15 +811,9 @@ static inline int cmd_sync_ewrc(struct nvm_dev *dev,
 
 	// Submit command
 	omp_set_lock(qpair_lock);
-
-	err = spdk_nvme_ctrlr_cmd_io_raw_with_md(state->ctrlr,
-						 qpair,
-						 (struct spdk_nvme_cmd *) &wrap->cmd,
-						 wrap->data,
-						 wrap->data_len,
-						 wrap->meta,
-						 cmd_sync_cb,
-						 wrap);
+	err = submit_ioc(state->ctrlr, qpair, &wrap->cmd,
+			 wrap->data, wrap->data_len, wrap->meta,
+			 cmd_sync_cb, wrap);
 	omp_unset_lock(qpair_lock);
 
 	if (err) {
