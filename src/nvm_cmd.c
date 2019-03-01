@@ -161,8 +161,6 @@ struct nvm_cmd_wrap *nvm_cmd_wrap_setup(struct nvm_dev *dev, int opcode,
 	}
 
 	switch (opcode) {
-		break;
-
 	case NVM_DOPC_SCALAR_WRITE:
 	case NVM_DOPC_SCALAR_READ:
 		wrap->cmd.addrs = nvm_addr_gen2dev(dev, addrs[0]);
