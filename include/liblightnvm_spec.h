@@ -613,4 +613,6 @@ struct nvm_nvme_cmd {
 };
 static_assert(sizeof(struct nvm_nvme_cmd) == 64, "Incorrect size");
 
+void nvm_nvme_cmd_pr(struct nvm_nvme_cmd *cmd, int flags);
+
 #endif /* __LIBLIGHTNVM_SPEC_H */
