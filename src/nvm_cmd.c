@@ -29,6 +29,7 @@
 #include <nvm_be.h>
 #include <nvm_dev.h>
 #include <nvm_cmd.h>
+#include <nvm_sgl.h>
 
 int nvm_cmd_is_scalar(uint16_t opcode)
 {
@@ -62,6 +63,53 @@ void nvm_cmd_wrap_cpl(struct nvm_cmd_wrap *wrap,
 	}
 
 	wrap->completed = (cpl->status.sc != 0 || cpl->status.sct != 0) ? -1 : 1;
+}
+
+static inline void cmd_wrap_setup_sgl(struct nvm_cmd_wrap *wrap, void *data,
+				      void *meta, int flags)
+{
+	struct nvm_sgl *sgl = data;
+	uint64_t phys;
+
+	if (!(flags & NVM_CMD_SGL)) {
+		return;
+	}
+
+	wrap->cmd.psdt = NVM_NVME_PSDT_SGL_MPTR_CONTIGUOUS;
+
+	if (sgl->ndescr == 1) {
+		wrap->cmd.dptr.sgl = sgl->descriptors[0];
+	} else {
+		nvm_buf_vtophys(wrap->dev, sgl->descriptors, &phys);
+
+		wrap->cmd.dptr.sgl.unkeyed.type = NVM_NVME_SGL_DESCR_TYPE_LAST_SEGMENT;
+		wrap->cmd.dptr.sgl.unkeyed.len = sgl->ndescr * sizeof(struct nvm_nvme_sgl_descriptor);
+		wrap->cmd.dptr.sgl.addr = phys;
+	}
+
+	wrap->data = NULL;
+	wrap->data_len = 0;
+
+	if (flags & NVM_CMD_SGL_META) {
+		wrap->cmd.psdt = NVM_NVME_PSDT_SGL_MPTR_SGL;
+
+		sgl = meta;
+
+		nvm_buf_vtophys(wrap->dev, sgl->descriptors, &phys);
+		if (sgl->ndescr == 1) {
+			wrap->cmd.mptr = phys;
+		} else {
+			sgl->indirect->unkeyed.type = NVM_NVME_SGL_DESCR_TYPE_LAST_SEGMENT;
+			sgl->indirect->unkeyed.len = sgl->ndescr * sizeof(struct nvm_nvme_sgl_descriptor);
+			sgl->indirect->addr = phys;
+
+			nvm_buf_vtophys(wrap->dev, sgl->indirect, &phys);
+			wrap->cmd.mptr = phys;
+		}
+
+		wrap->meta = NULL;
+		wrap->meta_len = 0;
+	}
 }
 
 /**
@@ -160,6 +208,8 @@ struct nvm_cmd_wrap *nvm_cmd_wrap_setup(struct nvm_dev *dev, int opcode,
 		}
 	}
 
+	cmd_wrap_setup_sgl(wrap, data, meta, flags);
+	
 	switch (opcode) {
 	case NVM_DOPC_SCALAR_WRITE:
 	case NVM_DOPC_SCALAR_READ:
