@@ -310,3 +310,57 @@ void nvm_spec_rprt_pr(const struct nvm_spec_rprt *rprt)
 		nvm_spec_rprt_descr_pr(&rprt->descr[i]);
 	}
 }
+
+void nvm_nvme_cmd_pr(struct nvm_nvme_cmd *cmd, int flags)
+{
+	uint32_t *cdw = (void*)cmd;
+
+	printf("nvm_nvme_cmd:");
+
+	if (!cmd) {
+		printf(" ~\n");
+		return;
+	}
+
+	printf("\n");
+	switch(flags) {
+	case 0x0:
+		for (int i = 0; i < 16; ++i) {
+			printf("  - '"NVM_I32_FMT"'\n", NVM_I32_TO_STR(cdw[i]));
+		}
+		break;
+
+	case 0x1:
+		for (int i = 0; i < 16; ++i) {
+			printf("  - 0x%04x\n", cdw[i]);
+		}
+		break;
+
+	case 0x2:
+		for (int i = 0; i < 16; ++i) {
+			printf("  cdw%01d: 0x%04x\n", i, cdw[i]);
+		}
+		break;
+	
+	case 0x3:
+		printf("  opcode: 0x%02x\n", cmd->opcode);
+		printf("  fuse: 0x%x\n", cmd->fuse);
+		printf("  rsvd: 0x%x\n", cmd->rsvd);
+		printf("  psdt: 0x%x\n", cmd->psdt);
+		printf("  cid: 0x%04x\n", cmd->cid);
+		printf("  nsid: 0x%04x\n", cmd->nsid);
+		printf("  cdw02: 0x%04x\n", cdw[2]);
+		printf("  cdw03: 0x%04x\n", cdw[3]);
+		printf("  mptr: 0x%08lx\n", cmd->mptr);
+		printf("  prp1: 0x%08lx\n", cmd->dptr.prp.prp1);
+		printf("  prp2: 0x%08lx\n", cmd->dptr.prp.prp2);
+		printf("  cdw10: 0x%04x\n", cdw[10]);
+		printf("  cdw11: 0x%04x\n", cdw[11]);
+		printf("  cdw12: 0x%04x\n", cdw[12]);
+		printf("  cdw13: 0x%04x\n", cdw[13]);
+		printf("  cdw14: 0x%04x\n", cdw[14]);
+		printf("  cdw15: 0x%04x\n", cdw[15]);
+		break;
+	}
+}
+
