@@ -1006,12 +1006,142 @@ int nvm_be_spdk_vector_copy(struct nvm_dev *dev, struct nvm_addr src[],
 	}
 }
 
+static inline int cmd_async_pass(struct nvm_dev *dev, struct nvm_nvme_cmd *cmd,
+				 void *data, size_t data_nbytes,
+				 void *meta, size_t meta_nbytes, int flags,
+				 struct nvm_ret *ret)
+{
+	struct nvm_be_spdk_state *state = dev->be_state;
+	struct spdk_nvme_qpair *qpair = ret->async.ctx->be_ctx;
+	struct nvm_cmd_wrap *wrap = NULL;
+	int err = 0;
+
+	// Early exit when queue is full
+	if ((ret->async.ctx->outstanding + 1) > ret->async.ctx->depth) {
+		errno = EAGAIN;
+		return -1;
+	}
+
+	wrap = nvm_cmd_wrap_pass(dev, cmd, data, data_nbytes,
+				 meta, meta_nbytes, flags, ret);
+	if (!wrap) {
+		NVM_DEBUG("FAILED: allocating nvm_cmd_wrap");
+		// Propagate errno from calloc
+		return -1;
+	}
+
+	// NVM_CMD_ASYNC: submission of pass-through command
+	ret->async.ctx->outstanding += 1;
+	err = submit_ioc(state->ctrlr, qpair, cmd,
+			 wrap->data, wrap->data_len,
+			 wrap->meta,
+			 cmd_async_cb,
+			 wrap);
+	if (err) {
+		ret->async.ctx->outstanding -= 1;
+		NVM_DEBUG("FAILED: submission failed");
+		goto failed;
+	}
+
+	return 0;
+
+failed:
+	nvm_cmd_wrap_term(wrap);
+	// Propagate errno
+	return -1;
+}
+
+static inline int cmd_sync_pass(struct nvm_dev *dev, struct nvm_nvme_cmd *cmd,
+				void *data, size_t data_nbytes,
+				void *meta, size_t meta_nbytes, int flags,
+				struct nvm_ret *ret)
+{
+	struct nvm_be_spdk_state *state = dev->be_state;
+	struct spdk_nvme_qpair *qpair = state->qpair;
+	omp_lock_t *qpair_lock = &state->qpair_lock;
+
+	struct nvm_cmd_wrap *wrap = NULL;
+	int res = 0;
+	int err;
+
+	wrap = nvm_cmd_wrap_pass(dev, cmd, data, data_nbytes, meta, meta_nbytes,
+				 flags, ret);
+	if (!wrap) {
+		NVM_DEBUG("FAILED: allocating nvm_cmd_wrap");
+		// Propagate errno from calloc
+		return -1;
+	}
+
+	// NVM_CMD_SYNC: submission of pass-through command
+	omp_set_lock(qpair_lock);
+	err = submit_ioc(state->ctrlr, qpair, cmd,
+			 wrap->data, wrap->data_len, wrap->meta, cmd_sync_cb,
+			 wrap);
+	omp_unset_lock(qpair_lock);
+	if (err) {
+		NVM_DEBUG("FAILED: cmd_sync_ewrc, err: %d", err);
+		res = -1;
+		goto out;
+	}
+
+	// NVM_CMD_SYNC: completion of pass-through command
+	while (!wrap->completed) {
+		omp_set_lock(qpair_lock);
+		spdk_nvme_qpair_process_completions(qpair, 0);
+		omp_unset_lock(qpair_lock);
+	}
+	if (wrap->completed < 0) {
+		res = -1;
+		errno = EIO;
+	}
+
+out:
+	nvm_cmd_wrap_term(wrap);
+
+	return res;
+}
+
+int nvm_be_spdk_pass(struct nvm_dev *dev, struct nvm_nvme_cmd *cmd,
+		     void *data, size_t data_nbytes,
+		     void *meta, size_t meta_nbytes, int flags,
+		     struct nvm_ret *ret)
+{
+	const int opts = flags & NVM_CMD_MASK;
+
+	switch(opts & NVM_CMD_MASK_IOMD) {
+	case NVM_CMD_ASYNC:
+		if (opts & NVM_CMD_PADC) {
+			NVM_DEBUG("FAILED: ENOSYS: async admin commands");
+			errno = ENOSYS;
+			return -1;
+		}
+		if ((!ret) || (!ret->async.ctx) || (!ret->async.ctx->be_ctx)) {
+			NVM_DEBUG("FAILED: ret: %p", (void*)ret);
+			errno = EINVAL;
+			return -1;
+		}
+		return cmd_async_pass(dev, cmd, data, data_nbytes, meta,
+				      meta_nbytes, flags, ret);
+
+	case NVM_CMD_SYNC:
+	default:
+		if (opts & NVM_CMD_PADC) {
+			return cmd_sync_admin(dev, cmd, data, data_nbytes, ret);
+		} else {
+			return cmd_sync_pass(dev, cmd, data, data_nbytes, meta,
+					     meta_nbytes, flags, ret);
+		}
+	}
+}
+
 struct nvm_be nvm_be_spdk = {
 	.id = NVM_BE_SPDK,
 	.name = "NVM_BE_SPDK",
 
 	.open = nvm_be_spdk_open,
 	.close = nvm_be_spdk_close,
+
+	.pass = nvm_be_spdk_pass,
 
 	.async_init = nvm_be_spdk_async_init,
 	.async_term = nvm_be_spdk_async_term,
