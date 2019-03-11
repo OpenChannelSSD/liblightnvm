@@ -44,7 +44,6 @@ extern "C" {
  * Enumeration of environment variables
  */
 enum nvm_cli_evar_type {
-	NVM_CLI_ENV_BE_ID,
 	NVM_CLI_PMODE,
 	NVM_CLI_META_MODE,
 	NVM_CLI_NOVERIFY,
@@ -57,7 +56,6 @@ enum nvm_cli_evar_type {
  * Storage for parsed environment variable dec_vals
  */
 struct nvm_cli_evars {
-	int be_id;
 	int pmode;
 	int meta_mode;
 	int noverify;
