@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2015-2017 Javier Gonzáles <javier@cnexlabs.com>
  * Copyright (C) 2015-2017 Matias Bjørling <matias@cnexlabs.com>
- * Copyright (C) 2015-2017 Simon A. F. Lund <slund@cnexlabs.com>
+ * Copyright (C) 2015-2019 Simon A. F. Lund <slund@cnexlabs.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,8 @@ extern "C" {
 #include <liblightnvm.h>
 
 #define NVM_CLI_CMD_LEN 50
+
+struct nvm_cli;
 
 /**
  * Enumeration of environment variables
@@ -123,41 +125,104 @@ enum nvm_cli_opt_type {
 	NVM_CLI_OPT_BRIEF = 1 << 1,
 	NVM_CLI_OPT_VERBOSE = 1 << 2,
 	NVM_CLI_OPT_STATUS = 1 << 3,
-	NVM_CLI_OPT_FILE_INPUT = 1 << 4,
-	NVM_CLI_OPT_FILE_OUTPUT = 1 << 5,
-	NVM_CLI_OPT_VAL_DEC = 1 << 6,
-	NVM_CLI_OPT_VAL_HEX = 1 << 7,
-	NVM_CLI_OPT_TERSE = 1 << 8,
+
+	NVM_CLI_OPT_FILE_CMD = 1 << 4,
+	NVM_CLI_OPT_FILE_DATA = 1 << 5,
+	NVM_CLI_OPT_FILE_META = 1 << 6,
+
+	NVM_CLI_OPT_FILE_INPUT = 1 << 7,
+	NVM_CLI_OPT_FILE_OUTPUT = 1 << 8,
+
+	NVM_CLI_OPT_VAL_DEC = 1 << 9,
+	NVM_CLI_OPT_VAL_HEX = 1 << 10,
+	NVM_CLI_OPT_TERSE = 1 << 11,
 };
 
 #define NVM_CLI_OPT_DEFAULT (NVM_CLI_OPT_HELP | NVM_CLI_OPT_VERBOSE)
 #define NVM_CLI_OPT_COUNT 12
 
+#define NVM_CLI_OPTS_PFILE (NVM_CLI_OPT_FILE_CMD | NVM_CLI_OPT_FILE_META | \
+				NVM_CLI_OPT_FILE_DATA)
+#define NVM_CLI_OPTS_PFILE_COUNT 3
+#define NVM_CLI_OPTS_PFILE_CMD_NBYTES 64
+#define NVM_CLI_OPTS_PFILE_MAX_NBYTES 1 << 20
+
+struct nvm_cli_opts_pfile {
+	union {
+		void *bufs[NVM_CLI_OPTS_PFILE_COUNT];
+		struct {
+			void *cmd_buf;
+			void *meta_buf;
+			void *data_buf;
+		};
+	};
+
+	union {
+		void *phys[NVM_CLI_OPTS_PFILE_COUNT];
+		struct {
+			void *cmd_phys;
+			void *meta_phys;
+			void *data_phys;
+		};
+	};
+
+	union {
+		void *dups[NVM_CLI_OPTS_PFILE_COUNT];
+		struct {
+			void *cmd_dup;
+			void *meta_dup;
+			void *data_dup;
+		};
+	};
+
+	union {
+		const char *paths[NVM_CLI_OPTS_PFILE_COUNT];
+		struct {
+			const char *cmd_path;
+			const char *meta_path;
+			const char *data_path;
+		};
+	};
+
+	union {
+		size_t nbytes[NVM_CLI_OPTS_PFILE_COUNT];
+		struct {
+			size_t cmd_nbytes;
+			size_t meta_nbytes;
+			size_t data_nbytes;
+		};
+	};
+};
+
+/**
+ * Update content of files used as pass-through arguments
+ */
+int nvm_cli_opts_pfile_dump(struct nvm_cli *cli);
+
 /**
  * Storage for opt-arguments
  */
 struct nvm_cli_opts {
-	int mask;		///< Mask of all provided options
-	int help;		///< For NVM_CLI_OPT_HELP
-	int brief;		///< For NVM_CLI_OPT_BRIEF
-	int verbose;		///< For NVM_CLI_OPT_VERBOSE
+	int mask;			///< Mask of all provided options
+	int help;			///< For NVM_CLI_OPT_HELP
+	int brief;			///< For NVM_CLI_OPT_BRIEF
+	int verbose;			///< For NVM_CLI_OPT_VERBOSE
 	int terse;
-	int status;		///< FOR NVM_CLI_OPT_STATUS
-	char *file_input;	///< For NVM_CLI_OPT_FILE_INPUT
-	char *file_output;	///< For NVM_CLI_OPT_FILE_OUTPUT
-	size_t dec_val;		///< For NVM_CLI_OPT_VAL_DEC
-	size_t hex_val;		///< For NVM_CLI_OPT_VAL_HEX
+	int status;			///< FOR NVM_CLI_OPT_STATUS
+	struct nvm_cli_opts_pfile pfile;
+	char *file_input;		///< For NVM_CLI_OPT_FILE_INPUT
+	char *file_output;		///< For NVM_CLI_OPT_FILE_OUTPUT
+	size_t dec_val;			///< For NVM_CLI_OPT_VAL_DEC
+	size_t hex_val;			///< For NVM_CLI_OPT_VAL_HEX
 };
-
-struct nvm_cli;
 
 typedef int (*nvm_cli_cmd_func)(struct nvm_cli*);
 
 struct nvm_cli_cmd {
-	char name[NVM_CLI_CMD_LEN];	// Command name
-	nvm_cli_cmd_func func;		// Command function
+	char name[NVM_CLI_CMD_LEN];		// Command name
+	nvm_cli_cmd_func func;			// Command function
 	enum nvm_cli_cmd_arg_type arg_type;	// Positional argument type
-	int opt_types;			// Mask of supported options
+	uint32_t opt_types;			// Mask of supported options
 };
 
 struct nvm_cli {
@@ -180,6 +245,8 @@ struct nvm_cli {
 };
 
 void nvm_cli_cmd_args_pr(struct nvm_cli_cmd_args *args);
+
+void nvm_cli_opts_pfile_pr(struct nvm_cli_opts_pfile *pfile);
 
 void nvm_cli_opts_pr(struct nvm_cli_opts *opts);
 
