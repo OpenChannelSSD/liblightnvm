@@ -67,21 +67,29 @@ enum nvm_be_id {
  * Enumeration of nvm_cmd options
  */
 enum nvm_cmd_opts {
-	NVM_CMD_SYNC	= 0x1 << 3,
-	NVM_CMD_ASYNC	= 0x1 << 4,
-	NVM_CMD_SCALAR	= 0x1 << 5,
-	NVM_CMD_VECTOR	= 0x1 << 6,
-	NVM_CMD_PRP	= 0x1 << 7,
-	NVM_CMD_SGL	= 0x1 << 8,
+	NVM_CMD_SYNC		= 0x1 << 4,
+	NVM_CMD_ASYNC		= 0x1 << 5,
+	NVM_CMD_SCALAR		= 0x1 << 6,
+	NVM_CMD_VECTOR		= 0x1 << 7,
+	NVM_CMD_PRP		= 0x1 << 8,
+	NVM_CMD_SGL		= 0x1 << 9,
+	NVM_CMD_SGL_META	= 0x1 << 10,
+
+	NVM_CMD_PIOC		= 0x1 << 11,
+	NVM_CMD_PADC		= 0x1 << 12,
 };
 
 #define NVM_CMD_MASK_IOMD (NVM_CMD_SYNC | NVM_CMD_ASYNC)
 #define NVM_CMD_MASK_ADDR (NVM_CMD_SCALAR | NVM_CMD_VECTOR)
-#define NVM_CMD_MASK_PLOD (NVM_CMD_PRP | NVM_CMD_SGL)
+#define NVM_CMD_MASK_PLOD (NVM_CMD_PRP | NVM_CMD_SGL | NVM_CMD_SGL_META)
+#define NVM_CMD_MASK_PASS (NVM_CMD_PIOC | NVM_CMD_PADC)
+#define NVM_CMD_MASK (NVM_CMD_MASK_IOMD | NVM_CMD_MASK_ADDR | \
+			NVM_CMD_MASK_PLOD | NVM_CMD_MASK_PASS)
 
 #define NVM_CMD_DEF_IOMD NVM_CMD_SYNC
 #define NVM_CMD_DEF_ADDR NVM_CMD_VECTOR
 #define NVM_CMD_DEF_PLOD NVM_CMD_PRP
+#define NVM_CMD_DEF_PASS NVM_CMD_PIOC
 
 /**
  * Plane-mode access for OCSSD 1.2 IO
@@ -120,24 +128,87 @@ struct nvm_dev;
 struct nvm_sgl;
 
 /**
- * De-allocate an SGL
+ * Opaque handle for a Scatter Gather List (SGL) pool. A seperate pool should
+ * be used for each asynchronous context.
  *
- * @see nvm_sgl_alloc
- *
- * @param sgl Pointer to SGL as allocated by `nvm_sgl_alloc`
+ * @struct nvm_sgl_pool
  */
-void nvm_sgl_free(struct nvm_sgl *sgl);
+struct nvm_sgl_pool;
 
 /**
- * Allocate a SGL
+ * Create an SGL pool.
  *
+ * @param Associated device.
+ *
+ * @return An initialized pool that can be used to amortize the cost o
+ *  repeated SGL allocations.
+ */
+struct nvm_sgl_pool *nvm_sgl_pool_create(struct nvm_dev *dev);
+
+/**
+ * Destroy an SGL pool (and all SGLs in the pool).
+ *
+ * @param SGL Pool to destroy.
+ */
+void nvm_sgl_pool_destroy(struct nvm_sgl_pool *pool);
+
+/**
+ * Create an SGL.
+ *
+ * @see nvm_sgl_destroy
+ * @see nvm_sgl_alloc
+ * @see nvm_sgl_free
  * @see nvm_sgl_add
+ *
+ * @param dev Associated device.
+ * @param hint Allocation hint.
+ *
+ * @return On success, an initialized (empty) SGL is returned. On error, NULL
+ *  is returned and `errno` is set to indicate any error.
+ */
+struct nvm_sgl *nvm_sgl_create(struct nvm_dev *dev, int hint);
+
+/**
+ * Allocate an SGL from a pool.
+ *
+ * @see nvm_sgl_create
+ *
+ * @param pool Pool to allocate SGL from.
+ *
+ * @return On success, an initialized (empty) SGL is returned. On error, NULL
+ *  is returned and `errno` is set to indicate any error.
+ */
+struct nvm_sgl *nvm_sgl_alloc(struct nvm_sgl_pool *pool);
+
+/**
+ * Destroy an SGL, freeing the memory used.
+ *
  * @see nvm_sgl_free
  *
- * @return On success, an initialized (empty) SGL is returned. On error, NULL is
- * returned and `errno` set to indicate the error
+ * @param dev Associated device.
+ * @param sgl Pointer to SGL as allocated by `nvm_sgl_alloc` or
+ *  `nvm_sgl_create`.
  */
-struct nvm_sgl *nvm_sgl_alloc(void);
+void nvm_sgl_destroy(struct nvm_dev *dev, struct nvm_sgl *sgl);
+
+/**
+ * Free an SGL, returning it to the pool.
+ *
+ * @see nvm_sgl_destroy
+ *
+ * @param dev Pool to return to
+ * @param sgl Pointer to SGL as allocated by `nvm_sgl_alloc` or
+ *  `nvm_sgl_create`.
+ */
+void nvm_sgl_free(struct nvm_sgl_pool *pool, struct nvm_sgl *sgl);
+
+/**
+ * Reset an SGL.
+ *
+ * @param sgl Pointer to SGL as allocated by `nvm_sgl_alloc` or
+ *  `nvm_sgl_create`.
+ */
+void nvm_sgl_reset(struct nvm_sgl *sgl);
 
 /**
  * Add an entry to the SGL
@@ -145,11 +216,12 @@ struct nvm_sgl *nvm_sgl_alloc(void);
  * @see nvm_sgl_alloc
  * @see nvm_buf_alloc
  *
+ * @param dev Associated device
  * @param sgl Pointer to sgl as allocated by `nvm_sgl_alloc`
  * @param buf Pointer to buffer as allocated with `nvm_buf_alloc`
  * @param nbytes Size of the given buffer in bytes
  */
-void nvm_sgl_add(struct nvm_sgl *sgl, void *buf, size_t nbytes);
+int nvm_sgl_add(struct nvm_dev *dev, struct nvm_sgl *sgl, void *buf, size_t nbytes);
 
 /**
  * Virtual block abstraction
@@ -448,6 +520,26 @@ struct nvm_bbt {
 	uint32_t nhmrk;		///< # of of host reserved/marked blocks
 	uint8_t blks[];		///< Array of block status for each block in LUN
 };
+
+/**
+ * Pass a NVMe command through to the device with minimal intervention
+ *
+ * When constructing the command then take note of the following:
+ *
+ * - The CID is managed at a lower level and probably over-written if assigned
+ * - When flags include NVM_CMD_PRP then just pass buffers allocated with
+ *   `nvm_buf_alloc`, the construction of PRP-lists, assignment to command and
+ *   assignment pdst is managed at lower levels
+ * - When flags include NVM_CMD_SGL then both data, and meta, when given must be
+ *   setup via the `nvm_sgl` helper functions, pdst, data, and meta fields must
+ *   be also be set by you
+ *
+ *   @return On success, 0 is returned. On error, -1 is return, errno set to
+ *   indicate the error and `ret`, when provided, containing command status.
+ */
+int nvm_cmd_pass(struct nvm_dev *dev, struct nvm_nvme_cmd *cmd, void *data,
+		 size_t data_nbytes, void *meta, size_t meta_nbytes,
+		 int flags, struct nvm_ret *ret);
 
 /**
  * Execute an OCSSD 1.2 identify / OCSSD 2.0 geometry command
