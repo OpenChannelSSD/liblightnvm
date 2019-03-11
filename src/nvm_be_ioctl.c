@@ -36,6 +36,8 @@ struct nvm_be nvm_be_ioctl = {
 	.open = nvm_be_nosys_open,
 	.close = nvm_be_nosys_close,
 
+	.pass = nvm_be_nosys_pass,
+
 	.idfy = nvm_be_nosys_idfy,
 	.rprt = nvm_be_nosys_rprt,
 	.gfeat = nvm_be_nosys_gfeat,
@@ -764,6 +766,8 @@ struct nvm_be nvm_be_ioctl = {
 
 	.open = nvm_be_ioctl_open,
 	.close = nvm_be_ioctl_close,
+
+	.pass = nvm_be_nosys_pass,
 
 	.idfy = nvm_be_ioctl_idfy,
 	.rprt = nvm_be_ioctl_rprt,
