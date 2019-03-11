@@ -405,7 +405,6 @@ void nvm_cli_evars_pr(struct nvm_cli_evars *evars)
 	}
 
 	printf("\n");
-	printf("  be_id: %d\n", evars->be_id);
 	printf("  pmode: 0x%02x\n", evars->pmode);
 	printf("  meta_mode: %d\n", evars->meta_mode);
 	printf("  noverify: %d\n", evars->noverify);
@@ -1348,38 +1347,6 @@ int evar_meta_mode(struct nvm_cli *cli)
 	return -1;
 }
 
-int evar_be_id(struct nvm_cli *cli)
-{
-	char *id;
-	
-	id = getenv("NVM_CLI_BE_ID");
-	if (!id) {
-		cli->evars.be_id = NVM_BE_ANY;
-		return 0;
-	}
-
-	switch(strtoll(id, NULL, 16)) {
-	case NVM_BE_ANY:
-		cli->evars.be_id = NVM_BE_ANY;
-		return 0;
-	case NVM_BE_IOCTL:
-		cli->evars.be_id = NVM_BE_IOCTL;
-		return 0;
-	case NVM_BE_LBD:
-		cli->evars.be_id = NVM_BE_LBD;
-		return 0;
-	case NVM_BE_SPDK:
-		cli->evars.be_id = NVM_BE_SPDK;
-		return 0;
-	case NVM_BE_NOCD:
-		cli->evars.be_id = NVM_BE_NOCD;
-		return 0;
-	}
-
-	errno = EINVAL;
-	return -1;
-}
-
 int evar_cmd_opts(struct nvm_cli *cli)
 {
 	char *opts;
@@ -1399,11 +1366,6 @@ int evar_and_dev_setup(struct nvm_cli *cli)
 		return -1;
 	}
 
-	if (evar_be_id(cli) < 0) {		// Backend identifier
-		perror("# NVM_CLI_BE_ID");
-		return -1;
-	}
-
 	if (evar_cmd_opts(cli) < 0) {
 		perror("# NVM_CLI_CMD_OPTS");
 		return -1;
@@ -1413,9 +1375,7 @@ int evar_and_dev_setup(struct nvm_cli *cli)
 		return 0;
 	}
 
-	cli->args.dev = nvm_dev_openf(
-		cli->args.dev_path,
-		cli->evars.be_id | cli->evars.cmd_opts);
+	cli->args.dev = nvm_dev_openf(cli->args.dev_path, cli->evars.cmd_opts);
 	if (!cli->args.dev) {
 		perror("# nvm_dev_openf");
 		return -1;
