@@ -59,6 +59,11 @@ void nvm_be_spdk_close(struct nvm_dev *dev);
 
 struct nvm_dev *nvm_be_spdk_open(const char *dev_path, int flags);
 
+int nvm_be_spdk_pass(struct nvm_dev *dev, struct nvm_nvme_cmd *cmd,
+		     void *data, size_t data_nbytes,
+		     void *meta, size_t meta_nbytes,
+		     int flags, struct nvm_ret *ret);
+
 struct nvm_async_ctx *nvm_be_spdk_async_init(struct nvm_dev *dev,
 					     uint32_t depth, uint16_t flags);
 
