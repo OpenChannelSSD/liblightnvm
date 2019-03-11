@@ -621,6 +621,11 @@ struct nvm_nvme_cmd {
 
 			uint32_t unused11;
 		} gfeat;
+
+		struct {
+			uint32_t ndt;	///< Number of Dwords in Data Transfer
+			uint32_t ndm;	///< Number of Dwords in Meta Transfer
+		} padc;
 	};
 
 	/* cdw 12 */
