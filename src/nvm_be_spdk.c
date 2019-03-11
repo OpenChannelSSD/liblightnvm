@@ -78,15 +78,26 @@ static int _do_spdk_env_init = 1;
 
 static inline int submit_adc(struct spdk_nvme_ctrlr *ctrlr,
 			     struct nvm_nvme_cmd *cmd,
-			     void *buf, uint32_t len,
+			     void *data, uint32_t data_nbytes,
+			     void *meta, uint32_t meta_nbytes,
+			     int flags,
 			     spdk_nvme_cmd_cb cb_fn, void *cb_arg)
 {
+
+	// NOTE: This probably ought to be done at wrap-setup
+	cmd->mptr = (uint64_t)meta ? (uint64_t)meta : cmd->mptr;
+
+	if (meta_nbytes && meta && (flags & NVM_CMD_PADC)) {
+		cmd->padc.ndm = meta_nbytes / 4;
+	}
+
 #ifdef NVM_TRACE_ENABLED
 	NVM_DEBUG("Dumping ADMIN command");
 	nvm_nvme_cmd_pr(cmd, 0x0);
 #endif
+
 	return spdk_nvme_ctrlr_cmd_admin_raw(ctrlr, (struct spdk_nvme_cmd*)cmd,
-					     buf, len, cb_fn, cb_arg);
+					     data, data_nbytes, cb_fn, cb_arg);
 }
 
 static inline int submit_ioc(struct spdk_nvme_ctrlr *ctrlr,
@@ -488,13 +499,15 @@ static void cmd_sync_admin_cb(void *cb_arg, const struct spdk_nvme_cpl *cpl)
 }
 
 static inline int cmd_sync_admin(struct nvm_dev *dev, struct nvm_nvme_cmd *cmd,
-				 void *buf, size_t buf_len, struct nvm_ret *ret)
+				 void *data, size_t data_len,
+				 void *meta, size_t meta_len,
+				 int flags, struct nvm_ret *ret)
 {
 	struct nvm_be_spdk_state *state = dev->be_state;
 	struct cpl_ctx ctx = { 0 };
 
-	if (submit_adc(state->ctrlr, cmd, buf, buf_len, cmd_sync_admin_cb,
-		       &ctx)) {
+	if (submit_adc(state->ctrlr, cmd, data, data_len, meta, meta_len,
+		       flags, cmd_sync_admin_cb, &ctx)) {
 		NVM_DEBUG("FAILED: submit_adc");
 		return -1;
 	}
@@ -534,7 +547,7 @@ static int cmd_sync_admin_glp(struct nvm_dev *dev, void *buf, uint32_t ndw,
 	cmd.lpou = lpo >> 32;
 	cmd.lpol = lpo & 0xfffffff;
 
-	if (cmd_sync_admin(dev, &cmd, buf, (ndw + 1) * 4, ret)) {
+	if (cmd_sync_admin(dev, &cmd, buf, (ndw + 1) * 4, NULL, 0, 0x0, ret)) {
 		NVM_DEBUG("FAILED: cmd_sync_admin");
 		return -1;
 	}
@@ -560,7 +573,7 @@ struct nvm_spec_idfy *nvm_be_spdk_idfy(struct nvm_dev *dev, struct nvm_ret *ret)
 	}
 	memset(idfy, 0, sizeof(*idfy));
 
-	if (cmd_sync_admin(dev, &cmd, idfy, idfy_len, ret)) {
+	if (cmd_sync_admin(dev, &cmd, idfy, idfy_len, NULL, 0, 0x0, ret)) {
 		NVM_DEBUG("FAILED: cmd_sync_admin");
 		nvm_buf_free(dev, idfy);
 		return NULL;
@@ -584,7 +597,7 @@ int nvm_be_spdk_gfeat(struct nvm_dev *dev, uint8_t id,
 
 	ret = ret ? ret : &_ret;
 
-	if (cmd_sync_admin(dev, &cmd, NULL, 0, ret)) {
+	if (cmd_sync_admin(dev, &cmd, NULL, 0, NULL, 0, 0x0, ret)) {
 		NVM_DEBUG("FAILED: cmd_sync_admin");
 		return -1;
 	}
@@ -607,7 +620,7 @@ int nvm_be_spdk_sfeat(struct nvm_dev *dev, uint8_t id,
 	cmd.sfeat.fid = id;
 	cmd.sfeat.feat = *feat;
 
-	if (cmd_sync_admin(dev, &cmd, NULL, 0, ret)) {
+	if (cmd_sync_admin(dev, &cmd, NULL, 0,  NULL, 0, 0x0, ret)) {
 		NVM_DEBUG("FAILED: cmd_sync_admin");
 		return -1;
 	}
@@ -678,7 +691,7 @@ struct nvm_spec_bbt *nvm_be_spdk_gbbt(struct nvm_dev *dev, struct nvm_addr addr,
 	cmd.nsid = state->nsid;
 	cmd.addrs = nvm_addr_gen2dev(dev, addr);
 
-	if (cmd_sync_admin(dev, &cmd, bbt, bbt_len, ret)) {
+	if (cmd_sync_admin(dev, &cmd, bbt, bbt_len, NULL, 0, 0x0, ret)) {
 		NVM_DEBUG("FAILED: cmd_sync_admin");
 		nvm_buf_free(dev, bbt);
 		return NULL;
@@ -716,7 +729,7 @@ int nvm_be_spdk_sbbt(struct nvm_dev *dev, struct nvm_addr *addrs,
 		cmd.addrs = nvm_addr_gen2dev(dev, addrs[0]);
 	}
 
-	if (cmd_sync_admin(dev, &cmd, NULL, 0, ret)) {
+	if (cmd_sync_admin(dev, &cmd, NULL, 0, NULL, 0, 0x0, ret)) {
 		NVM_DEBUG("FAILED: cmd_sync_admin");
 		spdk_dma_free(addrs_dma);
 		return -1;
@@ -1126,7 +1139,8 @@ int nvm_be_spdk_pass(struct nvm_dev *dev, struct nvm_nvme_cmd *cmd,
 	case NVM_CMD_SYNC:
 	default:
 		if (opts & NVM_CMD_PADC) {
-			return cmd_sync_admin(dev, cmd, data, data_nbytes, ret);
+			return cmd_sync_admin(dev, cmd, data, data_nbytes, meta,
+					      meta_nbytes, flags, ret);
 		} else {
 			return cmd_sync_pass(dev, cmd, data, data_nbytes, meta,
 					     meta_nbytes, flags, ret);
