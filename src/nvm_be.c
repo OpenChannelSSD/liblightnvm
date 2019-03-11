@@ -112,6 +112,17 @@ void nvm_be_nosys_close(struct nvm_dev *NVM_UNUSED(dev))
 	return;
 }
 
+int nvm_be_nosys_pass(struct nvm_dev *NVM_UNUSED(dev),
+		      struct nvm_nvme_cmd *NVM_UNUSED(cmd),
+		      void *NVM_UNUSED(data), size_t NVM_UNUSED(data_nbytes),
+		      void *NVM_UNUSED(meta), size_t NVM_UNUSED(meta_nbytes),
+		      int NVM_UNUSED(flags), struct nvm_ret *NVM_UNUSED(ret))
+{
+	NVM_DEBUG("FAILED: not implemented(possibly intentionally)");
+	errno = ENOSYS;
+	return -1;
+}
+
 struct nvm_spec_idfy *nvm_be_nosys_idfy(struct nvm_dev *NVM_UNUSED(dev),
 					struct nvm_ret *NVM_UNUSED(ret))
 {
@@ -119,7 +130,6 @@ struct nvm_spec_idfy *nvm_be_nosys_idfy(struct nvm_dev *NVM_UNUSED(dev),
 	errno = ENOSYS;
 	return NULL;
 }
-
 
 struct nvm_spec_rprt *nvm_be_nosys_rprt(struct nvm_dev *NVM_UNUSED(dev),
 					struct nvm_addr *NVM_UNUSED(addr),
