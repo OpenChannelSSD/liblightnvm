@@ -98,6 +98,122 @@ void nvm_cli_timer_bw_pr(const char *prefix, size_t nbytes)
 		prefix, secs, mb, mb / secs);
 }
 
+void nvm_cli_opts_pfile_unload(struct nvm_cli *cli)
+{
+	struct nvm_cli_opts_pfile *pfile = &cli->opts.pfile;
+	struct nvm_dev *dev = cli->args.dev;
+
+	for (int i = 0; i < NVM_CLI_OPTS_PFILE_COUNT; ++i) {
+		nvm_buf_free(dev, pfile->bufs[i]);
+		nvm_buf_free(dev, pfile->dups[i]);
+	}
+}
+
+static ssize_t pfile_to_buf(const char *fname, char *buf, size_t max_fsize)
+{
+	FILE *fhandle = NULL;
+	size_t file_nbytes = 0;
+	size_t read_nbytes = 0;
+
+	fhandle = fopen(fname, "rb");
+	if (!fhandle) {
+		return -1;
+	}
+
+	fseek(fhandle, 0, SEEK_END);
+	file_nbytes = ftell(fhandle);
+	fseek(fhandle, 0, SEEK_SET);
+
+	if (file_nbytes > max_fsize) {
+		errno = EINVAL;
+		fclose(fhandle);
+		return -1;
+	}
+
+	while(read_nbytes < file_nbytes) {
+		read_nbytes += fread(buf, 1, 4096, fhandle);
+
+		if (feof(fhandle)) {
+			break;
+		}
+		if (ferror(fhandle)) {
+			break;
+		}
+	}
+
+	fclose(fhandle);
+	return read_nbytes;
+}
+
+int nvm_cli_opts_pfile_load(struct nvm_cli *cli)
+{
+	struct nvm_cli_opts_pfile *pfile = &cli->opts.pfile;
+	struct nvm_dev *dev = cli->args.dev;
+
+	for (int i = 0; i < NVM_CLI_OPTS_PFILE_COUNT; ++i) {
+		ssize_t nbytes = 0;
+
+		if (!pfile->nbytes[i]) {
+			continue;
+		}
+
+		// Fill into duplicate buffer of max-size
+		pfile->dups[i] = nvm_buf_alloc(dev, pfile->nbytes[i],
+					       pfile->phys[i]);
+		if (!pfile->dups[i]) {
+			nvm_cli_opts_pfile_unload(cli);
+			return -1;
+		}
+		memset(pfile->dups[i], 0, pfile->nbytes[i]);
+
+		nbytes = pfile_to_buf(pfile->paths[i], pfile->dups[i],
+				      pfile->nbytes[i]);
+		if (nbytes < 0) {
+			nvm_cli_opts_pfile_unload(cli);
+			return -1;
+		}
+
+		pfile->nbytes[i] = nbytes;	// Adjust to actual size
+
+		// Allocate the bufs for IO usage
+		pfile->bufs[i] = nvm_buf_alloc(dev, pfile->nbytes[i], NULL);
+		if (!pfile->bufs[i]) {
+			nvm_cli_opts_pfile_unload(cli);
+			return -1;
+		}
+		memcpy(pfile->bufs[i], pfile->dups[i], pfile->nbytes[i]);
+	}
+
+	return 0;
+}
+
+int nvm_cli_opts_pfile_dump(struct nvm_cli *cli)
+{
+	struct nvm_cli_opts_pfile *pfile = &cli->opts.pfile;
+
+	for (int i = 0; i < NVM_CLI_OPTS_PFILE_COUNT; ++i) {
+		int err;
+
+		if (!(pfile->bufs[i] && pfile->dups[i] && pfile->nbytes[i])) {
+			continue;
+		}
+
+		if (!nvm_buf_diff(pfile->bufs[i], pfile->dups[i],
+				  pfile->nbytes[i])) {
+			continue;
+		}
+
+		err = nvm_buf_to_file(pfile->bufs[i], pfile->nbytes[i],
+				      pfile->paths[i]);
+		if (err) {
+			NVM_DEBUG("FAILED: nvm_buf_to_file");
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
 static void opts_mask_pr(int mask)
 {
 	if (!mask) {
@@ -126,6 +242,15 @@ static void opts_mask_pr(int mask)
 			break;
 		case NVM_CLI_OPT_TERSE:
 			printf(" [-t]");
+			break;
+		case NVM_CLI_OPT_FILE_CMD:
+			printf(" [-c FILE]");
+			break;
+		case NVM_CLI_OPT_FILE_DATA:
+			printf(" [-d FILE]");
+			break;
+		case NVM_CLI_OPT_FILE_META:
+			printf(" [-m FILE]");
 			break;
 		case NVM_CLI_OPT_FILE_OUTPUT:
 			printf(" [-o FILE]");
@@ -168,6 +293,15 @@ static void opts_mask_descr_pr(int mask)
 			break;
 		case NVM_CLI_OPT_TERSE:
 			printf(" -t %5s %s", " ", "Print only the address");
+			break;
+		case NVM_CLI_OPT_FILE_CMD:
+			printf(" -c %5s %s", "FILE", "Path to cmd, 64 byte");
+			break;
+		case NVM_CLI_OPT_FILE_META:
+			printf(" -m %5s %s", "FILE", "Path to meta, 1 MiB max");
+			break;
+		case NVM_CLI_OPT_FILE_DATA:
+			printf(" -d %5s %s", "FILE", "Path to data, 1 MiB max");
 			break;
 		case NVM_CLI_OPT_FILE_INPUT:
 			printf(" -i %5s %s", "FILE", "Path to input file");
@@ -371,6 +505,23 @@ void nvm_cli_cmd_args_pr(struct nvm_cli_cmd_args *args)
 	nvm_dev_pr(args->dev);
 }
 
+void nvm_cli_opts_pfile_pr(struct nvm_cli_opts_pfile *pfile)
+{
+	printf("cli_opts_pfile:");
+
+	if (!pfile) {
+		printf(" ~\n");
+		return;
+	}
+
+	printf("\n");
+	printf("  cmd_path: %s\n", pfile->cmd_path);
+	printf("  cmd_nbytes: %zu\n", pfile->cmd_nbytes);
+	printf("  meta_path: %s\n", pfile->meta_path);
+	printf("  meta_nbytes: %zu\n", pfile->meta_nbytes);
+	printf("  data_path: %s\n", pfile->data_path);
+	printf("  data_nbytes: %zu\n", pfile->data_nbytes);
+}
 
 void nvm_cli_opts_pr(struct nvm_cli_opts *opts)
 {
@@ -391,8 +542,6 @@ void nvm_cli_opts_pr(struct nvm_cli_opts *opts)
 	printf("  hex_val: 0x%016"PRIx64"\n", opts->hex_val);
 	printf("  file_input: %s\n", opts->file_input);
 	printf("  file_output: %s\n", opts->file_output);
-
-	nvm_cli_opts_pfile_pr(&opts->pfile);
 }
 
 void nvm_cli_evars_pr(struct nvm_cli_evars *evars)
@@ -428,6 +577,7 @@ void nvm_cli_pr(struct nvm_cli *cli)
 	printf("  name: '%s'\n", cli->name);
 	nvm_cli_evars_pr(&cli->evars);
 	nvm_cli_opts_pr(&cli->opts);
+	nvm_cli_opts_pfile_pr(&cli->opts.pfile);
 	nvm_cli_cmd_args_pr(&cli->args);
 }
 
@@ -463,7 +613,7 @@ void nvm_cli_status_pr(const char *task, size_t cur, size_t total)
 
 static int parse_opts(int argc, char *argv[], struct nvm_cli *cli)
 {
-	for (int opt = 0; (opt = getopt(argc, argv, ":hbvcmdti:o:n:x:")) != -1;) {
+	for (int opt = 0; (opt = getopt(argc, argv, ":hbvc:m:d:ti:o:n:x:")) != -1;) {
 		switch(opt) {
 		case 'h':
 			cli->opts.mask |= NVM_CLI_OPT_HELP;
@@ -484,6 +634,21 @@ static int parse_opts(int argc, char *argv[], struct nvm_cli *cli)
 		case 't':
 			cli->opts.mask |= NVM_CLI_OPT_TERSE;
 			cli->opts.terse = 1;
+			break;
+		case 'c':
+			cli->opts.mask |= NVM_CLI_OPT_FILE_CMD;
+			cli->opts.pfile.cmd_path = optarg;
+			cli->opts.pfile.cmd_nbytes = NVM_CLI_OPTS_PFILE_CMD_NBYTES;
+			break;
+		case 'm':
+			cli->opts.mask |= NVM_CLI_OPT_FILE_META;
+			cli->opts.pfile.meta_path = optarg;
+			cli->opts.pfile.meta_nbytes = NVM_CLI_OPTS_PFILE_MAX_NBYTES;
+			break;
+		case 'd':
+			cli->opts.mask |= NVM_CLI_OPT_FILE_DATA;
+			cli->opts.pfile.data_path = optarg;
+			cli->opts.pfile.data_nbytes = NVM_CLI_OPTS_PFILE_MAX_NBYTES;
 			break;
 		case 'i':
 			cli->opts.mask |= NVM_CLI_OPT_FILE_INPUT;
@@ -1506,8 +1671,18 @@ int nvm_cli_init(struct nvm_cli *cli, int argc, char *argv[])
 	// Setup environment and device
 	ret = evar_and_dev_setup(cli);
 	if (ret < 0) {
-		if (cli->args.dev)
+		if (cli->args.dev) {
 			nvm_dev_close(cli->args.dev);
+		}
+		errno = EINVAL;
+		return -1;
+	}
+
+	ret = nvm_cli_opts_pfile_load(cli);
+	if (ret) {
+		if (cli->args.dev) {
+			nvm_dev_close(cli->args.dev);
+		}
 		errno = EINVAL;
 		return -1;
 	}
@@ -1543,6 +1718,10 @@ void nvm_cli_destroy(struct nvm_cli *cli)
 {
 	if (!cli)
 		return;
+
+	if (cli->args.dev) {
+		nvm_cli_opts_pfile_unload(cli);
+	}
 
 	nvm_dev_close(cli->args.dev);
 }
