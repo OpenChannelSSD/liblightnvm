@@ -223,6 +223,42 @@ failed:
 	return NULL;
 }
 
+struct nvm_cmd_wrap *nvm_cmd_wrap_pass(struct nvm_dev *dev,
+				       struct nvm_nvme_cmd *NVM_UNUSED(cmd),
+				       void *data, size_t data_nbytes,
+				       void *meta, size_t meta_nbytes,
+				       int NVM_UNUSED(flags),
+				       struct nvm_ret *ret)
+{
+	struct nvm_cmd_wrap *wrap = NULL;
+
+	wrap = calloc(1, sizeof(*wrap));
+	if (!wrap) {
+		NVM_DEBUG("FAILED: allocating wrap");
+		// Propagate errno from calloc
+		return NULL;
+	}
+
+	wrap->dev = dev;
+	wrap->data = data;
+	wrap->data_len = data_nbytes;
+	wrap->meta = meta;
+	wrap->meta_len = meta_nbytes;
+	wrap->ret = ret;
+	wrap->completed = 0;
+
+	return wrap;
+}
+
+int nvm_cmd_pass(struct nvm_dev *dev, struct nvm_nvme_cmd *cmd,
+		 void *data, size_t data_nbytes,
+		 void *meta, size_t meta_nbytes,
+		 int flags, struct nvm_ret *ret)
+{
+	return dev->be->pass(dev, cmd, data, data_nbytes, meta, meta_nbytes,
+			     flags, ret);
+}
+
 struct nvm_spec_idfy *nvm_cmd_idfy(struct nvm_dev *dev, struct nvm_ret *ret)
 {
 	return dev->be->idfy(dev, ret);
