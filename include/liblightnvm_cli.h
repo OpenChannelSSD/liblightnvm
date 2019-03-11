@@ -131,6 +131,7 @@ enum nvm_cli_opt_type {
 };
 
 #define NVM_CLI_OPT_DEFAULT (NVM_CLI_OPT_HELP | NVM_CLI_OPT_VERBOSE)
+#define NVM_CLI_OPT_COUNT 12
 
 /**
  * Storage for opt-arguments
