@@ -116,6 +116,14 @@ spdk_on:
 spdk_off:
 	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_BE_SPDK_ENABLED=OFF)
 
+.PHONY: trace_on
+trace_on:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_TRACE_ENABLED=ON)
+
+.PHONY: trace_off
+trace_off:
+	$(eval CMAKE_OPTS := ${CMAKE_OPTS} -DNVM_TRACE_ENABLED=OFF)
+
 .PHONY: debug_on
 debug_on:
 	$(eval BUILD_TYPE := Debug)
