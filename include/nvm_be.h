@@ -55,6 +55,12 @@ struct nvm_be {
 	void (*close)(struct nvm_dev *);
 
 	/**
+	 * Pass a NVMe command through to the device with minimal intervention
+	 */
+	int (*pass)(struct nvm_dev *, struct nvm_nvme_cmd *, void *, size_t,
+		    void*, size_t, int, struct nvm_ret *);
+
+	/**
 	 * Execute identify command
 	 */
 	struct nvm_spec_idfy *(*idfy)(struct nvm_dev *, struct nvm_ret *);
@@ -162,6 +168,11 @@ struct nvm_be {
 struct nvm_dev* nvm_be_nosys_open(const char *dev_path, int flags);
 
 void nvm_be_nosys_close(struct nvm_dev *dev);
+
+int nvm_be_nosys_pass(struct nvm_dev *dev, struct nvm_nvme_cmd *cmd,
+		      void *data, size_t data_nbytes,
+		      void *meta, size_t meta_nbytes, int flags,
+		      struct nvm_ret *ret);
 
 struct nvm_spec_idfy *nvm_be_nosys_idfy(struct nvm_dev *dev,
 					struct nvm_ret *ret);
