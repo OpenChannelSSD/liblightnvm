@@ -63,6 +63,12 @@ struct nvm_cmd_wrap *nvm_cmd_wrap_setup(struct nvm_dev *dev, int opcode,
 					int flags,
 					struct nvm_ret *ret);
 
+struct nvm_cmd_wrap *nvm_cmd_wrap_pass(struct nvm_dev *dev,
+				       struct nvm_nvme_cmd *cmd,
+				       void *data, size_t data_nbytes,
+				       void *meta, size_t meta_nbytes,
+				       int flags, struct nvm_ret *ret);
+
 void nvm_cmd_wrap_term(struct nvm_cmd_wrap *wrap);
 
 void nvm_cmd_wrap_cpl(struct nvm_cmd_wrap *wrap,
