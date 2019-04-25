@@ -20,8 +20,7 @@ HEAD can be subject to a git rebase.
 * Add support for AER
 
 * Pass-through
- - Add best-effort support for IOCTL
- - Added meta-data setup on admin-command-pass-through
+ - Add best-effort support for backends based on IOCTLs
 
 ## v0.1.8
 
