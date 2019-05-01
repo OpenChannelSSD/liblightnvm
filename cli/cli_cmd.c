@@ -283,8 +283,6 @@ static int cmd_copy(struct nvm_cli *cli)
 		return -1;
 	}
 
-	return count;
-
 	return 0;
 }
 
