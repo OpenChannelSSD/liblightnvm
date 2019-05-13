@@ -22,3 +22,5 @@ doc/src/.doctrees/
 
 /tests/dflash_test
 /tests/lib_test
+
+/spdk

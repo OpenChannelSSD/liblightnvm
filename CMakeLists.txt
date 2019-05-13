@@ -133,16 +133,24 @@ add_library(${LNAME} STATIC ${HEADER_FILES} ${SOURCE_FILES})
 set_target_properties(${LNAME} PROPERTIES OUTPUT_NAME ${LNAME})
 
 if(${NVM_BE_SPDK_ENABLED})
-	set(NVM_BE_SPDK_DEPS spdk_nvme spdk_util spdk_log spdk_env_dpdk rte_bus_pci rte_eal rte_mempool rte_mempool_ring rte_pci rte_ring rt dl numa uuid)
-	foreach(NVM_BE_SPDK_DEP ${NVM_BE_SPDK_DEPS})
-		target_link_libraries(${LNAME} ${NVM_BE_SPDK_DEP})
-	endforeach()
+	include_directories("${PROJECT_SOURCE_DIR}/spdk/include")
+
+	link_directories("${PROJECT_SOURCE_DIR}/spdk/build/lib")
+	link_directories("${PROJECT_SOURCE_DIR}/spdk/dpdk/build/lib")
+	link_directories("${PROJECT_SOURCE_DIR}/spdk/isa-l/.libs")
+
+        set(NVM_BE_SPDK_LIBS rt dl numa uuid)
+	set(NVM_BE_SPDK_SPDK_LIBS spdk_nvme spdk_sock spdk_util spdk_log spdk_env_dpdk)
+	set(NVM_BE_SPDK_DPDK_LIBS rte_bus_pci rte_eal rte_mempool rte_mempool_ring rte_pci rte_ring rte_kvargs)
+
+	target_link_libraries(${LNAME} ${NVM_BE_SPDK_LIBS})
+	target_link_libraries(${LNAME} -Wl,--whole-archive ${NVM_BE_SPDK_SPDK_LIBS} -Wl,--no-whole-archive)
+	target_link_libraries(${LNAME} -Wl,--whole-archive ${NVM_BE_SPDK_DPDK_LIBS} -Wl,--no-whole-archive)
+	target_link_libraries(${LNAME} isal)
 
 	if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-		if(EXISTS "${ROOT}/usr/local/include/dpdk")
-			include_directories("/usr/local/include/dpdk")
-			add_definitions(-DNVM_BE_SPDK_CHOKE_PRINTING)
-		endif()
+		include_directories("${PROJECT_SOURCE_DIR}/spdk/dpdk/build/include")
+		add_definitions(-DNVM_BE_SPDK_CHOKE_PRINTING)
 	endif()
 endif()
 

@@ -201,7 +201,7 @@ int nvm_buf_vtophys(const struct nvm_dev *dev, void *buf, uint64_t *phys)
 
 		case NVM_BE_SPDK:
 		case NVM_BE_NOCD:
-			*phys = spdk_vtophys(buf);
+			*phys = spdk_vtophys(buf, NULL);
 			if (SPDK_VTOPHYS_ERROR == *phys) {
 				errno = EIO;
 				return -1;

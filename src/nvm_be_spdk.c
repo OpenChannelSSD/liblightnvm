@@ -68,8 +68,8 @@ struct nvm_be nvm_be_spdk = {
 #include <nvm_be.h>
 #include <nvm_be_spdk.h>
 #ifdef NVM_BE_SPDK_CHOKE_PRINTING
-#include <dpdk/rte_log.h>
 #include <spdk/log.h>
+#include "rte_log.h"
 #endif
 
 #define NVM_BE_SPDK_MAX_PROBE_ATTEMPTS 2
