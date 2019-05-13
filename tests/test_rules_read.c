@@ -29,7 +29,7 @@
 #include "test_rules.h"
 #include "test_intf.c"
 
-typedef void (*_read_and_verify_fn)(struct nvm_addr *addr, int dulbe,
+typedef void (*_read_and_verify_fn)(struct nvm_addr *addr, bool dulbe,
 	nvm_test_verify_fn verify, uint16_t err);
 
 static void _test_read_free(_read_and_verify_fn read_and_verify)
@@ -82,7 +82,7 @@ static void _test_read_offline_dulbe(_read_and_verify_fn read_and_verify)
 
 static void _test_read_oor(_read_and_verify_fn read_and_verify)
 {
-	nvm_test_set_dulbe(false);
+	bool dulbe_state = nvm_test_set_dulbe(false);
 
 	struct nvm_addr addr = {
 		.l.chunk = GEO->l.nchunk,
@@ -90,11 +90,12 @@ static void _test_read_oor(_read_and_verify_fn read_and_verify)
 
 	read_and_verify(&addr, false /* dulbe */,
 		nvm_test_verify_read_ok_predef, 0x0);
+	nvm_test_set_dulbe(dulbe_state);
 }
 
 static void _test_read_oor_dulbe(_read_and_verify_fn read_and_verify)
 {
-	nvm_test_set_dulbe(true);
+	bool dulbe_state = nvm_test_set_dulbe(true);
 
 	struct nvm_addr addr = {
 		.l.chunk = GEO->l.nchunk,
@@ -102,6 +103,7 @@ static void _test_read_oor_dulbe(_read_and_verify_fn read_and_verify)
 
 	read_and_verify(&addr, true /* dulbe */,
 		nvm_test_verify_read_err, NVME_ERR_DULB);
+	nvm_test_set_dulbe(dulbe_state);
 }
 
 static void _test_read_mw_cunits(nvm_test_write_ok_fn write_ok,
@@ -111,15 +113,17 @@ static void _test_read_mw_cunits(nvm_test_write_ok_fn write_ok,
 	struct nvm_addr addr;
 	struct nvm_buf_set *bufs;
 
-	nvm_test_set_dulbe(false);
+	bool dulbe_state = nvm_test_set_dulbe(false);
 
 	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, 1, &addr)) {
+		nvm_test_set_dulbe(dulbe_state);
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		return;
 	}
 
 	bufs = nvm_buf_set_alloc(DEV, GEO->l.nsectr * SECTOR_SIZE, 0);
 	if (bufs == NULL) {
+		nvm_test_set_dulbe(dulbe_state);
 		CU_FAIL("nvm_buf_set_alloc");
 		return;
 	}
@@ -148,6 +152,7 @@ static void _test_read_mw_cunits(nvm_test_write_ok_fn write_ok,
 	read_ok(addr, WS_MIN, bufs->read, bufs->write);
 
 	nvm_buf_set_free(bufs);
+	nvm_test_set_dulbe(dulbe_state);
 }
 
 static void _test_read_mw_cunits_dulbe(nvm_test_write_ok_fn write_ok,
@@ -157,15 +162,17 @@ static void _test_read_mw_cunits_dulbe(nvm_test_write_ok_fn write_ok,
 	struct nvm_addr addr;
 	struct nvm_buf_set *bufs;
 
-	nvm_test_set_dulbe(true);
+	bool dulbe_state = nvm_test_set_dulbe(true);
 
 	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, 1, &addr)) {
+		nvm_test_set_dulbe(dulbe_state);
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		return;
 	}
 
 	bufs = nvm_buf_set_alloc(DEV, GEO->l.nsectr * SECTOR_SIZE, 0);
 	if (bufs == NULL) {
+		nvm_test_set_dulbe(dulbe_state);
 		CU_FAIL("nvm_buf_set_alloc");
 		return;
 	}
@@ -188,6 +195,7 @@ static void _test_read_mw_cunits_dulbe(nvm_test_write_ok_fn write_ok,
 	read_ok(addr, WS_MIN, bufs->read, bufs->write);
 
 	nvm_buf_set_free(bufs);
+	nvm_test_set_dulbe(dulbe_state);
 }
 
 static void _test_read_slba_gt_wp(nvm_test_write_ok_fn write_ok,
@@ -196,15 +204,17 @@ static void _test_read_slba_gt_wp(nvm_test_write_ok_fn write_ok,
 	struct nvm_addr addr;
 	struct nvm_buf_set *bufs;
 
-	nvm_test_set_dulbe(false);
+	bool dulbe_state = nvm_test_set_dulbe(false);
 
 	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, 1, &addr)) {
+		nvm_test_set_dulbe(dulbe_state);
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		return;
 	}
 
 	bufs = nvm_buf_set_alloc(DEV, GEO->l.nsectr * SECTOR_SIZE, 0);
 	if (bufs == NULL) {
+		nvm_test_set_dulbe(dulbe_state);
 		CU_FAIL("nvm_buf_set_alloc");
 		return;
 	}
@@ -226,6 +236,7 @@ static void _test_read_slba_gt_wp(nvm_test_write_ok_fn write_ok,
 	read_ok_predef(addr, WS_MIN, bufs->read);
 
 	nvm_buf_set_free(bufs);
+	nvm_test_set_dulbe(dulbe_state);
 }
 
 static void _test_read_slba_gt_wp_dulbe(nvm_test_write_ok_fn write_ok,
@@ -234,15 +245,17 @@ static void _test_read_slba_gt_wp_dulbe(nvm_test_write_ok_fn write_ok,
 	struct nvm_addr addr;
 	struct nvm_buf_set *bufs;
 
-	nvm_test_set_dulbe(true);
+	bool dulbe_state = nvm_test_set_dulbe(true);
 
 	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, 1, &addr)) {
+		nvm_test_set_dulbe(dulbe_state);
 		CU_FAIL("nvm_cmd_rprt_arbs");
 		return;
 	}
 
 	bufs = nvm_buf_set_alloc(DEV, GEO->l.nsectr * SECTOR_SIZE, 0);
 	if (bufs == NULL) {
+		nvm_test_set_dulbe(dulbe_state);
 		CU_FAIL("nvm_buf_set_alloc");
 		return;
 	}
@@ -264,6 +277,7 @@ static void _test_read_slba_gt_wp_dulbe(nvm_test_write_ok_fn write_ok,
 	read_err(addr, WS_MIN, bufs->read, NVME_ERR_DULB);
 
 	nvm_buf_set_free(bufs);
+	nvm_test_set_dulbe(dulbe_state);
 }
 
 MAKE_RULES_TESTS_1(read_free, read_and_verify)

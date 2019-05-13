@@ -28,6 +28,7 @@
 #ifndef __TEST_UTIL_H
 #define __TEST_UTIL_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -130,9 +131,9 @@ typedef void (*nvm_test_reset_err_fn)(struct nvm_addr *addrs, uint32_t err);
 
 
 /*
- * Toggle the DULBE feature.
+ * Set the DULBE feature. Returns the previous state.
  */
-void nvm_test_set_dulbe(int enable);
+bool nvm_test_set_dulbe(bool enable);
 
 
 
@@ -167,7 +168,7 @@ void nvm_test_verify_read_err(int rc, const struct nvm_ret *ret,
  * `dulbe controls wether the Deallocated and Unwritten Logical Block Error
  * feature is enabled.
  */
-void nvm_test_read_and_verify(struct nvm_addr *addr, int dulbe,
+void nvm_test_read_and_verify(struct nvm_addr *addr, bool dulbe,
 			      enum nvm_cmd_opts cmd_opts,
 			      nvm_test_verify_fn verify, uint16_t err);
 
@@ -178,7 +179,7 @@ void nvm_test_read_and_verify(struct nvm_addr *addr, int dulbe,
  * `dulbe controls wether the Deallocated and Unwritten Logical Block Error
  * feature is enabled.
  */
-void nvm_test_scalar_read_and_verify(struct nvm_addr *addr, int dulbe,
+void nvm_test_scalar_read_and_verify(struct nvm_addr *addr, bool dulbe,
 				     nvm_test_verify_fn verify, uint16_t err);
 
 /*
@@ -188,7 +189,7 @@ void nvm_test_scalar_read_and_verify(struct nvm_addr *addr, int dulbe,
  * `dulbe controls wether the Deallocated and Unwritten Logical Block Error
  * feature is enabled.
  */
-void nvm_test_vector_read_and_verify(struct nvm_addr *addr, int dulbe,
+void nvm_test_vector_read_and_verify(struct nvm_addr *addr, bool dulbe,
 				     nvm_test_verify_fn verify, uint16_t err);
 
 

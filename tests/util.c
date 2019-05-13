@@ -29,10 +29,18 @@
 
 #include <CUnit/Basic.h>
 
-void nvm_test_set_dulbe(int enable)
+bool nvm_test_set_dulbe(bool enable)
 {
 	union nvm_nvme_feat feat = { 0 };
 	int rc;
+	bool prev_state;
+
+	rc = nvm_cmd_gfeat(DEV, NVM_NVME_FEAT_ERROR_RECOVERY, &feat, NULL);
+	CU_ASSERT(rc == 0);
+
+	prev_state = feat.error_recovery.dulbe;
+
+	memset(&feat, 0x0, sizeof(union nvm_nvme_feat));
 
 	if (enable) {
 		feat.error_recovery.dulbe = 1;
@@ -40,13 +48,15 @@ void nvm_test_set_dulbe(int enable)
 
 	rc = nvm_cmd_sfeat(DEV, NVM_NVME_FEAT_ERROR_RECOVERY, &feat, NULL);
 	CU_ASSERT(rc == 0);
+
+	return prev_state;
 }
 
-void nvm_test_read_and_verify(struct nvm_addr *addr, int dulbe,
+void nvm_test_read_and_verify(struct nvm_addr *addr, bool dulbe,
 			      enum nvm_cmd_opts cmd_opts,
 			      nvm_test_verify_fn verify, uint16_t err)
 {
-	nvm_test_set_dulbe(dulbe);
+	bool dulbe_state = nvm_test_set_dulbe(dulbe);
 	void *buf;
 	struct nvm_ret ret = { 0 };
 	const char v = NVME_DLFEAT_VAL;
@@ -54,7 +64,8 @@ void nvm_test_read_and_verify(struct nvm_addr *addr, int dulbe,
 
 	buf = nvm_buf_alloc(DEV, GEO->l.nbytes, NULL);
 	if (buf == NULL) {
-		CU_FAIL("nvm_buf_alloc");
+		nvm_test_set_dulbe(dulbe_state);
+		CU_FAIL_FATAL("nvm_buf_alloc");
 		return;
 	}
 
@@ -66,16 +77,17 @@ void nvm_test_read_and_verify(struct nvm_addr *addr, int dulbe,
 
 	nvm_buf_free(DEV, buf);
 
+	nvm_test_set_dulbe(dulbe_state);
 	CU_PASS("SUCCESS");
 }
 
-void nvm_test_scalar_read_and_verify(struct nvm_addr *addr, int dulbe,
+void nvm_test_scalar_read_and_verify(struct nvm_addr *addr, bool dulbe,
 				     nvm_test_verify_fn verify, uint16_t err)
 {
 	nvm_test_read_and_verify(addr, dulbe, NVM_CMD_SCALAR, verify, err);
 }
 
-void nvm_test_vector_read_and_verify(struct nvm_addr *addr, int dulbe,
+void nvm_test_vector_read_and_verify(struct nvm_addr *addr, bool dulbe,
 				     nvm_test_verify_fn verify, uint16_t err)
 {
 	nvm_test_read_and_verify(addr, dulbe, NVM_CMD_VECTOR, verify, err);
