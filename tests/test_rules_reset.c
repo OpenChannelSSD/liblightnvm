@@ -46,7 +46,8 @@ static void _test_reset_free(nvm_test_reset_ok_fn reset_ok,
 	}
 }
 
-static void _test_reset_open(nvm_test_reset_err_fn reset_err)
+static void _test_reset_open(nvm_test_reset_ok_fn reset_ok,
+	nvm_test_reset_err_fn reset_err)
 {
 	struct nvm_addr addr;
 	char *buf;
@@ -63,7 +64,11 @@ static void _test_reset_open(nvm_test_reset_err_fn reset_err)
 
 	nvm_test_rprt_assert_state(addr, NVM_CHUNK_STATE_OPEN);
 
-	reset_err(&addr, LNVM_ERR_INVALID_RESET);
+	if (nvm_dev_get_mccap(DEV) & 0x4) {
+		reset_ok(&addr);
+	} else {
+		reset_err(&addr, LNVM_ERR_INVALID_RESET);
+	}
 }
 
 static void _test_reset_closed(nvm_test_reset_ok_fn reset_ok)
@@ -108,7 +113,7 @@ static void _test_reset_non_existing(nvm_test_reset_err_fn reset_err)
 }
 
 MAKE_RULES_TESTS_2(reset_free, reset_ok, reset_err)
-MAKE_RULES_TESTS_1(reset_open, reset_err)
+MAKE_RULES_TESTS_2(reset_open, reset_ok, reset_err)
 MAKE_RULES_TESTS_1(reset_closed, reset_ok)
 MAKE_RULES_TESTS_1(reset_offline, reset_err)
 MAKE_RULES_TESTS_1(reset_non_existing, reset_err)
