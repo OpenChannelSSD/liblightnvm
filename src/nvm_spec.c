@@ -223,6 +223,7 @@ static void nvm_spec_idfy_s20_pr(const struct nvm_spec_idfy *identify)
 	printf("  verid: "NVM_I8_FMT"\n", NVM_I8_TO_STR(idfy.verid));
 	printf("  verid_minor: "NVM_I8_FMT"\n", NVM_I8_TO_STR(idfy.verid_minor));
 	printf("  mccap: "NVM_I32_FMT"\n", NVM_I32_TO_STR(idfy.mccap));
+	printf("  wit: %"PRIu8"\n", idfy.wit);
 	nvm_spec_lbaf_pr(&idfy.lbaf);
 	nvm_spec_lgeo_pr(&idfy.lgeo);
 	nvm_spec_wrt_pr(&idfy.wrt);
@@ -341,7 +342,7 @@ void nvm_nvme_cmd_pr(struct nvm_nvme_cmd *cmd, int flags)
 			printf("  cdw%01d: 0x%04x\n", i, cdw[i]);
 		}
 		break;
-	
+
 	case 0x3:
 		printf("  opcode: 0x%02x\n", cmd->opcode);
 		printf("  fuse: 0x%x\n", cmd->fuse);
@@ -363,4 +364,3 @@ void nvm_nvme_cmd_pr(struct nvm_nvme_cmd *cmd, int flags)
 		break;
 	}
 }
-
