@@ -558,7 +558,8 @@ struct nvm_spec_idfy *nvm_cmd_idfy(struct nvm_dev *dev, struct nvm_ret *ret);
  * Executes one or multiple OCSSD 2.0 get-log-page for chunk-information
  *
  * @note
- * Caller is responsible for de-allocating the returned structure
+ * Caller is responsible for de-allocating the returned structure using
+ * `nvm_buf_free`.
  *
  * @param dev Device handle obtained with `nvm_dev_open`
  * @param addr Pointer to a `struct nvm_addr` containing the address of a chunk
