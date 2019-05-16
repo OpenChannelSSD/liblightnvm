@@ -180,13 +180,8 @@
 	(val & (1ULL << 1) ? '1' : '0'), \
 	(val & (1ULL << 0) ? '1' : '0')
 
-static inline int NVM_MIN(int x, int y) {
-	return x < y ? x : y;
-}
-
-static inline int NVM_MAX(int x, int y) {
-	return x > y ? x : y;
-}
+#define NVM_MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define NVM_MAX(a, b) (((a) > (b)) ? (a) : (b))
 
 #ifdef NVM_DEBUG_ENABLED
 
