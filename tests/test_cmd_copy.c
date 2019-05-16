@@ -1,125 +1,158 @@
-/**
- * Minimal test of nvm_cmd_copy
+/*
+ * test_cmd_copy.c - test ocssd vector copy
  *
- * Requires / Depends on:
+ * Copyright (c) 2019 CNEX Labs, Inc.
  *
- *  - That the device has two free chunks
- *  - nvm_cmd_rprt_arbs
- *  - nvm_cmd_write
- *  - nvm_cmd_read
- *  - nvm_buf
+ * Written by Klaus Birkelund Abildgaard Jensen <klaus@birkelund.eu>
  *
- * Verifies:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- *  - nvm_cmd_copy can submit and complete without error
+ *  - Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *  - Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
  *
- * Two chunks, a source and a destination, are selected by consulting
- * nvm_cmd_rprt_get_arbs one is written with a constructed payload, then copied
- * to the other chunk, read and buffers compared
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include "test_util.h"
 #include "test_intf.c"
 
-#define SRC 0
-#define DST 1
-#define NCHUNKS 2
-
-int cmd_copy(int cmd_opt)
+static void cmd_copy_full(void)
 {
-	const size_t io_nsectr = nvm_dev_get_ws_opt(DEV);
-	size_t bufs_nbytes = GEO->l.nsectr * GEO->l.nbytes;
-	struct nvm_buf_set *bufs = NULL;
-	struct nvm_addr chunks[NCHUNKS];
-	int res = -1;
+	bool dulbe_state = nvm_test_set_dulbe(true);
 
-	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, NCHUNKS, chunks)) {
+	struct nvm_buf_set *bufs;
+	struct nvm_addr addrs[2];
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, 2, addrs)) {
 		CU_FAIL("nvm_cmd_rprt_arbs");
-		goto exit;
+		return;
 	}
 
-	bufs = nvm_buf_set_alloc(DEV, bufs_nbytes, 0);
+	bufs = nvm_buf_set_alloc(DEV, SECTOR_SIZE * NSECTR, OOB_SIZE * NSECTR);
 	if (!bufs) {
 		CU_FAIL("nvm_buf_set_alloc");
-		goto exit;
+		return;
 	}
 	nvm_buf_set_fill(bufs);
 
-	for (size_t sectr = 0; sectr < GEO->l.nsectr; sectr += io_nsectr) {
-		const size_t buf_ofz = sectr * GEO->l.nbytes;
-		struct nvm_addr src[io_nsectr];
+	nvm_test_scalar_write_ok(addrs[0], NSECTR, bufs->write, bufs->write_meta);
+	nvm_test_vector_copy_ok(addrs[0], addrs[1], NSECTR);
+	nvm_test_scalar_read_ok(addrs[1], NSECTR, bufs->read, bufs->write,
+		bufs->read_meta, bufs->write_meta);
 
-		for (size_t idx = 0; idx < io_nsectr; ++idx) {
-			src[idx] = chunks[SRC];
-			src[idx].l.sectr = sectr + idx;
-		}
-
-		res = nvm_cmd_write(DEV, src, io_nsectr,
-				    bufs->write + buf_ofz, NULL,
-				    cmd_opt, NULL);
-		if (res < 0) {
-			CU_FAIL("nvm_cmd_write");
-			goto exit;
-		}
-	}
-
-	for (size_t sectr = 0; sectr < GEO->l.nsectr; sectr += io_nsectr) {
-		struct nvm_addr src[io_nsectr];
-		struct nvm_addr dst[io_nsectr];
-
-		for (size_t idx = 0; idx < io_nsectr; ++idx) {
-			src[idx] = chunks[SRC];
-			src[idx].l.sectr = sectr + idx;
-
-			dst[idx] = chunks[DST];
-			dst[idx].l.sectr = sectr + idx;
-		}
-
-		res = nvm_cmd_copy(DEV, src, dst, io_nsectr, 0, NULL);
-		if (res < 0) {
-			CU_FAIL("nvm_cmd_copy");
-			goto exit;
-		}
-	}
-
-	for (size_t sectr = 0; sectr < GEO->l.nsectr; sectr += io_nsectr) {
-		const size_t buf_ofz = sectr * GEO->l.nbytes;
-		struct nvm_addr dst[io_nsectr];
-
-		for (size_t idx = 0; idx < io_nsectr; ++idx) {
-			dst[idx] = chunks[DST];
-			dst[idx].l.sectr = sectr + idx;
-		}
-
-		res = nvm_cmd_read(DEV, dst, io_nsectr,
-				   bufs->read + buf_ofz, NULL,
-				   cmd_opt, NULL);
-		if (res < 0) {
-			CU_FAIL("nvm_cmd_read");
-			goto exit;
-		}
-	}
-
-	if (nvm_buf_diff(bufs->read, bufs->write, bufs->nbytes)) {
-		CU_FAIL("buffer mismatch");
-		goto exit;
-	}
-
-	CU_PASS("Success");
-	res = 0;
-
-exit:
 	nvm_buf_set_free(bufs);
-	return res;
+
+	if (nvm_cmd_erase(DEV, addrs, 2, NULL, 0x0, NULL)) {
+		CU_FAIL("nvm_cmd_erase");
+		return;
+	}
+
+	nvm_test_set_dulbe(dulbe_state);
 }
 
-static void test_CMD_COPY_SWR(void)
+static void cmd_copy_scatter(void)
 {
-	CU_ASSERT(!cmd_copy(NVM_CMD_SCALAR));
+	bool dulbe_state = nvm_test_set_dulbe(true);
+
+	struct nvm_buf_set *bufs;
+	struct nvm_addr chks[3];
+	struct nvm_addr src_addrs[2*WS_MIN], dst_addrs[2*WS_MIN];
+
+	bufs = nvm_buf_set_alloc(DEV, SECTOR_SIZE * NSECTR, OOB_SIZE * NSECTR);
+	if (!bufs) {
+		CU_FAIL_FATAL("nvm_buf_set_alloc");
+		return;
+	}
+	nvm_buf_set_fill(bufs);
+
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, 3, chks)) {
+		CU_FAIL_FATAL("nvm_cmd_rprt_arbs");
+		return;
+	}
+
+	nvm_test_scalar_write_ok(chks[0], NSECTR, bufs->write, bufs->write_meta);
+
+	nvm_addr_fill_crange(src_addrs, chks[0], 2*WS_MIN);
+
+	/* setup dst_addrs for scatter */
+	nvm_addr_fill_crange(dst_addrs, chks[1], WS_MIN);
+	nvm_addr_fill_crange(&dst_addrs[WS_MIN], chks[2], WS_MIN);
+
+	if (nvm_cmd_copy(DEV, src_addrs, dst_addrs, 2*WS_MIN, 0, NULL)) {
+		CU_FAIL_FATAL("nvm_cmd_copy");
+	}
+
+	nvm_test_pad_to_close(chks[1], 0x00);
+	nvm_test_pad_to_close(chks[2], 0x00);
+
+	nvm_test_scalar_read_ok(chks[1], WS_MIN, bufs->read, bufs->write,
+		bufs->read_meta, bufs->write_meta);
+
+	nvm_test_scalar_read_ok(chks[2], WS_MIN,
+		&bufs->read[WS_MIN * SECTOR_SIZE], &bufs->write[WS_MIN * SECTOR_SIZE],
+		&bufs->read_meta[WS_MIN * OOB_SIZE], &bufs->write_meta[WS_MIN * OOB_SIZE]);
+
+	nvm_test_set_dulbe(dulbe_state);
 }
 
-static void test_CMD_COPY_VWR(void)
+static void cmd_copy_gather(void)
 {
-	CU_ASSERT(!cmd_copy(NVM_CMD_VECTOR));
+	bool dulbe_state = nvm_test_set_dulbe(true);
+
+	struct nvm_buf_set *bufs;
+	struct nvm_addr chks[3];
+	struct nvm_addr src_addrs[2*WS_MIN], dst_addrs[2*WS_MIN];
+
+	bufs = nvm_buf_set_alloc(DEV, SECTOR_SIZE * NSECTR, OOB_SIZE * NSECTR);
+	if (!bufs) {
+		CU_FAIL("nvm_buf_set_alloc");
+		return;
+	}
+	nvm_buf_set_fill(bufs);
+
+	if (nvm_cmd_rprt_arbs(DEV, NVM_CHUNK_STATE_FREE, 3, chks)) {
+		CU_FAIL("nvm_cmd_rprt_arbs");
+		return;
+	}
+
+	nvm_test_scalar_write_ok(chks[0], NSECTR, bufs->write, bufs->write_meta);
+	nvm_test_scalar_write_ok(chks[1], NSECTR, bufs->write, bufs->write_meta);
+
+	/* setup src_addrs for gather */
+	nvm_addr_fill_crange(src_addrs, chks[0], WS_MIN);
+	nvm_addr_fill_crange(&src_addrs[WS_MIN], chks[1], WS_MIN);
+
+	nvm_addr_fill_crange(dst_addrs, chks[2], 2*WS_MIN);
+
+	if (nvm_cmd_copy(DEV, src_addrs, dst_addrs, 2*WS_MIN, 0, NULL)) {
+		CU_FAIL("nvm_cmd_copy");
+	}
+
+	nvm_test_pad_to_close(chks[2], 0x00);
+
+	nvm_test_scalar_read_ok(chks[2], WS_MIN, bufs->read, bufs->write,
+		bufs->read_meta, bufs->write_meta);
+
+	chks[2].l.sectr += WS_MIN;
+
+	nvm_test_scalar_read_ok(chks[2], WS_MIN, bufs->read, bufs->write,
+		bufs->read_meta, bufs->write_meta);
+
+	nvm_test_set_dulbe(dulbe_state);
 }
+
 
 int main(int argc, char **argv)
 {
@@ -129,10 +162,11 @@ int main(int argc, char **argv)
 	if (!pSuite)
 		goto out;
 
-	if (!CU_ADD_TEST(pSuite, test_CMD_COPY_VWR))
+	if (!CU_ADD_TEST(pSuite, cmd_copy_full))
 		goto out;
-
-	if (!CU_ADD_TEST(pSuite, test_CMD_COPY_SWR))
+	if (!CU_ADD_TEST(pSuite, cmd_copy_scatter))
+		goto out;
+	if (!CU_ADD_TEST(pSuite, cmd_copy_gather))
 		goto out;
 
 	switch(RMODE) {

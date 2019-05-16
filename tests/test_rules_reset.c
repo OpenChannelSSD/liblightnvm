@@ -60,7 +60,7 @@ static void _test_reset_open(nvm_test_reset_ok_fn reset_ok,
 	buf = nvm_buf_alloc(DEV, WS_MIN * SECTOR_SIZE, NULL);
 	CU_ASSERT_PTR_NOT_NULL(buf);
 
-	nvm_test_scalar_write_ok(addr, WS_MIN, buf);
+	nvm_test_scalar_write_ok(addr, WS_MIN, buf, NULL);
 
 	nvm_test_rprt_assert_state(addr, NVM_CHUNK_STATE_OPEN);
 
@@ -84,7 +84,7 @@ static void _test_reset_closed(nvm_test_reset_ok_fn reset_ok)
 	buf = nvm_buf_alloc(DEV, GEO->l.nsectr * SECTOR_SIZE, NULL);
 	CU_ASSERT_PTR_NOT_NULL(buf);
 
-	nvm_test_scalar_write_ok(addr, GEO->l.nsectr, buf);
+	nvm_test_scalar_write_ok(addr, GEO->l.nsectr, buf, NULL);
 
 	nvm_test_rprt_assert_state(addr, NVM_CHUNK_STATE_CLOSED);
 

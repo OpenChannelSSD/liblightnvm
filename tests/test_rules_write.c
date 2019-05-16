@@ -31,6 +31,7 @@
 
 #include <CUnit/Basic.h>
 
+
 static struct nvm_addr addr;
 
 static void _test_write_slba(nvm_test_write_ok_fn write_ok)
@@ -45,7 +46,7 @@ static void _test_write_slba(nvm_test_write_ok_fn write_ok)
 	buf = nvm_buf_alloc(DEV, WS_MIN * SECTOR_SIZE, NULL);
 	CU_ASSERT_PTR_NOT_NULL(buf);
 
-	write_ok(addr, WS_MIN, buf);
+	write_ok(addr, WS_MIN, buf, NULL);
 
 	nvm_test_rprt_assert_wp(addr, WS_MIN);
 	nvm_test_rprt_assert_state(addr, NVM_CHUNK_STATE_OPEN);
@@ -70,7 +71,7 @@ static void _test_write_wp(nvm_test_write_ok_fn write_ok)
 	buf = nvm_buf_alloc(DEV, WS_MIN * SECTOR_SIZE, NULL);
 	CU_ASSERT_PTR_NOT_NULL(buf);
 
-	write_ok(addr, WS_MIN, buf);
+	write_ok(addr, WS_MIN, buf, NULL);
 
 	nvm_test_rprt_assert_wp(addr, wp + WS_MIN);
 	nvm_test_rprt_assert_state(addr, NVM_CHUNK_STATE_OPEN);
@@ -96,7 +97,7 @@ static void _test_write_ooo(nvm_test_write_err_fn write_err)
 	buf = nvm_buf_alloc(DEV, WS_MIN * SECTOR_SIZE, NULL);
 	CU_ASSERT_PTR_NOT_NULL(buf);
 
-	write_err(addr, WS_MIN, buf, LNVM_ERR_OUT_OF_ORDER);
+	write_err(addr, WS_MIN, buf, NULL, LNVM_ERR_OUT_OF_ORDER);
 
 	nvm_test_rprt_assert_wp(addr, wp);
 	nvm_test_rprt_assert_state(addr, NVM_CHUNK_STATE_OPEN);
@@ -104,7 +105,7 @@ static void _test_write_ooo(nvm_test_write_err_fn write_err)
 	// write at wp-ws_min (out of order)
 	addr.l.sectr = wp - WS_MIN;
 
-	write_err(addr, WS_MIN, buf, LNVM_ERR_OUT_OF_ORDER);
+	write_err(addr, WS_MIN, buf, NULL, LNVM_ERR_OUT_OF_ORDER);
 
 	nvm_test_rprt_assert_wp(addr, wp);
 	nvm_test_rprt_assert_state(addr, NVM_CHUNK_STATE_OPEN);
@@ -130,7 +131,7 @@ static void _test_write_wp_close(nvm_test_write_ok_fn write_ok)
 	buf = nvm_buf_alloc(DEV, nlba * SECTOR_SIZE, NULL);
 	CU_ASSERT_PTR_NOT_NULL(buf);
 
-	write_ok(addr, nlba, buf);
+	write_ok(addr, nlba, buf, NULL);
 
 	nvm_test_rprt_assert_wp(addr, nlba + wp);
 	nvm_test_rprt_assert_state(addr, NVM_CHUNK_STATE_CLOSED);
@@ -149,7 +150,7 @@ static void _test_write_wp_closed(nvm_test_write_err_fn write_err)
 	buf = nvm_buf_alloc(DEV, WS_MIN * SECTOR_SIZE, NULL);
 	CU_ASSERT_PTR_NOT_NULL(buf);
 
-	write_err(addr, WS_MIN, buf, NVME_ERR_WRITE_FAULT);
+	write_err(addr, WS_MIN, buf, NULL, NVME_ERR_WRITE_FAULT);
 
 	nvm_buf_free(DEV, buf);
 }
@@ -166,7 +167,7 @@ static void _test_write_offline(nvm_test_write_err_fn write_err)
 	buf = nvm_buf_alloc(DEV, WS_MIN * SECTOR_SIZE, NULL);
 	CU_ASSERT_PTR_NOT_NULL(buf);
 
-	write_err(addr, WS_MIN, buf, NVME_ERR_WRITE_FAULT);
+	write_err(addr, WS_MIN, buf, NULL, NVME_ERR_WRITE_FAULT);
 
 	nvm_buf_free(DEV, buf);
 }
@@ -179,7 +180,7 @@ static void _test_write_oor(nvm_test_write_err_fn write_err)
 	// make out of range address
 	addr.l.pugrp = GEO->l.npugrp;
 
-	write_err(addr, WS_MIN, buf, NVME_ERR_WRITE_FAULT);
+	write_err(addr, WS_MIN, buf, NULL, NVME_ERR_WRITE_FAULT);
 
 	nvm_buf_free(DEV, buf);
 }

@@ -121,7 +121,7 @@ static void _test_read_mw_cunits(nvm_test_write_ok_fn write_ok,
 		return;
 	}
 
-	bufs = nvm_buf_set_alloc(DEV, GEO->l.nsectr * SECTOR_SIZE, 0);
+	bufs = nvm_buf_set_alloc(DEV, NSECTR * SECTOR_SIZE, NSECTR * OOB_SIZE);
 	if (bufs == NULL) {
 		nvm_test_set_dulbe(dulbe_state);
 		CU_FAIL("nvm_buf_set_alloc");
@@ -134,22 +134,23 @@ static void _test_read_mw_cunits(nvm_test_write_ok_fn write_ok,
 	memset(bufs->read, NVME_DLFEAT_VAL+1, bufs->nbytes);
 
 	// write MW_CUNITS LBAs
-	write_ok(addr, MW_CUNITS, bufs->write);
+	write_ok(addr, MW_CUNITS, bufs->write, bufs->write_meta);
 
 	// read and verify that predefined data is returned
-	read_ok_predef(addr, MW_CUNITS, bufs->read);
+	read_ok_predef(addr, MW_CUNITS, bufs->read, bufs->read_meta);
 
 	// reset read buffer with something else than NVME_DLFEAT_VAL
 	memset(bufs->read, NVME_DLFEAT_VAL+1, bufs->nbytes);
 
 	// append WS_MIN LBAs to chunk
 	addr.l.sectr = MW_CUNITS;
-	write_ok(addr, WS_MIN, bufs->write);
+	write_ok(addr, WS_MIN, bufs->write, bufs->write_meta);
 
 	// read from WS_MIN LBAs at sector 0 and verify that previously written
 	// data is returned.
 	addr.l.sectr = 0;
-	read_ok(addr, WS_MIN, bufs->read, bufs->write);
+	read_ok(addr, WS_MIN, bufs->read, bufs->write,
+		bufs->read_meta, bufs->write_meta);
 
 	nvm_buf_set_free(bufs);
 	nvm_test_set_dulbe(dulbe_state);
@@ -170,7 +171,7 @@ static void _test_read_mw_cunits_dulbe(nvm_test_write_ok_fn write_ok,
 		return;
 	}
 
-	bufs = nvm_buf_set_alloc(DEV, GEO->l.nsectr * SECTOR_SIZE, 0);
+	bufs = nvm_buf_set_alloc(DEV, NSECTR * SECTOR_SIZE, NSECTR * OOB_SIZE);
 	if (bufs == NULL) {
 		nvm_test_set_dulbe(dulbe_state);
 		CU_FAIL("nvm_buf_set_alloc");
@@ -180,19 +181,20 @@ static void _test_read_mw_cunits_dulbe(nvm_test_write_ok_fn write_ok,
 	nvm_buf_set_fill(bufs);
 
 	// write MW_CUNITS LBAs
-	write_ok(addr, MW_CUNITS, bufs->write);
+	write_ok(addr, MW_CUNITS, bufs->write, bufs->write_meta);
 
 	// read and verify that error is returned
-	read_err(addr, MW_CUNITS, bufs->read, NVME_ERR_DULB);
+	read_err(addr, MW_CUNITS, bufs->read, bufs->read_meta, NVME_ERR_DULB);
 
 	// append WS_MIN LBAs to chunk
 	addr.l.sectr = MW_CUNITS;
-	write_ok(addr, WS_MIN, bufs->write);
+	write_ok(addr, WS_MIN, bufs->write, bufs->write_meta);
 
 	// read from WS_MIN LBAs at sector 0 and verify that previously written
 	// data is returned.
 	addr.l.sectr = 0;
-	read_ok(addr, WS_MIN, bufs->read, bufs->write);
+	read_ok(addr, WS_MIN, bufs->read, bufs->write,
+		bufs->read_meta, bufs->write_meta);
 
 	nvm_buf_set_free(bufs);
 	nvm_test_set_dulbe(dulbe_state);
@@ -212,7 +214,7 @@ static void _test_read_slba_gt_wp(nvm_test_write_ok_fn write_ok,
 		return;
 	}
 
-	bufs = nvm_buf_set_alloc(DEV, GEO->l.nsectr * SECTOR_SIZE, 0);
+	bufs = nvm_buf_set_alloc(DEV, NSECTR * SECTOR_SIZE, NSECTR * OOB_SIZE);
 	if (bufs == NULL) {
 		nvm_test_set_dulbe(dulbe_state);
 		CU_FAIL("nvm_buf_set_alloc");
@@ -225,7 +227,7 @@ static void _test_read_slba_gt_wp(nvm_test_write_ok_fn write_ok,
 	memset(bufs->read, NVME_DLFEAT_VAL+1, bufs->nbytes);
 
 	// write MW_CUNITS+WS_MIN LBAs
-	write_ok(addr, MW_CUNITS + WS_MIN, bufs->write);
+	write_ok(addr, MW_CUNITS + WS_MIN, bufs->write, bufs->write_meta);
 
 	// verify that WP is at MW_CUNITS+WS_MIN
 	nvm_test_rprt_assert_wp(addr, MW_CUNITS + WS_MIN);
@@ -233,7 +235,7 @@ static void _test_read_slba_gt_wp(nvm_test_write_ok_fn write_ok,
 	addr.l.sectr = MW_CUNITS + WS_MIN;
 
 	// read WS_MIN after WP and verify that predefined data is returned
-	read_ok_predef(addr, WS_MIN, bufs->read);
+	read_ok_predef(addr, WS_MIN, bufs->read, bufs->read_meta);
 
 	nvm_buf_set_free(bufs);
 	nvm_test_set_dulbe(dulbe_state);
@@ -253,7 +255,7 @@ static void _test_read_slba_gt_wp_dulbe(nvm_test_write_ok_fn write_ok,
 		return;
 	}
 
-	bufs = nvm_buf_set_alloc(DEV, GEO->l.nsectr * SECTOR_SIZE, 0);
+	bufs = nvm_buf_set_alloc(DEV, NSECTR * SECTOR_SIZE, NSECTR * OOB_SIZE);
 	if (bufs == NULL) {
 		nvm_test_set_dulbe(dulbe_state);
 		CU_FAIL("nvm_buf_set_alloc");
@@ -266,7 +268,7 @@ static void _test_read_slba_gt_wp_dulbe(nvm_test_write_ok_fn write_ok,
 	memset(bufs->read, NVME_DLFEAT_VAL+1, bufs->nbytes);
 
 	// write MW_CUNITS+WS_MIN LBAs
-	write_ok(addr, MW_CUNITS + WS_MIN, bufs->write);
+	write_ok(addr, MW_CUNITS + WS_MIN, bufs->write, bufs->write_meta);
 
 	// verify that WP is at MW_CUNITS+WS_MIN
 	nvm_test_rprt_assert_wp(addr, MW_CUNITS + WS_MIN);
@@ -274,7 +276,7 @@ static void _test_read_slba_gt_wp_dulbe(nvm_test_write_ok_fn write_ok,
 	addr.l.sectr = MW_CUNITS + WS_MIN;
 
 	// read WS_MIN after WP and verify that error is returned
-	read_err(addr, WS_MIN, bufs->read, NVME_ERR_DULB);
+	read_err(addr, WS_MIN, bufs->read, bufs->read_meta, NVME_ERR_DULB);
 
 	nvm_buf_set_free(bufs);
 	nvm_test_set_dulbe(dulbe_state);

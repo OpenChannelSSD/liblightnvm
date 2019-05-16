@@ -16,7 +16,7 @@ static void test_compliance_scalar_write_exceed_mdts()
 	CU_ASSERT_PTR_NOT_NULL(buf);
 
 	// this should exceed typical MDTS; so expect an error
-	nvm_test_scalar_write_oneshot_err(addr, MAX_SCALAR_LBAS + WS_MIN, buf, NVME_ERR_INVALID_FIELD);
+	nvm_test_scalar_write_oneshot_err(addr, MAX_SCALAR_LBAS + WS_MIN, buf, NULL, NVME_ERR_INVALID_FIELD);
 
 	nvm_buf_free(DEV, buf);
 }
