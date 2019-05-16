@@ -209,7 +209,7 @@ struct nvm_cmd_wrap *nvm_cmd_wrap_setup(struct nvm_dev *dev, int opcode,
 	}
 
 	cmd_wrap_setup_sgl(wrap, data, meta, flags);
-	
+
 	switch (opcode) {
 	case NVM_DOPC_SCALAR_WRITE:
 	case NVM_DOPC_SCALAR_READ:
