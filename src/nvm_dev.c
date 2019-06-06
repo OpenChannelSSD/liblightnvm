@@ -463,7 +463,6 @@ void nvm_dev_close(struct nvm_dev *dev)
 
 	dev->be->close(dev);
 
-	nvm_bbt_flush_all(dev, NULL);
 	free(dev->bbts);
 	free(dev);
 }
