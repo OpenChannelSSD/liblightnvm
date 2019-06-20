@@ -87,7 +87,7 @@ void nvm_buf_virt_free(void *buf)
 
 void *nvm_buf_alloc(const struct nvm_dev *dev, size_t nbytes, uint64_t *phys)
 {
-	size_t alignment = 0;
+	size_t alignment = 4096;
 
 	switch(dev->geo.verid) {
 	case NVM_SPEC_VERID_12:
@@ -125,7 +125,7 @@ void *nvm_buf_alloc(const struct nvm_dev *dev, size_t nbytes, uint64_t *phys)
 void *nvm_buf_realloc(const struct nvm_dev *dev, void *buf, size_t nbytes,
 		      uint64_t *phys)
 {
-	size_t alignment = 0;
+	size_t alignment = 4096;
 
 	switch (dev->geo.verid) {
 	case NVM_SPEC_VERID_12:
