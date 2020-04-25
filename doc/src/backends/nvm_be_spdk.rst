@@ -132,7 +132,8 @@ Invoke like so::
     -lrt \
     -ldl \
     -lnuma \
-    -luuid
+    -luuid \
+    -laio
 
 The above compiles the example from the quick-start guide, note that the code
 has a hardcoded device identifier, you must change this to match the **SPDK**
