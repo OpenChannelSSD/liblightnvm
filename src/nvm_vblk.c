@@ -576,23 +576,24 @@ static inline ssize_t vblk_sync_pread_s20(struct nvm_vblk *vblk, void *buf,
 
 	const int NTHREADS = NVM_MIN(nchunks, nsectr / WS_OPT);
 
-	if (nsectr % WS_OPT) {
-		NVM_DEBUG("FAILED: unaligned nsectr: %zu", nsectr);
+	if (offset % sectr_nbytes) {
+		NVM_DEBUG("FAILED: unaligned offset: %zu", offset);
 		errno = EINVAL;
 		return -1;
 	}
-	if (sectr_bgn % WS_OPT) {
-		NVM_DEBUG("FAILED: unaligned sectr_bgn: %zu", sectr_bgn);
+	if (count % sectr_nbytes) {
+		NVM_DEBUG("FAILED: unaligned count: %zu", count);
 		errno = EINVAL;
 		return -1;
 	}
-
+	
 	const int VBLK_FLAGS = vblk->flags;
 
 	#pragma omp parallel for num_threads(NTHREADS) schedule(static,1) reduction(+:nerr) ordered if(NTHREADS>1)
 	for (size_t sectr_ofz = sectr_bgn; sectr_ofz <= sectr_end; sectr_ofz += cmd_nsectr) {
 		struct nvm_addr addrs[cmd_nsectr];
 		char *buf_off = (char*)buf + (sectr_ofz - sectr_bgn) * sectr_nbytes;
+		int nsectr_skip = 0;
 
 		for (size_t idx = 0; idx < cmd_nsectr; ++idx) {
 			const size_t sectr = sectr_ofz + idx;
@@ -605,10 +606,11 @@ static inline ssize_t vblk_sync_pread_s20(struct nvm_vblk *vblk, void *buf,
 			addrs[idx].val = vblk->blks[chunk].val;
 			addrs[idx].l.sectr = chunk_sectr;
 
+			if(chunk_sectr >= geo->l.nsectr){ nsectr_skip++; }
 			if (VBLK_FLAGS & NVM_CMD_SCALAR) break;
 		}
 
-		const ssize_t err = nvm_cmd_read(vblk->dev, addrs, cmd_nsectr,
+		const ssize_t err = nvm_cmd_read(vblk->dev, addrs, cmd_nsectr - nsectr_skip,
 						 buf_off, NULL,
 						 VBLK_FLAGS, NULL);
 		if (err)
